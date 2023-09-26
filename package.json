@@ -1,0 +1,104 @@
+{
+  "name": "vscode-qt-tools",
+  "displayName": "Qt",
+  "description": "Qt Official Support",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:qrc"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-qt-tools.registerQt",
+        "title": "Qt: Register Qt Installation"
+      },
+      {
+        "command": "vscode-qt-tools.pickDefaultQt",
+        "title": "Qt: Pick Default Qt Installation"
+      },
+      {
+        "command": "vscode-qt-tools.qrcSupport",
+        "title": "Provide QRC Support"
+      },
+      {
+        "command": "vscode-qt-tools.loadAndBuildQtProject",
+        "title": "Load and Build Qt Project"
+      }
+    ],
+    "languages": [
+      {
+        "id": "pro",
+        "extensions": [
+          ".pro"
+        ],
+        "aliases": [
+          "Pro"
+        ]
+      },
+      {
+        "id": "qrc",
+        "extensions": [
+          ".qrc"
+        ],
+        "aliases": [
+          "Qrc"
+        ]
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Qt Configuration",
+      "properties": {
+        "vscode-qt-tools.qtFolder": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the Qt folder if it is not found automatically."
+        },
+        "vscode-qt-tools.qtInstallations": {
+          "type": "array",
+          "default": [],
+          "description": "List of registered Qt installations."
+        },
+        "vscode-qt-tools.defaultQt": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the default Qt installation."
+        }
+      }
+    }
+  },
+  "extensionDependencies": [
+    "ms-vscode.cmake-tools",
+    "llvm-vs-code-extensions.vscode-clangd"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "npx eslint .",
+    "test": "node ./out/test/runTest.js",
+    "prettier": "prettier --write \"**/*.{js,ts,json}\""
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.5",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/test-electron": "^2.3.2",
+    "eslint": "^8.50.0",
+    "glob": "^10.3.9",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  }
+}
