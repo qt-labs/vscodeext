@@ -75,16 +75,16 @@
     }
   },
   "extensionDependencies": [
-    "ms-vscode.cmake-tools",
-    "llvm-vs-code-extensions.vscode-clangd"
+    "ms-vscode.cmake-tools"
   ],
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "npx eslint .",
+    "lint": "npm run prettier && npx eslint . --fix",
     "test": "node ./out/test/runTest.js",
+    "update": "( git pull --rebase --autostash && git pull --rebase --autostash origin main ) || git gui",
     "prettier": "prettier --write \"**/*.{js,ts,json}\""
   },
   "devDependencies": {
