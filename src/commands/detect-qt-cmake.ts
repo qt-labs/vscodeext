@@ -8,6 +8,29 @@ import * as vscode from 'vscode';
 // Define the command
 const detectQtCMakeProjectCommand = 'vscode-qt-tools.detectQtCMakeProject';
 
+const savedCMakePrefixPathKeyName = 'savedCMakePrefixPath';
+
+type getSavedCMakePrefixPathFunctionType = () => string | undefined;
+let getSavedCMakePrefixPath: getSavedCMakePrefixPathFunctionType;
+
+type setSavedCMakePrefixPathFunctionType = (path: string) => void;
+let setSavedCMakePrefixPath: setSavedCMakePrefixPathFunctionType;
+
+function initCMakePrefixPathFunctions(context: vscode.ExtensionContext) {
+  getSavedCMakePrefixPath = () =>
+    context.workspaceState.get<string>(savedCMakePrefixPathKeyName);
+  setSavedCMakePrefixPath = (path: string) =>
+    context.workspaceState.update(savedCMakePrefixPathKeyName, path);
+}
+
+// Watch for changes in the 'vscode-qt-tools.defaultQt' configuration
+const registerConfigDeps = async (e: vscode.ConfigurationChangeEvent) => {
+  if (e.affectsConfiguration('vscode-qt-tools.defaultQt')) {
+    // Trigger the 'vscode-qt-tools.detectQtCMakeProject' command to update the 'CMAKE_PREFIX_PATH' configuration
+    vscode.commands.executeCommand('vscode-qt-tools.detectQtCMakeProject');
+  }
+};
+
 const registerDetectQtCMakeProject = async () => {
   // Get the current workspace
   const workspace = vscode.workspace.workspaceFolders;
@@ -29,19 +52,29 @@ const registerDetectQtCMakeProject = async () => {
 
       // Add or modify the 'cmake.configureSettings' property to include 'CMAKE_PREFIX_PATH' with the path to the default Qt version
       if (defaultQt && qtInstallations.includes(defaultQt)) {
-        let cmakeSettings = config.get('cmake.configureSettings') as {
-          [key: string]: string | number | boolean;
-        };
-        if (!cmakeSettings) {
-          cmakeSettings = { CMAKE_PREFIX_PATH: defaultQt };
-        } else {
-          cmakeSettings['CMAKE_PREFIX_PATH'] = defaultQt;
+        // If the 'vscode-qt-tools.defaultQt' configuration changes, add its value to 'CMAKE_PREFIX_PATH'
+        const cmakeConfig = vscode.workspace.getConfiguration('cmake');
+        let prefixPath = cmakeConfig.get<string[]>(
+          'configureSettings.CMAKE_PREFIX_PATH',
+          []
+        );
+        if (prefixPath.length !== 0) {
+          const savedCMakePath = getSavedCMakePrefixPath() as string;
+          if (savedCMakePath && prefixPath.includes(savedCMakePath)) {
+            prefixPath = prefixPath.filter((item) => {
+              return (item as string) != savedCMakePath;
+            });
+          }
         }
-        config.update(
-          'cmake.configureSettings',
-          cmakeSettings,
+        if (!prefixPath.includes(defaultQt)) {
+          prefixPath.push(defaultQt);
+        }
+        cmakeConfig.update(
+          'configureSettings.CMAKE_PREFIX_PATH',
+          prefixPath,
           vscode.ConfigurationTarget.Workspace
         );
+        setSavedCMakePrefixPath(defaultQt);
       } else {
         // If no default Qt installation is registered, ask the user to register one
         vscode.window.showInformationMessage(
@@ -53,10 +86,17 @@ const registerDetectQtCMakeProject = async () => {
 };
 
 // Function to register the command
-export function registerDetectQtCMakeProjectCommand() {
+export function registerDetectQtCMakeProjectCommand(
+  context: vscode.ExtensionContext
+) {
+  initCMakePrefixPathFunctions(context);
+
   // Register the command and return the disposable
-  return vscode.commands.registerCommand(
-    detectQtCMakeProjectCommand,
-    registerDetectQtCMakeProject
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      detectQtCMakeProjectCommand,
+      registerDetectQtCMakeProject
+    ),
+    vscode.workspace.onDidChangeConfiguration(registerConfigDeps)
   );
 }

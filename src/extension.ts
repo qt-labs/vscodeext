@@ -45,19 +45,18 @@ export function activate(context: vscode.ExtensionContext) {
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
   const registerQtDisposable = registerQtCommand();
 
-  // Add a new command to detect if the opened project is a Qt project that uses CMake
-  const detectQtCMakeProjectDisposable = registerDetectQtCMakeProjectCommand();
-
   // Register the 'vscode-qt-tools.loadAndBuildQtProject' command
   const loadAndBuildQtProjectDisposable =
     registerLoadAndBuildQtProjectCommand();
+
+  // Add a new command to detect if the opened project is a CMake project that uses Qt
+  registerDetectQtCMakeProjectCommand(context);
 
   context.subscriptions.push(
     proFileDisposable,
     qrcFileDisposable,
     pickDefaultQtDisposable,
     registerQtDisposable,
-    detectQtCMakeProjectDisposable,
     loadAndBuildQtProjectDisposable
   );
 }

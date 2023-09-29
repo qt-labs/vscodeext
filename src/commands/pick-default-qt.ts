@@ -22,12 +22,11 @@ export async function pickDefaultQt() {
     });
     if (selected) {
       // Update the 'vscode-qt-tools.defaultQt' configuration with the selected option
-      await config.update(
+      config.update(
         'defaultQt',
         selected as string,
         vscode.ConfigurationTarget.Workspace
       );
-      vscode.commands.executeCommand('vscode-qt-tools.detectQtCMakeProject');
     }
   }
 }

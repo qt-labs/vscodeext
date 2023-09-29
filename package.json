@@ -45,7 +45,8 @@
       {
         "id": "qrc",
         "extensions": [
-          ".qrc"
+          ".qrc",
+          ".qrc.cmakein"
         ],
         "aliases": [
           "Qrc"
@@ -70,6 +71,11 @@
           "type": "string",
           "default": "",
           "description": "Specify the default Qt installation."
+        },
+        "cmake.configureSettings.CMAKE_PREFIX_PATH": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the default Qt installation into CMake PATH"
         }
       }
     }
