@@ -35,16 +35,11 @@ const registerQt = async () => {
           );
 
           // Store qtInstallations folders in the global configuration
-          config
-            .update(
-              'qtInstallations',
-              qtInstallations,
-              vscode.ConfigurationTarget.Global
-            )
-            .then(() => {
-              // Call vscode-qt-tools.defaultQt to pick default Qt installation
-              vscode.commands.executeCommand('vscode-qt-tools.pickDefaultQt'); // TODO: use config watcher instead
-            });
+          config.update(
+            'qtInstallations',
+            qtInstallations,
+            vscode.ConfigurationTarget.Global
+          );
         }
       }
     }

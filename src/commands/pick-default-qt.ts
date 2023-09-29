@@ -31,9 +31,21 @@ export async function pickDefaultQt() {
   }
 }
 
-export function registerPickDefaultQtCommand() {
-  return vscode.commands.registerCommand(
-    'vscode-qt-tools.pickDefaultQt',
-    pickDefaultQt
+async function onQtInstallationsConfigUpdate(
+  e: vscode.ConfigurationChangeEvent
+) {
+  // When the configuration changes, execute the 'vscode-qt-tools.pickDefaultQt' command
+  if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
+    vscode.commands.executeCommand('vscode-qt-tools.pickDefaultQt');
+  }
+}
+
+export function registerPickDefaultQtCommand(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'vscode-qt-tools.pickDefaultQt',
+      pickDefaultQt
+    ),
+    vscode.workspace.onDidChangeConfiguration(onQtInstallationsConfigUpdate)
   );
 }

@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Register the 'vscode-qt-tools.pickDefaultQt' command using the imported function
-  const pickDefaultQtDisposable = registerPickDefaultQtCommand();
+  registerPickDefaultQtCommand(context);
 
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
   const registerQtDisposable = registerQtCommand();
@@ -55,7 +55,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     proFileDisposable,
     qrcFileDisposable,
-    pickDefaultQtDisposable,
     registerQtDisposable,
     loadAndBuildQtProjectDisposable
   );

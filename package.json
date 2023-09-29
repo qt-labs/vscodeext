@@ -67,7 +67,7 @@
           "type": "array",
           "default": [],
           "description": "List of registered Qt installations.",
-          "scope":"machine"
+          "scope": "machine"
         },
         "vscode-qt-tools.defaultQt": {
           "type": "string",

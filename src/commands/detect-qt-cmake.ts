@@ -54,10 +54,11 @@ const registerDetectQtCMakeProject = async () => {
       if (defaultQt && qtInstallations.includes(defaultQt)) {
         // If the 'vscode-qt-tools.defaultQt' configuration changes, add its value to 'CMAKE_PREFIX_PATH'
         const cmakeConfig = vscode.workspace.getConfiguration('cmake');
-        let prefixPath = cmakeConfig.get<string[]>(
-          'configureSettings.CMAKE_PREFIX_PATH',
-          []
-        );
+        let prefixPath =
+          cmakeConfig.get<string[]>(
+            'configureSettings.CMAKE_PREFIX_PATH',
+            []
+          ) || [];
         if (prefixPath.length !== 0) {
           const savedCMakePath = getSavedCMakePrefixPath() as string;
           if (savedCMakePath && prefixPath.includes(savedCMakePath)) {
