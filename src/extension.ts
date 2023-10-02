@@ -9,6 +9,10 @@ import { registerPickDefaultQtCommand } from './commands/pick-default-qt';
 import { registerDetectQtCMakeProjectCommand } from './commands/detect-qt-cmake';
 import { registerLoadAndBuildQtProjectCommand } from './commands/build-qt-pro';
 
+import { registerProFile } from './commands/file-ext-pro';
+import { registerQrcFile } from './commands/file-ext-qrc';
+import { registerQdocFile } from './commands/file-ext-qdoc';
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -19,25 +23,13 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Add a new command that provides some functionality when a .pro file is opened
-  const proFileDisposable = vscode.workspace.onDidOpenTextDocument(
-    (document) => {
-      if (document.fileName.endsWith('.pro')) {
-        // The code you place here will be executed every time a .pro file is opened
-      }
-    }
-  );
+  const proFileDisposable = registerProFile();
 
   // Add a new command that provides some functionality when a .qrc file is opened
-  const qrcFileDisposable = vscode.workspace.onDidOpenTextDocument(
-    (document) => {
-      if (document.fileName.toLowerCase().endsWith('.qrc')) {
-        // The code you place here will be executed every time a .qrc file is opened
-        // TODO : parse the .qrc file and provide IntelliSense for the resources
-        console.log('.qrc file', document.fileName);
-        vscode.languages.setTextDocumentLanguage(document, 'xml');
-      }
-    }
-  );
+  const qrcFileDisposable = registerQrcFile();
+
+  // Add a new command that provides some functionality when a .qdoc or .qdocconf file is opened
+  const qdocFileDisposable = registerQdocFile();
 
   // Register the 'vscode-qt-tools.pickDefaultQt' command using the imported function
   registerPickDefaultQtCommand(context);
@@ -55,6 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     proFileDisposable,
     qrcFileDisposable,
+    qdocFileDisposable,
     registerQtDisposable,
     loadAndBuildQtProjectDisposable
   );
