@@ -17,7 +17,7 @@ const registerQt = async () => {
     canSelectFolders: true
   };
 
-  vscode.window.showOpenDialog(options).then((fileUri) => {
+  vscode.window.showOpenDialog(options).then(async (fileUri) => {
     if (typeof fileUri === 'undefined') {
       return;
     } else if (fileUri && fileUri[0]) {
@@ -34,12 +34,17 @@ const registerQt = async () => {
             `Found ${qtInstallations.length} Qt installation(s).`
           );
 
-          // Store qtInstallations folders in the global configuration
-          config.update(
-            'qtInstallations',
-            qtInstallations,
-            vscode.ConfigurationTarget.Global
-          );
+          await config
+            .update(
+              'qtInstallations',
+              qtInstallations,
+              vscode.ConfigurationTarget.Global
+            )
+            .then(() => {
+              vscode.window.showInformationMessage(
+                `Qt installation(s) registered successfully to global settings.`
+              );
+            });
         }
       }
     }
