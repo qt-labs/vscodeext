@@ -10,6 +10,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onLanguage:pro",
     "onLanguage:qrc"
   ],
   "main": "./out/extension.js",
