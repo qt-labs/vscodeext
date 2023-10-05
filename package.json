@@ -60,17 +60,20 @@
         "vscode-qt-tools.qtFolder": {
           "type": "string",
           "default": "",
-          "description": "Specify the Qt folder if it is not found automatically."
+          "description": "Specify the Qt folder if it is not found automatically.",
+          "scope": "machine"
         },
         "vscode-qt-tools.qtInstallations": {
           "type": "array",
           "default": [],
-          "description": "List of registered Qt installations."
+          "description": "List of registered Qt installations.",
+          "scope":"machine"
         },
         "vscode-qt-tools.defaultQt": {
           "type": "string",
           "default": "",
-          "description": "Specify the default Qt installation."
+          "description": "Specify the default Qt installation.",
+          "scope": "machine"
         },
         "cmake.configureSettings.CMAKE_PREFIX_PATH": {
           "type": "string",
