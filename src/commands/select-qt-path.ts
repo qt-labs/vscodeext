@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-export async function pickDefaultQt() {
+export async function selectQtPath() {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
   let qtInstallations = config.get('qtInstallations') as readonly string[];
 
@@ -17,13 +17,16 @@ export async function pickDefaultQt() {
 
   if (qtInstallations) {
     // Show a quick pick dialog with the Qt installations as options
-    const selected = await vscode.window.showQuickPick(qtInstallations, {
-      placeHolder: 'Select a default Qt installation'
-    });
+    const selected =
+      qtInstallations.length === 1
+        ? qtInstallations[0]
+        : await vscode.window.showQuickPick(qtInstallations, {
+            placeHolder: 'Select a default Qt installation'
+          });
     if (selected) {
-      // Update the 'vscode-qt-tools.defaultQt' configuration with the selected option
+      // Update the 'vscode-qt-tools.selectedQtPath' configuration with the selected option
       config.update(
-        'defaultQt',
+        'selectedQtPath',
         selected as string,
         vscode.ConfigurationTarget.Workspace
       );
@@ -34,17 +37,19 @@ export async function pickDefaultQt() {
 async function onQtInstallationsConfigUpdate(
   e: vscode.ConfigurationChangeEvent
 ) {
-  // When the configuration changes, execute the 'vscode-qt-tools.pickDefaultQt' command
+  // When the configuration changes, execute the 'vscode-qt-tools.selectQtPath' command
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
-    vscode.commands.executeCommand('vscode-qt-tools.pickDefaultQt');
+    vscode.commands.executeCommand('vscode-qt-tools.selectQtPath');
   }
 }
 
-export function registerPickDefaultQtCommand(context: vscode.ExtensionContext) {
+export function registerPickSelectedQtPathCommand(
+  context: vscode.ExtensionContext
+) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'vscode-qt-tools.pickDefaultQt',
-      pickDefaultQt
+      'vscode-qt-tools.selectQtPath',
+      selectQtPath
     ),
     vscode.workspace.onDidChangeConfiguration(onQtInstallationsConfigUpdate)
   );

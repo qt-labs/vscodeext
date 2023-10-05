@@ -5,10 +5,9 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { registerQtCommand } from './commands/register-qt-path';
-import { registerPickDefaultQtCommand } from './commands/pick-default-qt';
+import { registerPickSelectedQtPathCommand } from './commands/select-qt-path';
 import { registerDetectQtCMakeProjectCommand } from './commands/detect-qt-cmake';
 import { registerLoadAndBuildQtProjectCommand } from './commands/build-qt-pro';
-
 import { registerProFile } from './commands/file-ext-pro';
 import { registerQrcFile } from './commands/file-ext-qrc';
 import { registerQdocFile } from './commands/file-ext-qdoc';
@@ -31,8 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
   // Add a new command that provides some functionality when a .qdoc or .qdocconf file is opened
   const qdocFileDisposable = registerQdocFile();
 
-  // Register the 'vscode-qt-tools.pickDefaultQt' command using the imported function
-  registerPickDefaultQtCommand(context);
+  // Register the 'vscode-qt-tools.selectQtPath' command using the imported function
+  registerPickSelectedQtPathCommand(context);
 
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
   const registerQtDisposable = registerQtCommand();

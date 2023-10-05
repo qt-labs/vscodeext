@@ -4,11 +4,46 @@
 import * as vscode from 'vscode';
 import * as qtpath from '../util/get-qt-paths';
 
+async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
+  if (typeof fileUris === 'undefined') {
+    return;
+  } else if (fileUris) {
+    const qtInstallationPromises = fileUris.map((uri) =>
+      qtpath.findQtInstallations(uri.fsPath)
+    );
+    const qtInstallationSets = await Promise.all(qtInstallationPromises);
+    const qtInstallations = ([] as string[]).concat.apply(
+      [],
+      qtInstallationSets
+    );
+    if (qtInstallations.length === 0) {
+      vscode.window.showInformationMessage(
+        `Found no any Qt environments in the specified installation.`
+      );
+    } else {
+      vscode.window.showInformationMessage(
+        `Found ${qtInstallations.length} Qt installation(s).`
+      );
+      const config = vscode.workspace.getConfiguration('vscode-qt-tools');
+      await Promise.all([
+        config.update(
+          'qtFolders',
+          fileUris.map((uri) => uri.fsPath),
+          vscode.ConfigurationTarget.Global
+        ),
+        config.update(
+          'qtInstallations',
+          qtInstallations,
+          vscode.ConfigurationTarget.Global
+        )
+      ]);
+    }
+  }
+}
+
 // This is a placeholder for the actual implementation of the 'vscode-qt-tools.registerQt' command.
 // Replace this with the actual code that was previously in 'extension.ts'.
-const registerQt = async () => {
-  const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-
+async function registerQt() {
   // If no default Qt installation is registered, ask the user to register one
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
@@ -16,34 +51,8 @@ const registerQt = async () => {
     canSelectFiles: false,
     canSelectFolders: true
   };
-
-  vscode.window.showOpenDialog(options).then(async (fileUri) => {
-    if (typeof fileUri === 'undefined') {
-      return;
-    } else if (fileUri && fileUri[0]) {
-      const folder = fileUri[0].fsPath;
-      if (folder) {
-        // Search the directory for Qt installations
-        const qtInstallations = qtpath.findQtInstallations(folder);
-        if (qtInstallations.length === 0) {
-          vscode.window.showInformationMessage(
-            `Found no any Qt environments in the specified installation.`
-          );
-        } else {
-          vscode.window.showInformationMessage(
-            `Found ${qtInstallations.length} Qt installation(s).`
-          );
-
-          await config.update(
-            'qtInstallations',
-            qtInstallations,
-            vscode.ConfigurationTarget.Global
-          );
-        }
-      }
-    }
-  });
-};
+  vscode.window.showOpenDialog(options).then(saveSelectedQt);
+}
 
 // Register the 'vscode-qt-tools.registerQt' command
 export function registerQtCommand() {

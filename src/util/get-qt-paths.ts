@@ -1,9 +1,16 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
+import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+
+export const home = os.homedir();
+export const userLocalDir =
+  process.platform === 'win32'
+    ? process.env['LOCALAPPDATA']!
+    : path.join(home, '.local/share');
 
 export function matchesVersionPattern(path: string): boolean {
   // Check if the first character of the path is a digit (0-9)
@@ -11,21 +18,22 @@ export function matchesVersionPattern(path: string): boolean {
 }
 
 // Function to recursively search a directory for Qt installations
-export function findQtInstallations(dir: string): string[] {
+export async function findQtInstallations(dir: string): Promise<string[]> {
   const qtInstallations: string[] = [];
-  const items = fs.readdirSync(dir);
+  const items = await fs.readdir(dir, { withFileTypes: true });
   for (const item of items) {
-    if (matchesVersionPattern(item)) {
-      const fullPath = path.join(dir, item);
-      const stats = fs.statSync(fullPath);
-      if (stats.isDirectory() && matchesVersionPattern(item)) {
-        for (const subdir of fs.readdirSync(fullPath)) {
-          const subdirFullPath = path.join(fullPath, subdir);
-          const binPath = path.join(subdirFullPath, 'bin');
-          const qtConfPath = path.join(binPath, 'qt.conf');
-          if (fs.existsSync(qtConfPath) && fs.statSync(qtConfPath).isFile()) {
-            qtInstallations.push(subdirFullPath);
-          }
+    if (matchesVersionPattern(item.name)) {
+      if (item.isDirectory()) {
+        const installationItemPath = path.join(dir, item.name);
+        for (const subdir of await fs.readdir(installationItemPath)) {
+          const subdirFullPath = path.join(installationItemPath, subdir);
+          const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
+          await fs
+            .access(qtConfPath)
+            .then(() => {
+              qtInstallations.push(subdirFullPath);
+            })
+            .catch(() => {});
         }
       }
     }
@@ -33,31 +41,46 @@ export function findQtInstallations(dir: string): string[] {
   return qtInstallations;
 }
 
-export function findFilesInDir(
+export async function findFilesInDir(
   startPath: string,
   filterExtension: string
-): string[] {
-  if (!fs.existsSync(startPath)) {
+): Promise<string[]> {
+  const stat = await fs.stat(startPath);
+  if (!stat.isDirectory()) {
     console.log('No directory:', startPath);
     return [];
   }
 
   const results: string[] = [];
 
-  function walkDir(currentPath: string): void {
-    const files = fs.readdirSync(currentPath);
+  async function walkDir(currentPath: string): Promise<void> {
+    const files = await fs.readdir(currentPath, { withFileTypes: true });
     for (let i = 0; i < files.length; i++) {
-      const curFile = path.join(currentPath, files[i]);
-      if (fs.statSync(curFile).isDirectory()) {
-        walkDir(curFile);
-      } else if (path.extname(curFile) === filterExtension) {
-        results.push(curFile);
+      if (files[i].isDirectory()) {
+        await walkDir(files[i].path);
+      } else if (path.extname(files[i].path) === filterExtension) {
+        results.push(files[i].path);
       }
     }
   }
 
-  walkDir(startPath);
+  await walkDir(startPath);
   return results;
+}
+
+export async function pathOfDirectoryIfExists(
+  dirPath: string
+): Promise<string | undefined> {
+  try {
+    await fs.access(dirPath);
+    return path.normalize(dirPath);
+  } catch (error) {
+    return undefined;
+  }
+}
+
+export function qtToolsDir(qtRootDir: string) {
+  return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 
 export async function findFilesInWorkspace(

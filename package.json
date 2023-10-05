@@ -10,8 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:pro",
-    "onLanguage:qrc"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -21,7 +20,7 @@
         "title": "Qt: Register Qt Installation"
       },
       {
-        "command": "vscode-qt-tools.pickDefaultQt",
+        "command": "vscode-qt-tools.selectQtPath",
         "title": "Qt: Pick Default Qt Installation"
       },
       {
@@ -68,28 +67,35 @@
       "type": "object",
       "title": "Qt Configuration",
       "properties": {
-        "vscode-qt-tools.qtFolder": {
-          "type": "string",
-          "default": "",
-          "description": "Specify the Qt folder if it is not found automatically.",
-          "scope": "machine"
+        "vscode-qt-tools.qtFolders": {
+          "type": "array",
+          "default": [],
+          "description": "Specify the Qt folder(s) if it is not found automatically.",
+          "scope": "machine-overridable"
         },
         "vscode-qt-tools.qtInstallations": {
           "type": "array",
           "default": [],
           "description": "List of registered Qt installations.",
-          "scope": "machine"
+          "scope": "machine-overridable"
         },
-        "vscode-qt-tools.defaultQt": {
+        "vscode-qt-tools.selectedQtPath": {
           "type": "string",
           "default": "",
           "description": "Specify the default Qt installation.",
-          "scope": "machine"
+          "scope": "machine-overridable"
+        },
+        "cmake.additionalKits": {
+          "type": "string",
+          "default": "",
+          "description": "Specify Qt kits JSON file",
+          "scope": "machine-overridable"
         },
         "cmake.configureSettings.CMAKE_PREFIX_PATH": {
           "type": "string",
           "default": "",
-          "description": "Specify the default Qt installation into CMake PATH"
+          "description": "Specify the default Qt installation into CMake PATH",
+          "scope": "machine-overridable"
         }
       }
     }

@@ -104,23 +104,23 @@ async function gotSelectedQt(selectedQtPath: string) {
 async function loadAndBuildQtProject() {
   // Get the current configuration
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  let defaultQt = config.get('defaultQt') as string;
+  let selectedQtPath = config.get('selectedQtPath') as string;
 
-  if (defaultQt === undefined) {
-    // Call 'vscode-qt-tools.pickDefaultQt' command to ensure a default Qt version is set
-    vscode.commands.executeCommand('vscode-qt-tools.pickDefaultQt').then(() => {
+  if (selectedQtPath === undefined) {
+    // Call 'vscode-qt-tools.selectQtPath' command to ensure a default Qt version is set
+    vscode.commands.executeCommand('vscode-qt-tools.selectQtPath').then(() => {
       // Get the current configuration
-      defaultQt = config.get('defaultQt') as string;
-      if (defaultQt === undefined) {
+      selectedQtPath = config.get('selectedQtPath') as string;
+      if (selectedQtPath === undefined) {
         vscode.window.showWarningMessage(
           'Unable to locate Qt. Please, use "Qt: Register Qt Installation" command to locate your Qt installation and try again.'
         );
       } else {
-        gotSelectedQt(defaultQt);
+        gotSelectedQt(selectedQtPath);
       }
     });
   } else {
-    gotSelectedQt(defaultQt);
+    gotSelectedQt(selectedQtPath);
   }
 }
 
