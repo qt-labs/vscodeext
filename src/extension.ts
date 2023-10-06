@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
     loadAndBuildQtProjectDisposable
   );
 
-  checkForQtInstallationsUpdates();
+  void checkForQtInstallationsUpdates();
 
   const activateEnd = performance.now();
   const activationTime = activateEnd - activateStart;

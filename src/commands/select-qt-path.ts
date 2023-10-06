@@ -25,21 +25,19 @@ export async function selectQtPath() {
           });
     if (selected) {
       // Update the 'vscode-qt-tools.selectedQtPath' configuration with the selected option
-      config.update(
+      void config.update(
         'selectedQtPath',
-        selected as string,
+        selected,
         vscode.ConfigurationTarget.Workspace
       );
     }
   }
 }
 
-async function onQtInstallationsConfigUpdate(
-  e: vscode.ConfigurationChangeEvent
-) {
+function onQtInstallationsConfigUpdate(e: vscode.ConfigurationChangeEvent) {
   // When the configuration changes, execute the 'vscode-qt-tools.selectQtPath' command
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
-    vscode.commands.executeCommand('vscode-qt-tools.selectQtPath');
+    void vscode.commands.executeCommand('vscode-qt-tools.selectQtPath');
   }
 }
 

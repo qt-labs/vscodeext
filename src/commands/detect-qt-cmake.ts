@@ -20,7 +20,7 @@ const savedCMakePrefixPathKeyName = 'savedCMakePrefixPath';
 type getSavedCMakePrefixPathFunctionType = () => string | undefined;
 let getSavedCMakePrefixPath: getSavedCMakePrefixPathFunctionType;
 
-type setSavedCMakePrefixPathFunctionType = (path: string) => void;
+type setSavedCMakePrefixPathFunctionType = (path: string) => Thenable<void>;
 let setSavedCMakePrefixPath: setSavedCMakePrefixPathFunctionType;
 
 function initCMakePrefixPathFunctions(context: vscode.ExtensionContext) {
@@ -39,12 +39,12 @@ function mangleQtInstallation(installation: string): string {
   return pathParts.slice(qtIdx).join('-');
 }
 
-async function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
+function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
   // TODO: check if cmake exists in PATH already
   return path.join(qtpath.qtToolsDir(qtRootDir), 'CMake_64', 'bin');
 }
 
-async function locateNinjaExecutableDirectoryPath(qtRootDir: string) {
+function locateNinjaExecutableDirectoryPath(qtRootDir: string) {
   // TODO: check if ninja exists in PATH already
   return path.join(qtpath.qtToolsDir(qtRootDir), 'Ninja');
 }
@@ -115,7 +115,7 @@ async function cmakeKitFromInstallationPath(installation: string) {
   const installationBinDir = path.join(installation, 'bin');
   const platformExecutableExtension = os.platform() == 'win32' ? '.exe' : '';
   const ninjaFileName = 'ninja' + platformExecutableExtension;
-  const ninjaDirPath = await promiseNinjaPath;
+  const ninjaDirPath = promiseNinjaPath;
   const ninjaExePath = path.join(ninjaDirPath, ninjaFileName);
 
   let newKit = {
@@ -124,7 +124,7 @@ async function cmakeKitFromInstallationPath(installation: string) {
       PATH: [
         installation,
         installationBinDir,
-        await promiseCMakePath,
+        promiseCMakePath,
         ninjaDirPath,
         '${env: PATH}'
       ].join(path.delimiter)
@@ -241,7 +241,7 @@ async function registerConfigDeps(e: vscode.ConfigurationChangeEvent) {
   }
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
     try {
-      qtInstallationsUpdated();
+      void qtInstallationsUpdated();
     } catch (err) {
       console.error('Error reading file:', err);
     }
@@ -256,7 +256,7 @@ const registerDetectQtCMakeProject = async () => {
     const cmakeListsPath = path.join(workspace[0].uri.fsPath, 'CMakeLists.txt');
     await fs.access(cmakeListsPath);
     // The project is a Qt project that uses CMake
-    vscode.window.showInformationMessage(
+    void vscode.window.showInformationMessage(
       'Detected a Qt project that uses CMake.'
     );
 
@@ -276,22 +276,22 @@ const registerDetectQtCMakeProject = async () => {
         const savedCMakePath = getSavedCMakePrefixPath() as string;
         if (savedCMakePath && prefixPath.includes(savedCMakePath)) {
           prefixPath = prefixPath.filter((item) => {
-            return (item as string) != savedCMakePath;
+            return item != savedCMakePath;
           });
         }
       }
       if (!prefixPath.includes(selectedQtPath)) {
         prefixPath.push(selectedQtPath);
       }
-      cmakeConfig.update(
+      void cmakeConfig.update(
         'configureSettings.CMAKE_PREFIX_PATH',
         prefixPath,
         vscode.ConfigurationTarget.Workspace
       );
-      setSavedCMakePrefixPath(selectedQtPath);
+      void setSavedCMakePrefixPath(selectedQtPath);
     } else {
       // If no default Qt installation is registered, ask the user to register one
-      vscode.window.showInformationMessage(
+      void vscode.window.showInformationMessage(
         'No default Qt installation found. Please register one with the "vscode-qt-tools.registerQt" command.'
       );
     }

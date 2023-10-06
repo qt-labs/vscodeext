@@ -11,16 +11,16 @@ import * as qtpath from '../util/get-qt-paths';
  * The command is registered in the 'src/extension.ts' file and moved here for better modularity.
  */
 
-async function gotSelectedQt(selectedQtPath: string) {
+function gotSelectedQt(selectedQtPath: string) {
   // Get list of all .pro files in the workspace folders recursively
-  qtpath.findFilesInWorkspace('**/*.pro').then((proFiles: string[]) => {
+  void qtpath.findFilesInWorkspace('**/*.pro').then((proFiles: string[]) => {
     if (proFiles.length === 0) {
-      vscode.window.showWarningMessage(
+      void vscode.window.showWarningMessage(
         'Unable to locate Qt project .pro files. Consider using CMake build instead.'
       );
     } else {
       // Show a quick pick dialog with the .pro files as options
-      vscode.window
+      void vscode.window
         .showQuickPick(
           proFiles.map((uri) => {
             return uri.toString();
@@ -73,10 +73,10 @@ async function gotSelectedQt(selectedQtPath: string) {
                     outputChannel.appendLine('Build step failed.');
                   }
                 });
-                childProcess.stdout?.on('data', (data) => {
+                childProcess.stdout?.on('data', (data: string) => {
                   outputChannel.appendLine(data);
                 });
-                childProcess.stderr?.on('data', (data) => {
+                childProcess.stderr?.on('data', (data: string) => {
                   outputChannel.appendLine(data);
                 });
               } else {
@@ -84,10 +84,10 @@ async function gotSelectedQt(selectedQtPath: string) {
                 outputChannel.appendLine('Configure step failed.');
               }
             });
-            childProcess.stdout?.on('data', (data) => {
+            childProcess.stdout?.on('data', (data: string) => {
               outputChannel.appendLine(data);
             });
-            childProcess.stderr?.on('data', (data) => {
+            childProcess.stderr?.on('data', (data: string) => {
               outputChannel.appendLine(data);
             });
           }
@@ -101,24 +101,26 @@ async function gotSelectedQt(selectedQtPath: string) {
  * @param context - The extension context.
  * @returns The disposable for the command.
  */
-async function loadAndBuildQtProject() {
+function loadAndBuildQtProject() {
   // Get the current configuration
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
   let selectedQtPath = config.get('selectedQtPath') as string;
 
   if (selectedQtPath === undefined) {
     // Call 'vscode-qt-tools.selectQtPath' command to ensure a default Qt version is set
-    vscode.commands.executeCommand('vscode-qt-tools.selectQtPath').then(() => {
-      // Get the current configuration
-      selectedQtPath = config.get('selectedQtPath') as string;
-      if (selectedQtPath === undefined) {
-        vscode.window.showWarningMessage(
-          'Unable to locate Qt. Please, use "Qt: Register Qt Installation" command to locate your Qt installation and try again.'
-        );
-      } else {
-        gotSelectedQt(selectedQtPath);
-      }
-    });
+    void vscode.commands
+      .executeCommand('vscode-qt-tools.selectQtPath')
+      .then(() => {
+        // Get the current configuration
+        selectedQtPath = config.get('selectedQtPath') as string;
+        if (selectedQtPath === undefined) {
+          void vscode.window.showWarningMessage(
+            'Unable to locate Qt. Please, use "Qt: Register Qt Installation" command to locate your Qt installation and try again.'
+          );
+        } else {
+          gotSelectedQt(selectedQtPath);
+        }
+      });
   } else {
     gotSelectedQt(selectedQtPath);
   }

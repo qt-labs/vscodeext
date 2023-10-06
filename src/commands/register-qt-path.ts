@@ -11,11 +11,11 @@ async function gotInstallationSets(
   const qtInstallationSets = await Promise.all(qtInstallationPromises);
   const qtInstallations = ([] as string[]).concat.apply([], qtInstallationSets);
   if (qtInstallations.length === 0) {
-    vscode.window.showInformationMessage(
+    void vscode.window.showInformationMessage(
       `Found no any Qt environments in the specified installation.`
     );
   } else {
-    vscode.window.showInformationMessage(
+    void vscode.window.showInformationMessage(
       `Found ${qtInstallations.length} Qt installation(s).`
     );
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
@@ -46,7 +46,7 @@ async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
 
 // This is a placeholder for the actual implementation of the 'vscode-qt-tools.registerQt' command.
 // Replace this with the actual code that was previously in 'extension.ts'.
-async function registerQt() {
+function registerQt() {
   // If no default Qt installation is registered, ask the user to register one
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
@@ -54,7 +54,7 @@ async function registerQt() {
     canSelectFiles: false,
     canSelectFolders: true
   };
-  vscode.window.showOpenDialog(options).then(saveSelectedQt);
+  void vscode.window.showOpenDialog(options).then(saveSelectedQt);
 }
 
 export async function checkForQtInstallationsUpdates() {

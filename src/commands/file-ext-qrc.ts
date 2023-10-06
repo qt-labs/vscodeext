@@ -9,7 +9,7 @@ export function registerQrcFile() {
       // The code you place here will be executed every time a .qrc file is opened
       // TODO : parse the .qrc file and provide IntelliSense for the resources
       console.log('.qrc file', document.fileName);
-      vscode.languages.setTextDocumentLanguage(document, 'xml');
+      void vscode.languages.setTextDocumentLanguage(document, 'xml');
     }
   });
 }
