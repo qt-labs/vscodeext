@@ -34,17 +34,11 @@ const registerQt = async () => {
             `Found ${qtInstallations.length} Qt installation(s).`
           );
 
-          await config
-            .update(
-              'qtInstallations',
-              qtInstallations,
-              vscode.ConfigurationTarget.Global
-            )
-            .then(() => {
-              vscode.window.showInformationMessage(
-                `Qt installation(s) registered successfully to global settings.`
-              );
-            });
+          await config.update(
+            'qtInstallations',
+            qtInstallations,
+            vscode.ConfigurationTarget.Global
+          );
         }
       }
     }
