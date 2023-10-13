@@ -4,6 +4,32 @@
 import * as vscode from 'vscode';
 import * as qtpath from '../util/get-qt-paths';
 
+async function gotInstallationSets(
+  qtInstallationPromises: Promise<string[]>[],
+  filePaths: string[]
+) {
+  const qtInstallationSets = await Promise.all(qtInstallationPromises);
+  const qtInstallations = ([] as string[]).concat.apply([], qtInstallationSets);
+  if (qtInstallations.length === 0) {
+    vscode.window.showInformationMessage(
+      `Found no any Qt environments in the specified installation.`
+    );
+  } else {
+    vscode.window.showInformationMessage(
+      `Found ${qtInstallations.length} Qt installation(s).`
+    );
+    const config = vscode.workspace.getConfiguration('vscode-qt-tools');
+    await Promise.all([
+      config.update('qtFolders', filePaths, vscode.ConfigurationTarget.Global),
+      config.update(
+        'qtInstallations',
+        qtInstallations,
+        vscode.ConfigurationTarget.Global
+      )
+    ]);
+  }
+}
+
 async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
   if (typeof fileUris === 'undefined') {
     return;
@@ -11,33 +37,10 @@ async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
     const qtInstallationPromises = fileUris.map((uri) =>
       qtpath.findQtInstallations(uri.fsPath)
     );
-    const qtInstallationSets = await Promise.all(qtInstallationPromises);
-    const qtInstallations = ([] as string[]).concat.apply(
-      [],
-      qtInstallationSets
+    await gotInstallationSets(
+      qtInstallationPromises,
+      fileUris.map((uri) => uri.fsPath)
     );
-    if (qtInstallations.length === 0) {
-      vscode.window.showInformationMessage(
-        `Found no any Qt environments in the specified installation.`
-      );
-    } else {
-      vscode.window.showInformationMessage(
-        `Found ${qtInstallations.length} Qt installation(s).`
-      );
-      const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-      await Promise.all([
-        config.update(
-          'qtFolders',
-          fileUris.map((uri) => uri.fsPath),
-          vscode.ConfigurationTarget.Global
-        ),
-        config.update(
-          'qtInstallations',
-          qtInstallations,
-          vscode.ConfigurationTarget.Global
-        )
-      ]);
-    }
   }
 }
 
@@ -52,6 +55,27 @@ async function registerQt() {
     canSelectFolders: true
   };
   vscode.window.showOpenDialog(options).then(saveSelectedQt);
+}
+
+export async function checkForQtInstallationsUpdates() {
+  const qtFolders =
+    vscode.workspace
+      .getConfiguration('vscode-qt-tools')
+      .get<string[]>('qtFolders') || [];
+
+  const promiseInstallationSetsProcessed = gotInstallationSets(
+    qtFolders.map((qtInstallationSet) =>
+      qtpath.findQtInstallations(qtInstallationSet)
+    ),
+    qtFolders
+  );
+  qtFolders.forEach((folder) => {
+    const watcher = vscode.workspace.createFileSystemWatcher(folder);
+    watcher.onDidChange(checkForQtInstallationsUpdates);
+    watcher.onDidCreate(checkForQtInstallationsUpdates);
+    watcher.onDidDelete(checkForQtInstallationsUpdates);
+  });
+  await promiseInstallationSetsProcessed;
 }
 
 // Register the 'vscode-qt-tools.registerQt' command

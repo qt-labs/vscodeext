@@ -22,18 +22,23 @@ export async function findQtInstallations(dir: string): Promise<string[]> {
   const qtInstallations: string[] = [];
   const items = await fs.readdir(dir, { withFileTypes: true });
   for (const item of items) {
-    if (matchesVersionPattern(item.name)) {
-      if (item.isDirectory()) {
-        const installationItemPath = path.join(dir, item.name);
-        for (const subdir of await fs.readdir(installationItemPath)) {
-          const subdirFullPath = path.join(installationItemPath, subdir);
+    if (item.isDirectory() && matchesVersionPattern(item.name)) {
+      const installationItemPath = path.join(dir, item.name);
+      const installationItemDirContent = await fs.readdir(
+        installationItemPath,
+        { withFileTypes: true }
+      );
+      for (const subitem of installationItemDirContent) {
+        if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
+          const subdirFullPath = path.join(installationItemPath, subitem.name);
           const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
-          await fs
-            .access(qtConfPath)
-            .then(() => {
+          try {
+            await fs.access(qtConfPath).then(() => {
               qtInstallations.push(subdirFullPath);
-            })
-            .catch(() => {});
+            });
+          } catch (err) {
+            console.log(err);
+          }
         }
       }
     }

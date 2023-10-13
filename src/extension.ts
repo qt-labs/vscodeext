@@ -4,7 +4,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { registerQtCommand } from './commands/register-qt-path';
+import {
+  checkForQtInstallationsUpdates,
+  registerQtCommand
+} from './commands/register-qt-path';
 import { registerPickSelectedQtPathCommand } from './commands/select-qt-path';
 import { registerDetectQtCMakeProjectCommand } from './commands/detect-qt-cmake';
 import { registerLoadAndBuildQtProjectCommand } from './commands/build-qt-pro';
@@ -50,6 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerQtDisposable,
     loadAndBuildQtProjectDisposable
   );
+
+  checkForQtInstallationsUpdates();
 }
 
 // This method is called when your extension is deactivated
