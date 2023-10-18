@@ -110,7 +110,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "npm run prettier && npx eslint . --fix",
     "test": "node ./out/test/runTest.js",
-    "update": "( git pull --rebase --autostash && git pull --rebase --autostash origin main ) || git gui",
+    "update": "( git pull --rebase --autostash origin dev ) || git gui",
     "prettier": "prettier --write \"**/*.{js,ts,json}\""
   },
   "devDependencies": {
