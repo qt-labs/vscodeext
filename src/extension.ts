@@ -4,6 +4,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { performance } from 'perf_hooks';
 import {
   checkForQtInstallationsUpdates,
   registerQtCommand
@@ -18,6 +19,8 @@ import { registerQdocFile } from './commands/file-ext-qdoc';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  const activateStart = performance.now();
+
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log(
@@ -55,6 +58,12 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   checkForQtInstallationsUpdates();
+
+  const activateEnd = performance.now();
+  const activationTime = activateEnd - activateStart;
+  console.log(
+    `Done activating plugin ${context.extension.id}, took ${activationTime}ms`
+  );
 }
 
 // This method is called when your extension is deactivated
