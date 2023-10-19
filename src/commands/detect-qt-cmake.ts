@@ -61,9 +61,18 @@ async function locateMingwBinDirPath(qtRootDir: string) {
   );
   const mingwsWithBins = (await Promise.all(promiseMingwsWithBinDirs)).filter(
     Boolean
+  ) as string[];
+  const mingwVersions: Map<number, string> = new Map(
+    mingwsWithBins.map((item) => {
+      const m = item.match(/mingw(\d+)_\d+/);
+      let v: number = 0;
+      if (m) v = parseInt(m[1], 10);
+      return [v, item];
+    })
   );
-  const mingw = (mingwsWithBins as string[]).reduce((a, b) => (a >= b ? a : b));
-  return mingw;
+
+  const highestMingWVersion = Math.max(...mingwVersions.keys());
+  return mingwVersions.get(highestMingWVersion);
 }
 
 async function locateCMakeQtToolchainFile(installation: string) {
