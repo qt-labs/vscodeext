@@ -1,20 +1,17 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as path from 'path';
-import * as vscode from 'vscode';
-import * as qtpath from '../util/get-qt-paths';
-import * as fs from 'fs/promises';
 import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs/promises';
+
+import * as vscode from 'vscode';
+
+import * as cmake from '../util/cmake-kit-files';
+import * as qtpath from '../util/get-qt-paths';
 
 // Define the command
 const detectQtCMakeProjectCommand = 'vscode-qt-tools.detectQtCMakeProject';
-
-const CMakeToolsDir = path.join(qtpath.userLocalDir, 'CMakeTools');
-// CMake CMAKE_KITS_FILEPATH var that store json config file path with CMake detected kits enumerated there
-//const CMAKE_KITS_FILEPATH = path.join(CMakeToolsDir, 'cmake-tools-kits.json');
-const USER_KITS_FILEPATH = path.join(CMakeToolsDir, 'Qt-CMake-toolskits.json');
-
 const savedCMakePrefixPathKeyName = 'savedCMakePrefixPath';
 
 type getSavedCMakePrefixPathFunctionType = () => string | undefined;
@@ -28,15 +25,6 @@ function initCMakePrefixPathFunctions(context: vscode.ExtensionContext) {
     context.workspaceState.get<string>(savedCMakePrefixPathKeyName);
   setSavedCMakePrefixPath = (path: string) =>
     context.workspaceState.update(savedCMakePrefixPathKeyName, path);
-}
-
-function mangleQtInstallation(installation: string): string {
-  const pathParts = installation.split(/[/\\:]+/).filter((n) => n);
-  const qtIdx = Math.max(
-    0,
-    pathParts.findIndex((s) => s.toLowerCase() == 'qt')
-  );
-  return pathParts.slice(qtIdx).join('-');
 }
 
 function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
@@ -75,6 +63,8 @@ async function locateMingwBinDirPath(qtRootDir: string) {
   return mingwVersions.get(highestMingWVersion);
 }
 
+const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
+
 async function locateCMakeQtToolchainFile(installation: string) {
   const libCMakePath = path.join(installation, 'lib', 'cmake');
   let cmakeQtToolchainFilePath = path.join(
@@ -103,59 +93,53 @@ async function locateCMakeQtToolchainFile(installation: string) {
   return cmakeQtToolchainFilePath;
 }
 
-const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
-
-async function cmakeKitFromInstallationPath(installation: string) {
+async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
   const promiseCmakeQtToolchainPath = locateCMakeQtToolchainFile(installation);
   const qtRootDir = path.normalize(path.join(installation, '..', '..'));
-  const promiseCMakePath = locateCMakeExecutableDirectoryPath(qtRootDir);
-  const promiseNinjaPath = locateNinjaExecutableDirectoryPath(qtRootDir);
+  const cmakeDirPath = locateCMakeExecutableDirectoryPath(qtRootDir);
+  const ninjaDirPath = locateNinjaExecutableDirectoryPath(qtRootDir);
   const promiseMingwPath = locateMingwBinDirPath(qtRootDir);
   const toolchain = path.basename(installation);
   const installationBinDir = path.join(installation, 'bin');
   const platformExecutableExtension = os.platform() == 'win32' ? '.exe' : '';
   const ninjaFileName = 'ninja' + platformExecutableExtension;
-  const ninjaDirPath = promiseNinjaPath;
   const ninjaExePath = path.join(ninjaDirPath, ninjaFileName);
+  const cmakePrefixPath = path.join(installation, 'lib', 'cmake');
 
-  let newKit = {
-    name: mangleQtInstallation(installation),
+  let newKit: cmake.Kit = {
+    name: qtpath.mangleQtInstallation(installation),
     environmentVariables: {
       PATH: [
         installation,
         installationBinDir,
-        promiseCMakePath,
         ninjaDirPath,
-        '${env: PATH}'
+        '${env: PATH}',
+        cmakeDirPath
       ].join(path.delimiter)
     },
     toolchainFile: await promiseCmakeQtToolchainPath,
     isTrusted: true,
     preferredGenerator: {
-      name: 'Ninja Multi-Config'
+      name: cmake.CMakeDefaultGenerator
     },
     cmakeSettings: {
-      CMAKE_MAKE_PROGRAM: ninjaExePath
+      CMAKE_MAKE_PROGRAM: ninjaExePath,
+      CMAKE_MODULE_PATH: cmake.cmakeCompatiblePath(cmakePrefixPath)
     }
   };
   const tokens = toolchain.split('_');
   let platform = tokens[0];
   if (platform != 'android') {
     if (platform.startsWith('msvc')) {
-      platform = 'win32';
-      newKit.preferredGenerator = {
-        ...newKit.preferredGenerator,
-        ...{
-          name: 'Ninja Multi-Config'
-          // toolset: 'host=x64'
-        }
-      };
       newKit = {
         ...newKit,
         ...{
-          visualStudioArchitecture: 'x64'
+          visualStudio: toolchain,
+          visualStudioArchitecture: tokens[-1]
         }
       };
+      yield* cmake.generateMsvcKits(newKit);
+      return;
     } else if (platform.startsWith('mingw')) {
       platform = 'win32';
       const mingwDirPath = await promiseMingwPath;
@@ -196,35 +180,27 @@ async function cmakeKitFromInstallationPath(installation: string) {
   //   }
   // };
 
-  return newKit;
+  yield newKit;
 }
 
-async function updateQtKitsJsonFile() {
-  const config = vscode.workspace.getConfiguration('cmake');
-  const additionalKits = config.get<string[]>('additionalKits', []) || [];
-  if (!additionalKits.includes(USER_KITS_FILEPATH)) {
-    additionalKits.push(USER_KITS_FILEPATH);
-  }
-  await config.update(
-    'additionalKits',
-    additionalKits,
-    vscode.ConfigurationTarget.Global
-  );
+async function cmakeKitsFromQtInstallations(qtInstallations: string[]) {
+  const kits = [];
+  for (const path of qtInstallations)
+    for await (const kit of generateCMakeKitsOfQtInstallationPath(path)) kits.push(kit);
+  return kits;
 }
 
 async function qtInstallationsUpdated() {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  const qtInstallations = config.get('qtInstallations') as readonly string[];
+  const qtInstallations = config.get('qtInstallations') as string[];
   if (qtInstallations) {
-    const kitsJsonData = await Promise.all(
-      qtInstallations.map(cmakeKitFromInstallationPath)
-    );
+    const kitsJsonData = await cmakeKitsFromQtInstallations(qtInstallations);
     // Write the updated kitsJsonData back to the USER_KITS_FILEPATH file
     await fs.writeFile(
-      USER_KITS_FILEPATH,
+      cmake.USER_KITS_FILEPATH,
       JSON.stringify(kitsJsonData, null, 2)
     );
-    await updateQtKitsJsonFile();
+    await cmake.specifyCMakeKitsJsonFileForQt();
   }
 }
 
@@ -235,9 +211,7 @@ async function registerConfigDeps(e: vscode.ConfigurationChangeEvent) {
     e.affectsConfiguration('cmake.configureSettings.CMAKE_PREFIX_PATH')
   ) {
     // Trigger the 'vscode-qt-tools.detectQtCMakeProject' command to update the 'CMAKE_PREFIX_PATH' configuration
-    await vscode.commands.executeCommand(
-      'vscode-qt-tools.detectQtCMakeProject'
-    );
+    await registerCMakeSupport();
   }
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
     try {
@@ -248,17 +222,13 @@ async function registerConfigDeps(e: vscode.ConfigurationChangeEvent) {
   }
 }
 
-const registerDetectQtCMakeProject = async () => {
+async function registerCMakeSupport() {
   // Get the current workspace
   const workspace = vscode.workspace.workspaceFolders;
   if (workspace) {
     // Check if 'CMakeLists.txt' exists in the project root
     const cmakeListsPath = path.join(workspace[0].uri.fsPath, 'CMakeLists.txt');
     await fs.access(cmakeListsPath);
-    // The project is a Qt project that uses CMake
-    void vscode.window.showInformationMessage(
-      'Detected a Qt project that uses CMake.'
-    );
 
     // Get the current configuration
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
@@ -296,7 +266,7 @@ const registerDetectQtCMakeProject = async () => {
       );
     }
   }
-};
+}
 
 // Function to register the command
 export function registerDetectQtCMakeProjectCommand(
@@ -308,8 +278,9 @@ export function registerDetectQtCMakeProjectCommand(
   context.subscriptions.push(
     vscode.commands.registerCommand(
       detectQtCMakeProjectCommand,
-      registerDetectQtCMakeProject
+      registerCMakeSupport
     ),
-    vscode.workspace.onDidChangeConfiguration(registerConfigDeps)
+    vscode.workspace.onDidChangeConfiguration(registerConfigDeps),
+    cmake.watchCMakeKitsFileUpdates(() => void qtInstallationsUpdated())
   );
 }

@@ -116,3 +116,12 @@ export async function findFilesInWorkspace(
   await Promise.all(promises);
   return files;
 }
+
+export function mangleQtInstallation(installation: string): string {
+  const pathParts = installation.split(/[/\\:]+/).filter((n) => n);
+  const qtIdx = Math.max(
+    0,
+    pathParts.findIndex((s) => s.toLowerCase() == 'qt')
+  );
+  return pathParts.slice(qtIdx).join('-');
+}
