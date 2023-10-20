@@ -104,7 +104,6 @@ async function cmakeKitFromInstallationPath(installation: string) {
   const promiseMingwPath = locateMingwBinDirPath(qtRootDir);
   const toolchain = path.basename(installation);
   const installationBinDir = path.join(installation, 'bin');
-  const envSetupScript = path.join(installationBinDir, 'qtenv2.bat');
   const platformExecutableExtension = os.platform() == 'win32' ? '.exe' : '';
   const ninjaFileName = 'ninja' + platformExecutableExtension;
   const ninjaDirPath = await promiseNinjaPath;
@@ -121,7 +120,6 @@ async function cmakeKitFromInstallationPath(installation: string) {
         '${env: PATH}'
       ].join(path.delimiter)
     },
-    environmentSetupScript: envSetupScript,
     toolchainFile: await promiseCmakeQtToolchainPath,
     isTrusted: true,
     preferredGenerator: {
