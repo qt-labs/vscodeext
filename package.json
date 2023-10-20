@@ -84,18 +84,6 @@
           "default": "",
           "description": "Specify the default Qt installation.",
           "scope": "machine-overridable"
-        },
-        "cmake.additionalKits": {
-          "type": "string",
-          "default": "",
-          "description": "Specify Qt kits JSON file",
-          "scope": "machine-overridable"
-        },
-        "cmake.configureSettings.CMAKE_PREFIX_PATH": {
-          "type": "string",
-          "default": "",
-          "description": "Specify the default Qt installation into CMake PATH",
-          "scope": "machine-overridable"
         }
       }
     }
