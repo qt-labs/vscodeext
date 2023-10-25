@@ -4,6 +4,13 @@
 import * as vscode from 'vscode';
 import * as qtpath from '../util/get-qt-paths';
 
+export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
+let RegisterQtCommandTitle: string = 'Qt: Register Qt Installation';
+
+export function getRegisterQtCommandTitle(): string {
+  return RegisterQtCommandTitle;
+}
+
 async function gotInstallationSets(
   qtInstallationPromises: Promise<string[]>[],
   filePaths: string[]
