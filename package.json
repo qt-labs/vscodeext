@@ -25,11 +25,11 @@
       },
       {
         "command": "vscode-qt-tools.qrcSupport",
-        "title": "Provide QRC Support"
+        "title": "Qt: Provide QRC Support"
       },
       {
         "command": "vscode-qt-tools.loadAndBuildQtProject",
-        "title": "Load and Build Qt Project"
+        "title": "Qt: Load and Build Qt Project"
       }
     ],
     "languages": [
