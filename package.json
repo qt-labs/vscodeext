@@ -191,15 +191,18 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "npm run prettier && npx eslint . --fix",
-    "test": "echo \"node ./out/test/runTest.js\"",
     "gitgui": "git gc && git citool",
     "update": "( git pull --rebase --autostash origin dev ) || npm run gitgui",
+    "unitTests": "npm run pretest && node ./out/test/unit/runTest.js",
+    "integrationTests": "npm run pretest && node ./out/test/integration/runTest.js",
+    "allTests": "ts-node ./src/scripts/run_all_tests.ts",
     "rebase": "git fetch && git -c sequence.editor=\"code --wait\" rebase -i --autostash origin/dev",
     "review": "npm run rebase && npm i && npm run pretest && npm run test && npm run gitgui && git push origin HEAD:refs/for/dev",
     "prettier": "prettier --write \"**/*.{js,ts,json}\"",
     "package": "vsce package --out out"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.10",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.5",
@@ -209,13 +212,18 @@
     "@vscode/l10n-dev": "^0.0.30",
     "@vscode/test-electron": "^2.3.2",
     "@vscode/vsce": "^2.21.1",
+    "chai": "^4.3.10",
+    "commander": "^11.1.0",
     "eslint": "^8.50.0",
     "glob": "^10.3.9",
     "mocha": "^10.2.0",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "ts-node": "^10.4.0"
   },
   "dependencies": {
-    "@vscode/l10n": "^0.0.16"
+    "@vscode/l10n": "^0.0.16",
+    "typescript": "^5.2.2",
+    "ts-sinon": "^2.0.2"
   }
 }

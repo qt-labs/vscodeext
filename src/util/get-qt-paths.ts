@@ -344,7 +344,7 @@ export async function queryHostBinDirPath(
       resolve(data.toString().trim());
     });
     childProcess.stderr?.on('data', (data: string) => {
-      reject(data.toString().trim());
+      reject(new Error(data.toString().trim()));
     });
   });
   const promiseProcessClose = new Promise<string>((resolve, reject) => {

@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import * as qtpath from '../util/get-qt-paths';
 import * as local from '../util/localize';
+import * as util from '../util/util';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
 let RegisterQtCommandTitle = '';
@@ -23,18 +24,19 @@ async function gotInstallationSets(
     void vscode.window.showInformationMessage(
       `Found no any Qt environments in the specified installation.`
     );
+    console.log('Found no any Qt environments in the specified installation.');
   } else {
     void vscode.window.showInformationMessage(
       `Found ${qtInstallations.length} Qt installation(s).`
     );
+    console.log(`Found ${qtInstallations.length} Qt installation(s).`);
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
+    const configTarget = util.isTestMode()
+      ? vscode.ConfigurationTarget.Workspace
+      : vscode.ConfigurationTarget.Global;
     await Promise.all([
-      config.update('qtFolders', filePaths, vscode.ConfigurationTarget.Global),
-      config.update(
-        'qtInstallations',
-        qtInstallations,
-        vscode.ConfigurationTarget.Global
-      )
+      config.update('qtFolders', filePaths, configTarget),
+      config.update('qtInstallations', qtInstallations, configTarget)
     ]);
   }
 }
@@ -67,6 +69,7 @@ export async function registerQt() {
   if (qtFolder) {
     await saveSelectedQt(qtFolder);
   }
+  return 0;
 }
 
 export async function checkForQtInstallationsUpdates() {

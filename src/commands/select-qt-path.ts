@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import * as local from '../util/localize';
 import * as qtregister from './register-qt-path';
 import * as qtpath from '../util/get-qt-paths';
+import * as util from '../util/util';
 
 export async function selectQtPath() {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
@@ -24,12 +25,22 @@ export async function selectQtPath() {
         : await vscode.window.showQuickPick(qtInstallations, {
             placeHolder: 'Select a default Qt installation'
           });
-    if (selected) {
-      const qtRootDir = qtpath.qtRootByQtInstallation(selected);
+
+    // In the test mode, the selected is an object with the label and description
+    // In the normal mode, the selected is a string
+    let selectedInstallation: string;
+    if (util.isTestMode() && typeof selected === 'object') {
+      selectedInstallation = selected['label'];
+    } else {
+      selectedInstallation = selected as string;
+    }
+
+    if (selectedInstallation) {
+      const qtRootDir = qtpath.qtRootByQtInstallation(selectedInstallation);
       await Promise.all([
         config.update(
           'selectedQtPath',
-          selected,
+          selectedInstallation,
           vscode.ConfigurationTarget.Workspace
         ),
         qtpath

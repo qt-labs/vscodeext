@@ -19,7 +19,7 @@ let getSavedCMakePrefixPath: getSavedCMakePrefixPathFunctionType;
 
 type setSavedCMakePrefixPathFunctionType = (path: string) => Thenable<void>;
 let setSavedCMakePrefixPath: setSavedCMakePrefixPathFunctionType;
-let QtCMakeKits: cmake;
+export let QtCMakeKits: cmake;
 
 function initCMakeKits(context: vscode.ExtensionContext) {
   getSavedCMakePrefixPath = () =>

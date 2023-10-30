@@ -27,6 +27,12 @@ build together, run `npm run pretest`
 
 - To install the package to vscode, run `code --install-extension <vsix file generated in the previous step>`
 
+## Testing
+
+- To run unit tests, run `npm run unitTests`
+- To run integration tests, run `npm run integrationTests -- --qt_path="<qt_installation>"`
+- To run all tests, run `npm run allTests -- --qt_path="<qt_installation>"`
+
 ## Dependencies
 
 - [npm](https://www.npmjs.com/)
