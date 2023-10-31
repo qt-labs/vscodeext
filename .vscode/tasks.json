@@ -15,6 +15,23 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "type": "npm",
+      "script": "compile",
+      "problemMatcher": "$tsc",
+      "label": "npm: compile",
+      "detail": "tsc -p ./",
+      "presentation": {
+        "close": true
+      }
+    },
+    {
+      "type": "npm",
+      "script": "pretest",
+      "problemMatcher": [],
+      "label": "npm: pretest",
+      "detail": "npm run compile && npm run lint"
     }
   ]
 }
