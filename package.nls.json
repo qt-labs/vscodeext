@@ -1,0 +1,8 @@
+{
+  "package.name": "",
+  "package.description": "",
+  "package.author": "",
+  "package.version": "",
+  "package.license": "",
+  "command.vscode-qt-tools.registerQt.title": "Qt: Register Qt Installation"
+}

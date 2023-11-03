@@ -13,11 +13,13 @@
     "*"
   ],
   "main": "./out/extension.js",
+  "l10n": "./l10n",
   "contributes": {
+    "localizations": [],
     "commands": [
       {
         "command": "vscode-qt-tools.registerQt",
-        "title": "Qt: Register Qt Installation"
+        "title": "%command.vscode-qt-tools.registerQt.title%"
       },
       {
         "command": "vscode-qt-tools.selectQtPath",
@@ -108,12 +110,16 @@
     "@types/vscode": "^1.78.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
-    "@vscode/vsce": "^2.21.1",
+    "@vscode/l10n-dev": "^0.0.30",
     "@vscode/test-electron": "^2.3.2",
+    "@vscode/vsce": "^2.21.1",
     "eslint": "^8.50.0",
     "glob": "^10.3.9",
     "mocha": "^10.2.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@vscode/l10n": "^0.0.16"
   }
 }

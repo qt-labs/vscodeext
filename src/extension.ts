@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerPickSelectedQtPathCommand(context);
 
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
-  const registerQtDisposable = registerQtCommand();
+  registerQtCommand(context);
 
   // Register the 'vscode-qt-tools.loadAndBuildQtProject' command
   const loadAndBuildQtProjectDisposable =
@@ -53,7 +53,6 @@ export function activate(context: vscode.ExtensionContext) {
     proFileDisposable,
     qrcFileDisposable,
     qdocFileDisposable,
-    registerQtDisposable,
     loadAndBuildQtProjectDisposable
   );
 
