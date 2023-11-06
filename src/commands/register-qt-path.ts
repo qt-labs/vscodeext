@@ -55,7 +55,7 @@ async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
 
 // This is a placeholder for the actual implementation of the 'vscode-qt-tools.registerQt' command.
 // Replace this with the actual code that was previously in 'extension.ts'.
-function registerQt() {
+export async function registerQt() {
   // If no default Qt installation is registered, ask the user to register one
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
@@ -63,7 +63,10 @@ function registerQt() {
     canSelectFiles: false,
     canSelectFolders: true
   };
-  void vscode.window.showOpenDialog(options).then(saveSelectedQt);
+  const qtFolder = await vscode.window.showOpenDialog(options);
+  if (qtFolder) {
+    await saveSelectedQt(qtFolder);
+  }
 }
 
 export async function checkForQtInstallationsUpdates() {

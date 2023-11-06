@@ -3,16 +3,16 @@
 
 import * as vscode from 'vscode';
 
+import * as qtregister from './register-qt-path';
+import * as qtpath from '../util/get-qt-paths';
+
 export async function selectQtPath() {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
   let qtInstallations = config.get('qtInstallations') as readonly string[];
 
   if (qtInstallations.length === 0) {
-    await vscode.commands
-      .executeCommand('vscode-qt-tools.registerQt')
-      .then(() => {
-        qtInstallations = config.get('qtInstallations') as readonly string[];
-      });
+    await qtregister.registerQt();
+    qtInstallations = config.get('qtInstallations') as readonly string[];
   }
 
   if (qtInstallations) {
@@ -24,12 +24,23 @@ export async function selectQtPath() {
             placeHolder: 'Select a default Qt installation'
           });
     if (selected) {
-      // Update the 'vscode-qt-tools.selectedQtPath' configuration with the selected option
-      void config.update(
-        'selectedQtPath',
-        selected,
-        vscode.ConfigurationTarget.Workspace
-      );
+      const qtRootDir = qtpath.qtRootByQtInstallation(selected);
+      await Promise.all([
+        config.update(
+          'selectedQtPath',
+          selected,
+          vscode.ConfigurationTarget.Workspace
+        ),
+        qtpath
+          .locateNinjaExecutable(qtRootDir)
+          .then((ninjaExePath) =>
+            config.update(
+              'cmake.configureSettings.CMAKE_MAKE_PROGRAM',
+              ninjaExePath,
+              vscode.ConfigurationTarget.Workspace
+            )
+          )
+      ]);
     }
   }
 }

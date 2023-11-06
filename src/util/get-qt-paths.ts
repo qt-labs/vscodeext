@@ -11,6 +11,7 @@ export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
+export const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 export const UserLocalDir = IsWindows
   ? process.env['LOCALAPPDATA']!
   : path.join(Home, '.local/share');
@@ -129,14 +130,52 @@ export function mangleQtInstallation(installation: string): string {
   return pathParts.slice(qtIdx).join('-');
 }
 
-export function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
-  // TODO: check if cmake exists in PATH already
-  return path.join(qtToolsDirByQtRootDir(qtRootDir), 'CMake_64', 'bin');
-}
+export async function locateNinjaExecutable(qtRootDir: string) {
+  const ninjaDirPath = path.join(qtToolsDirByQtRootDir(qtRootDir), 'Ninja');
+  const ninjaExePath = path.join(ninjaDirPath, NinjaFileName);
+  try {
+    await fs.access(ninjaExePath);
+    return ninjaExePath;
+  } catch (err) {
+    // Do nothing
+  }
 
-export function locateNinjaExecutableDirectoryPath(qtRootDir: string) {
-  // TODO: check if ninja exists in PATH already
-  return path.join(qtToolsDirByQtRootDir(qtRootDir), 'Ninja');
+  const vs2022dir = process.env['VS2022INSTALLDIR'];
+  if (vs2022dir) {
+    const vsNinjaExecutable = path.join(
+      vs2022dir,
+      'Common7',
+      'IDE',
+      'CommonExtensions',
+      'Microsoft',
+      'CMake',
+      'Ninja',
+      NinjaFileName
+    );
+    try {
+      await fs.access(vsNinjaExecutable);
+      return vsNinjaExecutable;
+    } catch (err) {
+      // Do nothing
+    }
+
+    const visualStudioAndroidNinjaExecutable = path.join(
+      vs2022dir,
+      'MSBuild',
+      'Google',
+      'Android',
+      'bin',
+      NinjaFileName
+    );
+    try {
+      await fs.access(visualStudioAndroidNinjaExecutable);
+      return visualStudioAndroidNinjaExecutable;
+    } catch (err) {
+      // Do nothing
+    }
+  }
+
+  return ninjaExePath;
 }
 
 export async function locateMingwBinDirPath(qtRootDir: string) {
@@ -191,4 +230,73 @@ export async function locateCMakeQtToolchainFile(installation: string) {
     }
   }
   return cmakeQtToolchainFilePath;
+}
+
+export function qtRootByQtInstallation(installation: string) {
+  return path.normalize(path.join(installation, '..', '..'));
+}
+
+export function envPathForQtInstallationWithNinja(
+  installation: string,
+  ninjaExePath: string
+) {
+  const qtRootDir = qtRootByQtInstallation(installation);
+  const cmakeDirPath = locateCMakeExecutableDirectoryPath(qtRootDir);
+  const ninjaDirPath = path.dirname(ninjaExePath);
+  const installationBinDir = path.join(installation, 'bin');
+  const QtPathAddition = [
+    installation,
+    installationBinDir,
+    '${env:PATH}',
+    ninjaDirPath,
+    cmakeDirPath
+  ].join(path.delimiter);
+  return QtPathAddition;
+}
+
+export async function locateJomExecutable(qtRootDir: string) {
+  const qtToolsDir = qtToolsDirByQtRootDir(qtRootDir);
+  const jomDirPath = path.join(qtToolsDir, 'QtCreator', 'bin', 'jom');
+  const jomFileName = 'jom' + PlatformExecutableExtension;
+  const jomExePath = path.join(jomDirPath, jomFileName);
+  try {
+    await fs.access(jomExePath);
+    return jomExePath;
+  } catch (err) {
+    // Do nothing
+  }
+  try {
+    await fs.access(jomExePath);
+    return jomExePath;
+  } catch (err) {
+    return '';
+  }
+}
+
+export async function envPathForQtInstallation(installation: string) {
+  const qtRootDir = qtRootByQtInstallation(installation);
+  const promiseNinjaPath = locateNinjaExecutable(qtRootDir);
+  const promiseJomPath = locateJomExecutable(qtRootDir);
+  const isMingwInstallation = path.basename(installation).startsWith('mingw');
+  const promiseMingwPath = isMingwInstallation
+    ? locateMingwBinDirPath(qtRootDir)
+    : undefined;
+  let qtPathEnv = envPathForQtInstallationWithNinja(
+    installation,
+    await promiseNinjaPath
+  );
+  const jomExePath = await promiseJomPath;
+  if (jomExePath) {
+    qtPathEnv = `${jomExePath}${path.delimiter}${qtPathEnv}`;
+  }
+  if (isMingwInstallation) {
+    const mingwPath = await promiseMingwPath!;
+    qtPathEnv = `${mingwPath}${path.delimiter}${qtPathEnv}`;
+  }
+  return qtPathEnv;
+}
+
+export function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
+  // TODO: check if cmake exists in PATH already
+  return path.join(qtToolsDirByQtRootDir(qtRootDir), 'CMake_64', 'bin');
 }

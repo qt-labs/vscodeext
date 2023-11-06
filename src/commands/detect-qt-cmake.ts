@@ -30,15 +30,14 @@ async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
   const promiseCmakeQtToolchainPath =
     qtpath.locateCMakeQtToolchainFile(installation);
   const qtRootDir = path.normalize(path.join(installation, '..', '..'));
+  const promiseNinjaExecutable = qtpath.locateNinjaExecutable(qtRootDir);
   const cmakeDirPath = qtpath.locateCMakeExecutableDirectoryPath(qtRootDir);
-  const ninjaDirPath = qtpath.locateNinjaExecutableDirectoryPath(qtRootDir);
   const promiseMingwPath = qtpath.locateMingwBinDirPath(qtRootDir);
   const toolchain = path.basename(installation);
   const installationBinDir = path.join(installation, 'bin');
-  const ninjaFileName = 'ninja' + qtpath.PlatformExecutableExtension;
-  const ninjaExePath = path.join(ninjaDirPath, ninjaFileName);
   const cmakePrefixPath = path.join(installation, 'lib', 'cmake');
-
+  const ninjaExePath = await promiseNinjaExecutable;
+  const ninjaDirPath = path.dirname(ninjaExePath);
   let newKit: cmake.Kit = {
     name: qtpath.mangleQtInstallation(installation),
     environmentVariables: {
