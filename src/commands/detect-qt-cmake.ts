@@ -186,7 +186,8 @@ async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
 async function cmakeKitsFromQtInstallations(qtInstallations: string[]) {
   const kits = [];
   for (const path of qtInstallations)
-    for await (const kit of generateCMakeKitsOfQtInstallationPath(path)) kits.push(kit);
+    for await (const kit of generateCMakeKitsOfQtInstallationPath(path))
+      kits.push(kit);
   return kits;
 }
 
