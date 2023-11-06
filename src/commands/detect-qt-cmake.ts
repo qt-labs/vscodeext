@@ -113,7 +113,7 @@ async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
         installation,
         installationBinDir,
         ninjaDirPath,
-        '${env: PATH}',
+        '${env:PATH}',
         cmakeDirPath
       ].join(path.delimiter)
     },
