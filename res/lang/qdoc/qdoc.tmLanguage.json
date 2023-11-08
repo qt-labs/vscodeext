@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "QDoc",
+  "patterns": [
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#command"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.qdoc",
+          "match": "\\b(if|while|for|return)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.qdoc",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.qdoc",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "command": {
+      "match": "(\\\\)[a-zA-Z0-9]+",
+      "name": "keyword.control.qdoc"
+    }
+  },
+  "scopeName": "source.qdoc"
+}

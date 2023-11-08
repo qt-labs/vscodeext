@@ -56,13 +56,24 @@
       },
       {
         "id": "qdoc",
+        "configuration": "./res/lang/qdoc/language-configuration.json",
         "extensions": [
           ".qdoc",
-          ".qdocconf"
+          ".qdocconf",
+          ".qdocinc"
         ],
         "aliases": [
-          "Qdoc"
+          "Qdoc",
+          "QDoc",
+          "qdoc"
         ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qdoc",
+        "scopeName": "source.qdoc",
+        "path": "./res/lang/qdoc/qdoc.tmLanguage.json"
       }
     ],
     "configuration": {
