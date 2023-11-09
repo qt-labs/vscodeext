@@ -88,7 +88,7 @@ export async function pathOfDirectoryIfExists(
   }
 }
 
-export function qtToolsDirByQtRootDir(qtRootDir: string) {
+export function qtToolsDirByQtRootDir(qtRootDir: string): string {
   return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 

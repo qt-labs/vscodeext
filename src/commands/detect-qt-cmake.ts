@@ -1,6 +1,7 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 
@@ -29,25 +30,23 @@ function initCMakePrefixPathFunctions(context: vscode.ExtensionContext) {
 async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
   const promiseCmakeQtToolchainPath =
     qtpath.locateCMakeQtToolchainFile(installation);
-  const qtRootDir = path.normalize(path.join(installation, '..', '..'));
-  const promiseNinjaExecutable = qtpath.locateNinjaExecutable(qtRootDir);
-  const cmakeDirPath = qtpath.locateCMakeExecutableDirectoryPath(qtRootDir);
-  const promiseMingwPath = qtpath.locateMingwBinDirPath(qtRootDir);
   const toolchain = path.basename(installation);
-  const installationBinDir = path.join(installation, 'bin');
   const cmakePrefixPath = path.join(installation, 'lib', 'cmake');
+
+  const qtRootDir = qtpath.qtRootByQtInstallation(installation);
+  const promiseMingwPath = qtpath.locateMingwBinDirPath(qtRootDir);
+  const promiseNinjaExecutable = qtpath.locateNinjaExecutable(qtRootDir);
   const ninjaExePath = await promiseNinjaExecutable;
-  const ninjaDirPath = path.dirname(ninjaExePath);
+
+  const qtPathEnv = qtpath.envPathForQtInstallationWithNinja(
+    installation,
+    ninjaExePath
+  );
+
   let newKit: cmake.Kit = {
     name: qtpath.mangleQtInstallation(installation),
     environmentVariables: {
-      PATH: [
-        installation,
-        installationBinDir,
-        ninjaDirPath,
-        '${env:PATH}',
-        cmakeDirPath
-      ].join(path.delimiter)
+      PATH: qtPathEnv
     },
     toolchainFile: await promiseCmakeQtToolchainPath,
     isTrusted: true,
@@ -73,7 +72,7 @@ async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
       yield* cmake.generateMsvcKits(newKit);
       return;
     } else if (platform.startsWith('mingw')) {
-      platform = 'win32';
+      platform = os.platform();
       const mingwDirPath = await promiseMingwPath;
       if (mingwDirPath) {
         newKit.environmentVariables.PATH = [
@@ -111,12 +110,6 @@ async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
       };
     }
   }
-  // newKit.preferredGenerator = {
-  //   ...newKit.preferredGenerator,
-  //   ...{
-  //     platform: platform
-  //   }
-  // };
 
   yield newKit;
 }

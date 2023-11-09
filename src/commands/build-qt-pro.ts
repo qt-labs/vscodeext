@@ -7,10 +7,11 @@ import * as child_process from 'child_process';
 import * as qtpath from '../util/get-qt-paths';
 import * as qtregister from './register-qt-path';
 
-/**
- * This file contains the implementation of the 'vscode-qt-tools.loadAndBuildQtProject' command.
- * The command is registered in the 'src/extension.ts' file and moved here for better modularity.
- */
+const QMakeOutputChannel = vscode.window.createOutputChannel('QMake/Build');
+
+function appendBuildConsole(data: string) {
+  QMakeOutputChannel.appendLine(data);
+}
 
 async function selectProFileToBuild() {
   // Get list of all .pro files in the workspace folders recursively
@@ -21,6 +22,11 @@ async function selectProFileToBuild() {
     );
     return;
   }
+
+  if (proFiles.length === 1) {
+    return qtpath.IsWindows ? proFiles[0].slice(1) : proFiles[0].toString();
+  }
+
   // Show a quick pick dialog with the .pro files as options
   const selectedProFile = await vscode.window.showQuickPick(
     proFiles.map((uri) => {
@@ -33,75 +39,67 @@ async function selectProFileToBuild() {
 
 async function configureQMakeBuild(selectedQtPath: string) {
   const promiseProFileToBuild = selectProFileToBuild();
-  // Create an output channel for QMake output
-  const outputChannel = vscode.window.createOutputChannel('QMake/Build');
+  const promisePathEnv = qtpath.envPathForQtInstallation(selectedQtPath);
+
   try {
-    outputChannel.show();
+    const qtRootDir = qtpath.qtRootByQtInstallation(selectedQtPath);
+    const promiseJomExecutable = qtpath.locateJomExecutable(qtRootDir);
+
+    QMakeOutputChannel.clear();
+    QMakeOutputChannel.show();
+
     // Show a quick pick dialog with the .pro files as options
     const selectedProFile = await promiseProFileToBuild;
     if (!selectedProFile) {
-      outputChannel.appendLine(
+      appendBuildConsole(
         'Unable to locate Qt project .pro files. Consider using CMake build instead.'
       );
       return;
     }
 
-    // Set up a configure step with the default Qt version
-    const configureCommand = path.join(
-      selectedQtPath || '',
-      'bin',
-      `qmake ${selectedProFile}`
-    );
-
     // Execute the configure step for the selected .pro file and show the output in the output window
-    const childProcess = child_process.exec(configureCommand, {
+    const selectedQtBin = path.join(selectedQtPath || '', 'bin');
+    const qmakeExePath =
+      path.join(selectedQtBin, 'qmake') + qtpath.PlatformExecutableExtension;
+    const configureCommand = qmakeExePath;
+
+    const env = process.env;
+    env.PATH = await promisePathEnv;
+    const options: child_process.ExecOptions = {
       cwd: path.dirname(selectedProFile),
-      env: process.env
-    });
+      env: env
+    };
+    const childProcess = child_process.exec(configureCommand, options);
+    childProcess.stdout?.on('data', appendBuildConsole);
+    childProcess.stderr?.on('data', appendBuildConsole);
+
+    const jomExePath = await promiseJomExecutable;
     childProcess.on('close', (code: number) => {
       if (code === 0) {
         // The configure step was successful, show the output in the output window
-        outputChannel.appendLine('Configure step successful.');
+        appendBuildConsole('Configure step successful.');
 
         // Set up a build step that works with that Qt version
-        let buildCommand;
-        if (qtpath.IsWindows) {
-          buildCommand = 'jom';
-        } else {
-          buildCommand = 'make';
-        }
-        const buildProcess = child_process.exec(buildCommand, {
-          cwd: path.dirname(selectedProFile),
-          env: process.env
-        });
+        const buildCommand = qtpath.IsWindows ? jomExePath : 'make';
+        const buildProcess = child_process.exec(buildCommand, options);
         buildProcess.on('close', (code: number) => {
           if (code === 0) {
             // The build step was successful, show the output in the output window
-            outputChannel.appendLine('Build step successful.');
+            appendBuildConsole('Build step successful.');
           } else {
             // The build step failed, show the output in the output window
-            outputChannel.appendLine('Build step failed.');
+            appendBuildConsole('Build step failed.');
           }
         });
-        buildProcess.stdout?.on('data', (data: string) => {
-          outputChannel.appendLine(data);
-        });
-        buildProcess.stderr?.on('data', (data: string) => {
-          outputChannel.appendLine(data);
-        });
+        buildProcess.stdout?.on('data', appendBuildConsole);
+        buildProcess.stderr?.on('data', appendBuildConsole);
       } else {
         // The configure step failed, show the output in the output window
-        outputChannel.appendLine('Configure step failed.');
+        appendBuildConsole('Configure step failed.');
       }
     });
-    childProcess.stdout?.on('data', (data: string) => {
-      outputChannel.appendLine(data);
-    });
-    childProcess.stderr?.on('data', (data: string) => {
-      outputChannel.appendLine(data);
-    });
   } catch (error) {
-    outputChannel.appendLine(error?.toString() ?? 'An error occurred.');
+    appendBuildConsole(error?.toString() ?? 'An error occurred.');
   }
 }
 
@@ -114,12 +112,12 @@ async function loadAndBuildQtProject() {
   // Get the current configuration
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
   let selectedQtPath = config.get('selectedQtPath') as string;
-  if (selectedQtPath === undefined) {
+  if (!selectedQtPath) {
     // Call 'vscode-qt-tools.selectQtPath' command to ensure a default Qt version is set
     await vscode.commands.executeCommand('vscode-qt-tools.selectQtPath');
     // Get the current configuration
     selectedQtPath = config.get('selectedQtPath') as string;
-    if (selectedQtPath === undefined) {
+    if (!selectedQtPath) {
       void vscode.window.showWarningMessage(
         'Unable to locate Qt. Please, use "' +
           qtregister.getRegisterQtCommandTitle() +
