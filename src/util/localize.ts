@@ -3,8 +3,15 @@
 
 import * as vscode from 'vscode';
 
-export function local(key: string): string {
-  return vscode.l10n.t(key);
+export function local(
+  message: string,
+  ...args: (string | number | boolean)[]
+): string {
+  return vscode.l10n.t(message, ...args);
+}
+
+export function warn(message: string, ...args: (string | number | boolean)[]) {
+  void vscode.window.showWarningMessage(local(message, ...args));
 }
 
 export function getCommandTitle(

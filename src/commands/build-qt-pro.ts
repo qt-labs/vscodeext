@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
-import * as vscode from 'vscode';
 import * as child_process from 'child_process';
+
+import * as vscode from 'vscode';
+
 import * as qtpath from '../util/get-qt-paths';
-import * as qtregister from './register-qt-path';
+import { getSelectedQtInstallationPath } from './select-qt-path';
 
 const QMakeOutputChannel = vscode.window.createOutputChannel('QMake/Build');
 
@@ -109,22 +111,7 @@ async function configureQMakeBuild(selectedQtPath: string) {
  * @returns The disposable for the command.
  */
 async function loadAndBuildQtProject() {
-  // Get the current configuration
-  const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  let selectedQtPath = config.get('selectedQtPath') as string;
-  if (!selectedQtPath) {
-    // Call 'vscode-qt-tools.selectQtPath' command to ensure a default Qt version is set
-    await vscode.commands.executeCommand('vscode-qt-tools.selectQtPath');
-    // Get the current configuration
-    selectedQtPath = config.get('selectedQtPath') as string;
-    if (!selectedQtPath) {
-      void vscode.window.showWarningMessage(
-        'Unable to locate Qt. Please, use "' +
-          qtregister.getRegisterQtCommandTitle() +
-          '" command to locate your Qt installation and try again.'
-      );
-    }
-  }
+  const selectedQtPath = await getSelectedQtInstallationPath();
   if (selectedQtPath) {
     await configureQMakeBuild(selectedQtPath);
   }

@@ -15,6 +15,7 @@ import { registerLoadAndBuildQtProjectCommand } from './commands/build-qt-pro';
 import { registerProFile } from './commands/file-ext-pro';
 import { registerQrcFile } from './commands/file-ext-qrc';
 import { registerQdocFile } from './commands/file-ext-qdoc';
+import { registerUiFile } from './commands/file-ext-ui';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -38,6 +39,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Add a new command that provides some functionality when a .qdoc or .qdocconf file is opened
   const qdocFileDisposable = registerQdocFile();
+
+  // Add a new command that provides some functionality when a .ui file is opened
+  registerUiFile(context);
 
   // Register the 'vscode-qt-tools.selectQtPath' command using the imported function
   registerPickSelectedQtPathCommand(context);

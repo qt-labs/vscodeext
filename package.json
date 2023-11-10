@@ -52,7 +52,6 @@
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
-    "localizations": [],
     "commands": [
       {
         "command": "vscode-qt-tools.registerQt",
@@ -65,6 +64,15 @@
       {
         "command": "vscode-qt-tools.loadAndBuildQtProject",
         "title": "Qt: Load and Build Qt Project"
+      },
+      {
+        "command": "vscode-qt-tools.openUiFileInQtDesigner",
+        "title": "%command.qt.ui.openUiFileInQtDesigner.title%",
+        "category": "UI",
+        "icon": {
+          "dark": "res/icons/qt.svg",
+          "light": "res/icons/qt.svg"
+        }
       }
     ],
     "languages": [
@@ -100,8 +108,48 @@
           "QDoc",
           "qdoc"
         ]
+      },
+      {
+        "id": "ui",
+        "extensions": [
+          ".ui"
+        ],
+        "aliases": [
+          "Ui"
+        ],
+        "icon": {
+          "light": "res/icons/qt.svg",
+          "dark": "res/icons/qt.svg"
+        }
       }
     ],
+    "localizations": [],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "vscode-qt-tools.openUiFileInQtDesigner",
+          "when": "resourceLangId == ui"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "vscode-qt-tools.openUiFileInQtDesigner",
+          "when": "resourceLangId == ui"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "vscode-qt-tools.openUiFileInQtDesigner",
+          "when": "resourceLangId == ui"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "vscode-qt-tools.openUiFileInQtDesigner",
+          "when": "resourceLangId == ui"
+        }
+      ]
+    },
     "grammars": [
       {
         "language": "qdoc",

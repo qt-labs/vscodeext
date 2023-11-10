@@ -1,15 +1,21 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as child_process from 'child_process';
 import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
-
+import * as fsutil from './fs';
 import * as vscode from 'vscode';
 
 export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
+export const IsMacOS = process.platform === 'darwin';
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
+export const QmakeFileName = 'qmake' + PlatformExecutableExtension;
+export const DesignerExeName = IsMacOS
+  ? 'Designer'
+  : 'designer' + PlatformExecutableExtension;
 export const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 export const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 export const UserLocalDir = IsWindows
@@ -92,6 +98,10 @@ export function qtToolsDirByQtRootDir(qtRootDir: string): string {
   return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 
+export function qtToolsDirByQtInstallationDir(qtInstallation: string): string {
+  return qtToolsDirByQtRootDir(qtRootByQtInstallation(qtInstallation));
+}
+
 export async function findFilesInWorkspace(
   filterExtension: string
 ): Promise<string[]> {
@@ -128,6 +138,17 @@ export function mangleQtInstallation(installation: string): string {
     pathParts.findIndex((s) => s.toLowerCase() == 'qt')
   );
   return pathParts.slice(qtIdx).join('-');
+}
+
+export async function locateQmakeExeFilePath(selectedQtPath: string) {
+  const bin = path.join(selectedQtPath, 'bin');
+  const qmakeExePath = path.join(bin, QmakeFileName);
+  return (
+    (await fsutil.existing(qmakeExePath)) ||
+    (await fsutil.existing(QmakeFileName)) ||
+    (await fsutil.existing(path.join(bin, 'qmake'))) ||
+    (await fsutil.existing('qmake'))
+  );
 }
 
 export async function locateNinjaExecutable(qtRootDir: string) {
@@ -309,4 +330,74 @@ export async function envPathForQtInstallation(installation: string) {
 export function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
   // TODO: check if cmake exists in PATH already
   return path.join(qtToolsDirByQtRootDir(qtRootDir), 'CMake_64', 'bin');
+}
+
+export async function queryHostBinDirPath(
+  selectedQtPath: string
+): Promise<string> {
+  const qmakeExePath = await locateQmakeExeFilePath(selectedQtPath);
+  const childProcess = child_process.exec(
+    qmakeExePath + ' -query QT_HOST_BINS'
+  );
+  const promiseFirstLineOfOutput = new Promise<string>((resolve, reject) => {
+    childProcess.stdout?.on('data', (data: string) => {
+      resolve(data.toString().trim());
+    });
+    childProcess.stderr?.on('data', (data: string) => {
+      reject(data.toString().trim());
+    });
+  });
+  const promiseProcessClose = new Promise<string>((resolve, reject) => {
+    childProcess.on('close', () => {
+      resolve('');
+    });
+    childProcess.on('error', (err) => {
+      reject(err);
+    });
+  });
+  const hostBinDir = await Promise.race([
+    promiseFirstLineOfOutput,
+    promiseProcessClose
+  ]);
+  return hostBinDir;
+}
+
+export async function locateQtDesignerExePath(selectedQtPath: string) {
+  let designerExePath = IsMacOS
+    ? path.join(
+        selectedQtPath,
+        'bin',
+        'Designer.app',
+        'Contents',
+        'MacOS',
+        DesignerExeName
+      )
+    : path.join(selectedQtPath, 'bin', DesignerExeName);
+  try {
+    await fs.access(designerExePath);
+    return designerExePath;
+  } catch (err) {
+    // Do nothing
+  }
+
+  const hostBinDir = await queryHostBinDirPath(selectedQtPath);
+  designerExePath = path.join(hostBinDir, DesignerExeName);
+  try {
+    await fs.access(designerExePath);
+    return designerExePath;
+  } catch (err) {
+    // Do nothing
+  }
+
+  if (!IsWindows) {
+    designerExePath = '/usr/bin/designer';
+    try {
+      await fs.access(designerExePath);
+      return designerExePath;
+    } catch (err) {
+      // Do nothing
+    }
+  }
+
+  return DesignerExeName;
 }

@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 
+import * as local from '../util/localize';
 import * as qtregister from './register-qt-path';
 import * as qtpath from '../util/get-qt-paths';
 
@@ -46,9 +47,8 @@ export async function selectQtPath() {
 }
 
 function onQtInstallationsConfigUpdate(e: vscode.ConfigurationChangeEvent) {
-  // When the configuration changes, execute the 'vscode-qt-tools.selectQtPath' command
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
-    void vscode.commands.executeCommand('vscode-qt-tools.selectQtPath');
+    void selectQtPath();
   }
 }
 
@@ -62,4 +62,21 @@ export function registerPickSelectedQtPathCommand(
     ),
     vscode.workspace.onDidChangeConfiguration(onQtInstallationsConfigUpdate)
   );
+}
+
+export async function getSelectedQtInstallationPath(): Promise<string> {
+  const config = vscode.workspace.getConfiguration('vscode-qt-tools');
+  let selectedQtPath = config.get('selectedQtPath') as string;
+  if (!selectedQtPath) {
+    await selectQtPath();
+    // Get the current configuration
+    selectedQtPath = config.get('selectedQtPath') as string;
+    if (!selectedQtPath) {
+      local.warn(
+        'Unable to locate Qt. Please, use "{0}" command to locate your Qt installation and try again.',
+        qtregister.getRegisterQtCommandTitle()
+      );
+    }
+  }
+  return selectedQtPath;
 }

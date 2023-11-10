@@ -4,5 +4,6 @@
   "package.author": "",
   "package.version": "",
   "package.license": "",
-  "command.vscode-qt-tools.registerQt.title": "Qt: Register Qt Installation"
+  "command.vscode-qt-tools.registerQt.title": "Qt: Register Qt Installation",
+  "command.qt.ui.openUiFileInQtDesigner.title": "Qt: Open UI File in Qt Designer"
 }
