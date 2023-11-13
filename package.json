@@ -10,7 +10,34 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "workspaceContains:*.pro",
+    "workspaceContains:*.qrc",
+    "workspaceContains:*.qdoc",
+    "onCommand:cmake.activeFolderName",
+    "onCommand:cmake.activeFolderPath",
+    "onCommand:cmake.activeConfigurePresetName",
+    "onCommand:cmake.activeBuildPresetName",
+    "onCommand:cmake.activeTestPresetName",
+    "onCommand:cmake.buildTargetName",
+    "onCommand:cmake.launchTargetPath",
+    "onCommand:cmake.launchTargetDirectory",
+    "onCommand:cmake.launchTargetFilename",
+    "onCommand:cmake.getLaunchTargetPath",
+    "onCommand:cmake.getLaunchTargetDirectory",
+    "onCommand:cmake.getLaunchTargetFilename",
+    "onCommand:cmake.buildType",
+    "onCommand:cmake.buildDirectory",
+    "onCommand:cmake.executableTargets",
+    "onCommand:cmake.buildKit",
+    "onCommand:cmake.tasksBuildCommand",
+    "onDebugResolve:cmake",
+    "onDebugInitialConfigurations",
+    "onDebugDynamicConfigurations:cmake",
+    "workspaceContains:CMakeLists.txt",
+    "workspaceContains:*/CMakeLists.txt",
+    "workspaceContains:*/*/CMakeLists.txt",
+    "workspaceContains:*/*/*/CMakeLists.txt",
+    "workspaceContains:.vscode/cmake-kits.json"
   ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
@@ -24,10 +51,6 @@
       {
         "command": "vscode-qt-tools.selectQtPath",
         "title": "Qt: Pick Default Qt Installation"
-      },
-      {
-        "command": "vscode-qt-tools.qrcSupport",
-        "title": "Qt: Provide QRC Support"
       },
       {
         "command": "vscode-qt-tools.loadAndBuildQtProject",

@@ -18,7 +18,10 @@ import { registerQdocFile } from './commands/file-ext-qdoc';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+  const promiseActivateCMake = vscode.extensions
+    .getExtension('ms-vscode.cmake-tools')
+    ?.activate();
   const activateStart = performance.now();
 
   // Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -63,6 +66,8 @@ export function activate(context: vscode.ExtensionContext) {
   console.log(
     `Done activating plugin ${context.extension.id}, took ${activationTime}ms`
   );
+
+  await promiseActivateCMake;
 }
 
 // This method is called when your extension is deactivated
