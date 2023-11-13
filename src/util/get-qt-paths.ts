@@ -6,11 +6,12 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-export const home = os.homedir();
-export const userLocalDir =
-  process.platform === 'win32'
-    ? process.env['LOCALAPPDATA']!
-    : path.join(home, '.local/share');
+export const Home = os.homedir();
+export const IsWindows = process.platform === 'win32';
+export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
+export const UserLocalDir = IsWindows
+  ? process.env['LOCALAPPDATA']!
+  : path.join(Home, '.local/share');
 
 export function matchesVersionPattern(path: string): boolean {
   // Check if the first character of the path is a digit (0-9)
@@ -84,7 +85,7 @@ export async function pathOfDirectoryIfExists(
   }
 }
 
-export function qtToolsDir(qtRootDir: string) {
+export function qtToolsDirByQtRootDir(qtRootDir: string) {
   return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 

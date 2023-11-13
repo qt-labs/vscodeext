@@ -65,7 +65,7 @@ async function configureQMakeBuild(selectedQtPath: string) {
 
         // Set up a build step that works with that Qt version
         let buildCommand;
-        if (process.platform === 'win32') {
+        if (qtpath.IsWindows) {
           buildCommand = 'jom';
         } else {
           buildCommand = 'make';

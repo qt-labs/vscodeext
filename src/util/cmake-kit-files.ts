@@ -11,7 +11,7 @@ import * as versions from '../util/versions';
 
 export const CMakeDefaultGenerator = 'Ninja Multi-Config';
 
-export const CMakeToolsDir = path.join(qtpath.userLocalDir, 'CMakeTools');
+export const CMakeToolsDir = path.join(qtpath.UserLocalDir, 'CMakeTools');
 // CMake CMAKE_KITS_FILEPATH var that store json config file path with CMake detected kits enumerated there
 export const CMAKE_KITS_FILEPATH = path.join(
   CMakeToolsDir,
