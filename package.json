@@ -1,8 +1,17 @@
 {
-  "name": "vscode-qt-tools",
+  "name": "qt",
   "displayName": "Qt",
   "description": "Qt Official Support",
   "version": "0.0.1",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://codereview.qt-project.org/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
   "engines": {
     "vscode": "^1.78.0"
   },
@@ -133,8 +142,11 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "npm run prettier && npx eslint . --fix",
-    "test": "node ./out/test/runTest.js",
+    "test": "echo \"node ./out/test/runTest.js\"",
+    "gitgui": "git gc && git gui",
     "update": "( git pull --rebase --autostash origin dev ) || git gui",
+    "rebase": "git fetch && git -c sequence.editor=\"code --wait\" rebase -i --autostash origin/dev",
+    "review": "npm run rebase && npm i && npm run pretest && npm run test && npm run gitgui && git push origin HEAD:refs/for/dev",
     "prettier": "prettier --write \"**/*.{js,ts,json}\""
   },
   "devDependencies": {
