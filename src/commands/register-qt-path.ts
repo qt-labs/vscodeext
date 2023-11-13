@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+
 import * as qtpath from '../util/get-qt-paths';
+import * as local from '../util/localize';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
-const RegisterQtCommandTitle: string = 'Qt: Register Qt Installation';
+let RegisterQtCommandTitle: string = '';
 
 export function getRegisterQtCommandTitle(): string {
   return RegisterQtCommandTitle;
@@ -86,9 +88,9 @@ export async function checkForQtInstallationsUpdates() {
 }
 
 // Register the 'vscode-qt-tools.registerQt' command
-export function registerQtCommand() {
-  return vscode.commands.registerCommand(
-    'vscode-qt-tools.registerQt',
-    registerQt
+export function registerQtCommand(context: vscode.ExtensionContext) {
+  RegisterQtCommandTitle = local.getCommandTitle(context, RegisterQtCommandId);
+  context.subscriptions.push(
+    vscode.commands.registerCommand(RegisterQtCommandId, registerQt)
   );
 }
