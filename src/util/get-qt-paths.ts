@@ -213,23 +213,33 @@ export async function locateCMakeQtToolchainFile(installation: string) {
   );
   try {
     await fs.access(cmakeQtToolchainFilePath);
+    return cmakeQtToolchainFilePath;
   } catch (err) {
-    cmakeQtToolchainFilePath = path.join(
-      libCMakePath,
-      'Qt5',
-      QtToolchainCMakeFileName
-    );
-    try {
-      await fs.access(cmakeQtToolchainFilePath);
-    } catch (err) {
-      cmakeQtToolchainFilePath = path.join(
-        libCMakePath,
-        'Qt',
-        QtToolchainCMakeFileName
-      );
-    }
+    // Do nothing
   }
-  return cmakeQtToolchainFilePath;
+  cmakeQtToolchainFilePath = path.join(
+    libCMakePath,
+    'Qt5',
+    QtToolchainCMakeFileName
+  );
+  try {
+    await fs.access(cmakeQtToolchainFilePath);
+    return cmakeQtToolchainFilePath;
+  } catch (err) {
+    // Do nothing
+  }
+  cmakeQtToolchainFilePath = path.join(
+    libCMakePath,
+    'Qt',
+    QtToolchainCMakeFileName
+  );
+  try {
+    await fs.access(cmakeQtToolchainFilePath);
+    return cmakeQtToolchainFilePath;
+  } catch (err) {
+    // Do nothing
+  }
+  return '';
 }
 
 export function qtRootByQtInstallation(installation: string) {

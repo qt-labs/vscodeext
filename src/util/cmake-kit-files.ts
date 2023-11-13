@@ -146,6 +146,7 @@ export const MapMsvcPlatformToQt: { [name: string]: string } = {
 };
 
 const MsvcInfoRegexp = /msvc(\d\d\d\d)_(.+)/; // msvcYEAR_ARCH
+const MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
 
 export function getCMakeGenerator() {
   const cmakeConfig = vscode.workspace.getConfiguration('cmake');
@@ -153,11 +154,12 @@ export function getCMakeGenerator() {
   return generator ? generator : CMakeDefaultGenerator;
 }
 
-export async function* generateMsvcKits(newKit: Kit) {
-  const promiseCMakeKits = loadCMakeKitsFileJSON();
-  const msvcInfoMatch = newKit.visualStudio?.match(MsvcInfoRegexp);
+export function* generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
+  const msvcInfoMatch =
+    newKit.visualStudio?.match(MsvcInfoRegexp) ||
+    newKit.visualStudio?.match(MsvcInfoNoArchRegexp);
   const vsYear = msvcInfoMatch?.at(1) as string;
-  const architecture = msvcInfoMatch?.at(2) as string;
+  const architecture = (msvcInfoMatch?.at(2) as string) || '32';
   newKit.preferredGenerator = {
     ...newKit.preferredGenerator,
     ...{
@@ -165,14 +167,14 @@ export async function* generateMsvcKits(newKit: Kit) {
       // toolset: 'host='+SupportedArchitectureMSVC
     }
   };
-  newKit = {
-    ...newKit,
-    ...{
-      visualStudioArchitecture: architecture.toUpperCase()
-    }
-  };
-
-  const loadedCMakeKits = await promiseCMakeKits;
+  if (architecture) {
+    newKit = {
+      ...newKit,
+      ...{
+        visualStudioArchitecture: architecture.toUpperCase()
+      }
+    };
+  }
   const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
     const version = kit.name?.match(/ (\d\d\d\d) /)?.at(1) as string;
     const targetArchitecture =
