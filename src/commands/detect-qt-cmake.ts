@@ -12,7 +12,6 @@ import * as qtpath from '../util/get-qt-paths';
 // Define the command
 const DetectQtCMakeProjectCommand = 'vscode-qt-tools.detectQtCMakeProject';
 const SavedCMakePrefixPathKeyName = 'savedCMakePrefixPath';
-const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 
 type getSavedCMakePrefixPathFunctionType = () => string | undefined;
 let getSavedCMakePrefixPath: getSavedCMakePrefixPathFunctionType;
@@ -27,76 +26,13 @@ function initCMakePrefixPathFunctions(context: vscode.ExtensionContext) {
     context.workspaceState.update(SavedCMakePrefixPathKeyName, path);
 }
 
-function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
-  // TODO: check if cmake exists in PATH already
-  return path.join(qtpath.qtToolsDirByQtRootDir(qtRootDir), 'CMake_64', 'bin');
-}
-
-function locateNinjaExecutableDirectoryPath(qtRootDir: string) {
-  // TODO: check if ninja exists in PATH already
-  return path.join(qtpath.qtToolsDirByQtRootDir(qtRootDir), 'Ninja');
-}
-
-async function locateMingwBinDirPath(qtRootDir: string) {
-  // TODO: check if g++ exists in PATH already
-  const qtToolsDir = qtpath.qtToolsDirByQtRootDir(qtRootDir);
-  const items = await fs.readdir(qtToolsDir, { withFileTypes: true });
-  const mingws = items.filter((item) =>
-    item.name.toLowerCase().startsWith('mingw')
-  );
-  const promiseMingwsWithBinDirs = mingws.map((item) =>
-    qtpath.pathOfDirectoryIfExists(path.join(qtToolsDir, item.name, 'bin'))
-  );
-  const mingwsWithBins = (await Promise.all(promiseMingwsWithBinDirs)).filter(
-    Boolean
-  ) as string[];
-  const mingwVersions: Map<number, string> = new Map(
-    mingwsWithBins.map((item) => {
-      const m = item.match(/mingw(\d+)_\d+/);
-      let v: number = 0;
-      if (m) v = parseInt(m[1], 10);
-      return [v, item];
-    })
-  );
-
-  const highestMingWVersion = Math.max(...mingwVersions.keys());
-  return mingwVersions.get(highestMingWVersion);
-}
-
-async function locateCMakeQtToolchainFile(installation: string) {
-  const libCMakePath = path.join(installation, 'lib', 'cmake');
-  let cmakeQtToolchainFilePath = path.join(
-    libCMakePath,
-    'Qt6',
-    QtToolchainCMakeFileName
-  );
-  try {
-    await fs.access(cmakeQtToolchainFilePath);
-  } catch (err) {
-    cmakeQtToolchainFilePath = path.join(
-      libCMakePath,
-      'Qt5',
-      QtToolchainCMakeFileName
-    );
-    try {
-      await fs.access(cmakeQtToolchainFilePath);
-    } catch (err) {
-      cmakeQtToolchainFilePath = path.join(
-        libCMakePath,
-        'Qt',
-        QtToolchainCMakeFileName
-      );
-    }
-  }
-  return cmakeQtToolchainFilePath;
-}
-
 async function* generateCMakeKitsOfQtInstallationPath(installation: string) {
-  const promiseCmakeQtToolchainPath = locateCMakeQtToolchainFile(installation);
+  const promiseCmakeQtToolchainPath =
+    qtpath.locateCMakeQtToolchainFile(installation);
   const qtRootDir = path.normalize(path.join(installation, '..', '..'));
-  const cmakeDirPath = locateCMakeExecutableDirectoryPath(qtRootDir);
-  const ninjaDirPath = locateNinjaExecutableDirectoryPath(qtRootDir);
-  const promiseMingwPath = locateMingwBinDirPath(qtRootDir);
+  const cmakeDirPath = qtpath.locateCMakeExecutableDirectoryPath(qtRootDir);
+  const ninjaDirPath = qtpath.locateNinjaExecutableDirectoryPath(qtRootDir);
+  const promiseMingwPath = qtpath.locateMingwBinDirPath(qtRootDir);
   const toolchain = path.basename(installation);
   const installationBinDir = path.join(installation, 'bin');
   const ninjaFileName = 'ninja' + qtpath.PlatformExecutableExtension;
