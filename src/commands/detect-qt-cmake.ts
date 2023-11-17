@@ -201,7 +201,7 @@ async function qtInstallationsUpdated() {
     const kitsJsonData = await cmakeKitsFromQtInstallations(qtInstallations);
     // Write the updated kitsJsonData back to the USER_KITS_FILEPATH file
     await fs.writeFile(
-      cmake.USER_KITS_FILEPATH,
+      cmake.QT_KITS_FILEPATH,
       JSON.stringify(kitsJsonData, null, 2)
     );
     await cmake.specifyCMakeKitsJsonFileForQt();

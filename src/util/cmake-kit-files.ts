@@ -17,16 +17,13 @@ export const CMAKE_KITS_FILEPATH = path.join(
   CMakeToolsDir,
   'cmake-tools-kits.json'
 );
-export const USER_KITS_FILEPATH = path.join(
-  CMakeToolsDir,
-  'Qt-CMake-toolskits.json'
-);
+export const QT_KITS_FILEPATH = path.join(CMakeToolsDir, 'qt-kits.json');
 
 export async function specifyCMakeKitsJsonFileForQt() {
   const config = vscode.workspace.getConfiguration('cmake');
   const additionalKits = config.get<string[]>('additionalKits', []) || [];
-  if (!additionalKits.includes(USER_KITS_FILEPATH)) {
-    additionalKits.push(USER_KITS_FILEPATH);
+  if (!additionalKits.includes(QT_KITS_FILEPATH)) {
+    additionalKits.push(QT_KITS_FILEPATH);
   }
   await config.update(
     'additionalKits',
