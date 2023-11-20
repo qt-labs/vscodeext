@@ -181,8 +181,9 @@ export function* generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
   }
   const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
     const version = kit.name?.match(/ (\d\d\d\d) /)?.at(1) as string;
-    const targetArchitecture =
-      MapMsvcPlatformToQt[kit.preferredGenerator?.platform as string];
+    const msvcTargetArch =
+      kit.preferredGenerator?.platform || kit.visualStudioArchitecture || '';
+    const targetArchitecture = MapMsvcPlatformToQt[msvcTargetArch];
     const isArchMatch = targetArchitecture == architecture;
     return isArchMatch && versions.compareVersions(version, vsYear) >= 0;
   });
@@ -190,22 +191,26 @@ export function* generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
     kit.name = qtpath.mangleQtInstallation(
       newKit.name + ' - ' + (kit.name || '')
     );
-    if (kit.preferredGenerator && newKit.preferredGenerator) {
-      kit.preferredGenerator.name = newKit.preferredGenerator?.name;
-      if (kit.preferredGenerator.name == 'Ninja Multi-Config') {
-        if (newKit.cmakeSettings) {
-          if (kit.cmakeSettings == undefined) {
-            kit.cmakeSettings = {};
+    if (kit.preferredGenerator) {
+      if (newKit.preferredGenerator) {
+        kit.preferredGenerator.name = newKit.preferredGenerator?.name;
+        if (kit.preferredGenerator.name == 'Ninja Multi-Config') {
+          if (newKit.cmakeSettings) {
+            if (kit.cmakeSettings == undefined) {
+              kit.cmakeSettings = {};
+            }
+            kit.cmakeSettings = {
+              ...newKit.cmakeSettings,
+              ...kit.cmakeSettings
+            };
           }
-          kit.cmakeSettings = {
-            ...newKit.cmakeSettings,
-            ...kit.cmakeSettings
-          };
+          // Generator 'Ninja Multi-Config' does not support platform & toolset specification
+          kit.preferredGenerator.platform = undefined;
+          kit.preferredGenerator.toolset = undefined;
         }
-        // Generator 'Ninja Multi-Config' does not support platform & toolset specification
-        kit.preferredGenerator.platform = undefined;
-        kit.preferredGenerator.toolset = undefined;
       }
+    } else {
+      kit.preferredGenerator = newKit.preferredGenerator;
     }
     kit.environmentVariables = newKit.environmentVariables;
     kit.toolchainFile = newKit.toolchainFile;
