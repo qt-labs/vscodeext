@@ -1,12 +1,14 @@
 {
   "files.exclude": {
     ".vs": true,
+    ".vscode-test": true,
     "node_modules": true,
     "out": true,
     "package-lock.json": true
   },
   "search.exclude": {
     ".vs": true,
+    ".vscode-test": true,
     "node_modules": true,
     "out": true,
     "package-lock.json": true
