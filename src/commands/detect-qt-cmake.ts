@@ -229,6 +229,6 @@ export function registerDetectQtCMakeProjectCommand(
       registerCMakeSupport
     ),
     vscode.workspace.onDidChangeConfiguration(checkConfigDeps),
-    cmake.watchCMakeKitsFileUpdates(() => void qtInstallationsUpdated())
+    cmake.watchCMakeKitFileUpdates(() => void qtInstallationsUpdated())
   );
 }

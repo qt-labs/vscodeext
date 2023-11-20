@@ -6,6 +6,7 @@ import * as path from 'path';
 
 import * as vscode from 'vscode';
 
+import { exists } from '../util/fs';
 import * as qtpath from './get-qt-paths';
 import * as versions from '../util/versions';
 
@@ -25,9 +26,12 @@ export async function specifyCMakeKitsJsonFileForQt() {
   if (!additionalKits.includes(QT_KITS_FILEPATH)) {
     additionalKits.push(QT_KITS_FILEPATH);
   }
+  const existingAdditionalKits = await Promise.all(
+    additionalKits.filter(async (path) => await exists(path))
+  );
   await config.update(
     'additionalKits',
-    additionalKits,
+    existingAdditionalKits,
     vscode.ConfigurationTarget.Global
   );
 }
@@ -220,10 +224,22 @@ export async function loadCMakeKitsFileJSON(): Promise<Kit[]> {
   return kits;
 }
 
-export function watchCMakeKitsFileUpdates(callback: (uri: vscode.Uri) => void) {
-  const watcher = vscode.workspace.createFileSystemWatcher(CMAKE_KITS_FILEPATH);
-  watcher.onDidChange(callback);
-  watcher.onDidCreate(callback);
-  watcher.onDidDelete(callback);
-  return watcher;
+export function watchCMakeKitFileUpdates(callback: (uri: vscode.Uri) => void) {
+  void exists(QT_KITS_FILEPATH).then((exists) => {
+    if (!exists) {
+      callback(vscode.Uri.file(QT_KITS_FILEPATH));
+    }
+  });
+  const cmakeKitsWatcher =
+    vscode.workspace.createFileSystemWatcher(CMAKE_KITS_FILEPATH);
+  cmakeKitsWatcher.onDidChange(callback);
+  cmakeKitsWatcher.onDidCreate(callback);
+  cmakeKitsWatcher.onDidDelete(callback);
+  const qtKitsWatcher =
+    vscode.workspace.createFileSystemWatcher(QT_KITS_FILEPATH);
+  qtKitsWatcher.onDidDelete(callback);
+  return new vscode.Disposable(() => {
+    cmakeKitsWatcher.dispose();
+    qtKitsWatcher.dispose();
+  });
 }
