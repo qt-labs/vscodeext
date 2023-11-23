@@ -4,7 +4,8 @@
   "description": "Qt Official Support",
   "version": "0.0.1",
   "homepage": "https://www.qt.io/",
-  "icon": "res/icon.png",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
   "repository": {
     "type": "git",
     "url": "https://codereview.qt-project.org/qt-labs/vscodeext"
@@ -147,7 +148,8 @@
     "update": "( git pull --rebase --autostash origin dev ) || npm run gitgui",
     "rebase": "git fetch && git -c sequence.editor=\"code --wait\" rebase -i --autostash origin/dev",
     "review": "npm run rebase && npm i && npm run pretest && npm run test && npm run gitgui && git push origin HEAD:refs/for/dev",
-    "prettier": "prettier --write \"**/*.{js,ts,json}\""
+    "prettier": "prettier --write \"**/*.{js,ts,json}\"",
+    "package": "vsce package --out out"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",

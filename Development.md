@@ -18,6 +18,15 @@ or
 - To trigger [Prettier](https://prettier.io/), [ESLint](https://eslint.org/) and
 build together, run `npm run pretest`
 
+## Package
+
+- To generate installable package, run `npm run package`. This will generate a
+`.vsix` file in the `out` folder.
+
+## Install
+
+- To install the package to vscode, run `code --install-extension <vsix file generated in the previous step>`
+
 ## Dependencies
 
 - [npm](https://www.npmjs.com/)
