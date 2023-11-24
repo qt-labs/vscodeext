@@ -7,7 +7,7 @@ import * as qtpath from '../util/get-qt-paths';
 import * as local from '../util/localize';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
-let RegisterQtCommandTitle: string = '';
+let RegisterQtCommandTitle = '';
 
 export function getRegisterQtCommandTitle(): string {
   return RegisterQtCommandTitle;

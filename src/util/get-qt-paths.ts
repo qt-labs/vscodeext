@@ -64,11 +64,11 @@ export async function findFilesInDir(
 
   async function walkDir(currentPath: string): Promise<void> {
     const files = await fs.readdir(currentPath, { withFileTypes: true });
-    for (let i = 0; i < files.length; i++) {
-      if (files[i].isDirectory()) {
-        await walkDir(files[i].path);
-      } else if (path.extname(files[i].path) === filterExtension) {
-        results.push(files[i].path);
+    for (const file of files) {
+      if (file.isDirectory()) {
+        await walkDir(file.path);
+      } else if (path.extname(file.path) === filterExtension) {
+        results.push(file.path);
       }
     }
   }
@@ -191,10 +191,10 @@ export async function locateMingwBinDirPath(qtRootDir: string) {
   const mingwsWithBins = (await Promise.all(promiseMingwsWithBinDirs)).filter(
     Boolean
   ) as string[];
-  const mingwVersions: Map<number, string> = new Map(
+  const mingwVersions = new Map<number, string>(
     mingwsWithBins.map((item) => {
       const m = item.match(/mingw(\d+)_\d+/);
-      let v: number = 0;
+      let v = 0;
       if (m) v = parseInt(m[1], 10);
       return [v, item];
     })

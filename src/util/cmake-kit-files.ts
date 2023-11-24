@@ -64,7 +64,7 @@ export interface Kit extends KitDetect {
   /**
    * Additional settings to pass to CMake
    */
-  cmakeSettings?: { [key: string]: string };
+  cmakeSettings?: Record<string, string>;
 
   /**
    * Additional environment variables for the kit
@@ -77,7 +77,7 @@ export interface Kit extends KitDetect {
    * The key `lang` is the language, as in `CMAKE_<lang>_COMPILER`.
    * The corresponding value is a path to a compiler for that language.
    */
-  compilers?: { [lang: string]: string };
+  compilers?: Record<string, string>;
 
   /**
    * The visual studio name. This corresponds to the installationId returned by `vswhere`.
