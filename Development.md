@@ -2,7 +2,7 @@
 
 ## Build
 
-- To install dependencies, run `npm install --save-dev`
+- To install dependencies, run `npm install`
 - To compile, run `npm run compile`
 
 ## Pre-Commit
