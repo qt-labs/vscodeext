@@ -147,8 +147,8 @@ async function cmakeKitsFromQtInstallations(qtInstallations: string[]) {
 
 async function qtInstallationsUpdated() {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  const qtInstallations = config.get('qtInstallations') as string[];
-  if (qtInstallations) {
+  const qtInstallations = config.get<string[]>('qtInstallations', []);
+  if (qtInstallations.length !== 0) {
     const kitsJsonData = await cmakeKitsFromQtInstallations(qtInstallations);
 
     // Create the parent directories if they don't exist
@@ -198,9 +198,10 @@ async function registerCMakeSupport() {
     if (selectedQtPath && qtInstallations.includes(selectedQtPath)) {
       // If the 'vscode-qt-tools.selectedQtPath' configuration changes, add its value to 'CMAKE_PREFIX_PATH'
       const cmakeConfig = vscode.workspace.getConfiguration('cmake');
-      let prefixPath =
-        cmakeConfig.get<string[]>('configureSettings.CMAKE_PREFIX_PATH', []) ||
-        [];
+      let prefixPath = cmakeConfig.get<string[]>(
+        'configureSettings.CMAKE_PREFIX_PATH',
+        []
+      );
       if (prefixPath.length !== 0) {
         const savedCMakePath = getSavedCMakePrefixPath() as string;
         if (savedCMakePath && prefixPath.includes(savedCMakePath)) {

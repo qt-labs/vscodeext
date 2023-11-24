@@ -12,11 +12,11 @@ export function getCommandTitle(
   name: string
 ): string {
   const extension = context.extension;
-  const packageJson = extension?.packageJSON as {
+  const packageJson = extension.packageJSON as {
     contributes: { commands: vscode.Command[] };
   };
-  const commands = packageJson?.contributes.commands;
-  const command = commands?.find((c: vscode.Command) => c.command === name);
+  const commands = packageJson.contributes.commands;
+  const command = commands.find((c: vscode.Command) => c.command === name);
   if (command) {
     return command.title;
   }

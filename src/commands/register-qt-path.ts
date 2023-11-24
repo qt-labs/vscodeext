@@ -42,7 +42,7 @@ async function gotInstallationSets(
 async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
   if (typeof fileUris === 'undefined') {
     return;
-  } else if (fileUris) {
+  } else if (fileUris.length !== 0) {
     const qtInstallationPromises = fileUris.map((uri) =>
       qtpath.findQtInstallations(uri.fsPath)
     );

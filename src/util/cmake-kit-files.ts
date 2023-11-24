@@ -143,7 +143,7 @@ export class CMakeKitFiles {
 
   async specifyCMakeKitsJsonFileForQt() {
     const config = vscode.workspace.getConfiguration('cmake');
-    const additionalKits = config.get<string[]>('additionalKits', []) || [];
+    const additionalKits = config.get<string[]>('additionalKits') ?? [];
     if (!additionalKits.includes(this.QT_KITS_FILEPATH)) {
       additionalKits.push(this.QT_KITS_FILEPATH);
     }
@@ -206,7 +206,7 @@ export class CMakeKitFiles {
       );
       if (kit.preferredGenerator) {
         if (newKit.preferredGenerator) {
-          kit.preferredGenerator.name = newKit.preferredGenerator?.name;
+          kit.preferredGenerator.name = newKit.preferredGenerator.name;
           if (
             kit.preferredGenerator.name == CMakeKitFiles.CMakeDefaultGenerator
           ) {
@@ -279,12 +279,12 @@ export class CMakeKitFiles {
     17: '2022'
   };
   static getMsvcYear(kit: Kit) {
-    const year = kit.name?.match(CMakeKitFiles.MsvcYearRegex)?.at(1) as string;
+    const year = kit.name.match(CMakeKitFiles.MsvcYearRegex)?.at(1) as string;
     if (year) {
       return year;
     }
     const majorMsvcVersion = kit.name
-      ?.match(CMakeKitFiles.MsvcMajorVersionNumberRegex)
+      .match(CMakeKitFiles.MsvcMajorVersionNumberRegex)
       ?.at(1) as string;
     if (majorMsvcVersion) {
       return CMakeKitFiles.MapMsvcMajorVersionToItsYear[majorMsvcVersion];

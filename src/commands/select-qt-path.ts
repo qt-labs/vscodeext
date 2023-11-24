@@ -15,7 +15,7 @@ export async function selectQtPath() {
     qtInstallations = config.get('qtInstallations') as readonly string[];
   }
 
-  if (qtInstallations) {
+  if (qtInstallations.length !== 0) {
     // Show a quick pick dialog with the Qt installations as options
     const selected =
       qtInstallations.length === 1

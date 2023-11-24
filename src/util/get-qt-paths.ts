@@ -13,7 +13,7 @@ export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 export const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 export const UserLocalDir = IsWindows
-  ? process.env['LOCALAPPDATA']!
+  ? process.env['LOCALAPPDATA'] ?? ''
   : path.join(Home, '.local/share');
 
 export function matchesVersionPattern(path: string): boolean {
@@ -300,7 +300,7 @@ export async function envPathForQtInstallation(installation: string) {
     qtPathEnv = `${jomExePath}${path.delimiter}${qtPathEnv}`;
   }
   if (isMingwInstallation) {
-    const mingwPath = await promiseMingwPath!;
+    const mingwPath = (await promiseMingwPath) ?? '';
     qtPathEnv = `${mingwPath}${path.delimiter}${qtPathEnv}`;
   }
   return qtPathEnv;
