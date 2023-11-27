@@ -11,3 +11,12 @@ export async function exists(path: string) {
     return false;
   }
 }
+
+export async function existing(path: string) {
+  try {
+    await fs.access(path);
+    return path;
+  } catch {
+    return '';
+  }
+}

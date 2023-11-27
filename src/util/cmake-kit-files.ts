@@ -6,39 +6,9 @@ import * as path from 'path';
 
 import * as vscode from 'vscode';
 
-import { exists } from '../util/fs';
+import { exists, existing } from '../util/fs';
 import * as qtpath from './get-qt-paths';
 import * as versions from '../util/versions';
-
-export const CMakeDefaultGenerator = 'Ninja Multi-Config';
-
-export const CMakeToolsDir = path.join(qtpath.UserLocalDir, 'CMakeTools');
-// CMake CMAKE_KITS_FILEPATH var that store json config file path with CMake detected kits enumerated there
-export const CMAKE_KITS_FILEPATH = path.join(
-  CMakeToolsDir,
-  'cmake-tools-kits.json'
-);
-export const QT_KITS_FILEPATH = path.join(CMakeToolsDir, 'qt-kits.json');
-
-export async function specifyCMakeKitsJsonFileForQt() {
-  const config = vscode.workspace.getConfiguration('cmake');
-  const additionalKits = config.get<string[]>('additionalKits', []) || [];
-  if (!additionalKits.includes(QT_KITS_FILEPATH)) {
-    additionalKits.push(QT_KITS_FILEPATH);
-  }
-  const existingAdditionalKits = await Promise.all(
-    additionalKits.filter(async (path) => await exists(path))
-  );
-  await config.update(
-    'additionalKits',
-    existingAdditionalKits,
-    vscode.ConfigurationTarget.Global
-  );
-}
-
-export function cmakeCompatiblePath(fsPath: string) {
-  return path.normalize(fsPath).replace(/\\/g, '/');
-}
 
 export type CompilerVendorEnum = 'Clang' | 'GCC' | 'MSVC';
 
@@ -141,110 +111,184 @@ export interface Kit extends KitDetect {
   isTrusted: boolean;
 }
 
-export const MapMsvcPlatformToQt: { [name: string]: string } = {
-  x64: '64',
-  amd64_x86: '32',
-  x86_amd64: '64',
-  amd64: '64',
-  win32: '32'
-};
+export class CMakeKitFiles {
+  QT_KITS_FILEPATH: string;
 
-const MsvcInfoRegexp = /msvc(\d\d\d\d)_(.+)/; // msvcYEAR_ARCH
-const MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
-
-export function getCMakeGenerator() {
-  const cmakeConfig = vscode.workspace.getConfiguration('cmake');
-  const generator = cmakeConfig.get<string>('generator');
-  return generator ? generator : CMakeDefaultGenerator;
-}
-
-export function* generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
-  const msvcInfoMatch =
-    newKit.visualStudio?.match(MsvcInfoRegexp) ||
-    newKit.visualStudio?.match(MsvcInfoNoArchRegexp);
-  const vsYear = msvcInfoMatch?.at(1) as string;
-  const architecture = (msvcInfoMatch?.at(2) as string) || '32';
-  newKit.preferredGenerator = {
-    ...newKit.preferredGenerator,
-    ...{
-      name: getCMakeGenerator()
-      // toolset: 'host='+SupportedArchitectureMSVC
-    }
+  static readonly CMakeDefaultGenerator = 'Ninja Multi-Config';
+  static readonly CMakeToolsDir = path.join(qtpath.UserLocalDir, 'CMakeTools');
+  static readonly CMAKE_KITS_FILEPATH = path.join(
+    CMakeKitFiles.CMakeToolsDir,
+    'cmake-tools-kits.json'
+  );
+  static readonly DEFAULT_FALLBACK_QT_KITS_FILEPATH = path.join(
+    CMakeKitFiles.CMakeToolsDir,
+    'cmake-tools-kits.json'
+  );
+  static readonly MapMsvcPlatformToQt: Record<string, string> = {
+    x64: '64',
+    amd64_x86: '32',
+    x86_amd64: '64',
+    amd64: '64',
+    win32: '32',
+    x86: '32'
   };
-  if (architecture) {
-    newKit = {
-      ...newKit,
+  static readonly MsvcInfoRegexp = /msvc(\d\d\d\d)_(.+)/; // msvcYEAR_ARCH
+  static readonly MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
+
+  constructor(qtKitsStorage: string) {
+    this.QT_KITS_FILEPATH =
+      path.join(qtKitsStorage, 'qt-kits.json') ||
+      CMakeKitFiles.DEFAULT_FALLBACK_QT_KITS_FILEPATH;
+  }
+
+  async specifyCMakeKitsJsonFileForQt() {
+    const config = vscode.workspace.getConfiguration('cmake');
+    const additionalKits = config.get<string[]>('additionalKits', []) || [];
+    if (!additionalKits.includes(this.QT_KITS_FILEPATH)) {
+      additionalKits.push(this.QT_KITS_FILEPATH);
+    }
+    const existingAdditionalKits = await Promise.all(
+      additionalKits.map(existing)
+    );
+    const filteredAdditionalKits = existingAdditionalKits.filter(
+      (path) => path
+    );
+    await config.update(
+      'additionalKits',
+      filteredAdditionalKits,
+      vscode.ConfigurationTarget.Global
+    );
+  }
+
+  static cmakeCompatiblePath(fsPath: string) {
+    return path.normalize(fsPath).replace(/\\/g, '/');
+  }
+
+  static getCMakeGenerator() {
+    const cmakeConfig = vscode.workspace.getConfiguration('cmake');
+    const generator = cmakeConfig.get<string>('generator');
+    return generator ? generator : CMakeKitFiles.CMakeDefaultGenerator;
+  }
+
+  static *generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
+    const msvcInfoMatch =
+      newKit.visualStudio?.match(CMakeKitFiles.MsvcInfoRegexp) ||
+      newKit.visualStudio?.match(CMakeKitFiles.MsvcInfoNoArchRegexp);
+    const vsYear = msvcInfoMatch?.at(1) as string;
+    const architecture = (msvcInfoMatch?.at(2) as string) || '32';
+    newKit.preferredGenerator = {
+      ...newKit.preferredGenerator,
       ...{
-        visualStudioArchitecture: architecture.toUpperCase()
+        name: CMakeKitFiles.getCMakeGenerator()
+        // toolset: 'host='+SupportedArchitectureMSVC
       }
     };
-  }
-  const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
-    const version = kit.name?.match(/ (\d\d\d\d) /)?.at(1) as string;
-    const msvcTargetArch =
-      kit.preferredGenerator?.platform || kit.visualStudioArchitecture || '';
-    const targetArchitecture = MapMsvcPlatformToQt[msvcTargetArch];
-    const isArchMatch = targetArchitecture == architecture;
-    return isArchMatch && versions.compareVersions(version, vsYear) >= 0;
-  });
-  for (const kit of msvcKitsWithArchitectureMatch) {
-    kit.name = qtpath.mangleQtInstallation(
-      newKit.name + ' - ' + (kit.name || '')
-    );
-    if (kit.preferredGenerator) {
-      if (newKit.preferredGenerator) {
-        kit.preferredGenerator.name = newKit.preferredGenerator?.name;
-        if (kit.preferredGenerator.name == 'Ninja Multi-Config') {
-          if (newKit.cmakeSettings) {
-            if (kit.cmakeSettings == undefined) {
-              kit.cmakeSettings = {};
-            }
-            kit.cmakeSettings = {
-              ...newKit.cmakeSettings,
-              ...kit.cmakeSettings
-            };
-          }
-          // Generator 'Ninja Multi-Config' does not support platform & toolset specification
-          kit.preferredGenerator.platform = undefined;
-          kit.preferredGenerator.toolset = undefined;
+    if (architecture) {
+      newKit = {
+        ...newKit,
+        ...{
+          visualStudioArchitecture: architecture.toUpperCase()
         }
+      };
+    }
+    const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
+      const version = CMakeKitFiles.getMsvcYear(kit);
+      const msvcTargetArch =
+        kit.preferredGenerator?.platform || kit.visualStudioArchitecture || '';
+      const targetArchitecture =
+        CMakeKitFiles.MapMsvcPlatformToQt[msvcTargetArch];
+      const isArchMatch = targetArchitecture == architecture;
+      return isArchMatch && versions.compareVersions(version, vsYear) >= 0;
+    });
+    for (const kit of msvcKitsWithArchitectureMatch) {
+      kit.name = qtpath.mangleQtInstallation(
+        newKit.name + ' - ' + (kit.name || '')
+      );
+      if (kit.preferredGenerator) {
+        if (newKit.preferredGenerator) {
+          kit.preferredGenerator.name = newKit.preferredGenerator?.name;
+          if (
+            kit.preferredGenerator.name == CMakeKitFiles.CMakeDefaultGenerator
+          ) {
+            if (newKit.cmakeSettings) {
+              if (kit.cmakeSettings == undefined) {
+                kit.cmakeSettings = {};
+              }
+              kit.cmakeSettings = {
+                ...newKit.cmakeSettings,
+                ...kit.cmakeSettings
+              };
+            }
+            // Generator 'Ninja Multi-Config' does not support platform & toolset specification
+            kit.preferredGenerator.platform = undefined;
+            kit.preferredGenerator.toolset = undefined;
+          }
+        }
+      } else {
+        kit.preferredGenerator = newKit.preferredGenerator;
       }
-    } else {
-      kit.preferredGenerator = newKit.preferredGenerator;
+      kit.environmentVariables = newKit.environmentVariables;
+      kit.toolchainFile = newKit.toolchainFile;
+      yield kit;
     }
-    kit.environmentVariables = newKit.environmentVariables;
-    kit.toolchainFile = newKit.toolchainFile;
-    yield kit;
   }
-}
-export async function saveCMakeKitsFileJSON(data: Kit[]) {
-  await fs.writeFile(CMAKE_KITS_FILEPATH, JSON.stringify(data, null, 2));
-}
 
-export async function loadCMakeKitsFileJSON(): Promise<Kit[]> {
-  const data = await fs.readFile(CMAKE_KITS_FILEPATH);
-  const stringData = data.toString();
-  const json: unknown = JSON.parse(stringData);
-  const kits = json as Kit[];
-  return kits;
-}
+  static async saveCMakeKitsFileJSON(data: Kit[]) {
+    await fs.writeFile(this.CMAKE_KITS_FILEPATH, JSON.stringify(data, null, 2));
+  }
 
-export function watchCMakeKitFileUpdates(callback: (uri: vscode.Uri) => void) {
-  void exists(QT_KITS_FILEPATH).then((exists) => {
-    if (!exists) {
-      callback(vscode.Uri.file(QT_KITS_FILEPATH));
+  static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
+    const data = await fs.readFile(this.CMAKE_KITS_FILEPATH);
+    const stringData = data.toString();
+    const json: unknown = JSON.parse(stringData);
+    const kits = json as Kit[];
+    return kits;
+  }
+
+  watchCMakeKitFileUpdates(callback: (uri: vscode.Uri) => void) {
+    void exists(this.QT_KITS_FILEPATH).then((exists) => {
+      if (!exists) {
+        callback(vscode.Uri.file(this.QT_KITS_FILEPATH));
+      }
+    });
+    const cmakeKitsWatcher = vscode.workspace.createFileSystemWatcher(
+      CMakeKitFiles.CMAKE_KITS_FILEPATH
+    );
+    cmakeKitsWatcher.onDidChange(callback);
+    cmakeKitsWatcher.onDidCreate(callback);
+    cmakeKitsWatcher.onDidDelete(callback);
+    const qtKitsWatcher = vscode.workspace.createFileSystemWatcher(
+      this.QT_KITS_FILEPATH
+    );
+    qtKitsWatcher.onDidDelete(callback);
+    return new vscode.Disposable(() => {
+      cmakeKitsWatcher.dispose();
+      qtKitsWatcher.dispose();
+    });
+  }
+
+  static readonly MsvcYearRegex = / (\d\d\d\d) /;
+  static readonly MsvcMajorVersionNumberRegex = /VisualStudio\.(\d\d)\.\d /;
+  static readonly MapMsvcMajorVersionToItsYear: Record<string, string> = {
+    11: '2008',
+    12: '2010',
+    13: '2012',
+    14: '2015',
+    15: '2017',
+    16: '2019',
+    17: '2022'
+  };
+  static getMsvcYear(kit: Kit) {
+    const year = kit.name?.match(CMakeKitFiles.MsvcYearRegex)?.at(1) as string;
+    if (year) {
+      return year;
     }
-  });
-  const cmakeKitsWatcher =
-    vscode.workspace.createFileSystemWatcher(CMAKE_KITS_FILEPATH);
-  cmakeKitsWatcher.onDidChange(callback);
-  cmakeKitsWatcher.onDidCreate(callback);
-  cmakeKitsWatcher.onDidDelete(callback);
-  const qtKitsWatcher =
-    vscode.workspace.createFileSystemWatcher(QT_KITS_FILEPATH);
-  qtKitsWatcher.onDidDelete(callback);
-  return new vscode.Disposable(() => {
-    cmakeKitsWatcher.dispose();
-    qtKitsWatcher.dispose();
-  });
+    const majorMsvcVersion = kit.name
+      ?.match(CMakeKitFiles.MsvcMajorVersionNumberRegex)
+      ?.at(1) as string;
+    if (majorMsvcVersion) {
+      return CMakeKitFiles.MapMsvcMajorVersionToItsYear[majorMsvcVersion];
+    }
+    return '';
+  }
 }
