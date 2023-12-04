@@ -172,10 +172,10 @@ export class CMakeKitFiles {
 
   static *generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
     const msvcInfoMatch =
-      newKit.visualStudio?.match(CMakeKitFiles.MsvcInfoRegexp) ||
+      newKit.visualStudio?.match(CMakeKitFiles.MsvcInfoRegexp) ??
       newKit.visualStudio?.match(CMakeKitFiles.MsvcInfoNoArchRegexp);
-    const vsYear = msvcInfoMatch?.at(1) as string;
-    const architecture = (msvcInfoMatch?.at(2) as string) || '32';
+    const vsYear = msvcInfoMatch?.at(1) ?? '';
+    const architecture = msvcInfoMatch?.at(2) ?? '32';
     newKit.preferredGenerator = {
       ...newKit.preferredGenerator,
       ...{
@@ -194,7 +194,7 @@ export class CMakeKitFiles {
     const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
       const version = CMakeKitFiles.getMsvcYear(kit);
       const msvcTargetArch =
-        kit.preferredGenerator?.platform || kit.visualStudioArchitecture || '';
+        kit.preferredGenerator?.platform ?? kit.visualStudioArchitecture ?? '';
       const targetArchitecture =
         CMakeKitFiles.MapMsvcPlatformToQt[msvcTargetArch];
       const isArchMatch = targetArchitecture == architecture;
@@ -279,13 +279,13 @@ export class CMakeKitFiles {
     17: '2022'
   };
   static getMsvcYear(kit: Kit) {
-    const year = kit.name.match(CMakeKitFiles.MsvcYearRegex)?.at(1) as string;
+    const year = kit.name.match(CMakeKitFiles.MsvcYearRegex)?.at(1);
     if (year) {
       return year;
     }
     const majorMsvcVersion = kit.name
       .match(CMakeKitFiles.MsvcMajorVersionNumberRegex)
-      ?.at(1) as string;
+      ?.at(1);
     if (majorMsvcVersion) {
       return CMakeKitFiles.MapMsvcMajorVersionToItsYear[majorMsvcVersion];
     }

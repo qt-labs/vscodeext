@@ -191,8 +191,8 @@ async function registerCMakeSupport() {
 
     // Get the current configuration
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-    const qtInstallations = config.get('qtInstallations') as readonly string[];
-    const selectedQtPath = config.get('selectedQtPath') as string;
+    const qtInstallations = config.get<string[]>('qtInstallations', []);
+    const selectedQtPath = config.get<string>('selectedQtPath', '');
 
     // Add or modify the 'cmake.configureSettings' property to include 'CMAKE_PREFIX_PATH' with the path to the default Qt version
     if (selectedQtPath && qtInstallations.includes(selectedQtPath)) {
@@ -203,7 +203,7 @@ async function registerCMakeSupport() {
         []
       );
       if (prefixPath.length !== 0) {
-        const savedCMakePath = getSavedCMakePrefixPath() as string;
+        const savedCMakePath = getSavedCMakePrefixPath();
         if (savedCMakePath && prefixPath.includes(savedCMakePath)) {
           prefixPath = prefixPath.filter((item) => {
             return item != savedCMakePath;

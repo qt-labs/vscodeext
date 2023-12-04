@@ -73,7 +73,7 @@ export async function checkForQtInstallationsUpdates() {
   const qtFolders =
     vscode.workspace
       .getConfiguration('vscode-qt-tools')
-      .get<string[]>('qtFolders') || [];
+      .get<string[]>('qtFolders') ?? [];
 
   const promiseInstallationSetsProcessed = gotInstallationSets(
     qtFolders.map((qtInstallationSet) =>

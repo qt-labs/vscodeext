@@ -19,7 +19,7 @@ export const DesignerExeName = IsMacOS
 export const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 export const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 export const UserLocalDir = IsWindows
-  ? process.env['LOCALAPPDATA'] ?? ''
+  ? process.env.LOCALAPPDATA ?? ''
   : path.join(Home, '.local/share');
 
 export function matchesVersionPattern(path: string): boolean {
@@ -109,7 +109,7 @@ export async function findFilesInWorkspace(
   let files: string[] = [];
   // Create an array to hold the promises
   const promises = [];
-  for (const workspaceFolder of vscode.workspace.workspaceFolders || []) {
+  for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
     // Define the search pattern
     const pattern = new vscode.RelativePattern(
       workspaceFolder,
@@ -161,7 +161,7 @@ export async function locateNinjaExecutable(qtRootDir: string) {
     // Do nothing
   }
 
-  const vs2022dir = process.env['VS2022INSTALLDIR'];
+  const vs2022dir = process.env.VS2022INSTALLDIR;
   if (vs2022dir) {
     const vsNinjaExecutable = path.join(
       vs2022dir,

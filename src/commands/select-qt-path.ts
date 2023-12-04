@@ -9,11 +9,11 @@ import * as qtpath from '../util/get-qt-paths';
 
 export async function selectQtPath() {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  let qtInstallations = config.get('qtInstallations') as readonly string[];
+  let qtInstallations = config.get<string[]>('qtInstallations', []);
 
   if (qtInstallations.length === 0) {
     await qtregister.registerQt();
-    qtInstallations = config.get('qtInstallations') as readonly string[];
+    qtInstallations = config.get<string[]>('qtInstallations', []);
   }
 
   if (qtInstallations.length !== 0) {
@@ -66,11 +66,11 @@ export function registerPickSelectedQtPathCommand(
 
 export async function getSelectedQtInstallationPath(): Promise<string> {
   const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  let selectedQtPath = config.get('selectedQtPath') as string;
+  let selectedQtPath = config.get<string>('selectedQtPath', '');
   if (!selectedQtPath) {
     await selectQtPath();
     // Get the current configuration
-    selectedQtPath = config.get('selectedQtPath') as string;
+    selectedQtPath = config.get<string>('selectedQtPath', '');
     if (!selectedQtPath) {
       local.warn(
         'Unable to locate Qt. Please, use "{0}" command to locate your Qt installation and try again.',
