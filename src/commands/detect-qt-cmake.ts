@@ -12,21 +12,10 @@ import * as qtpath from '../util/get-qt-paths';
 
 // Define the command
 const DetectQtCMakeProjectCommand = 'vscode-qt-tools.detectQtCMakeProject';
-const SavedCMakePrefixPathKeyName = 'savedCMakePrefixPath';
 
-type getSavedCMakePrefixPathFunctionType = () => string | undefined;
-let getSavedCMakePrefixPath: getSavedCMakePrefixPathFunctionType;
-
-type setSavedCMakePrefixPathFunctionType = (path: string) => Thenable<void>;
-let setSavedCMakePrefixPath: setSavedCMakePrefixPathFunctionType;
 export let QtCMakeKits: cmake;
 
 function initCMakeKits(context: vscode.ExtensionContext) {
-  getSavedCMakePrefixPath = () =>
-    context.workspaceState.get<string>(SavedCMakePrefixPathKeyName);
-  setSavedCMakePrefixPath = (path: string) =>
-    context.workspaceState.update(SavedCMakePrefixPathKeyName, path);
-
   QtCMakeKits = new cmake(context.globalStorageUri.fsPath);
   return QtCMakeKits;
 }
@@ -43,9 +32,6 @@ async function* generateCMakeKitsOfQtInstallationPath(
   const promiseNinjaExecutable = qtpath.locateNinjaExecutable(qtRootDir);
 
   const toolchain = path.basename(installation);
-  const cmakePrefixPath = cmake.cmakeCompatiblePath(
-    path.join(installation, 'lib', 'cmake')
-  );
 
   const ninjaExePath = await promiseNinjaExecutable;
   const qtPathEnv = qtpath.envPathForQtInstallationWithNinja(
@@ -63,9 +49,7 @@ async function* generateCMakeKitsOfQtInstallationPath(
       name: cmake.CMakeDefaultGenerator
     },
     cmakeSettings: {
-      CMAKE_MAKE_PROGRAM: ninjaExePath,
-      CMAKE_MODULE_PATH: cmakePrefixPath,
-      CMAKE_PREFIX_PATH: cmakePrefixPath
+      CMAKE_MAKE_PROGRAM: ninjaExePath
     }
   };
 
@@ -165,11 +149,7 @@ async function qtInstallationsUpdated() {
 
 // Watch for changes in the 'vscode-qt-tools.selectedQtPath' configuration
 async function checkConfigDeps(e: vscode.ConfigurationChangeEvent) {
-  if (
-    e.affectsConfiguration('vscode-qt-tools.selectedQtPath') ||
-    e.affectsConfiguration('cmake.configureSettings.CMAKE_PREFIX_PATH')
-  ) {
-    // Trigger the 'vscode-qt-tools.detectQtCMakeProject' command to update the 'CMAKE_PREFIX_PATH' configuration
+  if (e.affectsConfiguration('vscode-qt-tools.selectedQtPath')) {
     await registerCMakeSupport();
   }
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
@@ -194,32 +174,7 @@ async function registerCMakeSupport() {
     const qtInstallations = config.get<string[]>('qtInstallations', []);
     const selectedQtPath = config.get<string>('selectedQtPath', '');
 
-    // Add or modify the 'cmake.configureSettings' property to include 'CMAKE_PREFIX_PATH' with the path to the default Qt version
-    if (selectedQtPath && qtInstallations.includes(selectedQtPath)) {
-      // If the 'vscode-qt-tools.selectedQtPath' configuration changes, add its value to 'CMAKE_PREFIX_PATH'
-      const cmakeConfig = vscode.workspace.getConfiguration('cmake');
-      let prefixPath = cmakeConfig.get<string[]>(
-        'configureSettings.CMAKE_PREFIX_PATH',
-        []
-      );
-      if (prefixPath.length !== 0) {
-        const savedCMakePath = getSavedCMakePrefixPath();
-        if (savedCMakePath && prefixPath.includes(savedCMakePath)) {
-          prefixPath = prefixPath.filter((item) => {
-            return item != savedCMakePath;
-          });
-        }
-      }
-      if (!prefixPath.includes(selectedQtPath)) {
-        prefixPath.push(selectedQtPath);
-      }
-      void cmakeConfig.update(
-        'configureSettings.CMAKE_PREFIX_PATH',
-        prefixPath,
-        vscode.ConfigurationTarget.Workspace
-      );
-      void setSavedCMakePrefixPath(selectedQtPath);
-    } else {
+    if (!(selectedQtPath && qtInstallations.includes(selectedQtPath))) {
       // If no default Qt installation is registered, ask the user to register one
       void vscode.window.showInformationMessage(
         'No default Qt installation found. Please register one with the "vscode-qt-tools.registerQt" command.'
