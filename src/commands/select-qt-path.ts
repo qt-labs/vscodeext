@@ -30,9 +30,11 @@ export async function selectQtPath() {
     // In the normal mode, the selected is a string
     let selectedInstallation: string;
     if (util.isTestMode() && typeof selected === 'object') {
-      selectedInstallation = selected['label'];
+      // convert object to vscode.QuickPickItem
+      const item = selected as vscode.QuickPickItem;
+      selectedInstallation = item.label;
     } else {
-      selectedInstallation = selected as string;
+      selectedInstallation = selected ?? '';
     }
 
     if (selectedInstallation) {

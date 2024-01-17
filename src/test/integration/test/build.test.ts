@@ -38,7 +38,7 @@ suite('Extension Test Suite', () => {
     testEnv.teardown();
   });
   test('Build', async () => {
-    const qt_path = process.env['QT_PATH'];
+    const qt_path = process.env.QT_PATH;
     console.log('qt_path from test: ', qt_path);
     console.log('current path: ', process.cwd());
     const current_path = getExtensionSourceRoot();
@@ -56,7 +56,7 @@ suite('Extension Test Suite', () => {
       console.log('fakeShowQuickPick');
       console.log('options: ', options);
       console.log('items: ', items);
-      const installation = getFirstQtInstallation(process.env['QT_PATH']);
+      const installation = getFirstQtInstallation(process.env.QT_PATH);
       console.log('Found installation:', installation);
 
       if (typeof installation === 'undefined') {
@@ -74,7 +74,7 @@ suite('Extension Test Suite', () => {
     catchRegister.callsFake((options) => {
       console.log('fakeShowOpenDialog');
       console.log('options: ', options);
-      return Promise.resolve([vscode.Uri.file(qt_path || '')]);
+      return Promise.resolve([vscode.Uri.file(qt_path ?? '')]);
     });
     expect(
       await vscode.commands.executeCommand('vscode-qt-tools.registerQt')
@@ -85,7 +85,7 @@ suite('Extension Test Suite', () => {
     await vscode.commands.executeCommand('cmake.scanForKits');
     await vscode.commands.executeCommand(
       'cmake.setKitByName',
-      getFirstQtKit(process.env['QT_PATH'])
+      getFirstQtKit(process.env.QT_PATH)
     );
     expect(await vscode.commands.executeCommand('cmake.configure')).to.be.eq(0);
     expect(await vscode.commands.executeCommand('cmake.build')).to.be.eq(0);

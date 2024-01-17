@@ -16,7 +16,7 @@ import {
 const Home = os.homedir();
 const IsWindows = process.platform === 'win32';
 const UserLocalDir = IsWindows
-  ? process.env['LOCALAPPDATA'] ?? ''
+  ? process.env.LOCALAPPDATA ?? ''
   : path.join(Home, '.local/share');
 
 const CMakeToolsDir = path.join(UserLocalDir, 'CMakeTools');

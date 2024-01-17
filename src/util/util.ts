@@ -5,7 +5,7 @@
  * Returns true if the extension is currently running tests.
  */
 export function isTestMode(): boolean {
-  return process.env['QT_TESTING'] === '1';
+  return process.env.QT_TESTING === '1';
 }
 
 export function mangleQtInstallation(installation: string): string {
