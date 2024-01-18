@@ -55,20 +55,23 @@
     "commands": [
       {
         "command": "vscode-qt-tools.registerQt",
-        "title": "%command.vscode-qt-tools.registerQt.title%"
+        "title": "%vscode-qt-tools.command.registerQt.title%",
+        "category": "Qt"
       },
       {
         "command": "vscode-qt-tools.selectQtPath",
-        "title": "Qt: Pick Default Qt Installation"
+        "title": "%vscode-qt-tools.command.pickQtInstallation.title%",
+        "category": "Qt"
       },
       {
         "command": "vscode-qt-tools.loadAndBuildQtProject",
-        "title": "Qt: Load and Build Qt Project"
+        "title": "%vscode-qt-tools.command.loadQtProject.title%",
+        "category": "Qt"
       },
       {
         "command": "vscode-qt-tools.openUiFileInQtDesigner",
-        "title": "%command.qt.ui.openUiFileInQtDesigner.title%",
-        "category": "UI",
+        "title": "%vscode-qt-tools.command.ui.openUiFileInQtDesigner.title%",
+        "category": "Qt",
         "icon": {
           "dark": "res/icons/qt.svg",
           "light": "res/icons/qt.svg"
