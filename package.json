@@ -64,11 +64,6 @@
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.loadAndBuildQtProject",
-        "title": "%vscode-qt-tools.command.loadQtProject.title%",
-        "category": "Qt"
-      },
-      {
         "command": "vscode-qt-tools.openUiFileInQtDesigner",
         "title": "%vscode-qt-tools.command.ui.openUiFileInQtDesigner.title%",
         "category": "Qt",

@@ -11,7 +11,6 @@ import {
 } from './commands/register-qt-path';
 import { registerPickSelectedQtPathCommand } from './commands/select-qt-path';
 import { registerDetectQtCMakeProjectCommand } from './commands/detect-qt-cmake';
-import { registerLoadAndBuildQtProjectCommand } from './commands/build-qt-pro';
 import { registerProFile } from './commands/file-ext-pro';
 import { registerQrcFile } from './commands/file-ext-qrc';
 import { registerQdocFile } from './commands/file-ext-qdoc';
@@ -49,18 +48,13 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
   registerQtCommand(context);
 
-  // Register the 'vscode-qt-tools.loadAndBuildQtProject' command
-  const loadAndBuildQtProjectDisposable =
-    registerLoadAndBuildQtProjectCommand();
-
   // Add a new command to detect if the opened project is a CMake project that uses Qt
   registerDetectQtCMakeProjectCommand(context);
 
   context.subscriptions.push(
     proFileDisposable,
     qrcFileDisposable,
-    qdocFileDisposable,
-    loadAndBuildQtProjectDisposable
+    qdocFileDisposable
   );
 
   void checkForQtInstallationsUpdates();
