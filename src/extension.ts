@@ -15,6 +15,8 @@ import { registerProFile } from './commands/file-ext-pro';
 import { registerQrcFile } from './commands/file-ext-qrc';
 import { registerQdocFile } from './commands/file-ext-qdoc';
 import { registerUiFile } from './commands/file-ext-ui';
+import { registerKitDirectoryCommand } from './commands/kit-directory';
+import { registerMinGWgdbCommand } from './commands/mingw-gdb';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -30,15 +32,6 @@ export async function activate(context: vscode.ExtensionContext) {
     'Congratulations, your extension "vscode-qt-tools" is now active!'
   );
 
-  // Add a new command that provides some functionality when a .pro file is opened
-  const proFileDisposable = registerProFile();
-
-  // Add a new command that provides some functionality when a .qrc file is opened
-  const qrcFileDisposable = registerQrcFile();
-
-  // Add a new command that provides some functionality when a .qdoc or .qdocconf file is opened
-  const qdocFileDisposable = registerQdocFile();
-
   // Add a new command that provides some functionality when a .ui file is opened
   registerUiFile(context);
 
@@ -52,9 +45,11 @@ export async function activate(context: vscode.ExtensionContext) {
   registerDetectQtCMakeProjectCommand(context);
 
   context.subscriptions.push(
-    proFileDisposable,
-    qrcFileDisposable,
-    qdocFileDisposable
+    registerProFile(),
+    registerQrcFile(),
+    registerQdocFile(),
+    registerKitDirectoryCommand(),
+    registerMinGWgdbCommand()
   );
 
   void checkForQtInstallationsUpdates();

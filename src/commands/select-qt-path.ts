@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 
 import * as local from '../util/localize';
 import * as qtregister from './register-qt-path';
-import * as qtpath from '../util/get-qt-paths';
 import * as util from '../util/util';
 
 export async function selectQtPath() {
@@ -38,22 +37,12 @@ export async function selectQtPath() {
     }
 
     if (selectedInstallation) {
-      const qtRootDir = qtpath.qtRootByQtInstallation(selectedInstallation);
       await Promise.all([
         config.update(
           'selectedQtPath',
           selectedInstallation,
           vscode.ConfigurationTarget.Workspace
-        ),
-        qtpath
-          .locateNinjaExecutable(qtRootDir)
-          .then((ninjaExePath) =>
-            config.update(
-              'cmake.configureSettings.CMAKE_MAKE_PROGRAM',
-              ninjaExePath,
-              vscode.ConfigurationTarget.Workspace
-            )
-          )
+        )
       ]);
     }
   }
@@ -78,12 +67,15 @@ export function registerPickSelectedQtPathCommand(
 }
 
 export async function getSelectedQtInstallationPath(): Promise<string> {
-  const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  let selectedQtPath = config.get<string>('selectedQtPath', '');
+  let selectedQtPath = vscode.workspace
+    .getConfiguration('vscode-qt-tools')
+    .get<string>('selectedQtPath', '');
   if (!selectedQtPath) {
     await selectQtPath();
     // Get the current configuration
-    selectedQtPath = config.get<string>('selectedQtPath', '');
+    selectedQtPath = vscode.workspace
+      .getConfiguration('vscode-qt-tools')
+      .get<string>('selectedQtPath', '');
     if (!selectedQtPath) {
       local.warn(
         'Unable to locate Qt. Please, use "{0}" command to locate your Qt installation and try again.',

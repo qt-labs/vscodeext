@@ -41,10 +41,8 @@ async function gotInstallationSets(
   }
 }
 
-async function saveSelectedQt(fileUris: vscode.Uri[] | undefined) {
-  if (typeof fileUris === 'undefined') {
-    return;
-  } else if (fileUris.length !== 0) {
+async function saveSelectedQt(fileUris: vscode.Uri[]) {
+  if (fileUris.length !== 0) {
     const qtInstallationPromises = fileUris.map((uri) =>
       qtpath.findQtInstallations(uri.fsPath)
     );
@@ -65,9 +63,9 @@ export async function registerQt() {
     canSelectFiles: false,
     canSelectFolders: true
   };
-  const qtFolder = await vscode.window.showOpenDialog(options);
-  if (qtFolder) {
-    await saveSelectedQt(qtFolder);
+  const selectedQtFolder = await vscode.window.showOpenDialog(options);
+  if (selectedQtFolder) {
+    await saveSelectedQt(selectedQtFolder);
   }
   return 0;
 }

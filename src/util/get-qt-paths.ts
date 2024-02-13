@@ -3,14 +3,11 @@
 
 import * as child_process from 'child_process';
 import * as fs from 'fs/promises';
-import * as os from 'os';
+import { Home, IsMacOS, IsWindows } from './os';
 import * as path from 'path';
 import * as fsutil from './fs';
 import * as vscode from 'vscode';
 
-export const Home = os.homedir();
-export const IsWindows = process.platform === 'win32';
-export const IsMacOS = process.platform === 'darwin';
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QmakeFileName = 'qmake' + PlatformExecutableExtension;
 export const DesignerExeName = IsMacOS

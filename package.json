@@ -40,6 +40,8 @@
     "onCommand:cmake.executableTargets",
     "onCommand:cmake.buildKit",
     "onCommand:cmake.tasksBuildCommand",
+    "onCommand:qt.kitDirectory",
+    "onCommand:qt.minGWgdb",
     "onDebugResolve:cmake",
     "onDebugInitialConfigurations",
     "onDebugDynamicConfigurations:cmake",
@@ -71,6 +73,71 @@
           "dark": "res/icons/qt.svg",
           "light": "res/icons/qt.svg"
         }
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "cppdbg",
+        "label": "cppdbg",
+        "configurationSnippets": [
+          {
+            "label": "%vscode-qt-tools.debugger.cppdb.snippet.label%",
+            "description": "%vscode-qt-tools.debugger.cppdb.snippet.description%",
+            "body": {
+              "name": "Debug Qt Application with cppdbg",
+              "type": "cppdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "linux": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "/usr/bin/gdb"
+              },
+              "osx": {
+                "MIMode": "lldb"
+              },
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt.kitDirectory}\\${/}bin\""
+                  }
+                ],
+                "MIMode": "gdb",
+                "miDebuggerPath": "^\"\\${command:qt.minGWgdb}\""
+              }
+            }
+          },
+          {
+            "label": "%vscode-qt-tools.debugger.lldb.snippet.label%",
+            "description": "%vscode-qt-tools.debugger.lld.snippet.description%",
+            "body": {
+              "name": "Debug Qt Application with lldb",
+              "type": "cppdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "linux": {
+                "MIMode": "lldb",
+                "miDebuggerPath": "/usr/bin/lldb"
+              },
+              "osx": {
+                "MIMode": "lldb"
+              },
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt.kitDirectory}\\${/}bin\""
+                  }
+                ],
+                "MIMode": "lldb"
+              }
+            }
+          }
+        ]
       }
     ],
     "languages": [
