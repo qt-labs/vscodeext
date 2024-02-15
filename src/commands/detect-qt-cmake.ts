@@ -6,17 +6,12 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 
 import * as vscode from 'vscode';
-
 import { CMakeKitFiles as cmake, Kit } from '../util/cmake-kit-files';
 import * as qtpath from '../util/get-qt-paths';
-import { getSelectedQtInstallationPath } from './register-qt-path';
-
-// Define the command
-const DetectQtCMakeProjectCommand = 'vscode-qt-tools.detectQtCMakeProject';
 
 export let QtCMakeKits: cmake;
 
-function initCMakeKits(context: vscode.ExtensionContext) {
+export function initCMakeKits(context: vscode.ExtensionContext) {
   QtCMakeKits = new cmake(context.globalStorageUri.fsPath);
   return QtCMakeKits;
 }
@@ -130,69 +125,16 @@ async function cmakeKitsFromQtInstallations(qtInstallations: string[]) {
   return kits;
 }
 
-async function qtInstallationsUpdated() {
-  const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  const qtInstallations = config.get<string[]>('qtInstallations', []);
-  if (qtInstallations.length !== 0) {
-    const kitsJsonData = await cmakeKitsFromQtInstallations(qtInstallations);
+export async function updateCMakeKitsJson(qtInstallations: string[]) {
+  const kitsJsonData = await cmakeKitsFromQtInstallations(qtInstallations);
 
-    // Create the parent directories if they don't exist
-    const parentDir = path.dirname(QtCMakeKits.QT_KITS_FILEPATH);
-    await fs.mkdir(parentDir, { recursive: true });
+  // Create the parent directories if they don't exist
+  const parentDir = path.dirname(QtCMakeKits.QT_KITS_FILEPATH);
+  await fs.mkdir(parentDir, { recursive: true });
 
-    await fs.writeFile(
-      QtCMakeKits.QT_KITS_FILEPATH,
-      JSON.stringify(kitsJsonData, null, 2)
-    );
-    await QtCMakeKits.specifyCMakeKitsJsonFileForQt();
-  }
-}
-
-// Watch for changes in the 'vscode-qt-tools.selectedQtPath' configuration
-function checkConfigDeps(e: vscode.ConfigurationChangeEvent) {
-  if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
-    try {
-      void qtInstallationsUpdated();
-    } catch (err) {
-      console.error('Error reading file:', err);
-    }
-  }
-}
-
-async function registerCMakeSupport() {
-  // Get the current workspace
-  const workspace = vscode.workspace.workspaceFolders;
-  if (workspace) {
-    // Check if 'CMakeLists.txt' exists in the project root
-    const cmakeListsPath = path.join(workspace[0].uri.fsPath, 'CMakeLists.txt');
-    await fs.access(cmakeListsPath);
-
-    // Get the current configuration
-    const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-    const qtInstallations = config.get<string[]>('qtInstallations', []);
-    const selectedQtPath = await getSelectedQtInstallationPath();
-
-    if (!(selectedQtPath && qtInstallations.includes(selectedQtPath))) {
-      // If no default Qt installation is registered, ask the user to register one
-      void vscode.window.showInformationMessage(
-        'No default Qt installation found. Please register one with the "vscode-qt-tools.registerQt" command.'
-      );
-    }
-  }
-}
-
-// Function to register the command
-export function registerDetectQtCMakeProjectCommand(
-  context: vscode.ExtensionContext
-) {
-  initCMakeKits(context);
-  // Register the command and return the disposable
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      DetectQtCMakeProjectCommand,
-      registerCMakeSupport
-    ),
-    vscode.workspace.onDidChangeConfiguration(checkConfigDeps),
-    QtCMakeKits.watchCMakeKitFileUpdates(() => void qtInstallationsUpdated())
+  await fs.writeFile(
+    QtCMakeKits.QT_KITS_FILEPATH,
+    JSON.stringify(kitsJsonData, null, 2)
   );
+  await QtCMakeKits.specifyCMakeKitsJsonFileForQt();
 }

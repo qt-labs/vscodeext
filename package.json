@@ -225,13 +225,7 @@
           "type": "string",
           "default": "",
           "description": "Specify the Qt folder(s) if it is not found automatically.",
-          "scope": "machine-overridable"
-        },
-        "vscode-qt-tools.qtInstallations": {
-          "type": "array",
-          "default": [],
-          "description": "List of registered Qt installations.",
-          "scope": "machine-overridable"
+          "scope": "machine"
         }
       }
     }

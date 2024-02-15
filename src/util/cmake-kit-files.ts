@@ -6,7 +6,7 @@ import * as path from 'path';
 
 import * as vscode from 'vscode';
 
-import { exists, existing } from '../util/fs';
+import { existing } from '../util/fs';
 import * as qtpath from './get-qt-paths';
 import * as versions from '../util/versions';
 
@@ -243,28 +243,6 @@ export class CMakeKitFiles {
     const json: unknown = JSON.parse(stringData);
     const kits = json as Kit[];
     return kits;
-  }
-
-  watchCMakeKitFileUpdates(callback: (uri: vscode.Uri) => void) {
-    void exists(this.QT_KITS_FILEPATH).then((exists) => {
-      if (!exists) {
-        callback(vscode.Uri.file(this.QT_KITS_FILEPATH));
-      }
-    });
-    const cmakeKitsWatcher = vscode.workspace.createFileSystemWatcher(
-      CMakeKitFiles.CMAKE_KITS_FILEPATH
-    );
-    cmakeKitsWatcher.onDidChange(callback);
-    cmakeKitsWatcher.onDidCreate(callback);
-    cmakeKitsWatcher.onDidDelete(callback);
-    const qtKitsWatcher = vscode.workspace.createFileSystemWatcher(
-      this.QT_KITS_FILEPATH
-    );
-    qtKitsWatcher.onDidDelete(callback);
-    return new vscode.Disposable(() => {
-      cmakeKitsWatcher.dispose();
-      qtKitsWatcher.dispose();
-    });
   }
 
   static readonly MsvcYearRegex = / (\d\d\d\d) /;

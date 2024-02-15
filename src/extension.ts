@@ -6,16 +6,19 @@
 import * as vscode from 'vscode';
 import { performance } from 'perf_hooks';
 import {
-  checkForQtInstallationsUpdates,
+  checkForQtInstallations,
+  onQtFolderUpdated,
   registerQtCommand
 } from './commands/register-qt-path';
-import { registerDetectQtCMakeProjectCommand } from './commands/detect-qt-cmake';
+import { initCMakeKits } from './commands/detect-qt-cmake';
 import { registerProFile } from './commands/file-ext-pro';
 import { registerQrcFile } from './commands/file-ext-qrc';
 import { registerQdocFile } from './commands/file-ext-qdoc';
 import { registerUiFile } from './commands/file-ext-ui';
 import { registerKitDirectoryCommand } from './commands/kit-directory';
 import { registerMinGWgdbCommand } from './commands/mingw-gdb';
+import { initStateManager } from './state';
+import { configChecker } from './util/config';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -24,15 +27,13 @@ export async function activate(context: vscode.ExtensionContext) {
     .getExtension('ms-vscode.cmake-tools')
     ?.activate();
   const activateStart = performance.now();
-
+  initCMakeKits(context);
+  initStateManager(context);
   // Add a new command that provides some functionality when a .ui file is opened
   registerUiFile(context);
 
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
   registerQtCommand(context);
-
-  // Add a new command to detect if the opened project is a CMake project that uses Qt
-  registerDetectQtCMakeProjectCommand(context);
 
   context.subscriptions.push(
     registerProFile(),
@@ -42,7 +43,9 @@ export async function activate(context: vscode.ExtensionContext) {
     registerMinGWgdbCommand()
   );
 
-  void checkForQtInstallationsUpdates();
+  registerConfigWatchers(context);
+
+  void checkForQtInstallations();
 
   const activateEnd = performance.now();
   const activationTime = activateEnd - activateStart;
@@ -51,6 +54,14 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   await promiseActivateCMake;
+}
+
+function registerConfigWatchers(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(
+      configChecker('vscode-qt-tools.qtFolder', onQtFolderUpdated)
+    )
+  );
 }
 
 // This method is called when your extension is deactivated
