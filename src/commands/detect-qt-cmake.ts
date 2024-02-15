@@ -9,6 +9,7 @@ import * as vscode from 'vscode';
 
 import { CMakeKitFiles as cmake, Kit } from '../util/cmake-kit-files';
 import * as qtpath from '../util/get-qt-paths';
+import { getSelectedQtInstallationPath } from './register-qt-path';
 
 // Define the command
 const DetectQtCMakeProjectCommand = 'vscode-qt-tools.detectQtCMakeProject';
@@ -148,10 +149,7 @@ async function qtInstallationsUpdated() {
 }
 
 // Watch for changes in the 'vscode-qt-tools.selectedQtPath' configuration
-async function checkConfigDeps(e: vscode.ConfigurationChangeEvent) {
-  if (e.affectsConfiguration('vscode-qt-tools.selectedQtPath')) {
-    await registerCMakeSupport();
-  }
+function checkConfigDeps(e: vscode.ConfigurationChangeEvent) {
   if (e.affectsConfiguration('vscode-qt-tools.qtInstallations')) {
     try {
       void qtInstallationsUpdated();
@@ -172,7 +170,7 @@ async function registerCMakeSupport() {
     // Get the current configuration
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
     const qtInstallations = config.get<string[]>('qtInstallations', []);
-    const selectedQtPath = config.get<string>('selectedQtPath', '');
+    const selectedQtPath = await getSelectedQtInstallationPath();
 
     if (!(selectedQtPath && qtInstallations.includes(selectedQtPath))) {
       // If no default Qt installation is registered, ask the user to register one

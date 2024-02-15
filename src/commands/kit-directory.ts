@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import { getSelectedQtInstallationPath } from './select-qt-path';
+import { getSelectedQtInstallationPath } from './register-qt-path';
 
 export function registerKitDirectoryCommand() {
   return vscode.commands.registerCommand('qt.kitDirectory', async () => {

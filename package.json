@@ -61,11 +61,6 @@
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.selectQtPath",
-        "title": "%vscode-qt-tools.command.pickQtInstallation.title%",
-        "category": "Qt"
-      },
-      {
         "command": "vscode-qt-tools.openUiFileInQtDesigner",
         "title": "%vscode-qt-tools.command.ui.openUiFileInQtDesigner.title%",
         "category": "Qt",
@@ -226,9 +221,9 @@
       "type": "object",
       "title": "Qt Configuration",
       "properties": {
-        "vscode-qt-tools.qtFolders": {
-          "type": "array",
-          "default": [],
+        "vscode-qt-tools.qtFolder": {
+          "type": "string",
+          "default": "",
           "description": "Specify the Qt folder(s) if it is not found automatically.",
           "scope": "machine-overridable"
         },
@@ -236,12 +231,6 @@
           "type": "array",
           "default": [],
           "description": "List of registered Qt installations.",
-          "scope": "machine-overridable"
-        },
-        "vscode-qt-tools.selectedQtPath": {
-          "type": "string",
-          "default": "",
-          "description": "Specify the default Qt installation.",
           "scope": "machine-overridable"
         }
       }

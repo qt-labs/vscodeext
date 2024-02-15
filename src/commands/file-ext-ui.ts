@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 
 import * as qtpath from '../util/get-qt-paths';
 import * as local from '../util/localize';
-import { getSelectedQtInstallationPath } from './select-qt-path';
+import { getSelectedQtInstallationPath } from './register-qt-path';
 
 async function getQtDesignerPath() {
   const selectedQtPath = await getSelectedQtInstallationPath();

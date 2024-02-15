@@ -9,7 +9,6 @@ import {
   checkForQtInstallationsUpdates,
   registerQtCommand
 } from './commands/register-qt-path';
-import { registerPickSelectedQtPathCommand } from './commands/select-qt-path';
 import { registerDetectQtCMakeProjectCommand } from './commands/detect-qt-cmake';
 import { registerProFile } from './commands/file-ext-pro';
 import { registerQrcFile } from './commands/file-ext-qrc';
@@ -26,17 +25,8 @@ export async function activate(context: vscode.ExtensionContext) {
     ?.activate();
   const activateStart = performance.now();
 
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log(
-    'Congratulations, your extension "vscode-qt-tools" is now active!'
-  );
-
   // Add a new command that provides some functionality when a .ui file is opened
   registerUiFile(context);
-
-  // Register the 'vscode-qt-tools.selectQtPath' command using the imported function
-  registerPickSelectedQtPathCommand(context);
 
   // Register the 'vscode-qt-tools.registerQt' command using the imported function
   registerQtCommand(context);
@@ -65,5 +55,5 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-  console.log('Deactivating plugin');
+  console.log('Deactivating vscode-qt-tools');
 }
