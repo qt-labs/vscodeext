@@ -11,7 +11,6 @@ import {
 } from './commands/register-qt-path';
 import { initCMakeKits } from './commands/detect-qt-cmake';
 import { registerProFile } from './commands/file-ext-pro';
-import { registerQrcFile } from './commands/file-ext-qrc';
 import { registerQdocFile } from './commands/file-ext-qdoc';
 import { registerUiFile } from './commands/file-ext-ui';
 import { registerKitDirectoryCommand } from './commands/kit-directory';
@@ -20,6 +19,9 @@ import { initStateManager } from './state';
 import { configChecker } from './util/config';
 import { registerResetQtExtCommand } from './commands/reset-qt-ext';
 import { registerNatvisCommand } from './commands/natvis';
+import { designerServer } from './designer-server';
+import { designerClient } from './designer-client';
+import { UIEditorProvider } from './editors/ui/ui-editor';
 
 export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
@@ -29,17 +31,19 @@ export async function activate(context: vscode.ExtensionContext) {
   initCMakeKits(context);
   initStateManager(context);
 
+  designerServer.start();
+
   registerUiFile(context);
   registerQtCommand(context);
 
   context.subscriptions.push(
     registerProFile(),
-    registerQrcFile(),
     registerQdocFile(),
     registerKitDirectoryCommand(),
     registerMinGWgdbCommand(),
     registerResetQtExtCommand(),
-    ...registerNatvisCommand()
+    ...registerNatvisCommand(),
+    UIEditorProvider.register(context)
   );
 
   registerConfigWatchers(context);
@@ -65,5 +69,7 @@ function registerConfigWatchers(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+  designerServer.stop();
+  designerClient.stop();
   console.log('Deactivating vscode-qt-tools');
 }

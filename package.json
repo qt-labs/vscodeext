@@ -20,9 +20,9 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:*.pro",
     "workspaceContains:*.qrc",
     "workspaceContains:*.qdoc",
+    "workspaceContains:*.ui",
     "onCommand:cmake.activeFolderName",
     "onCommand:cmake.activeFolderPath",
     "onCommand:cmake.activeConfigurePresetName",
@@ -164,6 +164,21 @@
         ]
       }
     ],
+    "customEditors": [
+      {
+        "viewType": "qt.uiEditor",
+        "displayName": "Qt UI Editor",
+        "extensions": [
+          ".ui"
+        ],
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.ui"
+          }
+        ]
+      }
+    ],
     "languages": [
       {
         "id": "pro",
@@ -176,13 +191,18 @@
       },
       {
         "id": "qrc",
+        "configuration": "./res/lang/qrc/language-configuration.json",
         "extensions": [
           ".qrc",
           ".qrc.cmakein"
         ],
         "aliases": [
           "Qrc"
-        ]
+        ],
+        "icon": {
+          "light": "res/icons/qrc.png",
+          "dark": "res/icons/qrc.png"
+        }
       },
       {
         "id": "qdoc",
@@ -200,15 +220,16 @@
       },
       {
         "id": "ui",
+        "configuration": "./res/lang/ui/language-configuration.json",
         "extensions": [
           ".ui"
         ],
         "aliases": [
-          "Ui"
+          "ui"
         ],
         "icon": {
-          "light": "res/icons/qt.svg",
-          "dark": "res/icons/qt.svg"
+          "light": "res/icons/ui.svg",
+          "dark": "res/icons/ui.svg"
         }
       }
     ],
@@ -244,6 +265,16 @@
         "language": "qdoc",
         "scopeName": "source.qdoc",
         "path": "./res/lang/qdoc/qdoc.tmLanguage.json"
+      },
+      {
+        "language": "ui",
+        "scopeName": "source.ui",
+        "path": "./res/lang/ui/ui.tmLanguage.json"
+      },
+      {
+        "language": "qrc",
+        "scopeName": "source.qrc",
+        "path": "./res/lang/qrc/qrc.tmLanguage.json"
       }
     ],
     "configuration": {
@@ -269,25 +300,24 @@
     "ms-vscode.cmake-tools"
   ],
   "scripts": {
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --tsconfig=./tsconfig.json --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "compile": "node ./esbuild.mjs",
+    "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "npm run prettier && npx eslint . --fix",
     "unitTests": "npm run pretest && node ./out/test/unit/runTest.js",
     "integrationTests": "npm run pretest && node ./out/test/integration/runTest.js",
     "allTests": "ts-node ./src/scripts/run_all_tests.ts",
-    "prettier": "prettier --write \"**/*.{js,ts,json}\"",
+    "prettier": "prettier --write \"**/*.{js,ts,json}\" --log-level silent",
     "package": "npm ci && vsce package --out out"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",
+    "@types/command-exists": "^1.2.3",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
-    "@types/command-exists": "^1.2.3",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "@vscode/l10n-dev": "^0.0.30",
@@ -305,6 +335,7 @@
   },
   "dependencies": {
     "@vscode/l10n": "^0.0.16",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
     "command-exists": "^1.2.3",
     "ts-sinon": "^2.0.2",
     "typescript": "^5.2.2"
