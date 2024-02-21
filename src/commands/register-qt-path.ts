@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { stateManager } from '../state';
 import { updateCMakeKitsJson } from './detect-qt-cmake';
+import { Home, IsLinux, IsMacOS, IsWindows } from '../util/os';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
 let RegisterQtCommandTitle = '';
@@ -80,6 +81,46 @@ export function getQtFolder(): string {
       .getConfiguration('vscode-qt-tools')
       .get<string>(QtFolderConfig) ?? ''
   );
+}
+
+export function checkDefaultQtFolderPath() {
+  if (!stateManager.getAskForDefaultQtFolder()) {
+    return;
+  }
+
+  if (getQtFolder()) {
+    // Qt folder is already set. No need to check for default path
+    return;
+  }
+  let defaultPath = '';
+  if (IsLinux || IsMacOS) {
+    defaultPath = path.join(Home, 'Qt');
+  } else if (IsWindows) {
+    defaultPath = path.join('C:', 'Qt');
+  } else {
+    throw new Error('Unsupported OS');
+  }
+
+  const defaultPathExists = fs.existsSync(defaultPath);
+  if (!defaultPathExists) {
+    return;
+  }
+
+  const setDefaultPathButtonMessage = 'Set Qt folder';
+  const doNotShowAgainButtonMessage = 'Do not show again';
+  void vscode.window
+    .showInformationMessage(
+      `Qt folder was found at "${defaultPath}". Do you want to use it?`,
+      setDefaultPathButtonMessage,
+      doNotShowAgainButtonMessage
+    )
+    .then((response) => {
+      if (response === setDefaultPathButtonMessage) {
+        void setQtFolder(defaultPath);
+      } else if (response === doNotShowAgainButtonMessage) {
+        void stateManager.setAskForDefaultQtFolder(false);
+      }
+    });
 }
 
 export async function setQtFolder(qtFolder: string) {

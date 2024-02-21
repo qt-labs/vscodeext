@@ -6,3 +6,4 @@ import * as os from 'os';
 export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
 export const IsMacOS = process.platform === 'darwin';
+export const IsLinux = process.platform === 'linux';

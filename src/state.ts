@@ -30,6 +30,12 @@ export class StateManager {
   public setQtInstallations(value: string[]): Thenable<void> {
     return this._update('qtInstallations', value);
   }
+  public setAskForDefaultQtFolder(value: boolean): Thenable<void> {
+    return this._update('askForDefaultQtFolder', value);
+  }
+  public getAskForDefaultQtFolder(): boolean {
+    return this._get<boolean>('askForDefaultQtFolder', true);
+  }
 }
 
 export function initStateManager(context: vscode.ExtensionContext) {
