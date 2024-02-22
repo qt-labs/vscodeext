@@ -18,6 +18,7 @@ import { registerKitDirectoryCommand } from './commands/kit-directory';
 import { registerMinGWgdbCommand } from './commands/mingw-gdb';
 import { initStateManager } from './state';
 import { configChecker } from './util/config';
+import { registerResetQtExtCommand } from './commands/reset-qt-ext';
 
 export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
@@ -35,7 +36,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerQrcFile(),
     registerQdocFile(),
     registerKitDirectoryCommand(),
-    registerMinGWgdbCommand()
+    registerMinGWgdbCommand(),
+    registerResetQtExtCommand()
   );
 
   registerConfigWatchers(context);

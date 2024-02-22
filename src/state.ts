@@ -36,6 +36,10 @@ export class StateManager {
   public getAskForDefaultQtFolder(): boolean {
     return this._get<boolean>('askForDefaultQtFolder', true);
   }
+  public async reset() {
+    await this.setQtInstallations([]);
+    await this.setAskForDefaultQtFolder(true);
+  }
 }
 
 export function initStateManager(context: vscode.ExtensionContext) {

@@ -68,6 +68,11 @@
           "dark": "res/icons/qt.svg",
           "light": "res/icons/qt.svg"
         }
+      },
+      {
+        "command": "vscode-qt-tools.resetQtExt",
+        "title": "%vscode-qt-tools.command.resetQtExt.title%",
+        "category": "Qt"
       }
     ],
     "debuggers": [

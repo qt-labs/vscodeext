@@ -12,7 +12,7 @@ export function getFirstQtKit(qt_path: string | undefined) {
   if (typeof qt_path === 'undefined') {
     throw new Error('qt_path is undefined');
   }
-  if (fs.existsSync(cmake.QtCMakeKits.QT_KITS_FILEPATH)) {
+  if (fs.existsSync(cmake.QtCMakeKits.qtKitsFilePath)) {
     const installations = findQtInstallationsSync(qt_path);
     const kits = installations.map((installation) =>
       mangleQtInstallation(installation)

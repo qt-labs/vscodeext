@@ -26,6 +26,9 @@ export function matchesVersionPattern(path: string): boolean {
 
 // Function to recursively search a directory for Qt installations
 export async function findQtInstallations(dir: string): Promise<string[]> {
+  if (!dir || !(await fsutil.exists(dir))) {
+    return [];
+  }
   const qtInstallations: string[] = [];
   const items = await fs.readdir(dir, { withFileTypes: true });
   for (const item of items) {

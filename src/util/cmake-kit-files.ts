@@ -112,7 +112,7 @@ export interface Kit extends KitDetect {
 }
 
 export class CMakeKitFiles {
-  QT_KITS_FILEPATH: string;
+  private _qtKitsFilePath: string;
 
   static readonly CMakeDefaultGenerator = 'Ninja Multi-Config';
   static readonly CMakeToolsDir = path.join(qtpath.UserLocalDir, 'CMakeTools');
@@ -136,16 +136,20 @@ export class CMakeKitFiles {
   static readonly MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
 
   constructor(qtKitsStorage: string) {
-    this.QT_KITS_FILEPATH =
+    this._qtKitsFilePath =
       path.join(qtKitsStorage, 'qt-kits.json') ||
       CMakeKitFiles.DEFAULT_FALLBACK_QT_KITS_FILEPATH;
+  }
+
+  get qtKitsFilePath() {
+    return this._qtKitsFilePath;
   }
 
   async specifyCMakeKitsJsonFileForQt() {
     const config = vscode.workspace.getConfiguration('cmake');
     const additionalKits = config.get<string[]>('additionalKits') ?? [];
-    if (!additionalKits.includes(this.QT_KITS_FILEPATH)) {
-      additionalKits.push(this.QT_KITS_FILEPATH);
+    if (!additionalKits.includes(this._qtKitsFilePath)) {
+      additionalKits.push(this._qtKitsFilePath);
     }
     const existingAdditionalKits = await Promise.all(
       additionalKits.map(existing)

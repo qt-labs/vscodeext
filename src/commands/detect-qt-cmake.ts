@@ -129,11 +129,11 @@ export async function updateCMakeKitsJson(qtInstallations: string[]) {
   const kitsJsonData = await cmakeKitsFromQtInstallations(qtInstallations);
 
   // Create the parent directories if they don't exist
-  const parentDir = path.dirname(QtCMakeKits.QT_KITS_FILEPATH);
+  const parentDir = path.dirname(QtCMakeKits.qtKitsFilePath);
   await fs.mkdir(parentDir, { recursive: true });
 
   await fs.writeFile(
-    QtCMakeKits.QT_KITS_FILEPATH,
+    QtCMakeKits.qtKitsFilePath,
     JSON.stringify(kitsJsonData, null, 2)
   );
   await QtCMakeKits.specifyCMakeKitsJsonFileForQt();

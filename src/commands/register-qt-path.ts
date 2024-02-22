@@ -22,24 +22,24 @@ export function getRegisterQtCommandTitle(): string {
 const QtFolderConfig = 'qtFolder';
 
 async function updateQtInstallations(qtInstallation: string[]) {
-  if (qtInstallation.length === 0) {
-    void vscode.window.showInformationMessage(`No Qt version found.`);
-    console.log('No Qt version found.');
-  } else {
-    void vscode.window.showInformationMessage(
-      `Found ${qtInstallation.length} Qt installation(s).`
-    );
-    console.log(`Found ${qtInstallation.length} Qt installation(s).`);
-  }
   await stateManager.setQtInstallations(qtInstallation);
   await updateCMakeKitsJson(qtInstallation);
 }
 
 async function saveSelectedQt(folderPath: string) {
+  const qtInstallation = await qtpath.findQtInstallations(folderPath);
   if (folderPath) {
-    const qtInstallation = await qtpath.findQtInstallations(folderPath);
-    await updateQtInstallations(qtInstallation);
+    if (qtInstallation.length === 0) {
+      void vscode.window.showInformationMessage(`No Qt version found.`);
+      console.log('No Qt version found.');
+    } else {
+      void vscode.window.showInformationMessage(
+        `Found ${qtInstallation.length} Qt installation(s).`
+      );
+      console.log(`Found ${qtInstallation.length} Qt installation(s).`);
+    }
   }
+  await updateQtInstallations(qtInstallation);
 }
 
 export async function registerQt() {
@@ -61,12 +61,12 @@ export async function registerQt() {
 }
 
 export async function checkForQtInstallations() {
-  const QtFolder = getQtFolder();
-  if (!QtFolder) {
+  const qtFolder = getQtFolder();
+  if (!qtFolder) {
     return;
   }
   const oldQtInstallations = stateManager.getQtInstallations();
-  const newQtInstallations = await qtpath.findQtInstallations(QtFolder);
+  const newQtInstallations = await qtpath.findQtInstallations(qtFolder);
   if (
     newQtInstallations.length !== oldQtInstallations.length ||
     !newQtInstallations.every((v, i) => v === oldQtInstallations[i])
@@ -131,7 +131,6 @@ export async function setQtFolder(qtFolder: string) {
   await config.update(QtFolderConfig, qtFolder, configTarget);
 }
 
-// Register the 'vscode-qt-tools.registerQt' command
 export function registerQtCommand(context: vscode.ExtensionContext) {
   RegisterQtCommandTitle = local.getCommandTitle(context, RegisterQtCommandId);
   context.subscriptions.push(
@@ -146,11 +145,11 @@ export function onQtFolderUpdated() {
       void vscode.window.showInformationMessage(
         `The specified Qt installation path does not exist.`
       );
-      throw new Error('The specified Qt installation path does not exist.');
     }
   }
   void saveSelectedQt(qtFolder);
 }
+
 export async function getSelectedQtInstallationPath(): Promise<string> {
   const selectedCMakeKit =
     await vscode.commands.executeCommand<string>('cmake.buildKit');
