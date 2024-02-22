@@ -141,12 +141,13 @@ export function registerQtCommand(context: vscode.ExtensionContext) {
 
 export function onQtFolderUpdated() {
   const qtFolder = getQtFolder();
-  // check if the folder exists
-  if (!fs.existsSync(qtFolder)) {
-    void vscode.window.showInformationMessage(
-      `The specified Qt installation path does not exist.`
-    );
-    throw new Error('The specified Qt installation path does not exist.');
+  if (qtFolder) {
+    if (!fs.existsSync(qtFolder)) {
+      void vscode.window.showInformationMessage(
+        `The specified Qt installation path does not exist.`
+      );
+      throw new Error('The specified Qt installation path does not exist.');
+    }
   }
   void saveSelectedQt(qtFolder);
 }
