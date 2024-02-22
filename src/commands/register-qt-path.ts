@@ -51,7 +51,10 @@ export async function registerQt() {
   };
   const selectedQtFolderUri = await vscode.window.showOpenDialog(options);
   if (!selectedQtFolderUri) {
-    throw new Error('No Qt installation path selected');
+    void vscode.window.showInformationMessage(
+      'No Qt installation path selected.'
+    );
+    return;
   }
   const selectedQtFolder = selectedQtFolderUri[0].fsPath;
   if (selectedQtFolder) {
