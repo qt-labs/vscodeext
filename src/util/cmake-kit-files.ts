@@ -237,10 +237,6 @@ export class CMakeKitFiles {
     }
   }
 
-  static async saveCMakeKitsFileJSON(data: Kit[]) {
-    await fs.writeFile(this.CMAKE_KITS_FILEPATH, JSON.stringify(data, null, 2));
-  }
-
   static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
     const data = await fs.readFile(this.CMAKE_KITS_FILEPATH);
     const stringData = data.toString();
