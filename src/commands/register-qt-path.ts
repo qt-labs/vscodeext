@@ -9,8 +9,9 @@ import * as util from '../util/util';
 import * as fs from 'fs';
 import * as path from 'path';
 import { stateManager } from '../state';
-import { updateCMakeKitsJson } from './detect-qt-cmake';
+import { QtCMakeKits, updateCMakeKitsJson } from './detect-qt-cmake';
 import { Home, IsLinux, IsMacOS, IsWindows } from '../util/os';
+import { Kit } from '../util/cmake-kit-files';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
 let RegisterQtCommandTitle = '';
@@ -170,17 +171,20 @@ export async function getSelectedQtInstallationPath(): Promise<string> {
       });
     throw new Error('No CMake kit selected');
   }
-  const splittedKit = selectedCMakeKit.split('-');
-  if (splittedKit.length < 3) {
-    throw new Error('Unable to parse selected CMake kit');
+  const content = fs.readFileSync(QtCMakeKits.qtKitsFilePath, 'utf8');
+  const kits = JSON.parse(content) as Kit[];
+  const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
+  let selectedQtKitPath = '';
+  if (selectedQtKit === undefined) {
+    throw new Error('Selected CMake kit not found');
   }
-  const qtFolder = getQtFolder();
-  if (!qtFolder) {
-    throw new Error('No Qt installation path selected');
+  if (selectedQtKit.environmentVariables.PATH === undefined) {
+    throw new Error('Selected Qt installation path not found');
   }
-  const version = splittedKit[1];
-  const kitType = splittedKit[2];
-  const selectedQtKitPath = path.join(qtFolder, version, kitType);
+  const pathSeperator = IsWindows ? ';' : ':';
+  selectedQtKitPath =
+    selectedQtKit.environmentVariables.PATH.split(pathSeperator)[0];
+
   if (!fs.existsSync(selectedQtKitPath)) {
     throw new Error('Selected Qt installation path does not exist');
   }

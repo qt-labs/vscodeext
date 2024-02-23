@@ -75,8 +75,8 @@ async function* generateCMakeKitsOfQtInstallationPath(
       const mingwDirPath = await promiseMingwPath;
       if (mingwDirPath) {
         newKit.environmentVariables.PATH = [
-          mingwDirPath,
-          newKit.environmentVariables.PATH
+          newKit.environmentVariables.PATH,
+          mingwDirPath
         ].join(path.delimiter);
         newKit = {
           ...newKit,
