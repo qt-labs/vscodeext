@@ -84,8 +84,8 @@
         "label": "cppdbg",
         "configurationSnippets": [
           {
-            "label": "%vscode-qt-tools.debugger.cppdb.snippet.label%",
-            "description": "%vscode-qt-tools.debugger.cppdb.snippet.description%",
+            "label": "%vscode-qt-tools.debugger.cppdbg.snippet.label%",
+            "description": "%vscode-qt-tools.debugger.cppdbg.snippet.description%",
             "body": {
               "name": "Debug Qt Application with cppdbg",
               "type": "cppdbg",
@@ -114,7 +114,7 @@
           },
           {
             "label": "%vscode-qt-tools.debugger.lldb.snippet.label%",
-            "description": "%vscode-qt-tools.debugger.lld.snippet.description%",
+            "description": "%vscode-qt-tools.debugger.lldb.snippet.description%",
             "body": {
               "name": "Debug Qt Application with lldb",
               "type": "cppdbg",
