@@ -66,11 +66,11 @@ export async function registerQt() {
 
 export async function checkForQtInstallations() {
   const qtFolder = getQtFolder();
-  if (!qtFolder) {
-    return;
-  }
+  const newQtInstallations = qtFolder
+    ? await qtpath.findQtInstallations(qtFolder)
+    : [];
+
   const oldQtInstallations = stateManager.getQtInstallations();
-  const newQtInstallations = await qtpath.findQtInstallations(qtFolder);
   if (
     newQtInstallations.length !== oldQtInstallations.length ||
     !newQtInstallations.every((v, i) => v === oldQtInstallations[i])
