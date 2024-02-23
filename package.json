@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
-  "publisher": "The Qt Company",
+  "publisher": "theqtcompany",
   "repository": {
     "type": "git",
     "url": "https://codereview.qt-project.org/qt-labs/vscodeext"
