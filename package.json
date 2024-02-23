@@ -136,6 +136,26 @@
                 "MIMode": "lldb"
               }
             }
+          },
+          {
+            "label": "%vscode-qt-tools.debugger.cppvsdbg.snippet.label%",
+            "description": "%vscode-qt-tools.debugger.cppvsdbg.snippet.description%",
+            "body": {
+              "name": "Debug Qt Application with Visual Studio Debugger",
+              "type": "cppvsdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt.kitDirectory}\\${/}bin\""
+                  }
+                ]
+              }
+            }
           }
         ]
       }
