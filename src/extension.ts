@@ -19,6 +19,7 @@ import { registerMinGWgdbCommand } from './commands/mingw-gdb';
 import { initStateManager } from './state';
 import { configChecker } from './util/config';
 import { registerResetQtExtCommand } from './commands/reset-qt-ext';
+import { registerNatvisCommand } from './commands/natvis';
 
 export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
@@ -37,7 +38,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerQdocFile(),
     registerKitDirectoryCommand(),
     registerMinGWgdbCommand(),
-    registerResetQtExtCommand()
+    registerResetQtExtCommand(),
+    ...registerNatvisCommand()
   );
 
   registerConfigWatchers(context);

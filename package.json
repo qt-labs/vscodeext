@@ -42,6 +42,9 @@
     "onCommand:cmake.tasksBuildCommand",
     "onCommand:qt.kitDirectory",
     "onCommand:qt.minGWgdb",
+    "onCommand:qt.natvis",
+    "onCommand:qt.natvis5",
+    "onCommand:qt.natvis6",
     "onDebugResolve:cmake",
     "onDebugInitialConfigurations",
     "onDebugDynamicConfigurations:cmake",
@@ -147,6 +150,7 @@
               "program": "^\"\\${command:cmake.launchTargetPath}\"",
               "stopAtEntry": false,
               "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt.natvis}\"",
               "windows": {
                 "environment": [
                   {
