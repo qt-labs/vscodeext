@@ -227,39 +227,19 @@ export async function locateMingwBinDirPath(qtRootDir: string) {
 
 export async function locateCMakeQtToolchainFile(installation: string) {
   const libCMakePath = path.join(installation, 'lib', 'cmake');
-  let cmakeQtToolchainFilePath = path.join(
-    libCMakePath,
-    'Qt6',
-    QtToolchainCMakeFileName
-  );
-  try {
-    await fs.access(cmakeQtToolchainFilePath);
-    return cmakeQtToolchainFilePath;
-  } catch (err) {
-    // Do nothing
+  const qtVersions = ['Qt6', 'Qt5', 'Qt'];
+
+  for (const qtVersion of qtVersions) {
+    const cmakeQtToolchainFilePath = path.join(
+      libCMakePath,
+      qtVersion,
+      QtToolchainCMakeFileName
+    );
+    if (await fsutil.exists(cmakeQtToolchainFilePath)) {
+      return cmakeQtToolchainFilePath;
+    }
   }
-  cmakeQtToolchainFilePath = path.join(
-    libCMakePath,
-    'Qt5',
-    QtToolchainCMakeFileName
-  );
-  try {
-    await fs.access(cmakeQtToolchainFilePath);
-    return cmakeQtToolchainFilePath;
-  } catch (err) {
-    // Do nothing
-  }
-  cmakeQtToolchainFilePath = path.join(
-    libCMakePath,
-    'Qt',
-    QtToolchainCMakeFileName
-  );
-  try {
-    await fs.access(cmakeQtToolchainFilePath);
-    return cmakeQtToolchainFilePath;
-  } catch (err) {
-    // Do nothing
-  }
+
   return '';
 }
 
