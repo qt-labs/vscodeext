@@ -8,7 +8,7 @@
   "publisher": "theqtcompany",
   "repository": {
     "type": "git",
-    "url": "https://codereview.qt-project.org/qt-labs/vscodeext"
+    "url": "https://github.com/qt-labs/vscodeext"
   },
   "bugs": {
     "url": "https://bugreports.qt.io/projects/VSCODEEXT"
