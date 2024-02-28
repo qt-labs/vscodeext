@@ -12,7 +12,4 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npm run compile
-      - name: Run unit tests
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm run unitTests
+      - run: xvfb-run -a npm run unitTests
