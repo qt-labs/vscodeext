@@ -7,6 +7,7 @@ import { Home, IsMacOS, IsWindows } from './os';
 import * as path from 'path';
 import * as fsutil from './fs';
 import * as vscode from 'vscode';
+import commandExists = require('command-exists');
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QmakeFileName = 'qmake' + PlatformExecutableExtension;
@@ -152,51 +153,32 @@ export async function locateQmakeExeFilePath(selectedQtPath: string) {
 }
 
 export async function locateNinjaExecutable(qtRootDir: string) {
-  const ninjaDirPath = path.join(qtToolsDirByQtRootDir(qtRootDir), 'Ninja');
-  const ninjaExePath = path.join(ninjaDirPath, NinjaFileName);
-  try {
-    await fs.access(ninjaExePath);
-    return ninjaExePath;
-  } catch (err) {
-    // Do nothing
-  }
-
+  const pathsToCheck = [
+    path.join(qtToolsDirByQtRootDir(qtRootDir), 'Ninja', NinjaFileName)
+  ];
   const vs2022dir = process.env.VS2022INSTALLDIR;
   if (vs2022dir) {
-    const vsNinjaExecutable = path.join(
-      vs2022dir,
-      'Common7',
-      'IDE',
-      'CommonExtensions',
-      'Microsoft',
-      'CMake',
-      'Ninja',
-      NinjaFileName
+    pathsToCheck.push(
+      path.join(
+        vs2022dir,
+        'Common7',
+        'IDE',
+        'CommonExtensions',
+        'Microsoft',
+        'CMake',
+        'Ninja',
+        NinjaFileName
+      ),
+      path.join(vs2022dir, 'MSBuild', 'Google', 'Android', 'bin', NinjaFileName)
     );
-    try {
-      await fs.access(vsNinjaExecutable);
-      return vsNinjaExecutable;
-    } catch (err) {
-      // Do nothing
-    }
-
-    const visualStudioAndroidNinjaExecutable = path.join(
-      vs2022dir,
-      'MSBuild',
-      'Google',
-      'Android',
-      'bin',
-      NinjaFileName
-    );
-    try {
-      await fs.access(visualStudioAndroidNinjaExecutable);
-      return visualStudioAndroidNinjaExecutable;
-    } catch (err) {
-      // Do nothing
+  }
+  for (const path of pathsToCheck) {
+    if (await fsutil.exists(path)) {
+      return path;
     }
   }
 
-  return ninjaExePath;
+  return '';
 }
 
 export async function locateMingwBinDirPath(qtRootDir: string) {
@@ -247,19 +229,14 @@ export function qtRootByQtInstallation(installation: string) {
   return path.normalize(path.join(installation, '..', '..'));
 }
 
-export function envPathForQtInstallationWithNinja(
-  installation: string,
-  ninjaExePath: string
-) {
+export function generateEnvPathForQtInstallation(installation: string) {
   const qtRootDir = qtRootByQtInstallation(installation);
   const cmakeDirPath = locateCMakeExecutableDirectoryPath(qtRootDir);
-  const ninjaDirPath = path.dirname(ninjaExePath);
   const installationBinDir = path.join(installation, 'bin');
   const QtPathAddition = [
     installation,
     installationBinDir,
     '${env:PATH}',
-    ninjaDirPath,
     cmakeDirPath
   ].join(path.delimiter);
   return QtPathAddition;
@@ -270,32 +247,29 @@ export async function locateJomExecutable(qtRootDir: string) {
   const jomDirPath = path.join(qtToolsDir, 'QtCreator', 'bin', 'jom');
   const jomFileName = 'jom' + PlatformExecutableExtension;
   const jomExePath = path.join(jomDirPath, jomFileName);
-  try {
-    await fs.access(jomExePath);
+
+  if (await fsutil.exists(jomExePath)) {
     return jomExePath;
-  } catch (err) {
-    // Do nothing
   }
-  try {
-    await fs.access(jomExePath);
-    return jomExePath;
-  } catch (err) {
-    return '';
-  }
+  return '';
 }
 
 export async function envPathForQtInstallation(installation: string) {
   const qtRootDir = qtRootByQtInstallation(installation);
-  const promiseNinjaPath = locateNinjaExecutable(qtRootDir);
   const promiseJomPath = locateJomExecutable(qtRootDir);
   const isMingwInstallation = path.basename(installation).startsWith('mingw');
   const promiseMingwPath = isMingwInstallation
     ? locateMingwBinDirPath(qtRootDir)
     : undefined;
-  let qtPathEnv = envPathForQtInstallationWithNinja(
-    installation,
-    await promiseNinjaPath
-  );
+  let qtPathEnv = generateEnvPathForQtInstallation(installation);
+
+  if (!commandExists.sync('ninja')) {
+    const ninjaPath = await locateNinjaExecutable(qtRootDir);
+    if (ninjaPath) {
+      qtPathEnv = `${ninjaPath}${path.delimiter}${qtPathEnv}`;
+    }
+  }
+
   const jomExePath = await promiseJomPath;
   if (jomExePath) {
     qtPathEnv = `${jomExePath}${path.delimiter}${qtPathEnv}`;
@@ -353,29 +327,20 @@ export async function locateQtDesignerExePath(selectedQtPath: string) {
         DesignerExeName
       )
     : path.join(selectedQtPath, 'bin', DesignerExeName);
-  try {
-    await fs.access(designerExePath);
+  if (await fsutil.exists(designerExePath)) {
     return designerExePath;
-  } catch (err) {
-    // Do nothing
   }
 
   const hostBinDir = await queryHostBinDirPath(selectedQtPath);
   designerExePath = path.join(hostBinDir, DesignerExeName);
-  try {
-    await fs.access(designerExePath);
+  if (await fsutil.exists(designerExePath)) {
     return designerExePath;
-  } catch (err) {
-    // Do nothing
   }
 
   if (!IsWindows) {
     designerExePath = '/usr/bin/designer';
-    try {
-      await fs.access(designerExePath);
+    if (await fsutil.exists(designerExePath)) {
       return designerExePath;
-    } catch (err) {
-      // Do nothing
     }
   }
 

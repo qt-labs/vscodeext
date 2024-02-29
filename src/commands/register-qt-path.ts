@@ -181,9 +181,9 @@ export async function getSelectedQtInstallationPath(): Promise<string> {
   if (selectedQtKit.environmentVariables.PATH === undefined) {
     throw new Error('Selected Qt installation path not found');
   }
-  const pathSeperator = IsWindows ? ';' : ':';
-  selectedQtKitPath =
-    selectedQtKit.environmentVariables.PATH.split(pathSeperator)[0];
+  selectedQtKitPath = selectedQtKit.environmentVariables.PATH.split(
+    path.delimiter
+  )[0];
 
   if (!fs.existsSync(selectedQtKitPath)) {
     throw new Error('Selected Qt installation path does not exist');

@@ -240,8 +240,7 @@ export class CMakeKitFiles {
   static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
     const data = await fs.readFile(this.CMAKE_KITS_FILEPATH);
     const stringData = data.toString();
-    const json: unknown = JSON.parse(stringData);
-    const kits = json as Kit[];
+    const kits = JSON.parse(stringData) as Kit[];
     return kits;
   }
 

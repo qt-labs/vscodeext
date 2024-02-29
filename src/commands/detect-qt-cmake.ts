@@ -8,6 +8,7 @@ import * as fs from 'fs/promises';
 import * as vscode from 'vscode';
 import { CMakeKitFiles as cmake, Kit } from '../util/cmake-kit-files';
 import * as qtpath from '../util/get-qt-paths';
+import commandExists = require('command-exists');
 
 export let QtCMakeKits: cmake;
 
@@ -25,15 +26,15 @@ async function* generateCMakeKitsOfQtInstallationPath(
 
   const qtRootDir = qtpath.qtRootByQtInstallation(installation);
   const promiseMingwPath = qtpath.locateMingwBinDirPath(qtRootDir);
-  const promiseNinjaExecutable = qtpath.locateNinjaExecutable(qtRootDir);
-
-  const toolchain = path.basename(installation);
-
-  const ninjaExePath = await promiseNinjaExecutable;
-  const qtPathEnv = qtpath.envPathForQtInstallationWithNinja(
-    installation,
-    ninjaExePath
-  );
+  let qtPathEnv = qtpath.generateEnvPathForQtInstallation(installation);
+  let locatedNinjaExePath = '';
+  if (!commandExists.sync('ninja')) {
+    const promiseNinjaExecutable = qtpath.locateNinjaExecutable(qtRootDir);
+    locatedNinjaExePath = await promiseNinjaExecutable;
+  }
+  if (locatedNinjaExePath) {
+    qtPathEnv += path.delimiter + path.dirname(locatedNinjaExePath);
+  }
 
   let newKit: Kit = {
     name: qtpath.mangleQtInstallation(installation),
@@ -43,9 +44,6 @@ async function* generateCMakeKitsOfQtInstallationPath(
     isTrusted: true,
     preferredGenerator: {
       name: cmake.CMakeDefaultGenerator
-    },
-    cmakeSettings: {
-      CMAKE_MAKE_PROGRAM: ninjaExePath
     }
   };
 
@@ -53,7 +51,7 @@ async function* generateCMakeKitsOfQtInstallationPath(
   if (toolchainFilePath) {
     newKit.toolchainFile = toolchainFilePath;
   }
-
+  const toolchain = path.basename(installation);
   const tokens = toolchain.split('_');
   let platform = tokens[0];
   if (platform != 'android') {

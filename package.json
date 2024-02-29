@@ -281,6 +281,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
+    "@types/command-exists": "^1.2.3",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "@vscode/l10n-dev": "^0.0.30",
@@ -297,6 +298,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "command-exists": "^1.2.3",
     "@vscode/l10n": "^0.0.16",
     "command-exists": "^1.2.3",
     "ts-sinon": "^2.0.2",
