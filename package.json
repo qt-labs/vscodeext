@@ -263,7 +263,8 @@
     "ms-vscode.cmake-tools"
   ],
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --tsconfig=./tsconfig.json --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
@@ -272,7 +273,7 @@
     "integrationTests": "npm run pretest && node ./out/test/integration/runTest.js",
     "allTests": "ts-node ./src/scripts/run_all_tests.ts",
     "prettier": "prettier --write \"**/*.{js,ts,json}\"",
-    "package": "vsce package --out out"
+    "package": "npm ci && vsce package --out out"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",
@@ -287,16 +288,18 @@
     "@vscode/vsce": "^2.21.1",
     "chai": "^4.3.10",
     "commander": "^11.1.0",
+    "esbuild": "^0.20.1",
     "eslint": "^8.50.0",
     "glob": "^10.3.9",
     "mocha": "^10.2.0",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.2",
-    "ts-node": "^10.4.0"
+    "ts-node": "^10.4.0",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@vscode/l10n": "^0.0.16",
-    "typescript": "^5.2.2",
-    "ts-sinon": "^2.0.2"
+    "command-exists": "^1.2.3",
+    "ts-sinon": "^2.0.2",
+    "typescript": "^5.2.2"
   }
 }
