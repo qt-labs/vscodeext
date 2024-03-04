@@ -9,9 +9,9 @@ import * as util from '../util/util';
 import * as fs from 'fs';
 import * as path from 'path';
 import { stateManager } from '../state';
-import { QtCMakeKits, updateCMakeKitsJson } from './detect-qt-cmake';
+import { updateCMakeKitsJson } from './detect-qt-cmake';
 import { Home, IsLinux, IsMacOS, IsWindows } from '../util/os';
-import { Kit } from '../util/cmake-kit-files';
+import { CMakeKitFiles, Kit } from '../util/cmake-kit-files';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
 let RegisterQtCommandTitle = '';
@@ -171,23 +171,58 @@ export async function getSelectedQtInstallationPath(): Promise<string> {
       });
     throw new Error('No CMake kit selected');
   }
-  const content = fs.readFileSync(QtCMakeKits.qtKitsFilePath, 'utf8');
-  const kits = JSON.parse(content) as Kit[];
-  const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
-  let selectedQtKitPath = '';
-  if (selectedQtKit === undefined) {
-    throw new Error('Selected CMake kit not found');
-  }
-  if (selectedQtKit.environmentVariables.PATH === undefined) {
-    throw new Error('Selected Qt installation path not found');
-  }
-  selectedQtKitPath = selectedQtKit.environmentVariables.PATH.split(
-    path.delimiter
-  )[0];
+  const addtionalKits = vscode.workspace
+    .getConfiguration('cmake')
+    .get<string[]>('additionalKits');
 
-  if (!fs.existsSync(selectedQtKitPath)) {
-    throw new Error('Selected Qt installation path does not exist');
+  const kitFiles = [CMakeKitFiles.CMAKE_KITS_FILEPATH];
+  if (addtionalKits) {
+    kitFiles.push(...addtionalKits);
+  }
+  const promises = kitFiles.map(async (file) => {
+    const content = await fs.promises.readFile(file, 'utf8');
+    const kits = JSON.parse(content) as Kit[];
+    const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
+
+    if (selectedQtKit === undefined) {
+      return null;
+    }
+    if (selectedQtKit.environmentVariables.VSCODE_QT_FOLDER === undefined) {
+      void vscode.window.showErrorMessage(
+        '"VSCODE_QT_FOLDER" environment variable is not set for "' +
+          selectedCMakeKit +
+          '".'
+      );
+      return null;
+    }
+
+    const selectedQtKitPath =
+      selectedQtKit.environmentVariables.VSCODE_QT_FOLDER;
+
+    if (fs.existsSync(selectedQtKitPath)) {
+      return selectedQtKitPath;
+    }
+    void vscode.window.showErrorMessage(
+      `"${selectedQtKitPath}" does not exist in "${selectedCMakeKit}".`
+    );
+  });
+
+  const results = await Promise.all(promises);
+  const validResults = results.filter((result) => result !== null);
+
+  if (validResults.length === 1) {
+    return validResults[0] ?? '';
   }
 
-  return selectedQtKitPath;
+  if (validResults.length > 1) {
+    void vscode.window.showErrorMessage(
+      'Multiple CMake kits with the same name are found for "' +
+        selectedCMakeKit +
+        '".'
+    );
+    return '';
+  }
+
+  void vscode.window.showErrorMessage(selectedCMakeKit + ' is not found.');
+  return '';
 }

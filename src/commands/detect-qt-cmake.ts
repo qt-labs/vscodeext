@@ -39,6 +39,7 @@ async function* generateCMakeKitsOfQtInstallationPath(
   let newKit: Kit = {
     name: qtpath.mangleQtInstallation(installation),
     environmentVariables: {
+      VSCODE_QT_FOLDER: installation,
       PATH: qtPathEnv
     },
     isTrusted: true,
