@@ -230,15 +230,10 @@ export function qtRootByQtInstallation(installation: string) {
 }
 
 export function generateEnvPathForQtInstallation(installation: string) {
-  const qtRootDir = qtRootByQtInstallation(installation);
-  const cmakeDirPath = locateCMakeExecutableDirectoryPath(qtRootDir);
   const installationBinDir = path.join(installation, 'bin');
-  const QtPathAddition = [
-    installation,
-    installationBinDir,
-    '${env:PATH}',
-    cmakeDirPath
-  ].join(path.delimiter);
+  const QtPathAddition = [installation, installationBinDir, '${env:PATH}'].join(
+    path.delimiter
+  );
   return QtPathAddition;
 }
 
@@ -279,11 +274,6 @@ export async function envPathForQtInstallation(installation: string) {
     qtPathEnv = `${mingwPath}${path.delimiter}${qtPathEnv}`;
   }
   return qtPathEnv;
-}
-
-export function locateCMakeExecutableDirectoryPath(qtRootDir: string) {
-  // TODO: check if cmake exists in PATH already
-  return path.join(qtToolsDirByQtRootDir(qtRootDir), 'CMake_64', 'bin');
 }
 
 export async function queryHostBinDirPath(
