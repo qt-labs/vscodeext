@@ -5,31 +5,41 @@ import * as vscode from 'vscode';
 import { performance } from 'perf_hooks';
 import {
   checkDefaultQtFolderPath,
-  checkForQtInstallations,
-  onQtFolderUpdated,
   registerQtCommand
 } from './commands/register-qt-path';
-import { initCMakeKits } from './commands/detect-qt-cmake';
 import { registerProFile } from './commands/file-ext-pro';
 import { registerQdocFile } from './commands/file-ext-qdoc';
 import { registerUiFile } from './commands/file-ext-ui';
 import { registerKitDirectoryCommand } from './commands/kit-directory';
 import { registerMinGWgdbCommand } from './commands/mingw-gdb';
-import { initStateManager } from './state';
-import { configChecker } from './util/config';
 import { registerResetQtExtCommand } from './commands/reset-qt-ext';
 import { registerNatvisCommand } from './commands/natvis';
+import { registerScanForQtKitsCommand } from './commands/scan-qt-kits';
 import { designerServer } from './designer-server';
 import { designerClient } from './designer-client';
 import { UIEditorProvider } from './editors/ui/ui-editor';
+import { Project, ProjectManager } from './project';
+import { KitManager } from './kit-manager';
 
+export let kitManager: KitManager;
+export let projectManager: ProjectManager;
 export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
     .getExtension('ms-vscode.cmake-tools')
     ?.activate();
   const activateStart = performance.now();
-  initCMakeKits(context);
-  initStateManager(context);
+  kitManager = new KitManager(context);
+  projectManager = new ProjectManager(context);
+  if (vscode.workspace.workspaceFile !== undefined) {
+    kitManager.addWorkspaceFile(vscode.workspace.workspaceFile);
+  }
+  if (vscode.workspace.workspaceFolders !== undefined) {
+    for (const folder of vscode.workspace.workspaceFolders) {
+      const project = new Project(folder, context);
+      projectManager.addProject(project);
+      kitManager.addProject(project);
+    }
+  }
 
   designerServer.start();
 
@@ -43,12 +53,11 @@ export async function activate(context: vscode.ExtensionContext) {
     registerMinGWgdbCommand(),
     registerResetQtExtCommand(),
     ...registerNatvisCommand(),
-    UIEditorProvider.register(context)
+    UIEditorProvider.register(context),
+    registerScanForQtKitsCommand()
   );
 
-  registerConfigWatchers(context);
-
-  void checkForQtInstallations();
+  await kitManager.checkForAllQtInstallations();
   checkDefaultQtFolderPath();
 
   const activateEnd = performance.now();
@@ -58,14 +67,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   await promiseActivateCMake;
-}
-
-function registerConfigWatchers(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(
-      configChecker('vscode-qt-tools.qtFolder', onQtFolderUpdated)
-    )
-  );
 }
 
 export function deactivate() {

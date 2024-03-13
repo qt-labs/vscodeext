@@ -3,7 +3,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as cmake from '../../commands/detect-qt-cmake';
 import * as vscode from 'vscode';
 import { matchesVersionPattern } from '../../util/get-qt-paths';
 import { mangleQtInstallation } from '../../util/util';
@@ -12,25 +11,23 @@ export function getFirstQtKit(qt_path: string | undefined) {
   if (typeof qt_path === 'undefined') {
     throw new Error('qt_path is undefined');
   }
-  if (fs.existsSync(cmake.QtCMakeKits.qtKitsFilePath)) {
-    const installations = findQtInstallationsSync(qt_path);
-    const kits = installations.map((installation) =>
-      mangleQtInstallation(installation)
-    );
-    const MajorQtVersion = '6.';
-    const os = process.platform;
-    let osKit = '';
-    if (os === 'linux') {
-      osKit = 'gcc';
-    } else if (os === 'win32') {
-      osKit = 'msvc';
-    } else if (os === 'darwin') {
-      osKit = 'macos';
-    }
-    for (const kit of kits) {
-      if (kit.includes(osKit) && kit.includes(MajorQtVersion)) {
-        return kit;
-      }
+  const installations = findQtInstallationsSync(qt_path);
+  const kits = installations.map((installation) =>
+    mangleQtInstallation(installation)
+  );
+  const MajorQtVersion = '6.';
+  const os = process.platform;
+  let osKit = '';
+  if (os === 'linux') {
+    osKit = 'gcc';
+  } else if (os === 'win32') {
+    osKit = 'msvc';
+  } else if (os === 'darwin') {
+    osKit = 'macos';
+  }
+  for (const kit of kits) {
+    if (kit.includes(osKit) && kit.includes(MajorQtVersion)) {
+      return kit;
     }
   }
 }

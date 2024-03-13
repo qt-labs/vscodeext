@@ -1,5 +1,6 @@
 {
   "vscode-qt-tools.command.registerQt.title": "Register Qt Installation",
+  "vscode-qt-tools.command.scanForQtKits.title": "Scan for Qt Kits",
   "vscode-qt-tools.command.pickQtInstallation.title": "Pick Default Qt Installation",
   "vscode-qt-tools.command.ui.openUiFileInQtDesigner.title": "Open UI File in Qt Designer",
   "vscode-qt-tools.debugger.cppdbg.snippet.label": "Qt: Debug with cppdbg",

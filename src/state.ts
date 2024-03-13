@@ -3,40 +3,82 @@
 
 import * as vscode from 'vscode';
 import { isTestMode } from './util/util';
+import { Kit } from './kit-manager';
 
-export class StateManager {
-  constructor(readonly context: vscode.ExtensionContext) {
-    this.context = context;
-  }
-  private _get<T>(key: string, defaultValue: T): T {
+class BaseStateManager {
+  constructor(
+    readonly context: vscode.ExtensionContext,
+    readonly folder?: vscode.WorkspaceFolder
+  ) {}
+  protected _get<T>(key: string, defaultValue: T): T {
     const state = isTestMode()
       ? this.context.workspaceState
       : this.context.globalState;
-    const ret = state.get<T>(key);
+    const ret = state.get<T>(this.folder?.uri.fsPath + key);
     if (ret === undefined) {
       return defaultValue;
     }
     return ret;
   }
-  private _update<T>(key: string, value: T): Thenable<void> {
+  protected _update<T>(key: string, value: T): Thenable<void> {
     const state = isTestMode()
       ? this.context.workspaceState
       : this.context.globalState;
-    return state.update(key, value);
+    return state.update(this.folder?.uri.fsPath + key, value);
   }
-  public getQtInstallations(): string[] {
-    return this._get<string[]>('qtInstallations', []);
+}
+
+export class WorkspaceStateManager extends BaseStateManager {
+  constructor(
+    context: vscode.ExtensionContext,
+    folder: vscode.WorkspaceFolder
+  ) {
+    if (folder.uri.fsPath === '') {
+      throw new Error('folder is empty');
+    }
+    super(context, folder);
   }
-  public setQtInstallations(value: string[]): Thenable<void> {
-    return this._update('qtInstallations', value);
+  public getQtFolder(): string {
+    return this._get<string>('qtFolder', '');
+  }
+  public setQtFolder(folder: string): Thenable<void> {
+    return this._update('qtFolder', folder);
+  }
+  public getWorkspaceQtKits(): Kit[] {
+    return this._get<Kit[]>('defaultQtKits', []);
+  }
+  public setWorkspaceQtKits(kits: Kit[]): Thenable<void> {
+    return this._update('defaultQtKits', kits);
   }
   public async reset() {
-    await this.setQtInstallations([]);
+    await this.setWorkspaceQtKits([]);
+    await this.setQtFolder('');
   }
 }
 
-export function initStateManager(context: vscode.ExtensionContext) {
-  stateManager = new StateManager(context);
-}
+export class GlobalStateManager extends BaseStateManager {
+  public getQtFolder(): string {
+    return this._get<string>('qtFolder', '');
+  }
+  public setQtFolder(folder: string): Thenable<void> {
+    return this._update('qtFolder', folder);
+  }
+  public getGlobalQtKits(): Kit[] {
+    return this._get<Kit[]>('globalQtKits', []);
+  }
+  public setGlobalQtKits(kits: Kit[]): Thenable<void> {
+    return this._update('globalQtKits', kits);
+  }
+  public getWorkspaceFileKits(): Map<string, Kit[]> {
+    return this._get<Map<string, Kit[]>>('workspaceFileKits', new Map());
+  }
+  public setWorkspaceFileKits(kits: Map<string, Kit[]>): Thenable<void> {
+    return this._update('workspaceFileKits', kits);
+  }
 
-export let stateManager: StateManager;
+  public async reset() {
+    await this.setGlobalQtKits([]);
+    await this.setWorkspaceFileKits(new Map());
+    await this.setQtFolder('');
+  }
+}

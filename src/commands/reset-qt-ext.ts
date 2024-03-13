@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import { stateManager } from '../state';
-import { setDoNotAskForDefaultQtFolder, setQtFolder } from './register-qt-path';
+import { setDoNotAskForDefaultQtFolder } from './register-qt-path';
+import { kitManager } from '../extension';
 
 export async function resetQtExt() {
-  await stateManager.reset();
-  await setQtFolder('');
+  await kitManager.reset();
   await setDoNotAskForDefaultQtFolder(false);
 }
 

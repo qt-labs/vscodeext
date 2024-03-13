@@ -3,44 +3,18 @@
 
 import * as vscode from 'vscode';
 
-import * as qtpath from '../util/get-qt-paths';
 import * as local from '../util/localize';
-import * as util from '../util/util';
 import * as fs from 'fs';
 import * as path from 'path';
-import { stateManager } from '../state';
-import { updateCMakeKitsJson } from './detect-qt-cmake';
 import { Home, IsLinux, IsMacOS, IsWindows } from '../util/os';
-import { CMakeKitFiles, Kit } from '../util/cmake-kit-files';
+import { kitManager } from '../extension';
+import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '../kit-manager';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
 let RegisterQtCommandTitle = '';
 
 export function getRegisterQtCommandTitle(): string {
   return RegisterQtCommandTitle;
-}
-
-const QtFolderConfig = 'qtFolder';
-
-async function updateQtInstallations(qtInstallation: string[]) {
-  await stateManager.setQtInstallations(qtInstallation);
-  await updateCMakeKitsJson(qtInstallation);
-}
-
-async function saveSelectedQt(folderPath: string) {
-  const qtInstallation = await qtpath.findQtInstallations(folderPath);
-  if (folderPath) {
-    if (qtInstallation.length === 0) {
-      void vscode.window.showInformationMessage(`No Qt version found.`);
-      console.log('No Qt version found.');
-    } else {
-      void vscode.window.showInformationMessage(
-        `Found ${qtInstallation.length} Qt installation(s).`
-      );
-      console.log(`Found ${qtInstallation.length} Qt installation(s).`);
-    }
-  }
-  await updateQtInstallations(qtInstallation);
 }
 
 export async function registerQt() {
@@ -59,32 +33,9 @@ export async function registerQt() {
   }
   const selectedQtFolder = selectedQtFolderUri[0].fsPath;
   if (selectedQtFolder) {
-    void setQtFolder(selectedQtFolder);
+    void kitManager.setGlobalQtFolder(selectedQtFolder);
   }
   return 0;
-}
-
-export async function checkForQtInstallations() {
-  const qtFolder = getQtFolder();
-  const newQtInstallations = qtFolder
-    ? await qtpath.findQtInstallations(qtFolder)
-    : [];
-
-  const oldQtInstallations = stateManager.getQtInstallations();
-  if (
-    newQtInstallations.length !== oldQtInstallations.length ||
-    !newQtInstallations.every((v, i) => v === oldQtInstallations[i])
-  ) {
-    await updateQtInstallations(newQtInstallations);
-  }
-}
-
-export function getQtFolder(): string {
-  return (
-    vscode.workspace
-      .getConfiguration('vscode-qt-tools')
-      .get<string>(QtFolderConfig) ?? ''
-  );
 }
 
 export async function setDoNotAskForDefaultQtFolder(value: boolean) {
@@ -97,7 +48,7 @@ export async function setDoNotAskForDefaultQtFolder(value: boolean) {
     );
 }
 
-export function getDoNotAskForDefaultQtFolder(): boolean {
+function getDoNotAskForDefaultQtFolder(): boolean {
   return (
     vscode.workspace
       .getConfiguration('vscode-qt-tools')
@@ -110,7 +61,7 @@ export function checkDefaultQtFolderPath() {
     return;
   }
 
-  if (getQtFolder()) {
+  if (kitManager.getCurrentGlobalQtFolder()) {
     // Qt folder is already set. No need to check for default path
     return;
   }
@@ -138,19 +89,11 @@ export function checkDefaultQtFolderPath() {
     )
     .then((response) => {
       if (response === setDefaultPathButtonMessage) {
-        void setQtFolder(defaultPath);
+        void kitManager.setGlobalQtFolder(defaultPath);
       } else if (response === doNotShowAgainButtonMessage) {
         void setDoNotAskForDefaultQtFolder(true);
       }
     });
-}
-
-export async function setQtFolder(qtFolder: string) {
-  const config = vscode.workspace.getConfiguration('vscode-qt-tools');
-  const configTarget = util.isTestMode()
-    ? vscode.ConfigurationTarget.Workspace
-    : vscode.ConfigurationTarget.Global;
-  await config.update(QtFolderConfig, qtFolder, configTarget);
 }
 
 export function registerQtCommand(context: vscode.ExtensionContext) {
@@ -160,21 +103,13 @@ export function registerQtCommand(context: vscode.ExtensionContext) {
   );
 }
 
-export function onQtFolderUpdated() {
-  const qtFolder = getQtFolder();
-  if (qtFolder) {
-    if (!fs.existsSync(qtFolder)) {
-      void vscode.window.showInformationMessage(
-        `The specified Qt installation path does not exist.`
-      );
-    }
-  }
-  void saveSelectedQt(qtFolder);
-}
-
 export async function getSelectedQtInstallationPath(): Promise<string> {
   const selectedCMakeKit =
     await vscode.commands.executeCommand<string>('cmake.buildKit');
+  const activeFolderPaths = await vscode.commands.executeCommand<string>(
+    'cmake.activeFolderPath'
+  );
+  void activeFolderPaths;
   if (!selectedCMakeKit || selectedCMakeKit === '__unspec__') {
     // show information message to the user
     void vscode.window
@@ -193,13 +128,24 @@ export async function getSelectedQtInstallationPath(): Promise<string> {
     .getConfiguration('cmake')
     .get<string[]>('additionalKits');
 
-  const kitFiles = [CMakeKitFiles.CMAKE_KITS_FILEPATH];
+  const kitFiles = [
+    CMAKE_GLOBAL_KITS_FILEPATH,
+    await KitManager.getCMakeWorkspaceKitsFilepath()
+  ];
   if (addtionalKits) {
     kitFiles.push(...addtionalKits);
   }
   const promises = kitFiles.map(async (file) => {
+    if (!fs.existsSync(file)) {
+      return null;
+    }
     const content = await fs.promises.readFile(file, 'utf8');
-    const kits = JSON.parse(content) as Kit[];
+    let kits: Kit[] = [];
+    try {
+      kits = JSON.parse(content) as Kit[];
+    } catch (error) {
+      console.error('Failed to parse kits file:', error);
+    }
     const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
 
     if (selectedQtKit === undefined) {

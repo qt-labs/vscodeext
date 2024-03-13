@@ -23,38 +23,6 @@ export function matchesVersionPattern(path: string): boolean {
   return /^([0-9]+\.)+/.test(path);
 }
 
-// Function to recursively search a directory for Qt installations
-export async function findQtInstallations(dir: string): Promise<string[]> {
-  if (!dir || !(await fsutil.exists(dir))) {
-    return [];
-  }
-  const qtInstallations: string[] = [];
-  const items = await fs.readdir(dir, { withFileTypes: true });
-  for (const item of items) {
-    if (item.isDirectory() && matchesVersionPattern(item.name)) {
-      const installationItemPath = path.join(dir, item.name);
-      const installationItemDirContent = await fs.readdir(
-        installationItemPath,
-        { withFileTypes: true }
-      );
-      for (const subitem of installationItemDirContent) {
-        if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
-          const subdirFullPath = path.join(installationItemPath, subitem.name);
-          const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
-          try {
-            await fs.access(qtConfPath).then(() => {
-              qtInstallations.push(subdirFullPath);
-            });
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      }
-    }
-  }
-  return qtInstallations;
-}
-
 async function pathOfDirectoryIfExists(
   dirPath: string
 ): Promise<string | undefined> {

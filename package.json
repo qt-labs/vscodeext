@@ -64,6 +64,11 @@
         "category": "Qt"
       },
       {
+        "command": "vscode-qt-tools.scanForQtKits",
+        "title": "%vscode-qt-tools.command.scanForQtKits.title%",
+        "category": "Qt"
+      },
+      {
         "command": "vscode-qt-tools.openUiFileInQtDesigner",
         "title": "%vscode-qt-tools.command.ui.openUiFileInQtDesigner.title%",
         "category": "Qt",
@@ -285,7 +290,7 @@
           "type": "string",
           "default": "",
           "description": "Specify the Qt folder",
-          "scope": "machine"
+          "scope": "machine-overridable"
         },
         "vscode-qt-tools.doNotAskForDefaultQtFolder": {
           "type": "boolean",
