@@ -56,33 +56,6 @@ export async function findQtInstallations(dir: string): Promise<string[]> {
   return qtInstallations;
 }
 
-export async function findFilesInDir(
-  startPath: string,
-  filterExtension: string
-): Promise<string[]> {
-  const stat = await fs.stat(startPath);
-  if (!stat.isDirectory()) {
-    console.log('No directory:', startPath);
-    return [];
-  }
-
-  const results: string[] = [];
-
-  async function walkDir(currentPath: string): Promise<void> {
-    const files = await fs.readdir(currentPath, { withFileTypes: true });
-    for (const file of files) {
-      if (file.isDirectory()) {
-        await walkDir(file.path);
-      } else if (path.extname(file.path) === filterExtension) {
-        results.push(file.path);
-      }
-    }
-  }
-
-  await walkDir(startPath);
-  return results;
-}
-
 export async function pathOfDirectoryIfExists(
   dirPath: string
 ): Promise<string | undefined> {
@@ -96,10 +69,6 @@ export async function pathOfDirectoryIfExists(
 
 export function qtToolsDirByQtRootDir(qtRootDir: string): string {
   return path.normalize(path.join(qtRootDir, 'Tools'));
-}
-
-export function qtToolsDirByQtInstallationDir(qtInstallation: string): string {
-  return qtToolsDirByQtRootDir(qtRootByQtInstallation(qtInstallation));
 }
 
 export function mangleQtInstallation(installation: string): string {
