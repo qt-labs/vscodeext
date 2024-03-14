@@ -6,7 +6,6 @@ import * as fs from 'fs/promises';
 import { Home, IsMacOS, IsWindows } from './os';
 import * as path from 'path';
 import * as fsutil from './fs';
-import * as vscode from 'vscode';
 import commandExists = require('command-exists');
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
@@ -101,35 +100,6 @@ export function qtToolsDirByQtRootDir(qtRootDir: string): string {
 
 export function qtToolsDirByQtInstallationDir(qtInstallation: string): string {
   return qtToolsDirByQtRootDir(qtRootByQtInstallation(qtInstallation));
-}
-
-export async function findFilesInWorkspace(
-  filterExtension: string
-): Promise<string[]> {
-  // Get list of all the files in the workspace folders recursively
-  let files: string[] = [];
-  // Create an array to hold the promises
-  const promises = [];
-  for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
-    // Define the search pattern
-    const pattern = new vscode.RelativePattern(
-      workspaceFolder,
-      filterExtension
-    );
-
-    // Use findFiles to search for .pro files
-    promises.push(
-      vscode.workspace.findFiles(pattern, null).then((matches) => {
-        files = files.concat(
-          matches.map((uri) => {
-            return uri.path;
-          })
-        );
-      })
-    );
-  }
-  await Promise.all(promises);
-  return files;
 }
 
 export function mangleQtInstallation(installation: string): string {
