@@ -242,10 +242,11 @@ export class KitManager {
       : [];
     project
       ? await this.updateQtInstallations(
+          currentQtFolder,
           newQtInstallations,
           project.getFolder()
         )
-      : await this.updateQtInstallations(newQtInstallations);
+      : await this.updateQtInstallations(currentQtFolder, newQtInstallations);
   }
 
   private async checkForGlobalQtInstallations() {
@@ -308,7 +309,7 @@ export class KitManager {
         console.log(`Found ${qtInstallation.length} Qt installation(s).`);
       }
     }
-    await this.updateQtInstallations(qtInstallation, workspaceFolder);
+    await this.updateQtInstallations(qtFolder, qtInstallation, workspaceFolder);
     if (workspaceFolder) {
       await this.getProject(workspaceFolder)
         ?.getStateManager()
@@ -334,6 +335,7 @@ export class KitManager {
   }
 
   private async *generateCMakeKitsOfQtInstallationPath(
+    qtFolder: string,
     installation: string,
     loadedCMakeKits: Kit[]
   ) {
@@ -353,7 +355,7 @@ export class KitManager {
     }
 
     let newKit: Kit = {
-      name: qtPath.mangleQtInstallation(installation),
+      name: qtPath.mangleQtInstallation(qtFolder, installation),
       environmentVariables: {
         VSCODE_QT_FOLDER: installation,
         PATH: qtPathEnv
@@ -383,7 +385,7 @@ export class KitManager {
         const msvcKitsClone: Kit[] = JSON.parse(
           JSON.stringify(loadedCMakeKits)
         ) as Kit[];
-        yield* this.generateMsvcKits(newKit, msvcKitsClone);
+        yield* this.generateMsvcKits(qtFolder, newKit, msvcKitsClone);
         return;
       } else if (platform.startsWith('mingw')) {
         platform = os.platform();
@@ -427,11 +429,15 @@ export class KitManager {
     yield newKit;
   }
 
-  private async cmakeKitsFromQtInstallations(qtInstallations: string[]) {
+  private async cmakeKitsFromQtInstallations(
+    qtFolder: string,
+    qtInstallations: string[]
+  ) {
     const loadedCMakeKits = await this.loadCMakeKitsFileJSON();
     const kits = [];
     for (const installation of qtInstallations)
       for await (const kit of this.generateCMakeKitsOfQtInstallationPath(
+        qtFolder,
         installation,
         loadedCMakeKits
       ))
@@ -440,11 +446,14 @@ export class KitManager {
   }
 
   private async updateQtInstallations(
+    qtFolder: string,
     qtInstallations: string[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const newGeneratedKits =
-      await this.cmakeKitsFromQtInstallations(qtInstallations);
+    const newGeneratedKits = await this.cmakeKitsFromQtInstallations(
+      qtFolder,
+      qtInstallations
+    );
     await this.updateCMakeKitsJson(newGeneratedKits, workspaceFolder);
 
     if (workspaceFolder) {
@@ -547,7 +556,11 @@ export class KitManager {
     return generator ? generator : CMakeDefaultGenerator;
   }
 
-  private *generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
+  private *generateMsvcKits(
+    qtFolder: string,
+    newKit: Kit,
+    loadedCMakeKits: Kit[]
+  ) {
     const msvcInfoMatch =
       newKit.visualStudio?.match(KitManager.MsvcInfoRegexp) ??
       newKit.visualStudio?.match(KitManager.MsvcInfoNoArchRegexp);
@@ -578,6 +591,7 @@ export class KitManager {
     });
     for (const kit of msvcKitsWithArchitectureMatch) {
       kit.name = qtPath.mangleQtInstallation(
+        qtFolder,
         newKit.name + ' - ' + (kit.name || '')
       );
       if (kit.preferredGenerator) {

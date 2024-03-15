@@ -38,13 +38,14 @@ function qtToolsDirByQtRootDir(qtRootDir: string): string {
   return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 
-export function mangleQtInstallation(installation: string): string {
+export function mangleQtInstallation(
+  qtFolder: string,
+  installation: string
+): string {
+  installation = installation.replace(qtFolder, '');
   const pathParts = installation.split(/[/\\:]+/).filter((n) => n);
-  const qtIdx = Math.max(
-    0,
-    pathParts.findIndex((s) => s.toLowerCase() == 'qt')
-  );
-  return pathParts.slice(qtIdx).join('-');
+  pathParts.unshift(path.basename(qtFolder));
+  return pathParts.slice().join('-');
 }
 
 async function locateQmakeExeFilePath(selectedQtPath: string) {
