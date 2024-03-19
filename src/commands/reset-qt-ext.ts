@@ -3,11 +3,12 @@
 
 import * as vscode from 'vscode';
 import { stateManager } from '../state';
-import { setQtFolder } from './register-qt-path';
+import { setDoNotAskForDefaultQtFolder, setQtFolder } from './register-qt-path';
 
 export async function resetQtExt() {
   await stateManager.reset();
   await setQtFolder('');
+  await setDoNotAskForDefaultQtFolder(false);
 }
 
 export function registerResetQtExtCommand() {

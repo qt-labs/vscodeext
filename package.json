@@ -255,6 +255,12 @@
           "default": "",
           "description": "Specify the Qt folder",
           "scope": "machine"
+        },
+        "vscode-qt-tools.doNotAskForDefaultQtFolder": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not ask for default Qt folder",
+          "scope": "machine"
         }
       }
     }

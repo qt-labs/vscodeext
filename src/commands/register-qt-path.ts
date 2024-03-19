@@ -87,8 +87,26 @@ export function getQtFolder(): string {
   );
 }
 
+export async function setDoNotAskForDefaultQtFolder(value: boolean) {
+  await vscode.workspace
+    .getConfiguration('vscode-qt-tools')
+    .update(
+      'doNotAskForDefaultQtFolder',
+      value,
+      vscode.ConfigurationTarget.Global
+    );
+}
+
+export function getDoNotAskForDefaultQtFolder(): boolean {
+  return (
+    vscode.workspace
+      .getConfiguration('vscode-qt-tools')
+      .get<boolean>('doNotAskForDefaultQtFolder') ?? false
+  );
+}
+
 export function checkDefaultQtFolderPath() {
-  if (!stateManager.getAskForDefaultQtFolder()) {
+  if (getDoNotAskForDefaultQtFolder()) {
     return;
   }
 
@@ -122,7 +140,7 @@ export function checkDefaultQtFolderPath() {
       if (response === setDefaultPathButtonMessage) {
         void setQtFolder(defaultPath);
       } else if (response === doNotShowAgainButtonMessage) {
-        void stateManager.setAskForDefaultQtFolder(false);
+        void setDoNotAskForDefaultQtFolder(true);
       }
     });
 }
