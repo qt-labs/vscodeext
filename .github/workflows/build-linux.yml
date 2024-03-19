@@ -13,3 +13,9 @@ jobs:
       - run: npm ci
       - run: npm run compile
       - run: xvfb-run -a npm run unitTests
+      - run: npm run package
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix_package
+          path: out/*.vsix
