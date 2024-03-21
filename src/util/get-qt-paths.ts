@@ -6,7 +6,6 @@ import * as fs from 'fs/promises';
 import { Home, IsMacOS, IsWindows } from './os';
 import * as path from 'path';
 import * as fsutil from './fs';
-import commandExists = require('command-exists');
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QmakeFileName = 'qmake' + PlatformExecutableExtension;
@@ -56,7 +55,7 @@ export async function findQtInstallations(dir: string): Promise<string[]> {
   return qtInstallations;
 }
 
-export async function pathOfDirectoryIfExists(
+async function pathOfDirectoryIfExists(
   dirPath: string
 ): Promise<string | undefined> {
   try {
@@ -67,7 +66,7 @@ export async function pathOfDirectoryIfExists(
   }
 }
 
-export function qtToolsDirByQtRootDir(qtRootDir: string): string {
+function qtToolsDirByQtRootDir(qtRootDir: string): string {
   return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 
@@ -80,7 +79,7 @@ export function mangleQtInstallation(installation: string): string {
   return pathParts.slice(qtIdx).join('-');
 }
 
-export async function locateQmakeExeFilePath(selectedQtPath: string) {
+async function locateQmakeExeFilePath(selectedQtPath: string) {
   const bin = path.join(selectedQtPath, 'bin');
   const qmakeExePath = path.join(bin, QmakeFileName);
   return (
@@ -176,48 +175,7 @@ export function generateEnvPathForQtInstallation(installation: string) {
   return QtPathAddition;
 }
 
-export async function locateJomExecutable(qtRootDir: string) {
-  const qtToolsDir = qtToolsDirByQtRootDir(qtRootDir);
-  const jomDirPath = path.join(qtToolsDir, 'QtCreator', 'bin', 'jom');
-  const jomFileName = 'jom' + PlatformExecutableExtension;
-  const jomExePath = path.join(jomDirPath, jomFileName);
-
-  if (await fsutil.exists(jomExePath)) {
-    return jomExePath;
-  }
-  return '';
-}
-
-export async function envPathForQtInstallation(installation: string) {
-  const qtRootDir = qtRootByQtInstallation(installation);
-  const promiseJomPath = locateJomExecutable(qtRootDir);
-  const isMingwInstallation = path.basename(installation).startsWith('mingw');
-  const promiseMingwPath = isMingwInstallation
-    ? locateMingwBinDirPath(qtRootDir)
-    : undefined;
-  let qtPathEnv = generateEnvPathForQtInstallation(installation);
-
-  if (!commandExists.sync('ninja')) {
-    const ninjaPath = await locateNinjaExecutable(qtRootDir);
-    if (ninjaPath) {
-      qtPathEnv = `${ninjaPath}${path.delimiter}${qtPathEnv}`;
-    }
-  }
-
-  const jomExePath = await promiseJomPath;
-  if (jomExePath) {
-    qtPathEnv = `${jomExePath}${path.delimiter}${qtPathEnv}`;
-  }
-  if (isMingwInstallation) {
-    const mingwPath = (await promiseMingwPath) ?? '';
-    qtPathEnv = `${mingwPath}${path.delimiter}${qtPathEnv}`;
-  }
-  return qtPathEnv;
-}
-
-export async function queryHostBinDirPath(
-  selectedQtPath: string
-): Promise<string> {
+async function queryHostBinDirPath(selectedQtPath: string): Promise<string> {
   const qmakeExePath = await locateQmakeExeFilePath(selectedQtPath);
   const childProcess = child_process.exec(
     qmakeExePath + ' -query QT_HOST_BINS'
