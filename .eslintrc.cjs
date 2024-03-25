@@ -5,6 +5,12 @@ module.exports = {
     'plugin:@typescript-eslint/strict-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
   ],
+  "rules": {
+    "@typescript-eslint/no-shadow": "error",
+    "@typescript-eslint/prefer-readonly": "error",
+    "@typescript-eslint/return-await": "error",
+    "@typescript-eslint/no-loop-func": "error",
+  },
   plugins: ['@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -13,5 +19,5 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   root: true,
-  ignorePatterns: ['out'],
+  ignorePatterns: ['out', 'src/test'],
 };

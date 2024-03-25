@@ -6,6 +6,6 @@ import { getSelectedQtInstallationPath } from './register-qt-path';
 
 export function registerKitDirectoryCommand() {
   return vscode.commands.registerCommand('qt.kitDirectory', async () => {
-    return await getSelectedQtInstallationPath();
+    return getSelectedQtInstallationPath();
   });
 }

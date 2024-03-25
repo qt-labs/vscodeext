@@ -5,9 +5,9 @@ import * as net from 'net';
 import { IsWindows } from './util/os';
 
 class DesignerServer {
-  private server: net.Server;
+  private readonly server: net.Server;
   private client: net.Socket | undefined;
-  private port: number;
+  private readonly port: number;
   private static readonly newLine = IsWindows ? '\r\n' : '\n';
 
   constructor(port = 0) {

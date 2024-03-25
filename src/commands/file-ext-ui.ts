@@ -12,7 +12,7 @@ import { getSelectedQtInstallationPath } from './register-qt-path';
 export async function getQtDesignerPath() {
   const selectedQtPath = await getSelectedQtInstallationPath();
   if (selectedQtPath) {
-    return await qtpath.locateQtDesignerExePath(selectedQtPath);
+    return qtpath.locateQtDesignerExePath(selectedQtPath);
   }
   return qtpath.DesignerExeName;
 }

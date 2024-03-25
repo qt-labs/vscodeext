@@ -45,7 +45,8 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
     });
-
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
       switch (e.type) {
         case 'run':
@@ -54,7 +55,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           }
           // wait for the client to connect
           while (!designerServer.isClientConnected()) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await delay(100);
           }
           designerServer.sendFile(document.uri.fsPath);
           break;

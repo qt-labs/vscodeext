@@ -18,9 +18,9 @@ export const UserLocalDir = IsWindows
   ? process.env.LOCALAPPDATA ?? ''
   : path.join(Home, '.local/share');
 
-export function matchesVersionPattern(path: string): boolean {
+export function matchesVersionPattern(installationPath: string): boolean {
   // Check if the first character of the path is a digit (0-9)
-  return /^([0-9]+\.)+/.test(path);
+  return /^([0-9]+\.)+/.test(installationPath);
 }
 
 async function pathOfDirectoryIfExists(
@@ -78,9 +78,9 @@ export async function locateNinjaExecutable(qtRootDir: string) {
       path.join(vs2022dir, 'MSBuild', 'Google', 'Android', 'bin', NinjaFileName)
     );
   }
-  for (const path of pathsToCheck) {
-    if (await fsutil.exists(path)) {
-      return path;
+  for (const checkPath of pathsToCheck) {
+    if (await fsutil.exists(checkPath)) {
+      return checkPath;
     }
   }
 
