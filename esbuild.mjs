@@ -1,7 +1,8 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { build, context} from 'esbuild';
+import { exec } from 'child_process';
+import { build, context } from 'esbuild';
 
 /** @type BuildOptions */
 const baseConfig = {
@@ -32,6 +33,38 @@ const webviewConfig = {
   entryPoints: ['./src/editors/ui/webview-ui/main.ts'],
   outfile: './out/editors/ui/webview-ui/main.js'
 };
+
+async function execCmd(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject([error, stdout, stderr]);
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+}
+
+await execCmd('npx tsc --noEmit').then(
+  (stdout) => {
+    if (stdout.length > 0) {
+      console.log(stdout);
+    }
+  },
+  ([error, stdout, stderr]) => {
+    console.error(error.message);
+    if (stderr.length > 0) {
+      console.error(stderr);
+    }
+
+    if (stdout.length > 0) {
+      console.error(stdout);
+    }
+
+    process.exit(1);
+  }
+);
 
 // Build script
 (async () => {
