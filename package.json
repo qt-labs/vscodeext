@@ -304,6 +304,7 @@
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
+    "ci-lint": "npx prettier -c  \"**/*.{js,ts,json,mjs}\" && npx eslint .",
     "lint": "npm run prettier && npx eslint . --fix",
     "unitTests": "npm run pretest && node ./out/test/unit/runTest.js",
     "integrationTests": "npm run pretest && node ./out/test/integration/runTest.js",
