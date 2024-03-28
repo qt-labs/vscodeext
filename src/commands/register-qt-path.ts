@@ -103,13 +103,13 @@ export function registerQtCommand(context: vscode.ExtensionContext) {
   );
 }
 
-export async function getSelectedQtInstallationPath(): Promise<string> {
-  const selectedCMakeKit =
-    await vscode.commands.executeCommand<string>('cmake.buildKit');
-  const activeFolderPaths = await vscode.commands.executeCommand<string>(
-    'cmake.activeFolderPath'
+export async function getSelectedQtInstallationPath(
+  folder?: vscode.WorkspaceFolder
+) {
+  const selectedCMakeKit = await vscode.commands.executeCommand<string>(
+    'cmake.buildKit',
+    folder
   );
-  void activeFolderPaths;
   if (!selectedCMakeKit || selectedCMakeKit === '__unspec__') {
     // show information message to the user
     void vscode.window
@@ -122,16 +122,16 @@ export async function getSelectedQtInstallationPath(): Promise<string> {
           void vscode.commands.executeCommand('cmake.selectKit');
         }
       });
-    throw new Error('No CMake kit selected');
+    return '';
   }
   const addtionalKits = vscode.workspace
     .getConfiguration('cmake')
     .get<string[]>('additionalKits');
-
-  const kitFiles = [
-    CMAKE_GLOBAL_KITS_FILEPATH,
-    await KitManager.getCMakeWorkspaceKitsFilepath()
-  ];
+  const workspaceFolderKitsPath =
+    folder !== undefined
+      ? KitManager.getCMakeWorkspaceKitsFilepath(folder)
+      : '';
+  const kitFiles = [CMAKE_GLOBAL_KITS_FILEPATH, workspaceFolderKitsPath];
   if (addtionalKits) {
     kitFiles.push(...addtionalKits);
   }
@@ -187,6 +187,11 @@ export async function getSelectedQtInstallationPath(): Promise<string> {
     return '';
   }
 
+  // Note: If a workspace is added to a workspacefile, the below message may be
+  // shown. Becase cmake.buildKit at the beggining if this function is called
+  // before the cmake extension resolves the cmake kit in the newly added
+  // workspace folder.
+  // TODO: Wait until the cmake extension resolves the cmake kit.
   void vscode.window.showErrorMessage(selectedCMakeKit + ' is not found.');
   return '';
 }

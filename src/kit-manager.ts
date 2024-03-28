@@ -192,12 +192,8 @@ export class KitManager {
     await config.update(KitManager.QtFolderConfig, qtFolder, configTarget);
   }
 
-  public static async getCMakeWorkspaceKitsFilepath() {
-    return path.join(
-      await vscode.commands.executeCommand<string>('cmake.activeFolderPath'),
-      '.vscode',
-      'cmake-kits.json'
-    );
+  public static getCMakeWorkspaceKitsFilepath(folder: vscode.WorkspaceFolder) {
+    return path.join(folder.uri.fsPath, '.vscode', 'cmake-kits.json');
   }
 
   public async checkForAllQtInstallations() {
@@ -259,7 +255,7 @@ export class KitManager {
     }
   }
 
-  private async findQtInstallations(dir: string): Promise<string[]> {
+  public async findQtInstallations(dir: string): Promise<string[]> {
     if (!dir || !fsSync.existsSync(dir)) {
       return [];
     }
@@ -649,7 +645,7 @@ export class KitManager {
     await this.saveSelectedQt(newQtFolder, folder);
   }
 
-  private getWorkspaceFolderQtFolder(folder: vscode.WorkspaceFolder) {
+  public getWorkspaceFolderQtFolder(folder: vscode.WorkspaceFolder) {
     const qtFolderConfig = this.getConfiguration(folder).inspect<string>(
       KitManager.QtFolderConfig
     );

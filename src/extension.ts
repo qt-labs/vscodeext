@@ -13,8 +13,6 @@ import { registerMinGWgdbCommand } from './commands/mingw-gdb';
 import { registerResetQtExtCommand } from './commands/reset-qt-ext';
 import { registerNatvisCommand } from './commands/natvis';
 import { registerScanForQtKitsCommand } from './commands/scan-qt-kits';
-import { designerServer } from './designer-server';
-import { designerClient } from './designer-client';
 import { UIEditorProvider } from './editors/ui/ui-editor';
 import { Project, ProjectManager } from './project';
 import { KitManager } from './kit-manager';
@@ -33,13 +31,11 @@ export async function activate(context: vscode.ExtensionContext) {
   }
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
-      const project = new Project(folder, context);
+      const project = await Project.createProject(folder, context);
       projectManager.addProject(project);
       kitManager.addProject(project);
     }
   }
-
-  designerServer.start();
 
   registerUiFile(context);
   registerQtCommand(context);
@@ -66,7 +62,6 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  designerServer.stop();
-  designerClient.stop();
+  projectManager.dispose();
   console.log('Deactivating vscode-qt-tools');
 }

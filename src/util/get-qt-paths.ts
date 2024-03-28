@@ -1,11 +1,13 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import * as fs from 'fs/promises';
 import { Home, IsMacOS, IsWindows } from './os';
 import * as path from 'path';
 import * as fsutil from './fs';
+import { getSelectedQtInstallationPath } from '../commands/register-qt-path';
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QmakeFileName = 'qmake' + PlatformExecutableExtension;
@@ -170,6 +172,14 @@ async function queryHostBinDirPath(selectedQtPath: string): Promise<string> {
     promiseProcessClose
   ]);
   return hostBinDir;
+}
+
+export async function getQtDesignerPath(folder?: vscode.WorkspaceFolder) {
+  const selectedQtPath = await getSelectedQtInstallationPath(folder);
+  if (selectedQtPath) {
+    return locateQtDesignerExePath(selectedQtPath);
+  }
+  return DesignerExeName;
 }
 
 export async function locateQtDesignerExePath(selectedQtPath: string) {

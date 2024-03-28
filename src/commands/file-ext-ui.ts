@@ -4,25 +4,23 @@
 import * as child_process from 'child_process';
 
 import * as vscode from 'vscode';
-
-import * as qtpath from '../util/get-qt-paths';
 import * as local from '../util/localize';
-import { getSelectedQtInstallationPath } from './register-qt-path';
-
-export async function getQtDesignerPath() {
-  const selectedQtPath = await getSelectedQtInstallationPath();
-  if (selectedQtPath) {
-    return qtpath.locateQtDesignerExePath(selectedQtPath);
-  }
-  return qtpath.DesignerExeName;
-}
+import { projectManager } from '../extension';
+import { getQtDesignerPath } from '../util/get-qt-paths';
 
 const OpenedUiDocuments = new Map<string, child_process.ChildProcess>();
 async function openUiFileInQtDesigner(textEditor: vscode.TextEditor) {
   const document = textEditor.document;
   const uiFsPath = document.uri.fsPath || '';
   if (uiFsPath.endsWith('.ui')) {
-    const promiseDesignerPath = getQtDesignerPath();
+    const project = projectManager.findProjectContainingFile(document.uri);
+    if (!project) {
+      // This means that the file is not part of a workspace folder. So
+      // we start a new DesignerServer and DesignerClient
+      // TODO: Add fallback qt designer for this case
+      throw new Error('Project not found');
+    }
+    const promiseDesignerPath = getQtDesignerPath(project._folder);
     const opened = OpenedUiDocuments.get(uiFsPath);
     if (!opened || opened.killed || opened.exitCode !== null) {
       const qtDesignerPath = await promiseDesignerPath;

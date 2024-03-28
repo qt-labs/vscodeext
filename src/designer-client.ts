@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as child_process from 'child_process';
-import { getQtDesignerPath } from './commands/file-ext-ui';
-import { designerServer } from './designer-server';
 
-class DesignerClient {
+export class DesignerClient {
   private process: child_process.ChildProcess | undefined;
+  private readonly designerExePath: string;
+  private readonly serverPort: number | undefined;
+  constructor(designerExePath: string, serverPort?: number) {
+    this.serverPort = serverPort;
+    this.designerExePath = designerExePath;
+  }
 
-  public async start() {
-    const designerExePath = await getQtDesignerPath();
-    const designerServerPort = designerServer.getPort();
+  public start(serverPort?: number) {
+    const designerExePath = this.designerExePath;
+    const designerServerPort = serverPort ?? this.serverPort;
     if (!designerServerPort) {
-      throw new Error('Designer server is not running');
+      throw new Error('Designer server port is not set');
     }
 
     if (designerExePath) {
@@ -20,8 +24,19 @@ class DesignerClient {
         .spawn(designerExePath, ['--client ' + designerServerPort.toString()], {
           shell: true
         })
-        .on('exit', () => {
+        .on('exit', (number) => {
           this.process = undefined;
+          console.log('Designer client exited with code:' + number);
+        })
+        .on('error', () => {
+          this.process = undefined;
+          const message =
+            'Failed to start designer client:' +
+            'Exe:' +
+            designerExePath +
+            'Port:' +
+            designerServerPort;
+          throw new Error(message);
         });
     }
   }
@@ -35,6 +50,8 @@ class DesignerClient {
       this.process.kill();
     }
   }
-}
 
-export const designerClient: DesignerClient = new DesignerClient();
+  public dispose() {
+    this.stop();
+  }
+}

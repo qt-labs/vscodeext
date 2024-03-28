@@ -3,8 +3,9 @@
 
 import * as vscode from 'vscode';
 import { getNonce, getUri } from '../util';
-import { designerServer } from '../../designer-server';
-import { designerClient } from '../../designer-client';
+import { projectManager } from '../../extension';
+import { DesignerServer } from '../../designer-server';
+import { DesignerClient } from '../../designer-client';
 
 export class UIEditorProvider implements vscode.CustomTextEditorProvider {
   constructor(private readonly context: vscode.ExtensionContext) {}
@@ -48,10 +49,23 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     const delay = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
+      const project = projectManager.findProjectContainingFile(document.uri);
+      let designerServer: DesignerServer;
+      let designerClient: DesignerClient;
+      if (project) {
+        designerServer = project.designerServer;
+        designerClient = project.designerClient;
+      } else {
+        // This means that the file is not part of a workspace folder. So
+        // we start a new DesignerServer and DesignerClient
+        // TODO: Add fallback qt designer for this case
+        throw new Error('Project not found');
+      }
+
       switch (e.type) {
         case 'run':
           if (!designerClient.isRunning()) {
-            await designerClient.start();
+            designerClient.start(designerServer.getPort());
           }
           // wait for the client to connect
           while (!designerServer.isClientConnected()) {

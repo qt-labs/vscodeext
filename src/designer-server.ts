@@ -4,7 +4,7 @@
 import * as net from 'net';
 import { IsWindows } from './util/os';
 
-class DesignerServer {
+export class DesignerServer {
   private readonly server: net.Server;
   private client: net.Socket | undefined;
   private readonly port: number;
@@ -16,14 +16,13 @@ class DesignerServer {
       socket.pipe(socket);
     });
     this.client = undefined;
+    this.start();
   }
 
   public start() {
     this.server
       .listen(this.port, () => {
         console.log(`Designer server is listening on ${this.port}`);
-        const myport = this.getPort();
-        void myport;
       })
       .on('connection', (socket) => {
         this.onConnection(socket);
@@ -34,14 +33,16 @@ class DesignerServer {
   }
 
   private onConnection(socket: net.Socket) {
-    console.log('Designer server is connected');
-    // print the address of the client
-    console.log(socket.remoteAddress);
+    console.log('Designer server is connected:' + socket.remoteAddress);
     this.client = socket;
   }
 
   public stop() {
     this.server.close();
+  }
+
+  public dispose() {
+    this.stop();
   }
 
   public getPort() {
@@ -60,5 +61,3 @@ class DesignerServer {
     this.client.write(filePath.toString() + DesignerServer.newLine);
   }
 }
-
-export const designerServer = new DesignerServer();
