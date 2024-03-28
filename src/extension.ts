@@ -47,8 +47,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerQtCommand(context);
 
   context.subscriptions.push(
-    registerProFile(),
-    registerQdocFile(),
     registerKitDirectoryCommand(),
     registerMinGWgdbCommand(),
     registerResetQtExtCommand(),
