@@ -7,8 +7,6 @@ import {
   checkDefaultQtFolderPath,
   registerQtCommand
 } from './commands/register-qt-path';
-import { registerProFile } from './commands/file-ext-pro';
-import { registerQdocFile } from './commands/file-ext-qdoc';
 import { registerUiFile } from './commands/file-ext-ui';
 import { registerKitDirectoryCommand } from './commands/kit-directory';
 import { registerMinGWgdbCommand } from './commands/mingw-gdb';
