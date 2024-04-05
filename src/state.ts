@@ -69,16 +69,9 @@ export class GlobalStateManager extends BaseStateManager {
   public setGlobalQtKits(kits: Kit[]): Thenable<void> {
     return this._update('globalQtKits', kits);
   }
-  public getWorkspaceFileKits(): Map<string, Kit[]> {
-    return this._get<Map<string, Kit[]>>('workspaceFileKits', new Map());
-  }
-  public setWorkspaceFileKits(kits: Map<string, Kit[]>): Thenable<void> {
-    return this._update('workspaceFileKits', kits);
-  }
 
   public async reset() {
     await this.setGlobalQtKits([]);
-    await this.setWorkspaceFileKits(new Map());
     await this.setQtFolder('');
   }
 }
