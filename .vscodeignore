@@ -15,3 +15,6 @@ node_modules/**
 out/test/**
 out/scripts/**
 Development.md
+esbuild.mjs
+.eslintrc.cjs
+package-lock.json
