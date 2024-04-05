@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { WorkspaceStateManager } from './state';
 import { kitManager } from './extension';
 import { DesignerClient } from './designer-client';
@@ -11,19 +12,67 @@ import { getQtDesignerPath } from './util/get-qt-paths';
 // Project class represents a workspace folder in the extension.
 export class Project {
   private readonly _stateManager: WorkspaceStateManager;
-  private readonly _designerClient: DesignerClient;
+  private _designerClient: DesignerClient | undefined;
   private readonly _designerServer: DesignerServer;
   private constructor(
-    readonly _folder: vscode.WorkspaceFolder,
+    private readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext,
     designerExePath: string
   ) {
     this._stateManager = new WorkspaceStateManager(_context, _folder);
     this._designerServer = new DesignerServer();
-    this._designerClient = new DesignerClient(
-      designerExePath,
-      this._designerServer.getPort()
-    );
+    // If a kit is selected, create a DesignerClient instance. Otherwise,
+    // the DesignerClient instance will be created when the user opens a .ui
+    // file and a kit is selected. `cmake.onSelectedKitChanged()` api is needed
+    // to create a DesignerClient instance when a kit is selected instead of
+    // waiting for the user to open a .ui file.
+    if (designerExePath) {
+      this._designerClient = new DesignerClient(
+        designerExePath,
+        this._designerServer.getPort()
+      );
+    }
+    const customUiDesignerExePath = vscode.workspace
+      .getConfiguration('vscode-qt-tools', this._folder)
+      .get<string>('customUiDesignerExePath');
+    if (customUiDesignerExePath) {
+      if (this.checkCustomDesignerExePath(customUiDesignerExePath)) {
+        this._designerClient = new DesignerClient(
+          customUiDesignerExePath,
+          this._designerServer.getPort()
+        );
+      }
+    }
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      if (
+        event.affectsConfiguration(
+          'vscode-qt-tools.customUiDesignerExePath',
+          this._folder
+        )
+      ) {
+        const customUiDesignerExePathConfig = vscode.workspace
+          .getConfiguration('vscode-qt-tools', this._folder)
+          .get<string>('customUiDesignerExePath');
+        if (
+          customUiDesignerExePathConfig &&
+          this.checkCustomDesignerExePath(customUiDesignerExePathConfig)
+        ) {
+          this._designerClient?.detach();
+          this._designerClient = new DesignerClient(
+            customUiDesignerExePathConfig,
+            this._designerServer.getPort()
+          );
+        } else {
+          if (this._designerClient) {
+            this._designerClient.detach();
+            this._designerClient = new DesignerClient(
+              await getQtDesignerPath(this._folder),
+              this._designerServer.getPort()
+            );
+          }
+        }
+      }
+    });
   }
 
   static async createProject(
@@ -44,9 +93,25 @@ export class Project {
   get designerClient() {
     return this._designerClient;
   }
+  set designerClient(client: DesignerClient | undefined) {
+    this._designerClient = client;
+  }
+  get folder() {
+    return this._folder;
+  }
+
+  private checkCustomDesignerExePath(customUiDesignerExePath: string) {
+    if (!fs.existsSync(customUiDesignerExePath)) {
+      void vscode.window.showWarningMessage(
+        'Qt Designer executable not found at:"' + customUiDesignerExePath + '"'
+      );
+      return false;
+    }
+    return true;
+  }
   dispose() {
     this._designerServer.dispose();
-    this._designerClient.dispose();
+    this._designerClient?.dispose();
   }
 }
 

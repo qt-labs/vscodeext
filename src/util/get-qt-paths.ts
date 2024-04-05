@@ -179,7 +179,7 @@ export async function getQtDesignerPath(folder?: vscode.WorkspaceFolder) {
   if (selectedQtPath) {
     return locateQtDesignerExePath(selectedQtPath);
   }
-  return DesignerExeName;
+  return '';
 }
 
 export async function locateQtDesignerExePath(selectedQtPath: string) {
@@ -210,5 +210,5 @@ export async function locateQtDesignerExePath(selectedQtPath: string) {
     }
   }
 
-  return DesignerExeName;
+  return '';
 }

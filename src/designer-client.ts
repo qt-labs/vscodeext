@@ -51,6 +51,12 @@ export class DesignerClient {
     }
   }
 
+  public detach() {
+    if (this.process) {
+      this.process.unref();
+    }
+  }
+
   public dispose() {
     this.stop();
   }

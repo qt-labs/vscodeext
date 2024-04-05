@@ -6,6 +6,7 @@ import { getNonce, getUri } from '../util';
 import { projectManager } from '../../extension';
 import { DesignerServer } from '../../designer-server';
 import { DesignerClient } from '../../designer-client';
+import { getQtDesignerPath } from '../../util/get-qt-paths';
 
 export class UIEditorProvider implements vscode.CustomTextEditorProvider {
   constructor(private readonly context: vscode.ExtensionContext) {}
@@ -50,11 +51,27 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
       new Promise((resolve) => setTimeout(resolve, ms));
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
       const project = projectManager.findProjectContainingFile(document.uri);
-      let designerServer: DesignerServer;
-      let designerClient: DesignerClient;
+      let designerServer: DesignerServer | undefined;
+      let designerClient: DesignerClient | undefined;
       if (project) {
         designerServer = project.designerServer;
-        designerClient = project.designerClient;
+        if (project.designerClient) {
+          designerClient = project.designerClient;
+        } else {
+          // If a kit is selected/changed after the project is opened, we need
+          // to create a DesignerClient instance when a kit is selected
+          // instead of waiting for the user to open a .ui file. The reason is
+          // `cmake.onSelectedKitChanged()` does not exist, we need to create
+          // a DesignerClient instance here.
+          const qtDesignerPath = await getQtDesignerPath(project.folder);
+          if (qtDesignerPath) {
+            designerClient = new DesignerClient(
+              qtDesignerPath,
+              designerServer.getPort()
+            );
+            project.designerClient = designerClient;
+          }
+        }
       } else {
         // This means that the file is not part of a workspace folder. So
         // we start a new DesignerServer and DesignerClient
@@ -64,6 +81,9 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
 
       switch (e.type) {
         case 'run':
+          if (designerClient === undefined) {
+            throw new Error('Designer client not found');
+          }
           if (!designerClient.isRunning()) {
             designerClient.start(designerServer.getPort());
           }

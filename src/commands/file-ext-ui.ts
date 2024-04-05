@@ -20,7 +20,7 @@ async function openUiFileInQtDesigner(textEditor: vscode.TextEditor) {
       // TODO: Add fallback qt designer for this case
       throw new Error('Project not found');
     }
-    const promiseDesignerPath = getQtDesignerPath(project._folder);
+    const promiseDesignerPath = getQtDesignerPath(project.folder);
     const opened = OpenedUiDocuments.get(uiFsPath);
     if (!opened || opened.killed || opened.exitCode !== null) {
       const qtDesignerPath = await promiseDesignerPath;
