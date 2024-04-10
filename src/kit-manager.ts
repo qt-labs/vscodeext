@@ -349,16 +349,19 @@ export class KitManager {
     if (locatedNinjaExePath) {
       qtPathEnv += path.delimiter + path.dirname(locatedNinjaExePath);
     }
-
+    const kitName = qtPath.mangleQtInstallation(qtFolder, installation);
+    const kitPreferredGenerator = kitName.toLowerCase().includes('wasm_')
+      ? 'Ninja'
+      : CMakeDefaultGenerator;
     let newKit: Kit = {
-      name: qtPath.mangleQtInstallation(qtFolder, installation),
+      name: kitName,
       environmentVariables: {
         VSCODE_QT_FOLDER: installation,
         PATH: qtPathEnv
       },
       isTrusted: true,
       preferredGenerator: {
-        name: CMakeDefaultGenerator
+        name: kitPreferredGenerator
       }
     };
 
