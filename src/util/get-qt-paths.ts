@@ -50,6 +50,15 @@ export function mangleQtInstallation(
   return pathParts.slice().join('-');
 }
 
+export function mangleMsvcKitName(installation: string): string {
+  const pathParts = installation.split(/[/\\:]+/).filter((n) => n);
+  const qtIdx = Math.max(
+    0,
+    pathParts.findIndex((s) => s.toLowerCase() == 'qt')
+  );
+  return pathParts.slice(qtIdx).join('-');
+}
+
 async function locateQmakeExeFilePath(selectedQtPath: string) {
   const bin = path.join(selectedQtPath, 'bin');
   const qmakeExePath = path.join(bin, QmakeFileName);

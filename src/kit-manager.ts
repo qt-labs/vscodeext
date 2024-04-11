@@ -589,8 +589,7 @@ export class KitManager {
       return isArchMatch && versions.compareVersions(version, vsYear) >= 0;
     });
     for (const kit of msvcKitsWithArchitectureMatch) {
-      kit.name = qtPath.mangleQtInstallation(
-        qtFolder,
+      kit.name = qtPath.mangleMsvcKitName(
         newKit.name + ' - ' + (kit.name || '')
       );
       if (kit.preferredGenerator) {
