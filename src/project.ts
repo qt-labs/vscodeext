@@ -32,13 +32,13 @@ export class Project {
         this._designerServer.getPort()
       );
     }
-    const customUiDesignerExePath = vscode.workspace
+    const customWidgetDesignerExePath = vscode.workspace
       .getConfiguration('vscode-qt-tools', this._folder)
-      .get<string>('customUiDesignerExePath');
-    if (customUiDesignerExePath) {
-      if (this.checkCustomDesignerExePath(customUiDesignerExePath)) {
+      .get<string>('customWidgetDesignerExePath');
+    if (customWidgetDesignerExePath) {
+      if (this.checkCustomDesignerExePath(customWidgetDesignerExePath)) {
         this._designerClient = new DesignerClient(
-          customUiDesignerExePath,
+          customWidgetDesignerExePath,
           this._designerServer.getPort()
         );
       }
@@ -46,20 +46,20 @@ export class Project {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
       if (
         event.affectsConfiguration(
-          'vscode-qt-tools.customUiDesignerExePath',
+          'vscode-qt-tools.customWidgetDesignerExePath',
           this._folder
         )
       ) {
-        const customUiDesignerExePathConfig = vscode.workspace
+        const customWidgetDesignerExePathConfig = vscode.workspace
           .getConfiguration('vscode-qt-tools', this._folder)
-          .get<string>('customUiDesignerExePath');
+          .get<string>('customWidgetDesignerExePath');
         if (
-          customUiDesignerExePathConfig &&
-          this.checkCustomDesignerExePath(customUiDesignerExePathConfig)
+          customWidgetDesignerExePathConfig &&
+          this.checkCustomDesignerExePath(customWidgetDesignerExePathConfig)
         ) {
           this._designerClient?.detach();
           this._designerClient = new DesignerClient(
-            customUiDesignerExePathConfig,
+            customWidgetDesignerExePathConfig,
             this._designerServer.getPort()
           );
         } else {
@@ -100,10 +100,12 @@ export class Project {
     return this._folder;
   }
 
-  private checkCustomDesignerExePath(customUiDesignerExePath: string) {
-    if (!fs.existsSync(customUiDesignerExePath)) {
+  private checkCustomDesignerExePath(customWidgetDesignerExePath: string) {
+    if (!fs.existsSync(customWidgetDesignerExePath)) {
       void vscode.window.showWarningMessage(
-        'Qt Designer executable not found at:"' + customUiDesignerExePath + '"'
+        'Qt Designer executable not found at:"' +
+          customWidgetDesignerExePath +
+          '"'
       );
       return false;
     }

@@ -298,10 +298,10 @@
           "description": "Do not ask for default Qt folder",
           "scope": "machine"
         },
-        "vscode-qt-tools.customUiDesignerExePath": {
+        "vscode-qt-tools.customWidgetDesignerExePath": {
           "type": "string",
           "default": "",
-          "description": "Specify the custom Qt Designer executable path",
+          "description": "Specify the custom Qt Widget Designer executable path",
           "scope": "machine-overridable"
         }
       }
