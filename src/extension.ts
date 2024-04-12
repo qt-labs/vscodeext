@@ -13,12 +13,22 @@ import { registerMinGWgdbCommand } from './commands/mingw-gdb';
 import { registerResetQtExtCommand } from './commands/reset-qt-ext';
 import { registerNatvisCommand } from './commands/natvis';
 import { registerScanForQtKitsCommand } from './commands/scan-qt-kits';
+import {
+  registerbuildDirectoryName,
+  registerlaunchTargetFilenameWithoutExtension
+} from './commands/launch-variables';
 import { UIEditorProvider } from './editors/ui/ui-editor';
 import { Project, ProjectManager } from './project';
 import { KitManager } from './kit-manager';
+import {
+  wasmStartTaskProvider,
+  WASMStartTaskProvider
+} from './tasks/wasm-start';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
+let taskProvider: vscode.Disposable | undefined;
+
 export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
     .getExtension('ms-vscode.cmake-tools')
@@ -46,9 +56,15 @@ export async function activate(context: vscode.ExtensionContext) {
     registerResetQtExtCommand(),
     ...registerNatvisCommand(),
     UIEditorProvider.register(context),
-    registerScanForQtKitsCommand()
+    registerScanForQtKitsCommand(),
+    registerlaunchTargetFilenameWithoutExtension(),
+    registerbuildDirectoryName()
   );
 
+  taskProvider = vscode.tasks.registerTaskProvider(
+    WASMStartTaskProvider.WASMStartType,
+    wasmStartTaskProvider
+  );
   await kitManager.checkForAllQtInstallations();
   checkDefaultQtFolderPath();
 
@@ -62,6 +78,9 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  projectManager.dispose();
   console.log('Deactivating vscode-qt-tools');
+  projectManager.dispose();
+  if (taskProvider) {
+    taskProvider.dispose();
+  }
 }

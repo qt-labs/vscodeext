@@ -37,6 +37,28 @@ installer.
 
 Opens the currently selected .ui file in Qt Designer.
 
+## Debugging
+
+### Debugging Qt WebAssembly Applications
+
+To debug a Qt WebAssembly application, use the
+`Debug Qt WebAssembly Application` debug snippet. `Qt: WASM Start` in that
+snippet will check the required dependencies. If they are not installed, it
+will prompt you to install them.
+
+For `multi-thread` Qt WebAssembly applications, set the following
+configuration in your `settings.json`.
+
+```json
+    "livePreview.httpHeaders": {
+        "Cross-Origin-Embedder-Policy": "require-corp",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Accept-Ranges": "bytes"
+    }
+```
+
+Otherwise, you may see the `SharedArrayBuffer is not defined` error.
+
 ## License
 
 This extension can be licensed under the Qt Commercial License and the

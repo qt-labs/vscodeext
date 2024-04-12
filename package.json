@@ -165,6 +165,17 @@
                 ]
               }
             }
+          },
+          {
+            "label": "%vscode-qt-tools.debugger.wasm.snippet.label%",
+            "description": "%vscode-qt-tools.debugger.wasm.snippet.description%",
+            "body": {
+              "name": "Debug Qt WebAssembly Application",
+              "type": "chrome",
+              "request": "launch",
+              "url": "^\"http://localhost:3000/\\${command:qt.buildDirectoryName}/\\${command:qt.launchTargetFilenameWithoutExtension}.html\"",
+              "preLaunchTask": "Qt: WASM Start"
+            }
           }
         ]
       }
@@ -307,6 +318,11 @@
       }
     }
   },
+  "taskDefinitions": [
+    {
+      "type": "Qt"
+    }
+  ],
   "extensionDependencies": [
     "ms-vscode.cmake-tools"
   ],
