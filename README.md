@@ -13,7 +13,7 @@ Studio Code.
 ## Getting started
 
 After installing the extension, you're asked to register your Qt
-installation folder. You can also manually trigger this calling the
+installation folder. You can also manually trigger this by calling the
 _Qt: Register Qt Installation_ command. This will create CMake kits
 for each Qt version.
 
@@ -21,7 +21,7 @@ Now, open a Qt CMake project and select one of the newly created kits
 with the command _CMake: Select a Kit_ and build the project with
 _CMake: Build_.
 
-To debug your program, select _Run and Debug_ in the side bar and
+To debug your program, select _Run and Debug_ in the sidebar and
 create a `launch.json` file. Select _Add Configuration..._ and choose
 from the available _Qt: Debug..._ options, depending on your platform
 and toolchain.
