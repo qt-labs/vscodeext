@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as net from 'net';
-import { IsWindows } from './util/os';
+
+import { IsWindows } from '@util/os';
 
 export class DesignerServer {
   private readonly server: net.Server;

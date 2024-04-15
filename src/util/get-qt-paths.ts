@@ -3,11 +3,12 @@
 
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import * as fs from 'fs/promises';
-import { Home, IsMacOS, IsWindows } from './os';
 import * as path from 'path';
-import * as fsutil from './fs';
-import { getSelectedQtInstallationPath } from '../commands/register-qt-path';
+import * as fs from 'fs/promises';
+
+import { Home, IsMacOS, IsWindows } from '@util/os';
+import * as fsutil from '@util/fs';
+import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const QmakeFileName = 'qmake' + PlatformExecutableExtension;

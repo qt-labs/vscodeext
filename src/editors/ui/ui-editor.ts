@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import { getNonce, getUri } from '../util';
-import { projectManager } from '../../extension';
-import { DesignerServer } from '../../designer-server';
-import { DesignerClient } from '../../designer-client';
-import { getQtDesignerPath } from '../../util/get-qt-paths';
+
+import { getNonce, getUri } from '@/editors/util';
+import { projectManager } from '@/extension';
+import { DesignerServer } from '@/designer-server';
+import { DesignerClient } from '@/designer-client';
+import { getQtDesignerPath } from '@util/get-qt-paths';
 
 export class UIEditorProvider implements vscode.CustomTextEditorProvider {
   constructor(private readonly context: vscode.ExtensionContext) {}

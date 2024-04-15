@@ -4,8 +4,9 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IsWindows } from '../util/os';
-import { getSelectedQtInstallationPath } from './register-qt-path';
+
+import { IsWindows } from '@util/os';
+import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 
 async function findMinGWgdbPath(): Promise<string> {
   if (!IsWindows) {

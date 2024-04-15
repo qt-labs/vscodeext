@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import { isTestMode } from './util/util';
-import { Kit } from './kit-manager';
+
+import { isTestMode } from '@util/util';
+import { Kit } from '@/kit-manager';
 
 class BaseStateManager {
   constructor(

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as child_process from 'child_process';
-
 import * as vscode from 'vscode';
-import * as local from '../util/localize';
-import { projectManager } from '../extension';
-import { getQtDesignerPath } from '../util/get-qt-paths';
+
+import * as local from '@util/localize';
+import { projectManager } from '@/extension';
+import { getQtDesignerPath } from '@util/get-qt-paths';
 
 const OpenedUiDocuments = new Map<string, child_process.ChildProcess>();
 async function openUiFileInQtDesigner(textEditor: vscode.TextEditor) {

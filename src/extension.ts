@@ -3,27 +3,25 @@
 
 import * as vscode from 'vscode';
 import { performance } from 'perf_hooks';
+
 import {
   checkDefaultQtFolderPath,
   registerQtCommand
-} from './commands/register-qt-path';
-import { registerUiFile } from './commands/file-ext-ui';
-import { registerKitDirectoryCommand } from './commands/kit-directory';
-import { registerMinGWgdbCommand } from './commands/mingw-gdb';
-import { registerResetQtExtCommand } from './commands/reset-qt-ext';
-import { registerNatvisCommand } from './commands/natvis';
-import { registerScanForQtKitsCommand } from './commands/scan-qt-kits';
+} from '@cmd/register-qt-path';
+import { registerUiFile } from '@cmd/file-ext-ui';
+import { registerKitDirectoryCommand } from '@cmd/kit-directory';
+import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
+import { registerResetQtExtCommand } from '@cmd/reset-qt-ext';
+import { registerNatvisCommand } from '@cmd/natvis';
+import { registerScanForQtKitsCommand } from '@cmd/scan-qt-kits';
 import {
   registerbuildDirectoryName,
   registerlaunchTargetFilenameWithoutExtension
-} from './commands/launch-variables';
+} from '@cmd/launch-variables';
 import { UIEditorProvider } from './editors/ui/ui-editor';
-import { Project, ProjectManager } from './project';
-import { KitManager } from './kit-manager';
-import {
-  wasmStartTaskProvider,
-  WASMStartTaskProvider
-} from './tasks/wasm-start';
+import { Project, ProjectManager } from '@/project';
+import { KitManager } from '@/kit-manager';
+import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;

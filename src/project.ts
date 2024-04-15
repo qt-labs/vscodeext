@@ -3,11 +3,12 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { WorkspaceStateManager } from './state';
-import { kitManager } from './extension';
-import { DesignerClient } from './designer-client';
-import { DesignerServer } from './designer-server';
-import { getQtDesignerPath } from './util/get-qt-paths';
+
+import { WorkspaceStateManager } from '@/state';
+import { kitManager } from '@/extension';
+import { DesignerClient } from '@/designer-client';
+import { DesignerServer } from '@/designer-server';
+import { getQtDesignerPath } from '@/util/get-qt-paths';
 
 // Project class represents a workspace folder in the extension.
 export class Project {

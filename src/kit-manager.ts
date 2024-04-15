@@ -6,13 +6,13 @@ import * as path from 'path';
 import * as fsSync from 'fs';
 import * as fs from 'fs/promises';
 import * as os from 'os';
-
-import * as qtPath from './util/get-qt-paths';
-import * as versions from './util/versions';
-import * as util from './util/util';
-import { Project } from './project';
-import { GlobalStateManager, WorkspaceStateManager } from './state';
 import * as commandExists from 'command-exists';
+
+import * as qtPath from '@util/get-qt-paths';
+import * as versions from '@util/versions';
+import * as util from '@util/util';
+import { Project } from '@/project';
+import { GlobalStateManager, WorkspaceStateManager } from '@/state';
 
 export const CMakeDefaultGenerator = 'Ninja Multi-Config';
 const CMakeToolsDir = path.join(qtPath.UserLocalDir, 'CMakeTools');

@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { getFilenameWithoutExtension } from '../util/util';
+import { getFilenameWithoutExtension } from '@util/util';
 
 export function registerlaunchTargetFilenameWithoutExtension() {
   return vscode.commands.registerCommand(

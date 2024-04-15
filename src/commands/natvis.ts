@@ -4,7 +4,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { getSelectedQtInstallationPath } from './register-qt-path';
+
+import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 
 export function registerNatvisCommand() {
   const getNatvis = (version: string) => {

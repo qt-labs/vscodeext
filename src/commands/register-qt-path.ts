@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-
-import * as local from '../util/localize';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Home, IsLinux, IsMacOS, IsWindows } from '../util/os';
-import { kitManager } from '../extension';
-import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '../kit-manager';
+
+import * as local from '@util/localize';
+import { Home, IsLinux, IsMacOS, IsWindows } from '@util/os';
+import { kitManager } from '@/extension';
+import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
 let RegisterQtCommandTitle = '';
