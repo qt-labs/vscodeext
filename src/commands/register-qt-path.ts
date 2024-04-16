@@ -106,6 +106,15 @@ export function registerQtCommand(context: vscode.ExtensionContext) {
 export async function getSelectedQtInstallationPath(
   folder?: vscode.WorkspaceFolder
 ) {
+  if (folder === undefined) {
+    const activeFolder = await vscode.commands.executeCommand<string>(
+      'cmake.activeFolderPath'
+    );
+    if (activeFolder === '') {
+      throw new Error('No active folder found.');
+    }
+    folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(activeFolder));
+  }
   const selectedCMakeKit = await vscode.commands.executeCommand<string>(
     'cmake.buildKit',
     folder
