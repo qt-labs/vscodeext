@@ -98,6 +98,8 @@
               "program": "^\"\\${command:cmake.launchTargetPath}\"",
               "stopAtEntry": false,
               "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt.natvis}\"",
+              "showDisplayString": true,
               "linux": {
                 "MIMode": "gdb",
                 "miDebuggerPath": "/usr/bin/gdb"
@@ -127,6 +129,8 @@
               "program": "^\"\\${command:cmake.launchTargetPath}\"",
               "stopAtEntry": false,
               "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt.natvis}\"",
+              "showDisplayString": true,
               "linux": {
                 "MIMode": "lldb",
                 "miDebuggerPath": "/usr/bin/lldb"
