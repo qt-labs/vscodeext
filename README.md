@@ -1,53 +1,86 @@
 # Qt Extension for Visual Studio Code
 
-This extension provides support for developing Qt projects with Visual
-Studio Code.
+Develop Qt applications with Visual Studio Code.
 
-## Features
+You can:
 
-- Detects the Qt installations provided by Qt's online installer.
-- Creates CMake kits for each Qt installation.
-- Provides debugging support for Qt's C++ types.
-- Provides support for various Qt-specific file formats.
+- Use Qt in your CMake project by selecting a generated Qt kit.
+- Design Qt widgets-based UIs with Qt Widget Designer.
+- Build Qt projects with CMake.
+- Debug Qt's C++ types.
+- Handle Qt-specific file formats.
 
-## Getting started
+## How to
 
-After installing the extension, you're asked to register your Qt
-installation folder. You can also manually trigger this by calling the
-_Qt: Register Qt Installation_ command. This will create CMake kits
-for each Qt version.
+### Get started
 
-Now, open a Qt CMake project and select one of the newly created kits
-with the command _CMake: Select a Kit_ and build the project with
-_CMake: Build_.
+1. _Install the Qt extension_.
+1. _Register a Qt installation_.
+1. Open a folder that contains a Qt CMake project (that has a `CMakeLists.txt`
+   file).
+1. In `Command Palette`, select `CMake: Select a Kit` to select a kit that
+   matches your Qt version and toolchain.
+1. Select `CMake: Build` to build the project.
 
-To debug your program, select _Run and Debug_ in the sidebar and
-create a `launch.json` file. Select _Add Configuration..._ and choose
-from the available _Qt: Debug..._ options, depending on your platform
-and toolchain.
+### Install the Qt extension
 
-## Commands
+To install the Qt extension:
 
-### Register Qt Installation
+1. Download the Qt extension from
+   [GitHub actions](https://github.com/qt-labs/vscodeext/actions/)
+1. In Visual Studio Code, select `Install from VSIX` in the `Extensions` view
+   command dropdown.
+1. Select the `qt-<version>.vsix` package, and then select `Install`.
 
-Lets you select the folder where Qt has been installed using the Qt
-installer.
+The [CMake](https://github.com/twxs/vs.language.cmake) and
+[CMake Tools](https://github.com/microsoft/vscode-cmake-tools)
+extensions are installed automatically.
 
-### Open UI File in Qt Designer
+### Register a Qt installation
 
-Opens the currently selected .ui file in Qt Designer.
+To tell Visual Studio Code where you installed Qt:
 
-## Debugging
+1. In `Command Palette`, select `Qt: Register Qt Installation`.
+1. Select the folder where you installed Qt, and then select
+   `Select the Qt installation path`.
 
-### Debugging Qt WebAssembly Applications
+The command creates CMake kits for each installed Qt version.
 
-To debug a Qt WebAssembly application, use the
-`Debug Qt WebAssembly Application` debug snippet. `Qt: WASM Start` in that
-snippet will check the required dependencies. If they are not installed, it
-will prompt you to install them.
+### Scan for Qt kits
+
+If some Qt CMake kits are missing, select `Qt: Scan for Qt Kits` in
+`Command Palette`.
+
+### Design a widgets-based UI
+
+To design a widgets-based UI:
+
+1. In `Explorer`, select a `.ui` file.
+1. Select `Open this file with Qt Widget Designer`.
+1. Use Qt Widget designer to design a UI.
+
+### Debug an application
+
+To debug an application:
+
+1. Select `Run and Debug`.
+1. Create a `launch.json` file.
+1. Select `Add Configuration`, and then select a `Qt: Debug` debug
+   configuration that matches your debugger.
+
+### Debug a Qt WebAssembly application
+
+To debug a Qt WebAssembly application:
+
+1. Open a `launch.json` file.
+1. Select `Add Configuration`, and then select the
+   `Qt: Debug Qt WASM with Chrome` debug configuration.
+
+The `Qt: WASM Start` task in the `preLaunchTask` section checks the required
+dependencies and prompts you to install them if necessary.
 
 For `multi-thread` Qt WebAssembly applications, set the following
-configuration in your `settings.json`.
+configuration in `settings.json`:
 
 ```json
     "livePreview.httpHeaders": {
