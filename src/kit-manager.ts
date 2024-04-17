@@ -177,11 +177,12 @@ export class KitManager {
   }
 
   public async reset() {
+    await this.updateQtInstallations('', []);
     await this.globalStateManager.reset();
     for (const project of this.projects) {
+      await this.updateQtInstallations('', [], project.getFolder());
       await project.getStateManager().reset();
     }
-    await this.setGlobalQtFolder('');
   }
 
   public async setGlobalQtFolder(qtFolder: string) {
@@ -293,19 +294,23 @@ export class KitManager {
     qtFolder: string,
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const qtInstallation = await this.findQtInstallations(qtFolder);
+    const qtInstallations = await this.findQtInstallations(qtFolder);
     if (qtFolder) {
-      if (qtInstallation.length === 0) {
+      if (qtInstallations.length === 0) {
         void vscode.window.showWarningMessage(`No Qt version found.`);
         console.log('No Qt version found.');
       } else {
         void vscode.window.showInformationMessage(
-          `Found ${qtInstallation.length} Qt installation(s).`
+          `Found ${qtInstallations.length} Qt installation(s).`
         );
-        console.log(`Found ${qtInstallation.length} Qt installation(s).`);
+        console.log(`Found ${qtInstallations.length} Qt installation(s).`);
       }
     }
-    await this.updateQtInstallations(qtFolder, qtInstallation, workspaceFolder);
+    await this.updateQtInstallations(
+      qtFolder,
+      qtInstallations,
+      workspaceFolder
+    );
     if (workspaceFolder) {
       await this.getProject(workspaceFolder)
         ?.getStateManager()

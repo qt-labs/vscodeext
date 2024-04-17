@@ -3,12 +3,10 @@
 
 import * as vscode from 'vscode';
 
-import { setDoNotAskForDefaultQtFolder } from '@cmd/register-qt-path';
 import { kitManager } from '@/extension';
 
 export async function resetQtExt() {
   await kitManager.reset();
-  await setDoNotAskForDefaultQtFolder(false);
 }
 
 export function registerResetQtExtCommand() {
