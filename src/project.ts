@@ -104,7 +104,7 @@ export class Project {
   private checkCustomDesignerExePath(customWidgetDesignerExePath: string) {
     if (!fs.existsSync(customWidgetDesignerExePath)) {
       void vscode.window.showWarningMessage(
-        'Qt Designer executable not found at:"' +
+        'Qt Widget Designer executable not found at:"' +
           customWidgetDesignerExePath +
           '"'
       );

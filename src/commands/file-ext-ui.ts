@@ -17,7 +17,7 @@ async function openUiFileInQtDesigner(textEditor: vscode.TextEditor) {
     if (!project) {
       // This means that the file is not part of a workspace folder. So
       // we start a new DesignerServer and DesignerClient
-      // TODO: Add fallback qt designer for this case
+      // TODO: Add fallback qt widget designer for this case
       throw new Error('Project not found');
     }
     const promiseDesignerPath = getQtDesignerPath(project.folder);
@@ -30,7 +30,7 @@ async function openUiFileInQtDesigner(textEditor: vscode.TextEditor) {
           child_process.spawn(qtDesignerPath, [uiFsPath])
         );
       } else {
-        local.warn('Qt Designer is not installed on your system');
+        local.warn('Qt Widget Designer is not installed on your system');
       }
     }
   } else {
