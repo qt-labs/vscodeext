@@ -80,7 +80,7 @@ export interface Kit extends KitDetect {
   /**
    * Additional environment variables for the kit
    */
-  environmentVariables: Environment;
+  environmentVariables?: Environment;
 
   /**
    * The language compilers.
@@ -390,6 +390,9 @@ export class KitManager {
         platform = os.platform();
         const mingwDirPath = await promiseMingwPath;
         if (mingwDirPath) {
+          if (newKit.environmentVariables == undefined) {
+            newKit.environmentVariables = {};
+          }
           newKit.environmentVariables.PATH = [
             newKit.environmentVariables.PATH,
             mingwDirPath

@@ -160,7 +160,7 @@ export async function getSelectedQtInstallationPath(
     if (selectedQtKit === undefined) {
       return null;
     }
-    if (selectedQtKit.environmentVariables.VSCODE_QT_FOLDER === undefined) {
+    if (selectedQtKit.environmentVariables?.VSCODE_QT_FOLDER === undefined) {
       void vscode.window.showErrorMessage(
         '"VSCODE_QT_FOLDER" environment variable is not set for "' +
           selectedCMakeKit +
@@ -201,6 +201,8 @@ export async function getSelectedQtInstallationPath(
   // before the cmake extension resolves the cmake kit in the newly added
   // workspace folder.
   // TODO: Wait until the cmake extension resolves the cmake kit.
-  void vscode.window.showErrorMessage(selectedCMakeKit + ' is not found.');
+  void vscode.window.showErrorMessage(
+    selectedCMakeKit + ' is not a valid Qt kit.'
+  );
   return '';
 }
