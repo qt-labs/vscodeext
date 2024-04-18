@@ -296,7 +296,7 @@ export class KitManager {
     const qtInstallation = await this.findQtInstallations(qtFolder);
     if (qtFolder) {
       if (qtInstallation.length === 0) {
-        void vscode.window.showInformationMessage(`No Qt version found.`);
+        void vscode.window.showWarningMessage(`No Qt version found.`);
         console.log('No Qt version found.');
       } else {
         void vscode.window.showInformationMessage(
@@ -639,7 +639,7 @@ export class KitManager {
   ) {
     if (newQtFolder) {
       if (!fsSync.existsSync(newQtFolder)) {
-        void vscode.window.showInformationMessage(
+        void vscode.window.showWarningMessage(
           `The specified Qt installation path does not exist.`
         );
       }
