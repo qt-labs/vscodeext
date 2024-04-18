@@ -20,15 +20,12 @@ export function getRegisterQtCommandTitle(): string {
 export async function registerQt() {
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
-    openLabel: 'Select The Qt installation path',
+    openLabel: 'Select Qt installation directory',
     canSelectFiles: false,
     canSelectFolders: true
   };
   const selectedQtFolderUri = await vscode.window.showOpenDialog(options);
   if (!selectedQtFolderUri) {
-    void vscode.window.showInformationMessage(
-      'No Qt installation path selected.'
-    );
     return;
   }
   const selectedQtFolder = selectedQtFolderUri[0].fsPath;
