@@ -21,7 +21,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     );
     return providerRegistration;
   }
-  public resolveCustomTextEditor(
+  public async resolveCustomTextEditor(
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
@@ -48,7 +48,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
     });
-    const delay = (ms: number) =>
+    const delay = async (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
       const project = projectManager.findProjectContainingFile(document.uri);

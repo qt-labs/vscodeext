@@ -7,7 +7,6 @@ import * as path from 'path';
 
 import * as local from '@util/localize';
 import { Home, IsLinux, IsMacOS, IsWindows } from '@util/os';
-import { kitManager } from '@/extension';
 import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
 
 export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
@@ -30,7 +29,7 @@ export async function registerQt() {
   }
   const selectedQtFolder = selectedQtFolderUri[0].fsPath;
   if (selectedQtFolder) {
-    void kitManager.setGlobalQtFolder(selectedQtFolder);
+    void KitManager.setGlobalQtFolder(selectedQtFolder);
   }
   return 0;
 }
@@ -58,7 +57,7 @@ export function checkDefaultQtFolderPath() {
     return;
   }
 
-  if (kitManager.getCurrentGlobalQtFolder()) {
+  if (KitManager.getCurrentGlobalQtFolder()) {
     // Qt folder is already set. No need to check for default path
     return;
   }
@@ -86,7 +85,7 @@ export function checkDefaultQtFolderPath() {
     )
     .then((response) => {
       if (response === setDefaultPathButtonMessage) {
-        void kitManager.setGlobalQtFolder(defaultPath);
+        void KitManager.setGlobalQtFolder(defaultPath);
       } else if (response === doNotShowAgainButtonMessage) {
         void setDoNotAskForDefaultQtFolder(true);
       }

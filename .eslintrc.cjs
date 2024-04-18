@@ -6,6 +6,12 @@ module.exports = {
     'plugin:@typescript-eslint/stylistic-type-checked'
   ],
   rules: {
+    '@typescript-eslint/promise-function-async': 'error',
+    '@typescript-eslint/no-useless-empty-export': 'error',
+    'default-param-last': 'off',
+    '@typescript-eslint/default-param-last': 'error',
+    'class-methods-use-this': 'off',
+    '@typescript-eslint/class-methods-use-this': 'error',
     '@typescript-eslint/no-shadow': 'error',
     '@typescript-eslint/prefer-readonly': 'error',
     '@typescript-eslint/return-await': 'error',

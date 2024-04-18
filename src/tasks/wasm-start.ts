@@ -34,7 +34,7 @@ export class DummyTaskTerminal implements vscode.Pseudoterminal {
 
 export class WASMStartTaskProvider implements vscode.TaskProvider {
   static WASMStartType = 'Qt';
-  private getTask(taskDefinition: WASMStartTaskDefinition): vscode.Task {
+  private static getTask(taskDefinition: WASMStartTaskDefinition): vscode.Task {
     const taskCallback = async (
       callbacktaskDefinition: vscode.TaskDefinition
     ) => {
@@ -83,20 +83,22 @@ export class WASMStartTaskProvider implements vscode.TaskProvider {
     );
     return WASMStartTask;
   }
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   public provideTasks(): vscode.Task[] {
     const result: vscode.Task[] = [];
     const taskDefinition: WASMStartTaskDefinition = {
       type: WASMStartTaskProvider.WASMStartType,
       task: 'WASMStart'
     };
-    const WASMStartTask = this.getTask(taskDefinition);
+    const WASMStartTask = WASMStartTaskProvider.getTask(taskDefinition);
     result.push(WASMStartTask);
     return result;
   }
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   public resolveTask(_task: vscode.Task): vscode.Task | undefined {
     const definition: WASMStartTaskDefinition =
       _task.definition as WASMStartTaskDefinition;
-    return this.getTask(definition);
+    return WASMStartTaskProvider.getTask(definition);
   }
 }
 

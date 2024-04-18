@@ -169,7 +169,7 @@ export class KitManager {
     this.projects.delete(project);
   }
 
-  public getCurrentGlobalQtFolder(): string {
+  public static getCurrentGlobalQtFolder(): string {
     const qtFolderConfig = this.getConfiguration().inspect<string>(
       KitManager.QtFolderConfig
     );
@@ -185,7 +185,7 @@ export class KitManager {
     }
   }
 
-  public async setGlobalQtFolder(qtFolder: string) {
+  static async setGlobalQtFolder(qtFolder: string) {
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
     const configTarget = util.isTestMode()
       ? vscode.ConfigurationTarget.Workspace
@@ -223,8 +223,8 @@ export class KitManager {
   // otherwise, it is a workspace folder check
   private async checkForQtInstallations(project?: Project) {
     const currentQtFolder = project
-      ? this.getWorkspaceFolderQtFolder(project.getFolder())
-      : this.getCurrentGlobalQtFolder();
+      ? KitManager.getWorkspaceFolderQtFolder(project.getFolder())
+      : KitManager.getCurrentGlobalQtFolder();
 
     const previousQtFolder = project
       ? project.getStateManager().getQtFolder()
@@ -235,7 +235,7 @@ export class KitManager {
         : await this.onQtFolderUpdated(currentQtFolder);
     }
     const newQtInstallations = currentQtFolder
-      ? await this.findQtInstallations(currentQtFolder)
+      ? await KitManager.findQtInstallations(currentQtFolder)
       : [];
     project
       ? await this.updateQtInstallations(
@@ -256,7 +256,7 @@ export class KitManager {
     }
   }
 
-  public async findQtInstallations(dir: string): Promise<string[]> {
+  static async findQtInstallations(dir: string): Promise<string[]> {
     if (!dir || !fsSync.existsSync(dir)) {
       return [];
     }
@@ -294,7 +294,7 @@ export class KitManager {
     qtFolder: string,
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const qtInstallations = await this.findQtInstallations(qtFolder);
+    const qtInstallations = await KitManager.findQtInstallations(qtFolder);
     if (qtFolder) {
       if (qtInstallations.length === 0) {
         void vscode.window.showWarningMessage(`No Qt version found.`);
@@ -320,7 +320,7 @@ export class KitManager {
     await this.globalStateManager.setQtFolder(qtFolder);
   }
 
-  private async loadCMakeKitsFileJSON(): Promise<Kit[]> {
+  private static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
     if (!fsSync.existsSync(CMAKE_GLOBAL_KITS_FILEPATH)) {
       return [];
     }
@@ -335,7 +335,7 @@ export class KitManager {
     return kits;
   }
 
-  private async *generateCMakeKitsOfQtInstallationPath(
+  private static async *generateCMakeKitsOfQtInstallationPath(
     qtFolder: string,
     installation: string,
     loadedCMakeKits: Kit[]
@@ -389,7 +389,7 @@ export class KitManager {
         const msvcKitsClone: Kit[] = JSON.parse(
           JSON.stringify(loadedCMakeKits)
         ) as Kit[];
-        yield* this.generateMsvcKits(qtFolder, newKit, msvcKitsClone);
+        yield* KitManager.generateMsvcKits(qtFolder, newKit, msvcKitsClone);
         return;
       } else if (platform.startsWith('mingw')) {
         platform = os.platform();
@@ -453,14 +453,14 @@ export class KitManager {
     yield newKit;
   }
 
-  private async cmakeKitsFromQtInstallations(
+  private static async cmakeKitsFromQtInstallations(
     qtFolder: string,
     qtInstallations: string[]
   ) {
-    const loadedCMakeKits = await this.loadCMakeKitsFileJSON();
+    const loadedCMakeKits = await KitManager.loadCMakeKitsFileJSON();
     const kits = [];
     for (const installation of qtInstallations)
-      for await (const kit of this.generateCMakeKitsOfQtInstallationPath(
+      for await (const kit of KitManager.generateCMakeKitsOfQtInstallationPath(
         qtFolder,
         installation,
         loadedCMakeKits
@@ -474,7 +474,7 @@ export class KitManager {
     qtInstallations: string[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const newGeneratedKits = await this.cmakeKitsFromQtInstallations(
+    const newGeneratedKits = await KitManager.cmakeKitsFromQtInstallations(
       qtFolder,
       qtInstallations
     );
@@ -531,7 +531,7 @@ export class KitManager {
         (e: vscode.ConfigurationChangeEvent) => {
           void e;
           const previousQtFolder = this.globalStateManager.getQtFolder();
-          const currentQtFolder = this.getCurrentGlobalQtFolder();
+          const currentQtFolder = KitManager.getCurrentGlobalQtFolder();
           if (currentQtFolder !== previousQtFolder) {
             void this.onQtFolderUpdated(currentQtFolder);
           }
@@ -565,7 +565,7 @@ export class KitManager {
             }
           });
           const previousQtFolder = projectStateManager?.getQtFolder() ?? '';
-          const currentQtFolder = this.getWorkspaceFolderQtFolder(folder);
+          const currentQtFolder = KitManager.getWorkspaceFolderQtFolder(folder);
           if (currentQtFolder !== previousQtFolder) {
             void this.onQtFolderUpdated(currentQtFolder, folder);
           }
@@ -574,13 +574,13 @@ export class KitManager {
     );
   }
 
-  private getCMakeGenerator() {
+  private static getCMakeGenerator() {
     const cmakeConfig = vscode.workspace.getConfiguration('cmake');
     const generator = cmakeConfig.get<string>('generator');
     return generator ? generator : CMakeDefaultGenerator;
   }
 
-  private *generateMsvcKits(
+  private static *generateMsvcKits(
     qtFolder: string,
     newKit: Kit,
     loadedCMakeKits: Kit[]
@@ -593,7 +593,7 @@ export class KitManager {
     newKit.preferredGenerator = {
       ...newKit.preferredGenerator,
       ...{
-        name: this.getCMakeGenerator()
+        name: KitManager.getCMakeGenerator()
         // toolset: 'host='+SupportedArchitectureMSVC
       }
     };
@@ -606,7 +606,7 @@ export class KitManager {
       };
     }
     const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
-      const version = this.getMsvcYear(kit);
+      const version = KitManager.getMsvcYear(kit);
       const msvcTargetArch =
         kit.preferredGenerator?.platform ?? kit.visualStudioArchitecture ?? '';
       const targetArchitecture = KitManager.MapMsvcPlatformToQt[msvcTargetArch];
@@ -644,7 +644,7 @@ export class KitManager {
     }
   }
 
-  private getMsvcYear(kit: Kit) {
+  private static getMsvcYear(kit: Kit) {
     const year = kit.name.match(KitManager.MsvcYearRegex)?.at(1);
     if (year) {
       return year;
@@ -672,21 +672,21 @@ export class KitManager {
     await this.saveSelectedQt(newQtFolder, folder);
   }
 
-  public getWorkspaceFolderQtFolder(folder: vscode.WorkspaceFolder) {
-    const qtFolderConfig = this.getConfiguration(folder).inspect<string>(
+  public static getWorkspaceFolderQtFolder(folder: vscode.WorkspaceFolder) {
+    const qtFolderConfig = KitManager.getConfiguration(folder).inspect<string>(
       KitManager.QtFolderConfig
     );
     return qtFolderConfig?.workspaceFolderValue ?? '';
   }
 
   private getWorkspaceFileQtFolder() {
-    const qtFolderConfig = this.getConfiguration(
+    const qtFolderConfig = KitManager.getConfiguration(
       this.workspaceFile
     ).inspect<string>(KitManager.QtFolderConfig);
     return qtFolderConfig?.workspaceValue ?? '';
   }
 
-  private getConfiguration(scope?: vscode.ConfigurationScope) {
+  private static getConfiguration(scope?: vscode.ConfigurationScope) {
     return vscode.workspace.getConfiguration('vscode-qt-tools', scope);
   }
 }

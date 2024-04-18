@@ -37,7 +37,7 @@ export class Project {
       .getConfiguration('vscode-qt-tools', this._folder)
       .get<string>('customWidgetDesignerExePath');
     if (customWidgetDesignerExePath) {
-      if (this.checkCustomDesignerExePath(customWidgetDesignerExePath)) {
+      if (Project.checkCustomDesignerExePath(customWidgetDesignerExePath)) {
         this._designerClient = new DesignerClient(
           customWidgetDesignerExePath,
           this._designerServer.getPort()
@@ -56,7 +56,7 @@ export class Project {
           .get<string>('customWidgetDesignerExePath');
         if (
           customWidgetDesignerExePathConfig &&
-          this.checkCustomDesignerExePath(customWidgetDesignerExePathConfig)
+          Project.checkCustomDesignerExePath(customWidgetDesignerExePathConfig)
         ) {
           this._designerClient?.detach();
           this._designerClient = new DesignerClient(
@@ -101,7 +101,9 @@ export class Project {
     return this._folder;
   }
 
-  private checkCustomDesignerExePath(customWidgetDesignerExePath: string) {
+  private static checkCustomDesignerExePath(
+    customWidgetDesignerExePath: string
+  ) {
     if (!fs.existsSync(customWidgetDesignerExePath)) {
       void vscode.window.showWarningMessage(
         'Qt Widget Designer executable not found at:"' +

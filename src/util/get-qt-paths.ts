@@ -107,7 +107,7 @@ export async function locateMingwBinDirPath(qtRootDir: string) {
   const mingws = items.filter((item) =>
     item.name.toLowerCase().startsWith('mingw')
   );
-  const promiseMingwsWithBinDirs = mingws.map((item) =>
+  const promiseMingwsWithBinDirs = mingws.map(async (item) =>
     pathOfDirectoryIfExists(path.join(qtToolsDir, item.name, 'bin'))
   );
   const mingwsWithBins = (await Promise.all(promiseMingwsWithBinDirs)).filter(
