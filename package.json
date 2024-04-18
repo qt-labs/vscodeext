@@ -340,7 +340,7 @@
     "unitTests": "npm run pretest && node ./out/test/unit/runTest.js",
     "integrationTests": "npm run pretest && node ./out/test/integration/runTest.js",
     "allTests": "ts-node ./src/scripts/run_all_tests.ts",
-    "prettier": "prettier --write \"**/*.{js,ts,json,mjs}\" --log-level silent",
+    "prettier": "prettier --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "package": "npm ci && vsce package --out out"
   },
   "devDependencies": {
