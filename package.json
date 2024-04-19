@@ -233,6 +233,17 @@
         }
       },
       {
+        "id": "qss",
+        "configuration": "./res/lang/qss/language-configuration.json",
+        "extensions": [
+          ".qss"
+        ],
+        "aliases": [
+          "QSS",
+          "Qss"
+        ]
+      },
+      {
         "id": "qdoc",
         "configuration": "./res/lang/qdoc/language-configuration.json",
         "extensions": [
@@ -284,6 +295,11 @@
           "source.c",
           "source.cpp"
         ]
+      },
+      {
+        "language": "qss",
+        "scopeName": "source.qss",
+        "path": "./res/lang/qss/qss.tmLanguage.json"
       }
     ],
     "configuration": {
