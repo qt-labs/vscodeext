@@ -431,6 +431,23 @@ export class KitManager {
             }
           }
         };
+      } else if (platform.startsWith('ios')) {
+        newKit.preferredGenerator = {
+          name: 'Xcode'
+        };
+
+        const iosSimulatorKit = {
+          ...newKit,
+          ...{
+            name: newKit.name + '-simulator',
+            cmakeSettings: {
+              CMAKE_OSX_ARCHITECTURES: 'x86_64',
+              CMAKE_OSX_SYSROOT: 'iphonesimulator'
+            }
+          }
+        };
+        yield* [newKit, iosSimulatorKit];
+        return;
       }
     }
     yield newKit;
