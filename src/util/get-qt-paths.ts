@@ -11,15 +11,16 @@ import * as fsutil from '@util/fs';
 import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
-export const QmakeFileName = 'qmake' + PlatformExecutableExtension;
-export const DesignerExeName = IsMacOS
-  ? 'Designer'
-  : 'designer' + PlatformExecutableExtension;
-export const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
-export const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 export const UserLocalDir = IsWindows
   ? process.env.LOCALAPPDATA ?? ''
   : path.join(Home, '.local/share');
+
+const QmakeFileName = 'qmake' + PlatformExecutableExtension;
+const DesignerExeName = IsMacOS
+  ? 'Designer'
+  : 'designer' + PlatformExecutableExtension;
+const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
+const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 
 export function matchesVersionPattern(installationPath: string): boolean {
   // Check if the first character of the path is a digit (0-9)
@@ -193,22 +194,24 @@ export async function getQtDesignerPath(folder?: vscode.WorkspaceFolder) {
 }
 
 export async function locateQtDesignerExePath(selectedQtPath: string) {
-  let designerExePath = IsMacOS
-    ? path.join(
-        selectedQtPath,
-        'bin',
-        'Designer.app',
-        'Contents',
-        'MacOS',
-        DesignerExeName
-      )
-    : path.join(selectedQtPath, 'bin', DesignerExeName);
+  const getDesignerExePath = (selectedQtBinPath: string) => {
+    const macOSPath = path.join(
+      'Designer.app',
+      'Contents',
+      'MacOS',
+      DesignerExeName
+    );
+    return IsMacOS
+      ? path.join(selectedQtBinPath, macOSPath)
+      : path.join(selectedQtBinPath, DesignerExeName);
+  };
+  let designerExePath = getDesignerExePath(path.join(selectedQtPath, 'bin'));
   if (await fsutil.exists(designerExePath)) {
     return designerExePath;
   }
 
   const hostBinDir = await queryHostBinDirPath(selectedQtPath);
-  designerExePath = path.join(hostBinDir, DesignerExeName);
+  designerExePath = getDesignerExePath(hostBinDir);
   if (await fsutil.exists(designerExePath)) {
     return designerExePath;
   }
