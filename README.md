@@ -92,6 +92,17 @@ configuration in `settings.json`:
 
 Otherwise, you may see the `SharedArrayBuffer is not defined` error.
 
+## Reference
+
+### Multiple kits with the same name
+
+If you have multiple kits with the same name in different `JSON` files, the
+search order is:
+
+1. `cmake-kits.json` in the `.vscode` folder of the workspace.
+1. `cmake-tools-kits.json` in the local user settings folder.
+1. `JSON` files in the `cmake.additionalKits` setting.
+
 ## License
 
 This extension can be licensed under the Qt Commercial License and the

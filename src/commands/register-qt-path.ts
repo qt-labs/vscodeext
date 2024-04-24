@@ -136,25 +136,26 @@ export async function getSelectedQtInstallationPath(
     folder !== undefined
       ? KitManager.getCMakeWorkspaceKitsFilepath(folder)
       : '';
-  const kitFiles = [CMAKE_GLOBAL_KITS_FILEPATH, workspaceFolderKitsPath];
+  const kitFiles = [workspaceFolderKitsPath, CMAKE_GLOBAL_KITS_FILEPATH];
   if (addtionalKits) {
     kitFiles.push(...addtionalKits);
   }
-  const promises = kitFiles.map(async (file) => {
+
+  for (const file of kitFiles) {
     if (!fs.existsSync(file)) {
-      return null;
+      continue;
     }
-    const content = await fs.promises.readFile(file, 'utf8');
+    const contentPromise = fs.promises.readFile(file, 'utf8');
     let kits: Kit[] = [];
     try {
-      kits = JSON.parse(content) as Kit[];
+      kits = JSON.parse(await contentPromise) as Kit[];
     } catch (error) {
       console.error('Failed to parse kits file:', error);
     }
     const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
 
     if (selectedQtKit === undefined) {
-      return null;
+      continue;
     }
     if (selectedQtKit.environmentVariables?.VSCODE_QT_FOLDER === undefined) {
       void vscode.window.showErrorMessage(
@@ -162,7 +163,7 @@ export async function getSelectedQtInstallationPath(
           selectedCMakeKit +
           '".'
       );
-      return null;
+      continue;
     }
 
     const selectedQtKitPath =
@@ -174,22 +175,6 @@ export async function getSelectedQtInstallationPath(
     void vscode.window.showErrorMessage(
       `"${selectedQtKitPath}" does not exist in "${selectedCMakeKit}".`
     );
-  });
-
-  const results = await Promise.all(promises);
-  const validResults = results.filter((result) => result !== null);
-
-  if (validResults.length === 1) {
-    return validResults[0] ?? '';
-  }
-
-  if (validResults.length > 1) {
-    void vscode.window.showErrorMessage(
-      'Multiple CMake kits with the same name are found for "' +
-        selectedCMakeKit +
-        '".'
-    );
-    return '';
   }
 
   // Note: If a workspace is added to a workspacefile, the below message may be
