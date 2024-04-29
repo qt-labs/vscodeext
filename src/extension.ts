@@ -8,7 +8,6 @@ import {
   checkDefaultQtFolderPath,
   registerQtCommand
 } from '@cmd/register-qt-path';
-import { registerUiFile } from '@cmd/file-ext-ui';
 import { registerKitDirectoryCommand } from '@cmd/kit-directory';
 import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
 import { registerResetQtExtCommand } from '@cmd/reset-qt-ext';
@@ -45,7 +44,6 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  registerUiFile(context);
   registerQtCommand(context);
 
   context.subscriptions.push(

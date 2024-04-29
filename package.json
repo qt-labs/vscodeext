@@ -69,15 +69,6 @@
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.openUiFileInQtDesigner",
-        "title": "%vscode-qt-tools.command.ui.openUiFileInQtDesigner.title%",
-        "category": "Qt",
-        "icon": {
-          "dark": "res/icons/qt.svg",
-          "light": "res/icons/qt.svg"
-        }
-      },
-      {
         "command": "vscode-qt-tools.resetQtExt",
         "title": "%vscode-qt-tools.command.resetQtExt.title%",
         "category": "Qt"
@@ -253,33 +244,6 @@
         }
       }
     ],
-    "localizations": [],
-    "menus": {
-      "view/item/context": [
-        {
-          "command": "vscode-qt-tools.openUiFileInQtDesigner",
-          "when": "resourceLangId == ui"
-        }
-      ],
-      "editor/title/context": [
-        {
-          "command": "vscode-qt-tools.openUiFileInQtDesigner",
-          "when": "resourceLangId == ui"
-        }
-      ],
-      "editor/title": [
-        {
-          "command": "vscode-qt-tools.openUiFileInQtDesigner",
-          "when": "resourceLangId == ui"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "vscode-qt-tools.openUiFileInQtDesigner",
-          "when": "resourceLangId == ui"
-        }
-      ]
-    },
     "grammars": [
       {
         "language": "qdoc",
