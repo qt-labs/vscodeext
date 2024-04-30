@@ -271,6 +271,14 @@
         "language": "qrc",
         "scopeName": "source.qrc",
         "path": "./res/lang/qrc/qrc.tmLanguage.json"
+      },
+      {
+        "scopeName": "qt.injection",
+        "path": "./res/lang/cpp/qt_cpp.injection.json",
+        "injectTo": [
+          "source.c",
+          "source.cpp"
+        ]
       }
     ],
     "configuration": {
