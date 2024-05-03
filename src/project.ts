@@ -9,6 +9,9 @@ import { kitManager } from '@/extension';
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
 import { getQtDesignerPath } from '@/util/get-qt-paths';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('project');
 
 // Project class represents a workspace folder in the extension.
 export class Project {
@@ -35,7 +38,10 @@ export class Project {
     }
     const customWidgetDesignerExePath = vscode.workspace
       .getConfiguration('vscode-qt-tools', this._folder)
-      .get<string>('customWidgetDesignerExePath');
+      .get<string>('customWidgetDesignerExePath', '');
+    logger.info(
+      `customWidgetDesignerExePath: "${customWidgetDesignerExePath}"`
+    );
     if (customWidgetDesignerExePath) {
       if (Project.checkCustomDesignerExePath(customWidgetDesignerExePath)) {
         this._designerClient = new DesignerClient(
@@ -53,7 +59,11 @@ export class Project {
       ) {
         const customWidgetDesignerExePathConfig = vscode.workspace
           .getConfiguration('vscode-qt-tools', this._folder)
-          .get<string>('customWidgetDesignerExePath');
+          .get<string>('customWidgetDesignerExePath', '');
+        logger.info(
+          'new customWidgetDesignerExePath:',
+          customWidgetDesignerExePathConfig
+        );
         if (
           customWidgetDesignerExePathConfig &&
           Project.checkCustomDesignerExePath(customWidgetDesignerExePathConfig)
@@ -80,6 +90,7 @@ export class Project {
     folder: vscode.WorkspaceFolder,
     context: vscode.ExtensionContext
   ) {
+    logger.info('Creating project:"' + folder.uri.fsPath + '"');
     return new Project(folder, context, await getQtDesignerPath(folder));
   }
   public getStateManager() {
@@ -105,6 +116,11 @@ export class Project {
     customWidgetDesignerExePath: string
   ) {
     if (!fs.existsSync(customWidgetDesignerExePath)) {
+      logger.error(
+        'Qt Widget Designer executable not found at:"',
+        customWidgetDesignerExePath,
+        '"'
+      );
       void vscode.window.showWarningMessage(
         'Qt Widget Designer executable not found at:"' +
           customWidgetDesignerExePath +
@@ -126,6 +142,7 @@ export class ProjectManager {
     this.watchProjects(context);
   }
   public addProject(project: Project) {
+    logger.info('Adding project:', project.getFolder().uri.fsPath);
     this.projects.add(project);
   }
   public getProjects() {

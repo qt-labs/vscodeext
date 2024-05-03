@@ -5,6 +5,9 @@ import * as vscode from 'vscode';
 
 import { isTestMode } from '@util/util';
 import { Kit } from '@/kit-manager';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('state');
 
 class BaseStateManager {
   constructor(
@@ -35,6 +38,7 @@ export class WorkspaceStateManager extends BaseStateManager {
     folder: vscode.WorkspaceFolder
   ) {
     if (folder.uri.fsPath === '') {
+      logger.error('folder is empty');
       throw new Error('folder is empty');
     }
     super(context, folder);

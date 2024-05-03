@@ -26,3 +26,7 @@ export function getFilenameWithoutExtension(filename: string): string {
   }
   return separatedPath.split('.')[0];
 }
+
+export function isError<T>(e: T): e is T & Error {
+  return e instanceof Error;
+}

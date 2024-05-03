@@ -397,6 +397,8 @@
     "command-exists": "^1.2.3",
     "module-alias": "^2.2.3",
     "ts-sinon": "^2.0.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "winston": "^3.13.0",
+    "winston-transport-vscode": "^0.1.0"
   }
 }

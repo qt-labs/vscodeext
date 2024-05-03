@@ -6,7 +6,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Home, IsLinux, IsMacOS, IsWindows } from '@util/os';
+import { isError } from '@/util/util';
 import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('register-qt-path');
 
 export async function registerQt() {
   const options: vscode.OpenDialogOptions = {
@@ -59,7 +63,9 @@ export function checkDefaultQtFolderPath() {
   } else if (IsWindows) {
     defaultPath = path.join('C:', 'Qt');
   } else {
-    throw new Error('Unsupported OS');
+    const errorMessage = 'Unsupported OS';
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
   }
 
   const defaultPathExists = fs.existsSync(defaultPath);
@@ -98,6 +104,7 @@ export async function getSelectedQtInstallationPath(
       'cmake.activeFolderPath'
     );
     if (activeFolder === '') {
+      logger.error('No active folder found.');
       throw new Error('No active folder found.');
     }
     folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(activeFolder));
@@ -107,7 +114,6 @@ export async function getSelectedQtInstallationPath(
     folder
   );
   if (!selectedCMakeKit || selectedCMakeKit === '__unspec__') {
-    // show information message to the user
     void vscode.window
       .showInformationMessage(
         'No CMake kit selected. Please select a CMake kit.',
@@ -141,7 +147,9 @@ export async function getSelectedQtInstallationPath(
     try {
       kits = JSON.parse(await contentPromise) as Kit[];
     } catch (error) {
-      console.error('Failed to parse kits file:', error);
+      if (isError(error)) {
+        logger.error('Failed to parse kits file:', error.message);
+      }
     }
     const selectedQtKit = kits.find((kit) => kit.name === selectedCMakeKit);
 
@@ -149,11 +157,12 @@ export async function getSelectedQtInstallationPath(
       continue;
     }
     if (selectedQtKit.environmentVariables?.VSCODE_QT_FOLDER === undefined) {
-      void vscode.window.showErrorMessage(
+      const errorMessage =
         '"VSCODE_QT_FOLDER" environment variable is not set for "' +
-          selectedCMakeKit +
-          '".'
-      );
+        selectedCMakeKit +
+        '".';
+      logger.error(errorMessage);
+      void vscode.window.showErrorMessage(errorMessage);
       continue;
     }
 
@@ -161,11 +170,12 @@ export async function getSelectedQtInstallationPath(
       selectedQtKit.environmentVariables.VSCODE_QT_FOLDER;
 
     if (fs.existsSync(selectedQtKitPath)) {
+      logger.info('Selected Qt installation path:', selectedQtKitPath);
       return selectedQtKitPath;
     }
-    void vscode.window.showErrorMessage(
-      `"${selectedQtKitPath}" does not exist in "${selectedCMakeKit}".`
-    );
+    const errorMessage = `"${selectedQtKitPath}" does not exist in "${selectedCMakeKit}".`;
+    logger.error(errorMessage);
+    void vscode.window.showErrorMessage(errorMessage);
   }
 
   // Note: If a workspace is added to a workspacefile, the below message may be
@@ -173,8 +183,8 @@ export async function getSelectedQtInstallationPath(
   // before the cmake extension resolves the cmake kit in the newly added
   // workspace folder.
   // TODO: Wait until the cmake extension resolves the cmake kit.
-  void vscode.window.showErrorMessage(
-    selectedCMakeKit + ' is not a valid Qt kit.'
-  );
+  const errorMessage = selectedCMakeKit + ' is not a valid Qt kit.';
+  logger.error(errorMessage);
+  void vscode.window.showErrorMessage(errorMessage);
   return '';
 }

@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as child_process from 'child_process';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('designer-client');
 
 export class DesignerClient {
   private process: child_process.ChildProcess | undefined;
@@ -16,6 +19,7 @@ export class DesignerClient {
     const designerExePath = this.designerExePath;
     const designerServerPort = serverPort ?? this.serverPort;
     if (!designerServerPort) {
+      logger.error('Designer server port is not set');
       throw new Error('Designer server port is not set');
     }
 
@@ -26,7 +30,7 @@ export class DesignerClient {
         })
         .on('exit', (number) => {
           this.process = undefined;
-          console.log('Designer client exited with code:' + number);
+          logger.info('Designer client exited with code:' + number);
         })
         .on('error', () => {
           this.process = undefined;
@@ -36,6 +40,7 @@ export class DesignerClient {
             designerExePath +
             'Port:' +
             designerServerPort;
+          logger.error(message);
           throw new Error(message);
         });
     }
@@ -47,6 +52,7 @@ export class DesignerClient {
 
   public stop() {
     if (this.process) {
+      logger.debug('Stopping designer client');
       this.process.kill();
     }
   }
@@ -58,6 +64,7 @@ export class DesignerClient {
   }
 
   public dispose() {
+    logger.debug('Disposing designer client');
     this.stop();
   }
 }

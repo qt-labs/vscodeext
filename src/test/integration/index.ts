@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
-import * as Mocha from 'mocha';
+import Mocha from 'mocha';
 import * as glob from 'glob';
 
 export function run(): Promise<void> {

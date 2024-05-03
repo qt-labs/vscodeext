@@ -16,6 +16,7 @@ import {
   registerbuildDirectoryName,
   registerlaunchTargetFilenameWithoutExtension
 } from '@cmd/launch-variables';
+import { createLogger } from '@/logger';
 import { UIEditorProvider } from './editors/ui/ui-editor';
 import { Project, ProjectManager } from '@/project';
 import { KitManager } from '@/kit-manager';
@@ -26,6 +27,8 @@ import { registerDocumentationCommands } from '@/commands/online-docs';
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
 let taskProvider: vscode.Disposable | undefined;
+
+const logger = createLogger('extension');
 
 export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
@@ -70,7 +73,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  console.log('Deactivating vscode-qt-tools');
+  logger.info('Deactivating theqtcompany.qt');
   projectManager.dispose();
   if (taskProvider) {
     taskProvider.dispose();

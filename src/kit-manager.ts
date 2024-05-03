@@ -13,6 +13,9 @@ import * as versions from '@util/versions';
 import * as util from '@util/util';
 import { Project } from '@/project';
 import { GlobalStateManager, WorkspaceStateManager } from '@/state';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('kit-manager');
 
 export const CMakeDefaultGenerator = 'Ninja Multi-Config';
 const CMakeToolsDir = path.join(qtPath.UserLocalDir, 'CMakeTools');
@@ -177,6 +180,7 @@ export class KitManager {
   }
 
   public async reset() {
+    logger.info('Resetting KitManager');
     await this.updateQtInstallations('', []);
     await this.globalStateManager.reset();
     for (const project of this.projects) {
@@ -186,6 +190,7 @@ export class KitManager {
   }
 
   static async setGlobalQtFolder(qtFolder: string) {
+    logger.info(`Setting global Qt folder to: ${qtFolder}`);
     const config = vscode.workspace.getConfiguration('vscode-qt-tools');
     const configTarget = util.isTestMode()
       ? vscode.ConfigurationTarget.Workspace
@@ -208,8 +213,6 @@ export class KitManager {
         (e: vscode.ConfigurationChangeEvent) => {
           void e;
           if (this.getWorkspaceFileQtFolder() !== '') {
-            // show a warning message that workspace file qt folder is
-            // not supported
             void vscode.window.showWarningMessage(
               `Qt folder specified in workspace file is not supported.`
             );
@@ -281,7 +284,9 @@ export class KitManager {
                 qtInstallations.push(subdirFullPath);
               });
             } catch (err) {
-              console.log(err);
+              if (util.isError(err)) {
+                logger.error(err.message);
+              }
             }
           }
         }
@@ -298,12 +303,12 @@ export class KitManager {
     if (qtFolder) {
       if (qtInstallations.length === 0) {
         void vscode.window.showWarningMessage(`No Qt version found.`);
-        console.log('No Qt version found.');
+        logger.info('No Qt version found.');
       } else {
         void vscode.window.showInformationMessage(
           `Found ${qtInstallations.length} Qt installation(s).`
         );
-        console.log(`Found ${qtInstallations.length} Qt installation(s).`);
+        logger.info(`Found ${qtInstallations.length} Qt installation(s).`);
       }
     }
     await this.updateQtInstallations(
@@ -330,7 +335,9 @@ export class KitManager {
     try {
       kits = JSON.parse(stringData) as Kit[];
     } catch (error) {
-      console.error('Error parsing cmake-kits.json:', error);
+      if (util.isError(error)) {
+        logger.error('Error parsing cmake-kits.json:', error.message);
+      }
     }
     return kits;
   }
@@ -389,11 +396,14 @@ export class KitManager {
         const msvcKitsClone: Kit[] = JSON.parse(
           JSON.stringify(loadedCMakeKits)
         ) as Kit[];
-        yield* KitManager.generateMsvcKits(qtFolder, newKit, msvcKitsClone);
+        logger.info(`MSVC kits clone: ${JSON.stringify(msvcKitsClone)}`);
+        yield* KitManager.generateMsvcKits(newKit, msvcKitsClone);
         return;
       } else if (platform.startsWith('mingw')) {
         platform = os.platform();
+        logger.info(`Platform: ${platform}`);
         const mingwDirPath = await promiseMingwPath;
+        logger.info(`Mingw dir path: ${mingwDirPath}`);
         if (mingwDirPath) {
           if (newKit.environmentVariables == undefined) {
             newKit.environmentVariables = {};
@@ -450,6 +460,7 @@ export class KitManager {
         return;
       }
     }
+    logger.info('newKit: ' + JSON.stringify(newKit));
     yield newKit;
   }
 
@@ -458,6 +469,9 @@ export class KitManager {
     qtInstallations: string[]
   ) {
     const loadedCMakeKits = await KitManager.loadCMakeKitsFileJSON();
+    logger.info(`qtFolder: "${qtFolder}"`);
+    logger.info(`Loaded CMake kits: ${JSON.stringify(loadedCMakeKits)}`);
+    logger.info(`Qt installations: ${JSON.stringify(qtInstallations)}`);
     const kits = [];
     for (const installation of qtInstallations)
       for await (const kit of KitManager.generateCMakeKitsOfQtInstallationPath(
@@ -478,6 +492,7 @@ export class KitManager {
       qtFolder,
       qtInstallations
     );
+    logger.info(`New generated kits: ${JSON.stringify(newGeneratedKits)}`);
     await this.updateCMakeKitsJson(newGeneratedKits, workspaceFolder);
 
     if (workspaceFolder) {
@@ -513,7 +528,9 @@ export class KitManager {
     try {
       currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
     } catch (error) {
-      console.error('Error parsing cmake-kits.json:', error);
+      if (util.isError(error)) {
+        logger.error('Error parsing cmake-kits.json:', error.message);
+      }
     }
     const newKits = currentKits.filter((kit) => {
       // filter kits if previousQtKits contains the kit with the same name
@@ -580,15 +597,13 @@ export class KitManager {
     return generator ? generator : CMakeDefaultGenerator;
   }
 
-  private static *generateMsvcKits(
-    qtFolder: string,
-    newKit: Kit,
-    loadedCMakeKits: Kit[]
-  ) {
+  private static *generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
     const msvcInfoMatch =
       newKit.visualStudio?.match(KitManager.MsvcInfoRegexp) ??
       newKit.visualStudio?.match(KitManager.MsvcInfoNoArchRegexp);
     const vsYear = msvcInfoMatch?.at(1) ?? '';
+    logger.info('vsYear: ' + vsYear);
+    logger.info('newKit.visualStudio: ' + newKit.visualStudio);
     const architecture = msvcInfoMatch?.at(2) ?? '32';
     newKit.preferredGenerator = {
       ...newKit.preferredGenerator,
@@ -605,10 +620,15 @@ export class KitManager {
         }
       };
     }
+    logger.info(
+      'newKit.visualStudioArchitecture: ' + newKit.visualStudioArchitecture
+    );
     const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
       const version = KitManager.getMsvcYear(kit);
+      logger.info('version: ' + version);
       const msvcTargetArch =
         kit.preferredGenerator?.platform ?? kit.visualStudioArchitecture ?? '';
+      logger.info('msvcTargetArch: ' + msvcTargetArch);
       const targetArchitecture = KitManager.MapMsvcPlatformToQt[msvcTargetArch];
       const isArchMatch = targetArchitecture == architecture;
       return isArchMatch && versions.compareVersions(version, vsYear) >= 0;
@@ -640,6 +660,7 @@ export class KitManager {
       }
       kit.environmentVariables = newKit.environmentVariables;
       kit.toolchainFile = newKit.toolchainFile;
+      logger.info('kit: ' + JSON.stringify(kit));
       yield kit;
     }
   }
@@ -664,11 +685,13 @@ export class KitManager {
   ) {
     if (newQtFolder) {
       if (!fsSync.existsSync(newQtFolder)) {
+        logger.warn(`The specified Qt installation path does not exist.`);
         void vscode.window.showWarningMessage(
           `The specified Qt installation path does not exist.`
         );
       }
     }
+    logger.info(`Qt folder updated: "${newQtFolder}"`);
     await this.saveSelectedQt(newQtFolder, folder);
   }
 

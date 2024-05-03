@@ -4,6 +4,9 @@
 import * as net from 'net';
 
 import { IsWindows } from '@util/os';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('designer-server');
 
 export class DesignerServer {
   private readonly server: net.Server;
@@ -18,27 +21,30 @@ export class DesignerServer {
     });
     this.client = undefined;
     this.start();
+    logger.info('Designer server is created');
   }
 
   public start() {
     this.server
       .listen(this.port, () => {
-        console.log(`Designer server is listening on ${this.port}`);
+        logger.info(`Designer server is listening on ${this.port}`);
       })
       .on('connection', (socket) => {
         this.onConnection(socket);
       })
       .on('error', (err) => {
+        logger.error(err.message);
         throw err;
       });
   }
 
   private onConnection(socket: net.Socket) {
-    console.log('Designer server is connected:' + socket.remoteAddress);
+    logger.info('Designer server is connected:' + socket.remoteAddress);
     this.client = socket;
   }
 
   public stop() {
+    logger.verbose('Designer server is stopping');
     this.server.close();
   }
 
@@ -57,8 +63,11 @@ export class DesignerServer {
 
   public sendFile(filePath: string) {
     if (!this.client) {
-      throw new Error('No client connected');
+      const message = 'No client connected';
+      logger.error(message);
+      throw new Error(message);
     }
+    logger.info('Sending file:' + filePath);
     this.client.write(filePath.toString() + DesignerServer.newLine);
   }
 }

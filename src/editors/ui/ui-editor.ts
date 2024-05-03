@@ -8,6 +8,9 @@ import { projectManager } from '@/extension';
 import { DesignerServer } from '@/designer-server';
 import { DesignerClient } from '@/designer-client';
 import { getQtDesignerPath } from '@util/get-qt-paths';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('ui-editor');
 
 export class UIEditorProvider implements vscode.CustomTextEditorProvider {
   constructor(private readonly context: vscode.ExtensionContext) {}
@@ -77,15 +80,18 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
         // This means that the file is not part of a workspace folder. So
         // we start a new DesignerServer and DesignerClient
         // TODO: Add fallback qt widget designer for this case
+        logger.error('Project not found');
         throw new Error('Project not found');
       }
 
       switch (e.type) {
         case 'run':
           if (designerClient === undefined) {
+            logger.error('Designer client not found');
             throw new Error('Designer client not found');
           }
           if (!designerClient.isRunning()) {
+            logger.info('Starting designer client');
             designerClient.start(designerServer.getPort());
           }
           // wait for the client to connect
@@ -93,8 +99,10 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
             await delay(100);
           }
           designerServer.sendFile(document.uri.fsPath);
+          logger.info('File sent to designer server: ' + document.uri.fsPath);
           break;
         default:
+          logger.error('Unknown message type');
           throw new Error('Unknown message type');
       }
     });

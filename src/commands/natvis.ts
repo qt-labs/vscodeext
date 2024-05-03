@@ -6,16 +6,23 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
+import { createLogger } from '@/logger';
+
+const logger = createLogger('natvis');
 
 export function registerNatvisCommand() {
   const getNatvis = (version: string) => {
     const extension = vscode.extensions.getExtension('theqtcompany.qt');
     if (!extension) {
-      throw new Error('Could not find the extension');
+      const error = 'Could not find the extension';
+      logger.error(error);
+      throw new Error(error);
     }
     const extensionPath = extension.extensionPath;
     if (!extensionPath) {
-      throw new Error('Could not find the extension path');
+      const error = 'Could not find the extension path';
+      logger.error(error);
+      throw new Error(error);
     }
     const natvisFile = path.join(
       extensionPath,
@@ -24,7 +31,9 @@ export function registerNatvisCommand() {
       `qt${version}.natvis.xml`
     );
     if (!fs.existsSync(natvisFile)) {
-      throw new Error(`Could not find the natvis file: ${natvisFile}`);
+      const error = `Could not find the natvis file: ${natvisFile}`;
+      logger.error(error);
+      throw new Error(error);
     }
     return natvisFile;
   };
@@ -34,7 +43,9 @@ export function registerNatvisCommand() {
     async () => {
       const selectedQtInstallation = await getSelectedQtInstallationPath();
       if (!selectedQtInstallation) {
-        throw new Error('Could not find the selected Qt installation path');
+        const error = 'Could not find the selected Qt installation path';
+        logger.error(error);
+        throw new Error(error);
       }
       const qtVersion = selectedQtInstallation.includes('6.') ? '6' : '5';
       return getNatvis(qtVersion);
