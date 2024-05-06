@@ -17,8 +17,19 @@
     "vscode": "^1.78.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
   ],
+  "keywords": [
+    "Qt",
+    "C++",
+    "CMake",
+    "Qml",
+    "scan"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
   "preview": true,
   "activationEvents": [
     "workspaceContains:*.qrc",
