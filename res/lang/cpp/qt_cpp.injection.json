@@ -22,7 +22,7 @@
     },
     "qt-header-keywords": {
       "name": "storage.type.header.qt",
-      "match": "(public|protected|private)\\s+(slots|signals):"
+      "match": "(\\b(public|protected|private)\\s+)?(?<!\\S)(slots|signals)(?!\\w):?"
     },
     "qt-macros": {
       "name": "meta.preprocessor.macro.qt",
