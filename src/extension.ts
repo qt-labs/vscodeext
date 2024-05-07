@@ -21,6 +21,7 @@ import { UIEditorProvider } from './editors/ui/ui-editor';
 import { Project, ProjectManager } from '@/project';
 import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
+import { registerOpenSettingsCommand } from '@cmd/navigator';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
@@ -54,7 +55,8 @@ export async function activate(context: vscode.ExtensionContext) {
     UIEditorProvider.register(context),
     registerScanForQtKitsCommand(),
     registerlaunchTargetFilenameWithoutExtension(),
-    registerbuildDirectoryName()
+    registerbuildDirectoryName(),
+    registerOpenSettingsCommand()
   );
 
   taskProvider = vscode.tasks.registerTaskProvider(

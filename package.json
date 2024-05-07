@@ -84,6 +84,11 @@
         "command": "vscode-qt-tools.resetQtExt",
         "title": "%vscode-qt-tools.command.resetQtExt.title%",
         "category": "Qt"
+      },
+      {
+        "command": "vscode-qt-tools.openSettings",
+        "title": "%vscode-qt-tools.command.openSettings.title%",
+        "category": "Qt"
       }
     ],
     "debuggers": [

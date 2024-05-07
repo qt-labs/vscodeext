@@ -10,5 +10,6 @@
   "vscode-qt-tools.debugger.cppvsdbg.snippet.description": "Launch a Qt application with the Visual Studio Debugger",
   "vscode-qt-tools.command.resetQtExt.title": "Reset Qt Tools Extension State (For troubleshooting)",
   "vscode-qt-tools.debugger.wasm.snippet.label": "Qt: Debug Qt WASM with Chrome",
-  "vscode-qt-tools.debugger.wasm.snippet.description": "Launch a Qt WebAssembly application with Chrome"
+  "vscode-qt-tools.debugger.wasm.snippet.description": "Launch a Qt WebAssembly application with Chrome",
+  "vscode-qt-tools.command.openSettings.title": "Open Qt Settings"
 }
