@@ -5,16 +5,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as local from '@util/localize';
 import { Home, IsLinux, IsMacOS, IsWindows } from '@util/os';
 import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
-
-export const RegisterQtCommandId = 'vscode-qt-tools.registerQt';
-let RegisterQtCommandTitle = '';
-
-export function getRegisterQtCommandTitle(): string {
-  return RegisterQtCommandTitle;
-}
 
 export async function registerQt() {
   const options: vscode.OpenDialogOptions = {
@@ -93,9 +85,8 @@ export function checkDefaultQtFolderPath() {
 }
 
 export function registerQtCommand(context: vscode.ExtensionContext) {
-  RegisterQtCommandTitle = local.getCommandTitle(context, RegisterQtCommandId);
   context.subscriptions.push(
-    vscode.commands.registerCommand(RegisterQtCommandId, registerQt)
+    vscode.commands.registerCommand('vscode-qt-tools.registerQt', registerQt)
   );
 }
 
