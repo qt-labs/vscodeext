@@ -89,6 +89,21 @@
         "command": "vscode-qt-tools.openSettings",
         "title": "%vscode-qt-tools.command.openSettings.title%",
         "category": "Qt"
+      },
+      {
+        "command": "vscode-qt-tools.documentationHomepage",
+        "title": "%vscode-qt-tools.command.documentationHomepage.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "vscode-qt-tools.documentationSearchManually",
+        "title": "%vscode-qt-tools.command.documentationSearchManually.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "vscode-qt-tools.documentationSearchForCurrentWord",
+        "title": "%vscode-qt-tools.command.documentationSearchForCurrentWord.title%",
+        "category": "Qt"
       }
     ],
     "debuggers": [
@@ -310,6 +325,12 @@
           "type": "string",
           "default": "",
           "description": "Specify the Qt folder",
+          "scope": "machine-overridable"
+        },
+        "vscode-qt-tools.openOnlineDocumentationInExternalBrowser": {
+          "type": "boolean",
+          "default": false,
+          "description": "Open online documentation in external browser",
           "scope": "machine-overridable"
         },
         "vscode-qt-tools.doNotAskForDefaultQtFolder": {

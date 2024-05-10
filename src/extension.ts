@@ -21,6 +21,7 @@ import { Project, ProjectManager } from '@/project';
 import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { registerOpenSettingsCommand } from '@cmd/navigator';
+import { registerDocumentationCommands } from '@/commands/online-docs';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
@@ -54,7 +55,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerScanForQtKitsCommand(),
     registerlaunchTargetFilenameWithoutExtension(),
     registerbuildDirectoryName(),
-    registerOpenSettingsCommand()
+    registerOpenSettingsCommand(),
+    ...registerDocumentationCommands()
   );
 
   taskProvider = vscode.tasks.registerTaskProvider(
