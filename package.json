@@ -256,6 +256,19 @@
         ]
       },
       {
+        "id": "qml",
+        "configuration": "./res/lang/qml/language-configuration.json",
+        "extensions": [
+          ".qml",
+          ".qmlproject"
+        ],
+        "aliases": [
+          "QML",
+          "Qml",
+          "qml"
+        ]
+      },
+      {
         "id": "qdoc",
         "configuration": "./res/lang/qdoc/language-configuration.json",
         "extensions": [
@@ -312,6 +325,11 @@
         "language": "qss",
         "scopeName": "source.qss",
         "path": "./res/lang/qss/qss.tmLanguage.json"
+      },
+      {
+        "language": "qml",
+        "scopeName": "source.qml",
+        "path": "./res/lang/qml/qml.qmlproject.tmLanguage"
       }
     ],
     "configuration": {
@@ -340,6 +358,42 @@
           "type": "string",
           "default": "",
           "description": "Specify the custom Qt Widgets Designer executable path",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run qmlls when activating an extension",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.verboseOutput": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run qmlls with --verbose option",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.traceLsp": {
+          "type": "string",
+          "default": "off",
+          "enum": [
+            "off",
+            "messages",
+            "compact",
+            "verbose"
+          ],
+          "enumDescriptions": [
+            "Off",
+            "Show messages only",
+            "Show messages with parameters as compact JSON",
+            "Show messages with parameters as multiline JSON"
+          ],
+          "description": "Handle LSP trace",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.customExePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the custom qmlls executable path",
           "scope": "machine-overridable"
         }
       }
@@ -399,6 +453,7 @@
     "module-alias": "^2.2.3",
     "ts-sinon": "^2.0.2",
     "typescript": "^5.2.2",
+    "vscode-languageclient": "^9.0.1",
     "winston": "^3.13.0",
     "winston-transport-vscode": "^0.1.0"
   }

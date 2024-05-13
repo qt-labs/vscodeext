@@ -24,9 +24,12 @@ import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { registerOpenSettingsCommand } from '@cmd/navigator';
 import { registerDocumentationCommands } from '@cmd/online-docs';
 import { registerSetRecommendedSettingsCommand } from '@cmd/recommended-settings';
+import { Qmlls } from '@/qmlls';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
+export let qmlls: Qmlls;
+
 let taskProvider: vscode.Disposable | undefined;
 
 const logger = createLogger('extension');
@@ -72,6 +75,9 @@ export async function activate(context: vscode.ExtensionContext) {
   checkDefaultQtFolderPath();
 
   await promiseActivateCMake;
+
+  qmlls = new Qmlls();
+  void qmlls.start();
 }
 
 export function deactivate() {
@@ -80,4 +86,5 @@ export function deactivate() {
   if (taskProvider) {
     taskProvider.dispose();
   }
+  void qmlls.stop();
 }

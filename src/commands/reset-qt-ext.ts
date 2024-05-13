@@ -3,10 +3,11 @@
 
 import * as vscode from 'vscode';
 
-import { kitManager } from '@/extension';
+import { kitManager, qmlls } from '@/extension';
 
 export async function resetQtExt() {
   await kitManager.reset();
+  await qmlls.restart();
 }
 
 export function registerResetQtExtCommand() {
