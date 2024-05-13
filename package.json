@@ -71,38 +71,38 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-qt-tools.registerQt",
-        "title": "%vscode-qt-tools.command.registerQt.title%",
+        "command": "qt.registerQt",
+        "title": "%qt.command.registerQt.title%",
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.scanForQtKits",
-        "title": "%vscode-qt-tools.command.scanForQtKits.title%",
+        "command": "qt.scanForQtKits",
+        "title": "%qt.command.scanForQtKits.title%",
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.resetQtExt",
-        "title": "%vscode-qt-tools.command.resetQtExt.title%",
+        "command": "qt.resetQtExt",
+        "title": "%qt.command.resetQtExt.title%",
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.openSettings",
-        "title": "%vscode-qt-tools.command.openSettings.title%",
+        "command": "qt.openSettings",
+        "title": "%qt.command.openSettings.title%",
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.documentationHomepage",
-        "title": "%vscode-qt-tools.command.documentationHomepage.title%",
+        "command": "qt.documentationHomepage",
+        "title": "%qt.command.documentationHomepage.title%",
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.documentationSearchManually",
-        "title": "%vscode-qt-tools.command.documentationSearchManually.title%",
+        "command": "qt.documentationSearchManually",
+        "title": "%qt.command.documentationSearchManually.title%",
         "category": "Qt"
       },
       {
-        "command": "vscode-qt-tools.documentationSearchForCurrentWord",
-        "title": "%vscode-qt-tools.command.documentationSearchForCurrentWord.title%",
+        "command": "qt.documentationSearchForCurrentWord",
+        "title": "%qt.command.documentationSearchForCurrentWord.title%",
         "category": "Qt"
       }
     ],
@@ -112,8 +112,8 @@
         "label": "cppdbg",
         "configurationSnippets": [
           {
-            "label": "%vscode-qt-tools.debugger.cppdbg.snippet.label%",
-            "description": "%vscode-qt-tools.debugger.cppdbg.snippet.description%",
+            "label": "%qt.debugger.cppdbg.snippet.label%",
+            "description": "%qt.debugger.cppdbg.snippet.description%",
             "body": {
               "name": "Debug Qt Application with cppdbg",
               "type": "cppdbg",
@@ -143,8 +143,8 @@
             }
           },
           {
-            "label": "%vscode-qt-tools.debugger.lldb.snippet.label%",
-            "description": "%vscode-qt-tools.debugger.lldb.snippet.description%",
+            "label": "%qt.debugger.lldb.snippet.label%",
+            "description": "%qt.debugger.lldb.snippet.description%",
             "body": {
               "name": "Debug Qt Application with lldb",
               "type": "cppdbg",
@@ -173,8 +173,8 @@
             }
           },
           {
-            "label": "%vscode-qt-tools.debugger.cppvsdbg.snippet.label%",
-            "description": "%vscode-qt-tools.debugger.cppvsdbg.snippet.description%",
+            "label": "%qt.debugger.cppvsdbg.snippet.label%",
+            "description": "%qt.debugger.cppvsdbg.snippet.description%",
             "body": {
               "name": "Debug Qt Application with Visual Studio Debugger",
               "type": "cppvsdbg",
@@ -194,8 +194,8 @@
             }
           },
           {
-            "label": "%vscode-qt-tools.debugger.wasm.snippet.label%",
-            "description": "%vscode-qt-tools.debugger.wasm.snippet.description%",
+            "label": "%qt.debugger.wasm.snippet.label%",
+            "description": "%qt.debugger.wasm.snippet.description%",
             "body": {
               "name": "Debug Qt WebAssembly Application",
               "type": "chrome",
@@ -321,25 +321,25 @@
       "type": "object",
       "title": "Qt Configuration",
       "properties": {
-        "vscode-qt-tools.qtFolder": {
+        "qt.qtFolder": {
           "type": "string",
           "default": "",
           "description": "Specify the Qt folder",
           "scope": "machine-overridable"
         },
-        "vscode-qt-tools.openOnlineDocumentationInExternalBrowser": {
+        "qt.openOnlineDocumentationInExternalBrowser": {
           "type": "boolean",
           "default": false,
           "description": "Open online documentation in external browser",
           "scope": "machine-overridable"
         },
-        "vscode-qt-tools.doNotAskForDefaultQtFolder": {
+        "qt.doNotAskForDefaultQtFolder": {
           "type": "boolean",
           "default": false,
           "description": "Do not ask for default Qt folder",
           "scope": "machine"
         },
-        "vscode-qt-tools.customWidgetDesignerExePath": {
+        "qt.customWidgetDesignerExePath": {
           "type": "string",
           "default": "",
           "description": "Specify the custom Qt Widget Designer executable path",

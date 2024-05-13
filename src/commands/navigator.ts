@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 export function registerOpenSettingsCommand() {
-  return vscode.commands.registerCommand('vscode-qt-tools.openSettings', () => {
+  return vscode.commands.registerCommand('qt.openSettings', () => {
     void vscode.commands.executeCommand(
       'workbench.action.openSettings',
       '@ext:theqtcompany.qt'

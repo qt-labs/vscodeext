@@ -37,7 +37,7 @@ export class Project {
       );
     }
     const customWidgetDesignerExePath = vscode.workspace
-      .getConfiguration('vscode-qt-tools', this._folder)
+      .getConfiguration('qt', this._folder)
       .get<string>('customWidgetDesignerExePath', '');
     logger.info(
       `customWidgetDesignerExePath: "${customWidgetDesignerExePath}"`
@@ -53,12 +53,12 @@ export class Project {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
       if (
         event.affectsConfiguration(
-          'vscode-qt-tools.customWidgetDesignerExePath',
+          'qt.customWidgetDesignerExePath',
           this._folder
         )
       ) {
         const customWidgetDesignerExePathConfig = vscode.workspace
-          .getConfiguration('vscode-qt-tools', this._folder)
+          .getConfiguration('qt', this._folder)
           .get<string>('customWidgetDesignerExePath', '');
         logger.info(
           'new customWidgetDesignerExePath:',

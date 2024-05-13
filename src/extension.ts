@@ -73,7 +73,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  logger.info('Deactivating theqtcompany.qt');
+  logger.info('Deactivating Qt');
   projectManager.dispose();
   if (taskProvider) {
     taskProvider.dispose();

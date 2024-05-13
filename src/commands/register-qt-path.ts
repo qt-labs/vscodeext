@@ -32,7 +32,7 @@ export async function registerQt() {
 
 export async function setDoNotAskForDefaultQtFolder(value: boolean) {
   await vscode.workspace
-    .getConfiguration('vscode-qt-tools')
+    .getConfiguration('qt')
     .update(
       'doNotAskForDefaultQtFolder',
       value,
@@ -43,7 +43,7 @@ export async function setDoNotAskForDefaultQtFolder(value: boolean) {
 function getDoNotAskForDefaultQtFolder(): boolean {
   return (
     vscode.workspace
-      .getConfiguration('vscode-qt-tools')
+      .getConfiguration('qt')
       .get<boolean>('doNotAskForDefaultQtFolder') ?? false
   );
 }
@@ -92,7 +92,7 @@ export function checkDefaultQtFolderPath() {
 
 export function registerQtCommand(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('vscode-qt-tools.registerQt', registerQt)
+    vscode.commands.registerCommand('qt.registerQt', registerQt)
   );
 }
 

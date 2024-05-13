@@ -191,7 +191,7 @@ export class KitManager {
 
   static async setGlobalQtFolder(qtFolder: string) {
     logger.info(`Setting global Qt folder to: ${qtFolder}`);
-    const config = vscode.workspace.getConfiguration('vscode-qt-tools');
+    const config = vscode.workspace.getConfiguration('qt');
     const configTarget = util.isTestMode()
       ? vscode.ConfigurationTarget.Workspace
       : vscode.ConfigurationTarget.Global;
@@ -710,6 +710,6 @@ export class KitManager {
   }
 
   private static getConfiguration(scope?: vscode.ConfigurationScope) {
-    return vscode.workspace.getConfiguration('vscode-qt-tools', scope);
+    return vscode.workspace.getConfiguration('qt', scope);
   }
 }

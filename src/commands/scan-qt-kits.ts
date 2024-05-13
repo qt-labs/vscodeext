@@ -6,10 +6,7 @@ import * as vscode from 'vscode';
 import { kitManager } from '@/extension';
 
 export function registerScanForQtKitsCommand() {
-  return vscode.commands.registerCommand(
-    'vscode-qt-tools.scanForQtKits',
-    async () => {
-      await kitManager.checkForAllQtInstallations();
-    }
-  );
+  return vscode.commands.registerCommand('qt.scanForQtKits', async () => {
+    await kitManager.checkForAllQtInstallations();
+  });
 }

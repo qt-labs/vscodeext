@@ -76,9 +76,7 @@ suite('Extension Test Suite', () => {
       console.log('options: ', options);
       return Promise.resolve([vscode.Uri.file(qt_path ?? '')]);
     });
-    expect(
-      await vscode.commands.executeCommand('vscode-qt-tools.registerQt')
-    ).to.be.eq(0);
+    expect(await vscode.commands.executeCommand('qt.registerQt')).to.be.eq(0);
     // Note: tests are not stable due to the asyncronous nature of the extension
     // that's why wait until writing operations are done
     await delay(1000);

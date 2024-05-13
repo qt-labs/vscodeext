@@ -59,9 +59,7 @@ suite('Extension Test Suite', () => {
     const mystub = testEnv
       .getSandbox()
       .spy(vscode.window, 'showInformationMessage');
-    expect(
-      await vscode.commands.executeCommand('vscode-qt-tools.registerQt')
-    ).to.be.eq(0);
+    expect(await vscode.commands.executeCommand('qt.registerQt')).to.be.eq(0);
     expect(mystub.callCount).to.be.eq(1);
   }).timeout(10000);
 });
