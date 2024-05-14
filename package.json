@@ -357,15 +357,16 @@
     "ms-vscode.cmake-tools"
   ],
   "scripts": {
-    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "vscode:prepublish": "npm run generateLicenses && NODE_ENV=production node ./esbuild.mjs",
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
-    "ci-lint": "prettier -c  \"**/*.{js,ts,json,mjs}\" && eslint .",
+    "ci-lint": "prettier -c  \"**/*.{js,ts,json,mjs,cjs}\" && eslint .",
     "lint": "npm run prettier && eslint . --fix",
     "unitTests": "npm run pretest && node ./out/test/unit/runTest.js",
     "integrationTests": "npm run pretest && node ./out/test/integration/runTest.js",
     "allTests": "ts-node ./src/scripts/run_all_tests.ts",
+    "generateLicenses": "ts-node ./src/scripts/generate_licenses.ts",
     "prettier": "prettier --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "package": "npm ci && vsce package --out out"
   },
@@ -373,6 +374,7 @@
     "@types/chai": "^4.3.10",
     "@types/command-exists": "^1.2.3",
     "@types/glob": "^8.1.0",
+    "@types/license-checker": "^25.0.6",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
