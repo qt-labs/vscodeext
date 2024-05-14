@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import { performance } from 'perf_hooks';
 
 import {
   checkDefaultQtFolderPath,
@@ -31,7 +30,6 @@ export async function activate(context: vscode.ExtensionContext) {
   const promiseActivateCMake = vscode.extensions
     .getExtension('ms-vscode.cmake-tools')
     ?.activate();
-  const activateStart = performance.now();
   kitManager = new KitManager(context);
   projectManager = new ProjectManager(context);
   if (vscode.workspace.workspaceFile !== undefined) {
@@ -65,12 +63,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   await kitManager.checkForAllQtInstallations();
   checkDefaultQtFolderPath();
-
-  const activateEnd = performance.now();
-  const activationTime = activateEnd - activateStart;
-  console.log(
-    `Done activating plugin ${context.extension.id}, took ${activationTime}ms`
-  );
 
   await promiseActivateCMake;
 }
