@@ -20,8 +20,7 @@ module.exports = {
     '@typescript-eslint/prefer-find': 'error',
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/restrict-plus-operands': 'error',
-    '@typescript-eslint/switch-exhaustiveness-check': 'error',
-    '@typescript-eslint/no-useless-empty-export': 'error'
+    '@typescript-eslint/switch-exhaustiveness-check': 'error'
   },
   plugins: ['@typescript-eslint'],
   parser: '@typescript-eslint/parser',
