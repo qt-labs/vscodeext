@@ -1,0 +1,49 @@
+{
+  "name": "qt-wasm-pack",
+  "displayName": "Qt WebAssembly Extension Pack",
+  "description": "Recommended extensions for Qt WebAssembly development.",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext",
+    "directory": "extension_packs/wasm"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
+  "version": "0.9.0",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Extension Packs",
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "Qt",
+    "C++",
+    "CMake",
+    "Qml",
+    "scan",
+    "WebAssembly",
+    "WASM"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "preview": true,
+  "extensionPack": [
+    "theqtcompany.qt-official",
+    "ms-vscode.cmake-tools",
+    "ms-vscode.cpptools",
+    "twxs.cmake",
+    "ms-vscode.wasm-dwarf-debugging",
+    "ms-vscode.live-server"
+  ],
+  "scripts": {
+    "package": "vsce package"
+  }
+}
