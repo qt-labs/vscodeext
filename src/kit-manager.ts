@@ -302,13 +302,13 @@ export class KitManager {
     const qtInstallations = await KitManager.findQtInstallations(qtFolder);
     if (qtFolder) {
       if (qtInstallations.length === 0) {
-        void vscode.window.showWarningMessage(`No Qt version found.`);
-        logger.info('No Qt version found.');
+        const warningMessage = `Cannot find a Qt installation in "${qtFolder}".`;
+        void vscode.window.showWarningMessage(warningMessage);
+        logger.info(warningMessage);
       } else {
-        void vscode.window.showInformationMessage(
-          `Found ${qtInstallations.length} Qt installation(s).`
-        );
-        logger.info(`Found ${qtInstallations.length} Qt installation(s).`);
+        const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtFolder}".`;
+        void vscode.window.showInformationMessage(infoMessage);
+        logger.info(infoMessage);
       }
     }
     await this.updateQtInstallations(
