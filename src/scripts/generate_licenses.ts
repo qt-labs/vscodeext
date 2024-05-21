@@ -37,6 +37,9 @@ async function main() {
   const initialText = `Third-Party Notices\n\nThis file contains the licenses for third-party software used in this product.\n`;
   appendFile(initialText);
   for (const [name, license] of Object.entries(outputJSON).sort()) {
+    if (name.includes('qt-official')) {
+      continue;
+    }
     appendFile('\n');
     appendFile('---------------------------------------------------------\n\n');
     const version = name.split('@').pop();
