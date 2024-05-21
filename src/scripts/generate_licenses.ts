@@ -20,7 +20,7 @@ interface License {
 async function main() {
   console.log('Generating third-party licenses...');
   const sourceRoot = path.resolve(__dirname, '../../');
-  const output = execSync('license-checker --production --json', {
+  const output = execSync('npx license-checker --production --json', {
     cwd: sourceRoot,
     encoding: 'utf-8'
   });

@@ -388,6 +388,7 @@
     "esbuild": "^0.20.1",
     "eslint": "^8.50.0",
     "glob": "^10.3.9",
+    "license-checker": "^25.0.1",
     "mocha": "^10.2.0",
     "prettier": "^3.0.3",
     "ts-node": "^10.4.0",
