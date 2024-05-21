@@ -26,11 +26,9 @@ You can:
 
 To install the Qt extension:
 
-1. Download the Qt extension from
-   [GitHub actions](https://github.com/qt-labs/vscodeext/actions/)
-1. In Visual Studio Code, select `Install from VSIX` in the `Extensions` view
-   command dropdown.
-1. Select the `qt-<version>.vsix` package, and then select `Install`.
+1. Select the `Extensions` icon in the `Activity Bar` or press `Ctrl+Shift+X`.
+1. In `Extensions`, search for `Qt Official`.
+1. Select `Install`.
 
 The [CMake](https://github.com/twxs/vs.language.cmake) and
 [CMake Tools](https://github.com/microsoft/vscode-cmake-tools)
