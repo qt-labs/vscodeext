@@ -35,6 +35,7 @@
     "workspaceContains:*.qrc",
     "workspaceContains:*.qdoc",
     "workspaceContains:*.ui",
+    "workspaceContains:*.qss",
     "onCommand:cmake.activeFolderName",
     "onCommand:cmake.activeFolderPath",
     "onCommand:cmake.activeConfigurePresetName",
@@ -228,15 +229,6 @@
       }
     ],
     "languages": [
-      {
-        "id": "pro",
-        "extensions": [
-          ".pro"
-        ],
-        "aliases": [
-          "Pro"
-        ]
-      },
       {
         "id": "qrc",
         "configuration": "./res/lang/qrc/language-configuration.json",
