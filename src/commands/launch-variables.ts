@@ -8,7 +8,7 @@ import { getFilenameWithoutExtension } from '@util/util';
 
 export function registerlaunchTargetFilenameWithoutExtension() {
   return vscode.commands.registerCommand(
-    'qt.launchTargetFilenameWithoutExtension',
+    'qt-official.launchTargetFilenameWithoutExtension',
     async () => {
       const launchTargetFilename = await vscode.commands.executeCommand<string>(
         'cmake.launchTargetFilename'
@@ -22,14 +22,17 @@ export function registerlaunchTargetFilenameWithoutExtension() {
 }
 
 export function registerbuildDirectoryName() {
-  return vscode.commands.registerCommand('qt.buildDirectoryName', async () => {
-    const activeFolder = await vscode.commands.executeCommand<string>(
-      'cmake.activeFolderPath'
-    );
-    const buildDirectory = await vscode.commands.executeCommand<string>(
-      'cmake.buildDirectory',
-      activeFolder
-    );
-    return path.basename(buildDirectory);
-  });
+  return vscode.commands.registerCommand(
+    'qt-official.buildDirectoryName',
+    async () => {
+      const activeFolder = await vscode.commands.executeCommand<string>(
+        'cmake.activeFolderPath'
+      );
+      const buildDirectory = await vscode.commands.executeCommand<string>(
+        'cmake.buildDirectory',
+        activeFolder
+      );
+      return path.basename(buildDirectory);
+    }
+  );
 }

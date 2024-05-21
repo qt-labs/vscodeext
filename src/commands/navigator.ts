@@ -4,10 +4,10 @@
 import * as vscode from 'vscode';
 
 export function registerOpenSettingsCommand() {
-  return vscode.commands.registerCommand('qt.openSettings', () => {
+  return vscode.commands.registerCommand('qt-official.openSettings', () => {
     void vscode.commands.executeCommand(
       'workbench.action.openSettings',
-      '@ext:theqtcompany.qt'
+      '@ext:theqtcompany.qt-official'
     );
   });
 }

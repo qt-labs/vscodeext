@@ -53,7 +53,7 @@ async function tryToOpenDocumentationFor(word: string) {
 
 function openInBrowser(url: string) {
   const openInExternalBrowserCommand = vscode.workspace
-    .getConfiguration('qt')
+    .getConfiguration('qt-official')
     .get<boolean>('openOnlineDocumentationInExternalBrowser');
   if (openInExternalBrowserCommand) {
     void vscode.env.openExternal(vscode.Uri.parse(url));
@@ -129,15 +129,15 @@ async function searchForCurrentWord() {
 
 export function registerDocumentationCommands() {
   const homepageCommand = vscode.commands.registerCommand(
-    'qt.documentationHomepage',
+    'qt-official.documentationHomepage',
     openHomepage
   );
   const searchManuallyCommand = vscode.commands.registerCommand(
-    'qt.documentationSearchManually',
+    'qt-official.documentationSearchManually',
     search
   );
   const searchForCurrentWordCommand = vscode.commands.registerCommand(
-    'qt.documentationSearchForCurrentWord',
+    'qt-official.documentationSearchForCurrentWord',
     searchForCurrentWord
   );
   return [homepageCommand, searchManuallyCommand, searchForCurrentWordCommand];

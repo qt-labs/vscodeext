@@ -15,7 +15,7 @@ const logger = createLogger('ui-editor');
 export class UIEditorProvider implements vscode.CustomTextEditorProvider {
   constructor(private readonly context: vscode.ExtensionContext) {}
 
-  private static readonly viewType = 'qt.uiEditor';
+  private static readonly viewType = 'qt-official.uiEditor';
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
     const provider = new UIEditorProvider(context);
     const providerRegistration = vscode.window.registerCustomEditorProvider(

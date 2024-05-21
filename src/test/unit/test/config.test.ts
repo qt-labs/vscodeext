@@ -30,7 +30,9 @@ suite('Extension Test Suite', () => {
   });
   suiteSetup(async function (this: Mocha.Context) {
     // open a workspace
-    const extension = vscode.extensions.getExtension('theqtcompany.qt');
+    const extension = vscode.extensions.getExtension(
+      'theqtcompany.qt-official'
+    );
     assert.ok(extension);
     await extension.activate();
   });
@@ -59,7 +61,9 @@ suite('Extension Test Suite', () => {
     const mystub = testEnv
       .getSandbox()
       .spy(vscode.window, 'showInformationMessage');
-    expect(await vscode.commands.executeCommand('qt.registerQt')).to.be.eq(0);
+    expect(
+      await vscode.commands.executeCommand('qt-official.registerQt')
+    ).to.be.eq(0);
     expect(mystub.callCount).to.be.eq(1);
   }).timeout(10000);
 });

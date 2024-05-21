@@ -1,5 +1,5 @@
 {
-  "name": "qt",
+  "name": "qt-official",
   "displayName": "Qt",
   "description": "Qt Official Support",
   "version": "0.9.0",
@@ -52,11 +52,11 @@
     "onCommand:cmake.executableTargets",
     "onCommand:cmake.buildKit",
     "onCommand:cmake.tasksBuildCommand",
-    "onCommand:qt.kitDirectory",
-    "onCommand:qt.minGWgdb",
-    "onCommand:qt.natvis",
-    "onCommand:qt.natvis5",
-    "onCommand:qt.natvis6",
+    "onCommand:qt-official.kitDirectory",
+    "onCommand:qt-official.minGWgdb",
+    "onCommand:qt-official.natvis",
+    "onCommand:qt-official.natvis5",
+    "onCommand:qt-official.natvis6",
     "onDebugResolve:cmake",
     "onDebugInitialConfigurations",
     "onDebugDynamicConfigurations:cmake",
@@ -71,38 +71,38 @@
   "contributes": {
     "commands": [
       {
-        "command": "qt.registerQt",
-        "title": "%qt.command.registerQt.title%",
+        "command": "qt-official.registerQt",
+        "title": "%qt-official.command.registerQt.title%",
         "category": "Qt"
       },
       {
-        "command": "qt.scanForQtKits",
-        "title": "%qt.command.scanForQtKits.title%",
+        "command": "qt-official.scanForQtKits",
+        "title": "%qt-official.command.scanForQtKits.title%",
         "category": "Qt"
       },
       {
-        "command": "qt.resetQtExt",
-        "title": "%qt.command.resetQtExt.title%",
+        "command": "qt-official.resetQtExt",
+        "title": "%qt-official.command.resetQtExt.title%",
         "category": "Qt"
       },
       {
-        "command": "qt.openSettings",
-        "title": "%qt.command.openSettings.title%",
+        "command": "qt-official.openSettings",
+        "title": "%qt-official.command.openSettings.title%",
         "category": "Qt"
       },
       {
-        "command": "qt.documentationHomepage",
-        "title": "%qt.command.documentationHomepage.title%",
+        "command": "qt-official.documentationHomepage",
+        "title": "%qt-official.command.documentationHomepage.title%",
         "category": "Qt"
       },
       {
-        "command": "qt.documentationSearchManually",
-        "title": "%qt.command.documentationSearchManually.title%",
+        "command": "qt-official.documentationSearchManually",
+        "title": "%qt-official.command.documentationSearchManually.title%",
         "category": "Qt"
       },
       {
-        "command": "qt.documentationSearchForCurrentWord",
-        "title": "%qt.command.documentationSearchForCurrentWord.title%",
+        "command": "qt-official.documentationSearchForCurrentWord",
+        "title": "%qt-official.command.documentationSearchForCurrentWord.title%",
         "category": "Qt"
       }
     ],
@@ -112,8 +112,8 @@
         "label": "cppdbg",
         "configurationSnippets": [
           {
-            "label": "%qt.debugger.cppdbg.snippet.label%",
-            "description": "%qt.debugger.cppdbg.snippet.description%",
+            "label": "%qt-official.debugger.cppdbg.snippet.label%",
+            "description": "%qt-official.debugger.cppdbg.snippet.description%",
             "body": {
               "name": "Debug Qt Application with cppdbg",
               "type": "cppdbg",
@@ -121,7 +121,7 @@
               "program": "^\"\\${command:cmake.launchTargetPath}\"",
               "stopAtEntry": false,
               "cwd": "^\"\\${workspaceFolder}\"",
-              "visualizerFile": "^\"\\${command:qt.natvis}\"",
+              "visualizerFile": "^\"\\${command:qt-official.natvis}\"",
               "showDisplayString": true,
               "linux": {
                 "MIMode": "gdb",
@@ -134,17 +134,17 @@
                 "environment": [
                   {
                     "name": "PATH",
-                    "value": "^\"\\${env:PATH};\\${command:qt.kitDirectory}\\${/}bin\""
+                    "value": "^\"\\${env:PATH};\\${command:qt-official.kitDirectory}\\${/}bin\""
                   }
                 ],
                 "MIMode": "gdb",
-                "miDebuggerPath": "^\"\\${command:qt.minGWgdb}\""
+                "miDebuggerPath": "^\"\\${command:qt-official.minGWgdb}\""
               }
             }
           },
           {
-            "label": "%qt.debugger.lldb.snippet.label%",
-            "description": "%qt.debugger.lldb.snippet.description%",
+            "label": "%qt-official.debugger.lldb.snippet.label%",
+            "description": "%qt-official.debugger.lldb.snippet.description%",
             "body": {
               "name": "Debug Qt Application with lldb",
               "type": "cppdbg",
@@ -152,7 +152,7 @@
               "program": "^\"\\${command:cmake.launchTargetPath}\"",
               "stopAtEntry": false,
               "cwd": "^\"\\${workspaceFolder}\"",
-              "visualizerFile": "^\"\\${command:qt.natvis}\"",
+              "visualizerFile": "^\"\\${command:qt-official.natvis}\"",
               "showDisplayString": true,
               "linux": {
                 "MIMode": "lldb",
@@ -165,7 +165,7 @@
                 "environment": [
                   {
                     "name": "PATH",
-                    "value": "^\"\\${env:PATH};\\${command:qt.kitDirectory}\\${/}bin\""
+                    "value": "^\"\\${env:PATH};\\${command:qt-official.kitDirectory}\\${/}bin\""
                   }
                 ],
                 "MIMode": "lldb"
@@ -173,8 +173,8 @@
             }
           },
           {
-            "label": "%qt.debugger.cppvsdbg.snippet.label%",
-            "description": "%qt.debugger.cppvsdbg.snippet.description%",
+            "label": "%qt-official.debugger.cppvsdbg.snippet.label%",
+            "description": "%qt-official.debugger.cppvsdbg.snippet.description%",
             "body": {
               "name": "Debug Qt Application with Visual Studio Debugger",
               "type": "cppvsdbg",
@@ -182,25 +182,25 @@
               "program": "^\"\\${command:cmake.launchTargetPath}\"",
               "stopAtEntry": false,
               "cwd": "^\"\\${workspaceFolder}\"",
-              "visualizerFile": "^\"\\${command:qt.natvis}\"",
+              "visualizerFile": "^\"\\${command:qt-official.natvis}\"",
               "windows": {
                 "environment": [
                   {
                     "name": "PATH",
-                    "value": "^\"\\${env:PATH};\\${command:qt.kitDirectory}\\${/}bin\""
+                    "value": "^\"\\${env:PATH};\\${command:qt-official.kitDirectory}\\${/}bin\""
                   }
                 ]
               }
             }
           },
           {
-            "label": "%qt.debugger.wasm.snippet.label%",
-            "description": "%qt.debugger.wasm.snippet.description%",
+            "label": "%qt-official.debugger.wasm.snippet.label%",
+            "description": "%qt-official.debugger.wasm.snippet.description%",
             "body": {
               "name": "Debug Qt WebAssembly Application",
               "type": "chrome",
               "request": "launch",
-              "url": "^\"http://localhost:3000/\\${command:qt.buildDirectoryName}/\\${command:qt.launchTargetFilenameWithoutExtension}.html\"",
+              "url": "^\"http://localhost:3000/\\${command:qt-official.buildDirectoryName}/\\${command:qt-official.launchTargetFilenameWithoutExtension}.html\"",
               "preLaunchTask": "Qt: WASM Start"
             }
           }
@@ -209,7 +209,7 @@
     ],
     "customEditors": [
       {
-        "viewType": "qt.uiEditor",
+        "viewType": "qt-official.uiEditor",
         "displayName": "Qt UI Editor",
         "extensions": [
           ".ui"
@@ -304,7 +304,7 @@
         "path": "./res/lang/qrc/qrc.tmLanguage.json"
       },
       {
-        "scopeName": "qt.injection",
+        "scopeName": "qt-official.injection",
         "path": "./res/lang/cpp/qt_cpp.injection.json",
         "injectTo": [
           "source.c",
@@ -321,25 +321,25 @@
       "type": "object",
       "title": "Qt Configuration",
       "properties": {
-        "qt.qtFolder": {
+        "qt-official.qtFolder": {
           "type": "string",
           "default": "",
           "description": "Specify the Qt folder",
           "scope": "machine-overridable"
         },
-        "qt.openOnlineDocumentationInExternalBrowser": {
+        "qt-official.openOnlineDocumentationInExternalBrowser": {
           "type": "boolean",
           "default": false,
           "description": "Open online documentation in external browser",
           "scope": "machine-overridable"
         },
-        "qt.doNotAskForDefaultQtFolder": {
+        "qt-official.doNotAskForDefaultQtFolder": {
           "type": "boolean",
           "default": false,
           "description": "Do not ask for default Qt folder",
           "scope": "machine"
         },
-        "qt.customWidgetDesignerExePath": {
+        "qt-official.customWidgetDesignerExePath": {
           "type": "string",
           "default": "",
           "description": "Specify the custom Qt Widget Designer executable path",

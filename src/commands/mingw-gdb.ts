@@ -41,5 +41,8 @@ function locateToolsDir(selectedQtPath: string): string {
 }
 
 export function registerMinGWgdbCommand() {
-  return vscode.commands.registerCommand('qt.minGWgdb', findMinGWgdbPath);
+  return vscode.commands.registerCommand(
+    'qt-official.minGWgdb',
+    findMinGWgdbPath
+  );
 }

@@ -10,5 +10,5 @@ export async function resetQtExt() {
 }
 
 export function registerResetQtExtCommand() {
-  return vscode.commands.registerCommand('qt.resetQtExt', resetQtExt);
+  return vscode.commands.registerCommand('qt-official.resetQtExt', resetQtExt);
 }

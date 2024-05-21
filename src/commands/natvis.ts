@@ -12,7 +12,9 @@ const logger = createLogger('natvis');
 
 export function registerNatvisCommand() {
   const getNatvis = (version: string) => {
-    const extension = vscode.extensions.getExtension('theqtcompany.qt');
+    const extension = vscode.extensions.getExtension(
+      'theqtcompany.qt-official'
+    );
     if (!extension) {
       const error = 'Could not find the extension';
       logger.error(error);
@@ -39,7 +41,7 @@ export function registerNatvisCommand() {
   };
 
   const natvisDisposal = vscode.commands.registerCommand(
-    'qt.natvis',
+    'qt-official.natvis',
     async () => {
       const selectedQtInstallation = await getSelectedQtInstallationPath();
       if (!selectedQtInstallation) {
@@ -51,12 +53,18 @@ export function registerNatvisCommand() {
       return getNatvis(qtVersion);
     }
   );
-  const natvis5Disposal = vscode.commands.registerCommand('qt.natvis5', () => {
-    return getNatvis('5');
-  });
-  const natvis6Disposal = vscode.commands.registerCommand('qt.natvis6', () => {
-    return getNatvis('6');
-  });
+  const natvis5Disposal = vscode.commands.registerCommand(
+    'qt-official.natvis5',
+    () => {
+      return getNatvis('5');
+    }
+  );
+  const natvis6Disposal = vscode.commands.registerCommand(
+    'qt-official.natvis6',
+    () => {
+      return getNatvis('6');
+    }
+  );
 
   return [natvisDisposal, natvis5Disposal, natvis6Disposal];
 }

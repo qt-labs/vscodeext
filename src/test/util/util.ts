@@ -55,7 +55,7 @@ export function getFirstQtInstallation(qt_path: string | undefined) {
 }
 
 export async function activateIntegrationTestExtensions() {
-  const extensions = ['theqtcompany.qt', 'ms-vscode.cmake-tools'];
+  const extensions = ['theqtcompany.qt-official', 'ms-vscode.cmake-tools'];
   // if extensions are not activated, activate them explicitly
   for (const extension of extensions) {
     if (!vscode.extensions.getExtension(extension)?.isActive) {
