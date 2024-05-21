@@ -31,25 +31,32 @@ async function main() {
     'ThirdPartyNotices.txt'
   );
   fs.rmSync(thirdPartyLicensesFile, { force: true });
-  const appendFile = (str: string) => {
+  const append = (str: string) => {
     fs.appendFileSync(thirdPartyLicensesFile, str);
   };
+  const appendLicense = (license: string) => {
+    license.replace(/\r\n/g, '\n');
+    const lines = license.split('\n').map((line) => line.trimEnd());
+    append(lines.join('\n'));
+  };
   const initialText = `Third-Party Notices\n\nThis file contains the licenses for third-party software used in this product.\n`;
-  appendFile(initialText);
-  for (const [name, license] of Object.entries(outputJSON).sort()) {
+  append(initialText);
+  const entries = Object.entries(outputJSON);
+  console.log(`Found ${entries.length} third-party dependencies`);
+  for (const [name, license] of entries.sort()) {
     if (name.includes('qt-official')) {
       continue;
     }
-    appendFile('\n');
-    appendFile('---------------------------------------------------------\n\n');
+    append('\n');
+    append('---------------------------------------------------------\n\n');
     const version = name.split('@').pop();
     const nameWithoutVersion = name.replace(`@${version}`, '');
     const nameWithoutVersionAndPublisher = nameWithoutVersion.split('/').pop();
 
-    appendFile(
+    append(
       `${nameWithoutVersionAndPublisher} ${version} - ${license.licenses}\n`
     );
-    appendFile(`${license.repository}#readme\n\n`);
+    append(`${license.repository}#readme\n\n`);
     const licenseFilePath = path.resolve(sourceRoot, license.licenseFile);
     const licenseFileName = path.basename(licenseFilePath);
     if (licenseFileName.toLowerCase() !== 'license') {
@@ -74,7 +81,7 @@ async function main() {
           );
           if (response.ok) {
             const licenseFile = await response.text();
-            appendFile(licenseFile);
+            appendLicense(licenseFile);
             found = true;
             break;
           }
@@ -85,11 +92,11 @@ async function main() {
       }
     } else {
       const licenseFile = fs.readFileSync(licenseFilePath, 'utf-8');
-      appendFile(licenseFile);
+      appendLicense(licenseFile);
     }
-    appendFile('\n---------------------------------------------------------\n');
+    append('\n---------------------------------------------------------\n');
   }
-  console.log('Third party licenses generated successfully');
+  console.log('Third-party licenses generated successfully');
 }
 
 void main();
