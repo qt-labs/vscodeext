@@ -3,6 +3,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import { program } from 'commander';
 import { execSync } from 'child_process';
 
 type Licenses = Record<string, License>;
@@ -18,6 +19,11 @@ interface License {
 }
 
 async function main() {
+  program.option('-o, --output <string>', 'Path to output file');
+  program.parse(process.argv);
+  const options = program.opts();
+  const outputFile = options.output as string;
+
   console.log('Generating third-party licenses...');
   const sourceRoot = path.resolve(__dirname, '../../');
   const output = execSync('npx license-checker --production --json', {
@@ -26,10 +32,10 @@ async function main() {
   });
 
   const outputJSON = JSON.parse(output) as Licenses;
-  const thirdPartyLicensesFile = path.resolve(
-    sourceRoot,
-    'ThirdPartyNotices.txt'
-  );
+  const thirdPartyLicensesFile =
+    outputFile && outputFile !== ''
+      ? outputFile
+      : path.resolve(sourceRoot, 'ThirdPartyNotices.txt');
   fs.rmSync(thirdPartyLicensesFile, { force: true });
   const append = (str: string) => {
     fs.appendFileSync(thirdPartyLicensesFile, str);

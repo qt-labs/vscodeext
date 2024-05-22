@@ -10,8 +10,8 @@ function main() {
   program.parse(process.argv);
   const options = program.opts();
   const qt_path = options.qt_path as string;
-  const extenstinoRoot = path.resolve(__dirname, '../../');
-  process.chdir(extenstinoRoot);
+  const extensionRoot = path.resolve(__dirname, '../../');
+  process.chdir(extensionRoot);
   execSync('npm run unitTests', { stdio: 'inherit' });
   execSync(`npm run integrationTests -- --qt_path="${qt_path}"`, {
     stdio: 'inherit'
