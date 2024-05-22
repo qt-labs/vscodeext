@@ -3,12 +3,16 @@
 
 import * as vscode from 'vscode';
 
+import { IsWindows } from '@/util/os';
 import { kitManager } from '@/extension';
 
 export function registerScanForQtKitsCommand() {
   return vscode.commands.registerCommand(
     'qt-official.scanForQtKits',
     async () => {
+      if (IsWindows) {
+        await vscode.commands.executeCommand('cmake.scanForKits');
+      }
       await kitManager.checkForAllQtInstallations();
     }
   );
