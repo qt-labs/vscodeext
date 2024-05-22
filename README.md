@@ -5,7 +5,7 @@ Develop Qt applications with Visual Studio Code.
 You can:
 
 - Use Qt in your CMake project by selecting a generated Qt kit.
-- Design Qt widgets-based UIs with Qt Widget Designer.
+- Design Qt widgets-based UIs with Qt Widgets Designer.
 - Build Qt projects with CMake.
 - Debug Qt's C++ types.
 - Handle Qt-specific file formats.
@@ -54,8 +54,8 @@ If some Qt CMake kits are missing, select `Qt: Scan for Qt Kits` in
 To design a widgets-based UI:
 
 1. In `Explorer`, select a `.ui` file.
-1. Select `Open this file with Qt Widget Designer`.
-1. Use Qt Widget designer to design a UI.
+1. Select `Open this file with Qt Widgets Designer`.
+1. Use `Qt Widgets Designer` to design a UI.
 
 ### Debug an application
 

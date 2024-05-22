@@ -79,7 +79,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
       } else {
         // This means that the file is not part of a workspace folder. So
         // we start a new DesignerServer and DesignerClient
-        // TODO: Add fallback qt widget designer for this case
+        // TODO: Add fallback Qt Widgets Designer for this case
         logger.error('Project not found');
         throw new Error('Project not found');
       }
@@ -129,7 +129,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Open this file with Qt Widget Designer</title>
+      <title>Open this file with Qt Widgets Designer</title>
       <style>
         body {
           display: flex;
@@ -143,7 +143,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     </head>
     <body>
       <div>
-        <vscode-button id="openWithDesignerButton" tabindex="0">Open this file with Qt Widget Designer</vscode-button>
+        <vscode-button id="openWithDesignerButton" tabindex="0">Open this file with Qt Widgets Designer</vscode-button>
       </div>
       <script type="module" nonce="${nonce}" src="${scriptUri.toString()}"></script>
     </body>

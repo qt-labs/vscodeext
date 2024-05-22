@@ -339,10 +339,10 @@
           "description": "Do not ask for default Qt folder",
           "scope": "machine"
         },
-        "qt-official.customWidgetDesignerExePath": {
+        "qt-official.customWidgetsDesignerExePath": {
           "type": "string",
           "default": "",
-          "description": "Specify the custom Qt Widget Designer executable path",
+          "description": "Specify the custom Qt Widgets Designer executable path",
           "scope": "machine-overridable"
         }
       }

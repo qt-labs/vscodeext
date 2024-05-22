@@ -36,16 +36,16 @@ export class Project {
         this._designerServer.getPort()
       );
     }
-    const customWidgetDesignerExePath = vscode.workspace
+    const customWidgetsDesignerExePath = vscode.workspace
       .getConfiguration('qt-official', this._folder)
-      .get<string>('customWidgetDesignerExePath', '');
+      .get<string>('customWidgetsDesignerExePath', '');
     logger.info(
-      `customWidgetDesignerExePath: "${customWidgetDesignerExePath}"`
+      `customWidgetsDesignerExePath: "${customWidgetsDesignerExePath}"`
     );
-    if (customWidgetDesignerExePath) {
-      if (Project.checkCustomDesignerExePath(customWidgetDesignerExePath)) {
+    if (customWidgetsDesignerExePath) {
+      if (Project.checkCustomDesignerExePath(customWidgetsDesignerExePath)) {
         this._designerClient = new DesignerClient(
-          customWidgetDesignerExePath,
+          customWidgetsDesignerExePath,
           this._designerServer.getPort()
         );
       }
@@ -53,24 +53,24 @@ export class Project {
     vscode.workspace.onDidChangeConfiguration(async (event) => {
       if (
         event.affectsConfiguration(
-          'qt-official.customWidgetDesignerExePath',
+          'qt-official.customWidgetsDesignerExePath',
           this._folder
         )
       ) {
-        const customWidgetDesignerExePathConfig = vscode.workspace
+        const customWidgetsDesignerExePathConfig = vscode.workspace
           .getConfiguration('qt-official', this._folder)
-          .get<string>('customWidgetDesignerExePath', '');
+          .get<string>('customWidgetsDesignerExePath', '');
         logger.info(
-          'new customWidgetDesignerExePath:',
-          customWidgetDesignerExePathConfig
+          'new customWidgetsDesignerExePath:',
+          customWidgetsDesignerExePathConfig
         );
         if (
-          customWidgetDesignerExePathConfig &&
-          Project.checkCustomDesignerExePath(customWidgetDesignerExePathConfig)
+          customWidgetsDesignerExePathConfig &&
+          Project.checkCustomDesignerExePath(customWidgetsDesignerExePathConfig)
         ) {
           this._designerClient?.detach();
           this._designerClient = new DesignerClient(
-            customWidgetDesignerExePathConfig,
+            customWidgetsDesignerExePathConfig,
             this._designerServer.getPort()
           );
         } else {
@@ -113,17 +113,17 @@ export class Project {
   }
 
   private static checkCustomDesignerExePath(
-    customWidgetDesignerExePath: string
+    customWidgetsDesignerExePath: string
   ) {
-    if (!fs.existsSync(customWidgetDesignerExePath)) {
+    if (!fs.existsSync(customWidgetsDesignerExePath)) {
       logger.error(
-        'Qt Widget Designer executable not found at:"',
-        customWidgetDesignerExePath,
+        'Qt Widgets Designer executable not found at:"',
+        customWidgetsDesignerExePath,
         '"'
       );
       void vscode.window.showWarningMessage(
-        'Qt Widget Designer executable not found at:"' +
-          customWidgetDesignerExePath +
+        'Qt Widgets Designer executable not found at:"' +
+          customWidgetsDesignerExePath +
           '"'
       );
       return false;
