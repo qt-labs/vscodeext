@@ -1,6 +1,7 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as vscode from 'vscode';
 import * as path from 'path';
 
 /**
@@ -29,4 +30,8 @@ export function getFilenameWithoutExtension(filename: string): string {
 
 export function isError<T>(e: T): e is T & Error {
   return e instanceof Error;
+}
+
+export function isMultiWorkspace(): boolean {
+  return vscode.workspace.workspaceFile !== undefined;
 }

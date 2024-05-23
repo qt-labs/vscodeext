@@ -140,6 +140,16 @@ Do Not Ask for Default Qt Folder | Hides the prompt about setting the value of `
 Open Online Documentation in External Browser | Opens Qt documentation in the default browser.
 Qt Folder | Path to the folder where you installed Qt.
 
+### Recommended Settings to Use Qt with Other Extensions
+
+To use the Qt extension with other extensions, set the following recommended
+settings in `settings.json` or run `Qt: Set the recommended Qt Extension settings`
+from `Command Palette`.
+
+```json
+   "cmake.options.statusBarVisibility": "visible",
+```
+
 ## License
 
 This extension can be licensed under the Qt Commercial License and the

@@ -22,7 +22,8 @@ import { Project, ProjectManager } from '@/project';
 import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { registerOpenSettingsCommand } from '@cmd/navigator';
-import { registerDocumentationCommands } from '@/commands/online-docs';
+import { registerDocumentationCommands } from '@cmd/online-docs';
+import { registerSetRecommendedSettingsCommand } from '@cmd/recommended-settings';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
@@ -59,7 +60,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerlaunchTargetFilenameWithoutExtension(),
     registerbuildDirectoryName(),
     registerOpenSettingsCommand(),
-    ...registerDocumentationCommands()
+    ...registerDocumentationCommands(),
+    registerSetRecommendedSettingsCommand()
   );
 
   taskProvider = vscode.tasks.registerTaskProvider(

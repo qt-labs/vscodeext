@@ -14,5 +14,6 @@
   "qt-official.command.openSettings.title": "Open Qt Settings",
   "qt-official.command.documentationHomepage.title": "Documentation: Open Homepage",
   "qt-official.command.documentationSearchManually.title": "Documentation: Search",
-  "qt-official.command.documentationSearchForCurrentWord.title": "Documentation: Search for the current word"
+  "qt-official.command.documentationSearchForCurrentWord.title": "Documentation: Search for the current word",
+  "qt-official.command.setRecommendedSettings.title": "Set the recommended Qt Extension settings"
 }

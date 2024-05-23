@@ -104,6 +104,11 @@
         "command": "qt-official.documentationSearchForCurrentWord",
         "title": "%qt-official.command.documentationSearchForCurrentWord.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-official.setRecommendedSettings",
+        "title": "%qt-official.command.setRecommendedSettings.title%",
+        "category": "Qt"
       }
     ],
     "debuggers": [
