@@ -43,6 +43,9 @@ async function main() {
     const vscodeExecutablePath = await downloadAndUnzipVSCode('stable');
     const [cliPath, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    if (!cliPath) {
+      throw new Error('Failed to locate Code CLI');
+    }
     const testWorkspace = path.resolve(
       extensionDevelopmentPath,
       'src/test/unit/project-folder'

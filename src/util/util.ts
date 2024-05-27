@@ -25,7 +25,12 @@ export function getFilenameWithoutExtension(filename: string): string {
   if (!separatedPath) {
     throw new Error('Filename is empty');
   }
-  return separatedPath.split('.')[0];
+  const splittedPath = separatedPath.split('.')[0];
+  if (splittedPath === undefined) {
+    throw new Error('Filename is empty');
+  }
+
+  return splittedPath;
 }
 
 export function isError<T>(e: T): e is T & Error {

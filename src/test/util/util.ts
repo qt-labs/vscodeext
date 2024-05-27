@@ -30,6 +30,7 @@ export function getFirstQtKit(qt_path: string | undefined) {
       return kit;
     }
   }
+  return undefined;
 }
 
 export function getFirstQtInstallation(qt_path: string | undefined) {
@@ -52,6 +53,7 @@ export function getFirstQtInstallation(qt_path: string | undefined) {
       return installation;
     }
   }
+  return undefined;
 }
 
 export async function activateIntegrationTestExtensions() {

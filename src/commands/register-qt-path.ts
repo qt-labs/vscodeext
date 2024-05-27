@@ -20,7 +20,7 @@ export async function registerQt() {
     canSelectFolders: true
   };
   const selectedQtFolderUri = await vscode.window.showOpenDialog(options);
-  if (!selectedQtFolderUri) {
+  if (selectedQtFolderUri?.[0] === undefined) {
     return;
   }
   const selectedQtFolder = selectedQtFolderUri[0].fsPath;

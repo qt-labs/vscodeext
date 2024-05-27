@@ -383,7 +383,7 @@ export class KitManager {
     }
     const toolchain = path.basename(installation);
     const tokens = toolchain.split('_');
-    let platform = tokens[0];
+    let platform = tokens[0] ?? '';
     if (platform != 'android') {
       if (platform.startsWith('msvc')) {
         newKit = {
@@ -625,6 +625,9 @@ export class KitManager {
     );
     const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
       const version = KitManager.getMsvcYear(kit);
+      if (!version) {
+        return false;
+      }
       logger.info('version: ' + version);
       const msvcTargetArch =
         kit.preferredGenerator?.platform ?? kit.visualStudioArchitecture ?? '';
@@ -666,7 +669,7 @@ export class KitManager {
   }
 
   private static getMsvcYear(kit: Kit) {
-    const year = kit.name.match(KitManager.MsvcYearRegex)?.at(1);
+    const year = kit.name.match(KitManager.MsvcYearRegex)?.at(1) ?? '';
     if (year) {
       return year;
     }
@@ -674,7 +677,7 @@ export class KitManager {
       .match(KitManager.MsvcMajorVersionNumberRegex)
       ?.at(1);
     if (majorMsvcVersion) {
-      return KitManager.MapMsvcMajorVersionToItsYear[majorMsvcVersion];
+      return KitManager.MapMsvcMajorVersionToItsYear[majorMsvcVersion] ?? '';
     }
     return '';
   }

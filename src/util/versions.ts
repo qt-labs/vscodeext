@@ -12,11 +12,18 @@ export function compareVersions(version1: string, version2: string) {
     if (v2parts.length === i) {
       return 1;
     }
-
-    if (v1parts[i] === v2parts[i]) {
+    const v1Part = v1parts[i];
+    const v2Part = v2parts[i];
+    if (v1Part === undefined) {
+      throw new Error('v1Part is undefined');
+    }
+    if (v2Part === undefined) {
+      throw new Error('v2Part is undefined');
+    }
+    if (v1Part === v2Part) {
       continue;
     }
-    if (v1parts[i] > v2parts[i]) {
+    if (v1Part > v2Part) {
       return 1;
     }
     return -1;

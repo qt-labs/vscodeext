@@ -47,6 +47,7 @@ export class WASMStartTaskProvider implements vscode.TaskProvider {
             await extension.activate();
             return true;
           }
+          return false;
         } else {
           const message =
             `The extension ${extensionId} is required to debug ` +

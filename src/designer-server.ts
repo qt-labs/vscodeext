@@ -52,10 +52,11 @@ export class DesignerServer {
     this.stop();
   }
 
-  public getPort() {
+  public getPort(): number | undefined {
     if (this.server.address()) {
       return (this.server.address() as net.AddressInfo).port;
     }
+    return undefined;
   }
   public isClientConnected() {
     return this.client !== undefined && !this.client.destroyed;
