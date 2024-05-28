@@ -30,8 +30,8 @@ type Environment = Record<string, string | undefined>;
 
 interface CMakeGenerator {
   name: string;
-  toolset?: string;
-  platform?: string;
+  toolset?: string | undefined;
+  platform?: string | undefined;
 }
 
 interface KitDetect {
@@ -73,7 +73,7 @@ export interface Kit extends KitDetect {
   /**
    * The preferred CMake generator for this kit
    */
-  preferredGenerator?: CMakeGenerator;
+  preferredGenerator?: CMakeGenerator | undefined;
 
   /**
    * Additional settings to pass to CMake
@@ -83,7 +83,7 @@ export interface Kit extends KitDetect {
   /**
    * Additional environment variables for the kit
    */
-  environmentVariables?: Environment;
+  environmentVariables?: Environment | undefined;
 
   /**
    * The language compilers.
@@ -102,7 +102,7 @@ export interface Kit extends KitDetect {
    * The architecture for the kit. This is used when asking for the architecture
    * from the dev environment batch file.
    */
-  visualStudioArchitecture?: string;
+  visualStudioArchitecture?: string | undefined;
 
   /**
    * Filename of a shell script which sets environment variables for the kit
@@ -112,7 +112,7 @@ export interface Kit extends KitDetect {
   /**
    * Path to a CMake toolchain file.
    */
-  toolchainFile?: string;
+  toolchainFile?: string | undefined;
 
   /**
    * If `true`, keep this kit around even if it seems out-of-date
