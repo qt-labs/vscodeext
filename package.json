@@ -354,7 +354,7 @@
     "ms-vscode.cmake-tools"
   ],
   "scripts": {
-    "vscode:prepublish": "npm run checkLicenses && NODE_ENV=production node ./esbuild.mjs",
+    "vscode:prepublish": "npm run ci-lint && NODE_ENV=production node ./esbuild.mjs",
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
