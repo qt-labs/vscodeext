@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as cmakeAPi from 'vscode-cmake-tools';
 
 import { WorkspaceStateManager } from '@/state';
 import { kitManager } from '@/extension';
@@ -18,11 +19,14 @@ export class Project {
   private readonly _stateManager: WorkspaceStateManager;
   private _designerClient: DesignerClient | undefined;
   private readonly _designerServer: DesignerServer;
+  private readonly _cmakeProject: cmakeAPi.Project | undefined;
   private constructor(
     private readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext,
-    designerExePath: string
+    designerExePath: string,
+    cmakeProject: cmakeAPi.Project | undefined
   ) {
+    this._cmakeProject = cmakeProject;
     this._stateManager = new WorkspaceStateManager(_context, _folder);
     this._designerServer = new DesignerServer();
     // If a kit is selected, create a DesignerClient instance. Otherwise,
@@ -84,6 +88,32 @@ export class Project {
         }
       }
     });
+
+    if (this._cmakeProject) {
+      this._cmakeProject.onSelectedConfigurationChanged(
+        async (configurationType: cmakeAPi.ConfigurationType) => {
+          if (configurationType === cmakeAPi.ConfigurationType.Kit) {
+            const selectedCMakeKit =
+              await vscode.commands.executeCommand<string>('cmake.buildKit');
+            logger.info('Selected kit:', selectedCMakeKit);
+            this._designerClient?.detach();
+            this._designerClient = undefined;
+            if (selectedCMakeKit) {
+              if (selectedCMakeKit !== '__unspec__') {
+                this._designerClient = new DesignerClient(
+                  await getQtDesignerPath(this._folder),
+                  this._designerServer.getPort()
+                );
+              }
+            } else {
+              const error = 'Selected kit is undefined';
+              logger.error(error);
+              throw new Error(error);
+            }
+          }
+        }
+      );
+    }
   }
 
   static async createProject(
@@ -91,7 +121,17 @@ export class Project {
     context: vscode.ExtensionContext
   ) {
     logger.info('Creating project:"' + folder.uri.fsPath + '"');
-    return new Project(folder, context, await getQtDesignerPath(folder));
+    const api = await cmakeAPi.getCMakeToolsApi(cmakeAPi.Version.latest);
+    let cmakeProject: cmakeAPi.Project | undefined;
+    if (api) {
+      cmakeProject = await api.getProject(folder.uri);
+    }
+    return new Project(
+      folder,
+      context,
+      await getQtDesignerPath(folder),
+      cmakeProject
+    );
   }
   public getStateManager() {
     return this._stateManager;

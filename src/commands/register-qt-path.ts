@@ -96,6 +96,28 @@ export function registerQtCommand(context: vscode.ExtensionContext) {
   );
 }
 
+export function askForKitSelection() {
+  void vscode.window
+    .showInformationMessage(
+      'No CMake kit selected. Please select a CMake kit.',
+      ...['Select CMake Kit']
+    )
+    .then((selection) => {
+      if (selection === 'Select CMake Kit') {
+        void vscode.commands.executeCommand('cmake.selectKit');
+      }
+    });
+}
+
+export async function checkSelectedKitandAskForKitSelection() {
+  const selectedKit = await vscode.commands.executeCommand('cmake.buildKit');
+  if (!selectedKit || selectedKit === '__unspec__') {
+    askForKitSelection();
+    return false;
+  }
+  return true;
+}
+
 export async function getSelectedQtInstallationPath(
   folder?: vscode.WorkspaceFolder
 ) {
@@ -113,19 +135,11 @@ export async function getSelectedQtInstallationPath(
     'cmake.buildKit',
     folder
   );
-  if (!selectedCMakeKit || selectedCMakeKit === '__unspec__') {
-    void vscode.window
-      .showInformationMessage(
-        'No CMake kit selected. Please select a CMake kit.',
-        ...['Select CMake Kit']
-      )
-      .then((selection) => {
-        if (selection === 'Select CMake Kit') {
-          void vscode.commands.executeCommand('cmake.selectKit');
-        }
-      });
+
+  if (!(await checkSelectedKitandAskForKitSelection())) {
     return '';
   }
+
   const addtionalKits = vscode.workspace
     .getConfiguration('cmake')
     .get<string[]>('additionalKits');

@@ -455,6 +455,7 @@
     "typescript": "^5.2.2",
     "vscode-languageclient": "^9.0.1",
     "winston": "^3.13.0",
-    "winston-transport-vscode": "^0.1.0"
+    "winston-transport-vscode": "^0.1.0",
+    "vscode-cmake-tools": "^1.2.0"
   }
 }

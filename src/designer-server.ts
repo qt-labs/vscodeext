@@ -48,6 +48,13 @@ export class DesignerServer {
     this.server.close();
   }
 
+  public closeClient() {
+    if (this.client) {
+      this.client.destroy();
+      this.client = undefined;
+    }
+  }
+
   public dispose() {
     this.stop();
   }

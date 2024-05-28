@@ -5,10 +5,8 @@ import * as vscode from 'vscode';
 
 import { getNonce, getUri } from '@/editors/util';
 import { projectManager } from '@/extension';
-import { DesignerServer } from '@/designer-server';
-import { DesignerClient } from '@/designer-client';
-import { getQtDesignerPath } from '@util/get-qt-paths';
 import { createLogger } from '@/logger';
+import { checkSelectedKitandAskForKitSelection } from '@cmd/register-qt-path';
 
 const logger = createLogger('ui-editor');
 
@@ -55,43 +53,25 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
       new Promise((resolve) => setTimeout(resolve, ms));
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
       const project = projectManager.findProjectContainingFile(document.uri);
-      let designerServer: DesignerServer | undefined;
-      let designerClient: DesignerClient | undefined;
-      if (project) {
-        designerServer = project.designerServer;
-        if (project.designerClient) {
-          designerClient = project.designerClient;
-        } else {
-          // If a kit is selected/changed after the project is opened, we need
-          // to create a DesignerClient instance when a kit is selected
-          // instead of waiting for the user to open a .ui file. The reason is
-          // `cmake.onSelectedKitChanged()` does not exist, we need to create
-          // a DesignerClient instance here.
-          const qtDesignerPath = await getQtDesignerPath(project.folder);
-          if (qtDesignerPath) {
-            designerClient = new DesignerClient(
-              qtDesignerPath,
-              designerServer.getPort()
-            );
-            project.designerClient = designerClient;
-          }
-        }
-      } else {
-        // This means that the file is not part of a workspace folder. So
-        // we start a new DesignerServer and DesignerClient
-        // TODO: Add fallback Qt Widgets Designer for this case
+      if (project === undefined) {
         logger.error('Project not found');
         throw new Error('Project not found');
       }
+      const designerServer = project.designerServer;
+      const designerClient = project.designerClient;
 
       switch (e.type) {
         case 'run':
           if (designerClient === undefined) {
+            // User may not have selected the kit.
+            // We can check and ask for kit selection.
+            await checkSelectedKitandAskForKitSelection();
             logger.error('Designer client not found');
             throw new Error('Designer client not found');
           }
           if (!designerClient.isRunning()) {
             logger.info('Starting designer client');
+            designerServer.closeClient();
             designerClient.start(designerServer.getPort());
           }
           // wait for the client to connect
