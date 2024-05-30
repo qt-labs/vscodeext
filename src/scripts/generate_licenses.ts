@@ -72,7 +72,8 @@ async function main() {
         'license.txt',
         'LICENSE',
         'LICENSE.md',
-        'LICENSE.txt'
+        'LICENSE.txt',
+        'License.txt'
       ];
       const repo = license.repository.replace(
         'github.com',
