@@ -269,6 +269,17 @@
         ]
       },
       {
+        "id": "qmldir",
+        "configuration": "./res/lang/qmldir/language-configuration.json",
+        "filenames": [
+          "qmldir"
+        ],
+        "aliases": [
+          "QMLDir",
+          "qmldir"
+        ]
+      },
+      {
         "id": "qdoc",
         "configuration": "./res/lang/qdoc/language-configuration.json",
         "extensions": [
@@ -330,6 +341,11 @@
         "language": "qml",
         "scopeName": "source.qml",
         "path": "./res/lang/qml/qml.qmlproject.tmLanguage"
+      },
+      {
+        "language": "qmldir",
+        "scopeName": "source.qmldir",
+        "path": "./res/lang/qmldir/qmldir.tmLanguage.json"
       }
     ],
     "configuration": {

@@ -1,0 +1,179 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Qt QML Module Definition file",
+  "patterns": [
+    {
+      "name": "module.qmldir",
+      "match": "^(module)\\s+([\\w\\.]+)$",
+      "captures": {
+        "1": {
+          "name": "keyword.module.qmldir"
+        },
+        "2": {
+          "name": "entity.name.class.module.qmldir"
+        }
+      }
+    },
+    {
+      "name": "qmlfile.qmldir",
+      "match": "^(?:(singleton)\\s+)?([A-Z]\\w*)\\s+(?:(\\d+\\.\\d+)\\s+)?([\\w\\.+\\-/]+\\.qml)$",
+      "captures": {
+        "1": {
+          "name": "keyword.qmlfile.qmldir"
+        },
+        "2": {
+          "name": "variable.qmlfile.qmldir"
+        },
+        "3": {
+          "name": "constant.numeric.qmlfile.qmldir"
+        },
+        "4": {
+          "name": "string.qmlfile.qmldir"
+        }
+      }
+    },
+    {
+      "name": "internal.qmldir",
+      "match": "^(internal)\\s+([A-Z]\\w*)\\s+([\\w\\.+\\-/]+\\.qml)$",
+      "captures": {
+        "1": {
+          "name": "keyword.internal.qmldir"
+        },
+        "2": {
+          "name": "variable.internal.qmldir"
+        },
+        "3": {
+          "name": "string.internal.qmldir"
+        }
+      }
+    },
+    {
+      "name": "jsfile.qmldir",
+      "match": "^([A-Z]\\w*)\\s+(?:(\\d+\\.\\d+)\\s+)?([\\w\\.+\\-/]+\\.js)$",
+      "captures": {
+        "1": {
+          "name": "variable.jsfile.qmldir"
+        },
+        "2": {
+          "name": "constant.numeric.jsfile.qmldir"
+        },
+        "3": {
+          "name": "string.jsfile.qmldir"
+        }
+      }
+    },
+    {
+      "name": "plugin.qmldir",
+      "match": "^(?:(optional)\\s+)?\\b(plugin)\\s+(\\w+)(\\s+[\\w\\.+\\-/]+)?$",
+      "captures": {
+        "1": {
+          "name": "keyword.plugin.qmldir"
+        },
+        "2": {
+          "name": "keyword.plugin.qmldir"
+        },
+        "3": {
+          "name": "variable.plugin.qmldir"
+        },
+        "4": {
+          "name": "string.plugin.qmldir"
+        }
+      }
+    },
+    {
+      "name": "classname.qmldir",
+      "match": "^(classname)\\s+(\\w+)$",
+      "captures": {
+        "1": {
+          "name": "keyword.classname.qmldir"
+        },
+        "2": {
+          "name": "variable.classname.qmldir"
+        }
+      }
+    },
+    {
+      "name": "typeinfo.qmldir",
+      "match": "^(typeinfo)\\s+([\\w\\.+\\-/]+\\.qmltypes)$",
+      "captures": {
+        "1": {
+          "name": "keyword.typeinfo.qmldir"
+        },
+        "2": {
+          "name": "string.typeinfo.qmldir"
+        }
+      }
+    },
+    {
+      "name": "depends.qmldir",
+      "match": "^(depends)\\s+([\\w\\./]+)\\s+(auto|\\d+.\\d+)?$",
+      "captures": {
+        "1": {
+          "name": "keyword.depends.qmldir"
+        },
+        "2": {
+          "name": "variable.depends.qmldir"
+        },
+        "3": {
+          "name": "constant.numeric.depends.qmldir"
+        }
+      }
+    },
+    {
+      "name": "import.qmldir",
+      "match": "^(?:(default|optional)\\s+)?(import)\\s+([\\w\\./]+)\\s+(auto|\\d+.\\d+)?$",
+      "captures": {
+        "1": {
+          "name": "keyword.import.qmldir"
+        },
+        "2": {
+          "name": "keyword.import.qmldir"
+        },
+        "3": {
+          "name": "variable.import.qmldir"
+        },
+        "4": {
+          "name": "constant.numeric.import.qmldir"
+        }
+      }
+    },
+    {
+      "name": "prefer.qmldir",
+      "match": "^(prefer)\\s+([\\w\\.+\\-/:]+)$",
+      "captures": {
+        "1": {
+          "name": "keyword.prefer.qmldir"
+        },
+        "2": {
+          "name": "string.prefer.qmldir"
+        }
+      }
+    },
+    {
+      "name": "directive.qmldir",
+      "match": "^(designersupported|static|system)$",
+      "captures": {
+        "1": {
+          "name": "keyword.directive.qmldir"
+        }
+      }
+    },
+    {
+      "name": "linktarget.qmldir",
+      "match": "^(linktarget)\\s+([\\w\\.:]+)$",
+      "captures": {
+        "1": {
+          "name": "keyword.linktarget.qmldir"
+        },
+        "2": {
+          "name": "variable.linktarget.qmldir"
+        }
+      }
+    },
+    {
+      "name": "comment.qmldir",
+      "match": "^#.*$"
+    }
+  ],
+  "scopeName": "source.qmldir"
+}
