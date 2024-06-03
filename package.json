@@ -266,7 +266,11 @@
           "QML",
           "Qml",
           "qml"
-        ]
+        ],
+        "icon": {
+          "light": "res/icons/qml.png",
+          "dark": "res/icons/qml.png"
+        }
       },
       {
         "id": "qmldir",
