@@ -83,8 +83,7 @@ async function search() {
 }
 async function searchAndAskforResult(value: string) {
   try {
-    const searchLink =
-      'https://www.googleapis.com/customsearch/v1/siterestrict?fields=items(link,snippet,title)&cx=047283ffa7d25323e&key=AIzaSyCZJjNXt7smIy62zupDA-d60EgTFtxwih4&num=10&siteSearch=doc.qt.io%2F*&siteSearchFilter=i&q=';
+    const searchLink = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
     const searchResponse = await fetch(searchLink + value);
     if (!searchResponse.ok) {
       throw new Error('Network response: ' + searchResponse.status);
