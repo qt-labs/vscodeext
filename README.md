@@ -139,6 +139,10 @@ Custom Widgets Designer Exe Path | Path to the folder where you installed Qt Wid
 Do Not Ask for Default Qt Folder | Hides the prompt about setting the value of `Qt Folder`.
 Open Online Documentation in External Browser | Opens Qt documentation in the default browser.
 Qt Folder | Path to the folder where you installed Qt.
+Qmlls: Custom Exe Path | Path to the folder where you installed QML Language Server.
+Qmlls: Enabled | Turns on QML Language Server.
+Qmlls: Trace Lsp | Collects trace output from QML Language Server.
+Qmlls: Verbose Output | Shows verbose output from QML Language Server.
 
 ### Recommended Settings to Use Qt with Other Extensions
 
