@@ -110,6 +110,11 @@
         "command": "qt-official.setRecommendedSettings",
         "title": "%qt-official.command.setRecommendedSettings.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-official.restartQmlls",
+        "title": "%qt-official.command.restartQmlls.title%",
+        "category": "Qt"
       }
     ],
     "debuggers": [

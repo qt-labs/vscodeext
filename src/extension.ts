@@ -24,6 +24,7 @@ import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { registerOpenSettingsCommand } from '@cmd/navigator';
 import { registerDocumentationCommands } from '@cmd/online-docs';
 import { registerSetRecommendedSettingsCommand } from '@cmd/recommended-settings';
+import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { Qmlls } from '@/qmlls';
 
 export let kitManager: KitManager;
@@ -64,7 +65,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerbuildDirectoryName(),
     registerOpenSettingsCommand(),
     ...registerDocumentationCommands(),
-    registerSetRecommendedSettingsCommand()
+    registerSetRecommendedSettingsCommand(),
+    registerRestartQmllsCommand()
   );
 
   taskProvider = vscode.tasks.registerTaskProvider(
