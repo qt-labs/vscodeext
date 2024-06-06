@@ -15,10 +15,6 @@ const vscode = acquireVsCodeApi();
 window.addEventListener('load', main);
 
 function main() {
-  const buttons = document.querySelectorAll('vscode-button');
-  if (buttons.length === 0) {
-    throw new Error('No buttons found');
-  }
   const openWithDesignerButton = document.getElementById(
     'openWithDesignerButton'
   );

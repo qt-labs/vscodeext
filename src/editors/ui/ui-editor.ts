@@ -32,23 +32,6 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
       enableScripts: true
     };
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
-    function updateWebview() {
-      void webviewPanel.webview.postMessage({
-        type: 'update',
-        text: document.getText()
-      });
-    }
-    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
-      (e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          updateWebview();
-        }
-      }
-    );
-
-    webviewPanel.onDidDispose(() => {
-      changeDocumentSubscription.dispose();
-    });
     const delay = async (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
@@ -86,8 +69,6 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           throw new Error('Unknown message type');
       }
     });
-
-    updateWebview();
     return Promise.resolve();
   }
 
