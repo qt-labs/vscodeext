@@ -36,6 +36,7 @@
     "workspaceContains:*.qdoc",
     "workspaceContains:*.ui",
     "workspaceContains:*.qss",
+    "workspaceContains:*.qml",
     "onCommand:cmake.activeFolderName",
     "onCommand:cmake.activeFolderPath",
     "onCommand:cmake.activeConfigurePresetName",
