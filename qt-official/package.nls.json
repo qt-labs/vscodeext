@@ -1,0 +1,15 @@
+{
+  "qt-official.command.registerQt.title": "Register Qt Installation",
+  "qt-official.command.scanForQtKits.title": "Scan for Qt Kits",
+  "qt-official.command.pickQtInstallation.title": "Pick Default Qt Installation",
+  "qt-official.debugger.cppdbg.snippet.label": "Qt: Debug with cppdbg",
+  "qt-official.debugger.cppdbg.snippet.description": "Launch a Qt application with the cppdb debugger",
+  "qt-official.debugger.lldb.snippet.label": "Qt: Debug with lldb",
+  "qt-official.debugger.lldb.snippet.description": "Launch a Qt application with the lldb debugger",
+  "qt-official.debugger.cppvsdbg.snippet.label": "Qt: Debug with cppvsdbg (Windows)",
+  "qt-official.debugger.cppvsdbg.snippet.description": "Launch a Qt application with the Visual Studio Debugger",
+  "qt-official.command.resetQtExt.title": "Reset Qt Tools Extension State (For troubleshooting)",
+  "qt-official.debugger.wasm.snippet.label": "Qt: Debug Qt WASM with Chrome",
+  "qt-official.debugger.wasm.snippet.description": "Launch a Qt WebAssembly application with Chrome",
+  "qt-official.command.restartQmlls.title": "Restart QML Language Server"
+}

@@ -1,0 +1,38 @@
+{
+  "name": "qt-lib",
+  "version": "0.9.0",
+  "main": "out/index.js",
+  "types": "out/index.d.ts",
+  "files": [
+    "out"
+  ],
+  "config": {
+    "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
+  },
+  "scripts": {
+    "compile": "tsc",
+    "pretest": "npm run compile && npm run lint",
+    "ci-lint": "npm run prettierCheck && eslint . ",
+    "lint": "npm run prettierWrite && eslint . --fix",
+    "prettierWrite": "npm run prettierBase -- --write $npm_package_config_prettierPattern --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check $npm_package_config_prettierPattern",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "esbuild": "^0.20.1",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3",
+    "ts-node": "^10.4.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "module-alias": "^2.2.3",
+    "typescript": "^5.2.2",
+    "winston": "^3.13.0",
+    "winston-transport-vscode": "^0.1.0"
+  }
+}

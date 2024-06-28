@@ -3,10 +3,10 @@ Upstream-Name: Qt Extension for Visual Studio Code
 Upstream-Contact: The Qt Company Ltd <https://www.qt.io/>
 Source: https://github.com/qt-labs/vscodeext
 
-Files: res/lang/qss/*.json
+Files: qt-official/res/lang/qss/*.json
 Copyright: 2024 The Qt Company Ltd.
 License: MIT
 
-Files: res/lang/qml/*.tmLanguage
+Files: qt-official/res/lang/qml/*.tmLanguage
 Copyright: 2016 Mads Kristensen
 License: Apache-2.0

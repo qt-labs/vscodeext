@@ -6,23 +6,29 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
+      "name": "Run qt-official Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch"
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-official"],
+      "outFiles": ["${workspaceFolder}/qt-official/out/**/*.js"],
+      "preLaunchTask": "npm qt-official watch"
     },
     {
-      "name": "Extension Tests",
+      "name": "Run qt-core Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
-      ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: pretest"
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-core"],
+      "outFiles": ["${workspaceFolder}/qt-core/out/**/*.js"],
+      "preLaunchTask": "npm qt-core watch"
+    },
+    {
+      "name": "Run qt-ui Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-ui"],
+      "outFiles": ["${workspaceFolder}/qt-ui/out/**/*.js"],
+      "cwd": "${workspaceFolder}/qt-ui",
+      "preLaunchTask": "npm: qt-ui watch"
     }
   ]
 }

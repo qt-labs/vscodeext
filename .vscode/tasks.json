@@ -4,9 +4,10 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "watch",
+      "type": "shell",
+      "label": "npm qt-official watch",
       "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
       "isBackground": true,
       "presentation": {
         "reveal": "never"
@@ -14,24 +15,44 @@
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-official"
       }
     },
     {
-      "type": "npm",
-      "script": "compile",
-      "problemMatcher": "$tsc",
-      "label": "npm: compile",
-      "detail": "tsc -p ./",
+      "type": "shell",
+      "label": "npm qt-core watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
       "presentation": {
-        "close": true
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-core"
       }
     },
     {
-      "type": "npm",
-      "script": "pretest",
-      "problemMatcher": [],
-      "label": "npm: pretest",
-      "detail": "npm run compile && npm run lint"
+      "type": "shell",
+      "label": "npm: qt-ui watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-ui"
+      }
     }
   ]
 }

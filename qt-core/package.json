@@ -1,0 +1,132 @@
+{
+  "name": "qt-core",
+  "displayName": "Qt Core",
+  "description": "Qt Core",
+  "version": "0.9.1",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "qna": "marketplace",
+  "pricing": "Free",
+  "preview": true,
+  "activationEvents": [
+    "workspaceContains:*.qrc",
+    "workspaceContains:*.qdoc",
+    "workspaceContains:*.qss",
+    "workspaceContains:*.qml",
+    "onCommand:cmake.activeFolderName",
+    "onCommand:cmake.activeFolderPath",
+    "onCommand:cmake.activeConfigurePresetName",
+    "onCommand:cmake.activeBuildPresetName",
+    "onCommand:cmake.activeTestPresetName",
+    "onCommand:cmake.buildTargetName",
+    "onCommand:cmake.launchTargetPath",
+    "onCommand:cmake.launchTargetDirectory",
+    "onCommand:cmake.launchTargetFilename",
+    "onCommand:cmake.getLaunchTargetPath",
+    "onCommand:cmake.getLaunchTargetDirectory",
+    "onCommand:cmake.getLaunchTargetFilename",
+    "onCommand:cmake.buildType",
+    "onCommand:cmake.buildDirectory",
+    "onCommand:cmake.executableTargets",
+    "onCommand:cmake.buildKit",
+    "onCommand:cmake.tasksBuildCommand",
+    "onCommand:qt-official.kitDirectory",
+    "onCommand:qt-official.minGWgdb",
+    "onCommand:qt-official.natvis",
+    "onCommand:qt-official.natvis5",
+    "onCommand:qt-official.natvis6",
+    "onDebugResolve:cmake",
+    "onDebugInitialConfigurations",
+    "onDebugDynamicConfigurations:cmake",
+    "workspaceContains:CMakeLists.txt",
+    "workspaceContains:*/CMakeLists.txt",
+    "workspaceContains:*/*/CMakeLists.txt",
+    "workspaceContains:*/*/*/CMakeLists.txt",
+    "workspaceContains:.vscode/cmake-kits.json",
+    "workspaceContains:*.ui"
+  ],
+  "main": "./out/extension.js",
+  "config": {
+    "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "qt-core.documentationHomepage",
+        "title": "%qt-core.command.documentationHomepage.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-core.documentationSearchManually",
+        "title": "%qt-core.command.documentationSearchManually.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-core.documentationSearchForCurrentWord",
+        "title": "%qt-core.command.documentationSearchForCurrentWord.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-core.openSettings",
+        "title": "%qt-core.command.openSettings.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-core.setRecommendedSettings",
+        "title": "%qt-core.command.setRecommendedSettings.title%",
+        "category": "Qt"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Qt Core Configuration",
+      "properties": {
+        "qt-core.openOnlineDocumentationInExternalBrowser": {
+          "type": "boolean",
+          "default": false,
+          "description": "Open online documentation in external browser",
+          "scope": "machine-overridable"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "compile": "node ./esbuild.mjs",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "npm run prettierWrite && eslint . --fix",
+    "prettierWrite": "npm run prettierBase -- --write $npm_package_config_prettierPattern --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check $npm_package_config_prettierPattern",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\"",
+    "package": "npm ci && npm run prettierCheck && eslint . && vsce package --out out"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/vsce": "^2.26.1",
+    "esbuild": "^0.20.1",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3",
+    "ts-node": "^10.4.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "module-alias": "^2.2.3",
+    "qt-lib": "file:../qt-lib",
+    "typescript": "^5.2.2"
+  }
+}

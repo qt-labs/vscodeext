@@ -1,0 +1,425 @@
+{
+  "name": "qt-official",
+  "displayName": "Qt Official",
+  "description": "Qt Official Support",
+  "version": "0.9.1",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "Qt",
+    "C++",
+    "CMake",
+    "Qml",
+    "scan"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "preview": true,
+  "activationEvents": [
+    "workspaceContains:*.qrc",
+    "workspaceContains:*.qdoc",
+    "workspaceContains:*.qss",
+    "workspaceContains:*.qml",
+    "onCommand:cmake.activeFolderName",
+    "onCommand:cmake.activeFolderPath",
+    "onCommand:cmake.activeConfigurePresetName",
+    "onCommand:cmake.activeBuildPresetName",
+    "onCommand:cmake.activeTestPresetName",
+    "onCommand:cmake.buildTargetName",
+    "onCommand:cmake.launchTargetPath",
+    "onCommand:cmake.launchTargetDirectory",
+    "onCommand:cmake.launchTargetFilename",
+    "onCommand:cmake.getLaunchTargetPath",
+    "onCommand:cmake.getLaunchTargetDirectory",
+    "onCommand:cmake.getLaunchTargetFilename",
+    "onCommand:cmake.buildType",
+    "onCommand:cmake.buildDirectory",
+    "onCommand:cmake.executableTargets",
+    "onCommand:cmake.buildKit",
+    "onCommand:cmake.tasksBuildCommand",
+    "onCommand:qt-official.kitDirectory",
+    "onCommand:qt-official.minGWgdb",
+    "onCommand:qt-official.natvis",
+    "onCommand:qt-official.natvis5",
+    "onCommand:qt-official.natvis6",
+    "onDebugResolve:cmake",
+    "onDebugInitialConfigurations",
+    "onDebugDynamicConfigurations:cmake",
+    "workspaceContains:CMakeLists.txt",
+    "workspaceContains:*/CMakeLists.txt",
+    "workspaceContains:*/*/CMakeLists.txt",
+    "workspaceContains:*/*/*/CMakeLists.txt",
+    "workspaceContains:.vscode/cmake-kits.json"
+  ],
+  "main": "./out/extension.js",
+  "l10n": "./l10n",
+  "contributes": {
+    "commands": [
+      {
+        "command": "qt-official.registerQt",
+        "title": "%qt-official.command.registerQt.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-official.scanForQtKits",
+        "title": "%qt-official.command.scanForQtKits.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-official.resetQtExt",
+        "title": "%qt-official.command.resetQtExt.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-official.restartQmlls",
+        "title": "%qt-official.command.restartQmlls.title%",
+        "category": "Qt"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "cppdbg",
+        "label": "cppdbg",
+        "configurationSnippets": [
+          {
+            "label": "%qt-official.debugger.cppdbg.snippet.label%",
+            "description": "%qt-official.debugger.cppdbg.snippet.description%",
+            "body": {
+              "name": "Debug Qt Application with cppdbg",
+              "type": "cppdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt-official.natvis}\"",
+              "showDisplayString": true,
+              "linux": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "/usr/bin/gdb"
+              },
+              "osx": {
+                "MIMode": "lldb"
+              },
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt-official.kitDirectory}\\${/}bin\""
+                  }
+                ],
+                "MIMode": "gdb",
+                "miDebuggerPath": "^\"\\${command:qt-official.minGWgdb}\""
+              }
+            }
+          },
+          {
+            "label": "%qt-official.debugger.lldb.snippet.label%",
+            "description": "%qt-official.debugger.lldb.snippet.description%",
+            "body": {
+              "name": "Debug Qt Application with lldb",
+              "type": "cppdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt-official.natvis}\"",
+              "showDisplayString": true,
+              "linux": {
+                "MIMode": "lldb",
+                "miDebuggerPath": "/usr/bin/lldb"
+              },
+              "osx": {
+                "MIMode": "lldb"
+              },
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt-official.kitDirectory}\\${/}bin\""
+                  }
+                ],
+                "MIMode": "lldb"
+              }
+            }
+          },
+          {
+            "label": "%qt-official.debugger.cppvsdbg.snippet.label%",
+            "description": "%qt-official.debugger.cppvsdbg.snippet.description%",
+            "body": {
+              "name": "Debug Qt Application with Visual Studio Debugger",
+              "type": "cppvsdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt-official.natvis}\"",
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt-official.kitDirectory}\\${/}bin\""
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "label": "%qt-official.debugger.wasm.snippet.label%",
+            "description": "%qt-official.debugger.wasm.snippet.description%",
+            "body": {
+              "name": "Debug Qt WebAssembly Application",
+              "type": "chrome",
+              "request": "launch",
+              "url": "^\"http://localhost:3000/\\${command:qt-official.buildDirectoryName}/\\${command:qt-official.launchTargetFilenameWithoutExtension}.html\"",
+              "preLaunchTask": "Qt: WASM Start"
+            }
+          }
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "qrc",
+        "configuration": "./res/lang/qrc/language-configuration.json",
+        "extensions": [
+          ".qrc",
+          ".qrc.cmakein"
+        ],
+        "aliases": [
+          "Qrc"
+        ],
+        "icon": {
+          "light": "res/icons/qrc-light.svg",
+          "dark": "res/icons/qrc-dark.svg"
+        }
+      },
+      {
+        "id": "qss",
+        "configuration": "./res/lang/qss/language-configuration.json",
+        "extensions": [
+          ".qss"
+        ],
+        "aliases": [
+          "QSS",
+          "Qss"
+        ],
+        "icon": {
+          "light": "res/icons/qss-light.svg",
+          "dark": "res/icons/qss-dark.svg"
+        }
+      },
+      {
+        "id": "qml",
+        "configuration": "./res/lang/qml/language-configuration.json",
+        "extensions": [
+          ".qml",
+          ".qmlproject"
+        ],
+        "aliases": [
+          "QML",
+          "Qml",
+          "qml"
+        ],
+        "icon": {
+          "light": "res/icons/qml-light.svg",
+          "dark": "res/icons/qml-dark.svg"
+        }
+      },
+      {
+        "id": "qmldir",
+        "configuration": "./res/lang/qmldir/language-configuration.json",
+        "filenames": [
+          "qmldir"
+        ],
+        "aliases": [
+          "QMLDir",
+          "qmldir"
+        ]
+      },
+      {
+        "id": "qdoc",
+        "configuration": "./res/lang/qdoc/language-configuration.json",
+        "extensions": [
+          ".qdoc",
+          ".qdocconf",
+          ".qdocinc"
+        ],
+        "aliases": [
+          "Qdoc",
+          "QDoc",
+          "qdoc"
+        ],
+        "icon": {
+          "light": "res/icons/qdoc-light.svg",
+          "dark": "res/icons/qdoc-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qdoc",
+        "scopeName": "source.qdoc",
+        "path": "./res/lang/qdoc/qdoc.tmLanguage.json"
+      },
+      {
+        "language": "qrc",
+        "scopeName": "source.qrc",
+        "path": "./res/lang/qrc/qrc.tmLanguage.json"
+      },
+      {
+        "scopeName": "qt-official.injection",
+        "path": "./res/lang/cpp/qt_cpp.injection.json",
+        "injectTo": [
+          "source.c",
+          "source.cpp"
+        ]
+      },
+      {
+        "language": "qss",
+        "scopeName": "source.qss",
+        "path": "./res/lang/qss/qss.tmLanguage.json"
+      },
+      {
+        "language": "qml",
+        "scopeName": "source.qml",
+        "path": "./res/lang/qml/qml.qmlproject.tmLanguage.json"
+      },
+      {
+        "language": "qmldir",
+        "scopeName": "source.qmldir",
+        "path": "./res/lang/qmldir/qmldir.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Qt Official Configuration",
+      "properties": {
+        "qt-official.qtFolder": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the Qt folder",
+          "scope": "machine-overridable"
+        },
+        "qt-official.doNotAskForDefaultQtFolder": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not ask for default Qt folder",
+          "scope": "machine"
+        },
+        "qt-official.qmlls.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run qmlls when activating an extension",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.verboseOutput": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run qmlls with --verbose option",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.traceLsp": {
+          "type": "string",
+          "default": "off",
+          "enum": [
+            "off",
+            "messages",
+            "compact",
+            "verbose"
+          ],
+          "enumDescriptions": [
+            "Off",
+            "Show messages only",
+            "Show messages with parameters as compact JSON",
+            "Show messages with parameters as multiline JSON"
+          ],
+          "description": "Handle LSP trace",
+          "scope": "machine-overridable"
+        },
+        "qt-official.qmlls.customExePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the custom qmlls executable path",
+          "scope": "machine-overridable"
+        }
+      }
+    }
+  },
+  "taskDefinitions": [
+    {
+      "type": "Qt"
+    }
+  ],
+  "extensionDependencies": [
+    "theqtcompany.qt-core",
+    "theqtcompany.qt-ui",
+    "ms-vscode.cmake-tools"
+  ],
+  "config": {
+    "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
+  },
+  "scripts": {
+    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "compile": "node ./esbuild.mjs",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "npm run prettierWrite && eslint . --fix",
+    "prettierWrite": "npm run prettierBase -- --write $npm_package_config_prettierPattern --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check $npm_package_config_prettierPattern",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\"",
+    "package": "npm ci && npm run prettierCheck && eslint . && vsce package --readme-path doc/README-marketplace.md --out out"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.10",
+    "@types/command-exists": "^1.2.3",
+    "@types/glob": "^8.1.0",
+    "@types/license-checker": "^25.0.6",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.5",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/l10n-dev": "^0.0.30",
+    "@vscode/test-electron": "^2.3.2",
+    "@vscode/vsce": "^2.26.1",
+    "chai": "^4.3.10",
+    "commander": "^11.1.0",
+    "esbuild": "^0.20.1",
+    "eslint": "^8.50.0",
+    "glob": "^10.3.9",
+    "license-checker": "^25.0.1",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "ts-node": "^10.4.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@vscode/l10n": "^0.0.16",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "command-exists": "^1.2.3",
+    "module-alias": "^2.2.3",
+    "ts-sinon": "^2.0.2",
+    "typescript": "^5.2.2",
+    "vscode-cmake-tools": "^1.2.0",
+    "vscode-languageclient": "^9.0.1",
+    "qt-lib": "file:../qt-lib",
+    "winston": "^3.13.0",
+    "winston-transport-vscode": "^0.1.0"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "name": "qt-ui",
+  "displayName": "Qt UI",
+  "description": "Qt UI Support",
+  "version": "0.9.1",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "ui"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "preview": true,
+  "activationEvents": [
+    "workspaceContains:*.ui"
+  ],
+  "main": "./out/extension.js",
+  "l10n": "./l10n",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "qt-ui.uiEditor",
+        "displayName": "Qt UI Editor",
+        "extensions": [
+          ".ui"
+        ],
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.ui"
+          }
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "ui",
+        "configuration": "./res/lang/ui/language-configuration.json",
+        "extensions": [
+          ".ui"
+        ],
+        "aliases": [
+          "ui"
+        ],
+        "icon": {
+          "light": "res/icons/ui-light.svg",
+          "dark": "res/icons/ui-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ui",
+        "scopeName": "source.ui",
+        "path": "./res/lang/ui/ui.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Qt UI Configuration",
+      "properties": {
+        "qt-ui.customWidgetsDesignerExePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the custom Qt Widgets Designer executable path",
+          "scope": "machine-overridable"
+        }
+      }
+    }
+  },
+  "taskDefinitions": [
+    {
+      "type": "Qt"
+    }
+  ],
+  "config": {
+    "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
+  },
+  "extensionDependencies": [
+    "theqtcompany.qt-core"
+  ],
+  "scripts": {
+    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "compile": "node ./esbuild.mjs",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "npm run prettierWrite && eslint . --fix",
+    "prettierWrite": "npm run prettierBase -- --write $npm_package_config_prettierPattern --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check $npm_package_config_prettierPattern",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\"",
+    "package": "npm ci && npm run prettierCheck && eslint . && vsce package --out out"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/l10n-dev": "^0.0.30",
+    "@vscode/vsce": "^2.26.1",
+    "commander": "^11.1.0",
+    "esbuild": "^0.20.1",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3",
+    "ts-node": "^10.4.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@vscode/l10n": "^0.0.16",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "module-alias": "^2.2.3",
+    "typescript": "^5.2.2",
+    "qt-lib": "file:../qt-lib"
+  }
+}

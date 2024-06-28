@@ -35,6 +35,8 @@
   "preview": true,
   "extensionPack": [
     "theqtcompany.qt-official",
+    "theqtcompany.qt-core",
+    "theqtcompany.qt-ui",
     "ms-vscode.cmake-tools",
     "ms-vscode.cpptools",
     "twxs.cmake"

@@ -2,22 +2,37 @@ name: Build on Linux
 on: [push]
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ci-scripts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: "npm"
-      - run: npm ci
-      - run: npm run compile
-      - run: npm run ci-lint
-      #  TODO: Enable unit tests
-      # - run: xvfb-run -a npm run unitTests
-      - run: npm run package
-      - name: Upload package
+          cache-dependency-path: "**/package-lock.json"
+        # qt-lib should be built first as it is a dependency for other packages
+      - run: npm run ci:qt-lib
+      - run: npm run compile:qt-lib
+      - run: npm run ci:all
+      - run: npm run compile:all
+      - run: npm run ci-lint:all
+      - run: npm run package:all
+      - name: Upload qt-official
         uses: actions/upload-artifact@v4
         with:
-          name: vsix_package
-          path: out/*.vsix
+          name: qt-official-vsix
+          path: qt-official/out/*.vsix
+      - name: Upload qt-core
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-core-vsix
+          path: qt-core/out/*.vsix
+      - name: Upload qt-ui
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-ui-vsix
+          path: qt-ui/out/*.vsix
