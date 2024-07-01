@@ -21,6 +21,11 @@ import { createLogger } from '@/logger';
 const logger = createLogger('qmlls');
 const QMLLS_CONFIG = 'qt-official.qmlls';
 
+interface QmllsExeConfig {
+  qmllsPath: string;
+  qtVersion: string;
+}
+
 export class Qmlls {
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
@@ -52,12 +57,22 @@ export class Qmlls {
 
         this.startLanguageClient(customPath);
       } else {
-        const qmllsPath = await findMostRecentExecutableQmlLS();
-        if (!qmllsPath) {
+        const qmllsExeConfig = await findMostRecentExecutableQmlLS();
+        if (!qmllsExeConfig) {
           throw new Error('not found');
         }
+        // Don't start the language server if the version is older than 6.7.2
+        // Because older versions of the qmlls are not stable
+        if (
+          versionutil.compareVersions(qmllsExeConfig.qtVersion, '6.7.2') < 0
+        ) {
+          const errorMessage =
+            'QML Language Server version is older than 6.7.2';
+          logger.error(errorMessage);
+          throw new Error(errorMessage);
+        }
 
-        this.startLanguageClient(qmllsPath);
+        this.startLanguageClient(qmllsExeConfig.qmllsPath);
       }
     } catch (error) {
       if (util.isError(error)) {
@@ -140,7 +155,9 @@ export class Qmlls {
   }
 }
 
-async function findMostRecentExecutableQmlLS(): Promise<string | undefined> {
+async function findMostRecentExecutableQmlLS(): Promise<
+  QmllsExeConfig | undefined
+> {
   const allQtFolders = [
     KitManager.getCurrentGlobalQtFolder(),
     ...Array.from(projectManager.getProjects()).map((project) => {
@@ -148,10 +165,7 @@ async function findMostRecentExecutableQmlLS(): Promise<string | undefined> {
     })
   ];
 
-  const found: {
-    qmllsPath: string;
-    qtVersion: string;
-  }[] = [];
+  const found: QmllsExeConfig[] = [];
 
   for (const qtFolder of allQtFolders) {
     const versionRegex = /^\d+\.\d+\.\d+$/;
@@ -182,7 +196,7 @@ async function findMostRecentExecutableQmlLS(): Promise<string | undefined> {
   for (const item of found) {
     const res = spawnSync(item.qmllsPath, ['--help'], { timeout: 1000 });
     if (res.status === 0) {
-      return item.qmllsPath;
+      return item;
     }
   }
 
