@@ -350,7 +350,7 @@
       {
         "language": "qml",
         "scopeName": "source.qml",
-        "path": "./res/lang/qml/qml.qmlproject.tmLanguage"
+        "path": "./res/lang/qml/qml.qmlproject.tmLanguage.json"
       },
       {
         "language": "qmldir",

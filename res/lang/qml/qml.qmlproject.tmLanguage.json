@@ -1,0 +1,415 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "qml",
+  "scopeName": "source.qml",
+  "patterns": [
+    {
+      "include": "#pragma"
+    },
+    {
+      "include": "#import"
+    },
+    {
+      "include": "#object"
+    },
+    {
+      "include": "#comment"
+    }
+  ],
+  "repository": {
+    "pragma": {
+      "begin": "\\b(pragma)\\s+([A-Z]\\w*)(\\s*:\\s*[a-zA-Z]+)?\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.pragma.qml"
+        },
+        "2": {
+          "name": "variable.parameter.pragma.qml"
+        },
+        "3": {
+          "name": "entity.name.pragma.qml"
+        }
+      },
+      "end": "$",
+      "patterns": [
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#comment"
+        }
+      ]
+    },
+    "import": {
+      "begin": "\\b(import)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.import.qml"
+        }
+      },
+      "end": "$",
+      "patterns": [
+        {
+          "match": "\\b([A-Z][\\w\\.]*)\\s+(\\d+\\.\\d+)?",
+          "captures": {
+            "1": {
+              "name": "entity.name.section.import.module.qml"
+            },
+            "2": {
+              "name": "constant.numeric.import.version.qml"
+            }
+          }
+        },
+        {
+          "match": "\\b(as)\\s+([A-Z]\\w*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.import.as.qml"
+            },
+            "2": {
+              "name": "entity.name.type.import.type.qml"
+            }
+          }
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#comment"
+        }
+      ]
+    },
+    "object": {
+      "begin": "\\b([A-Z][\\w\\.]*)\\s*(\\{|$)",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.name.type.object.qml"
+        }
+      },
+      "end": "\\}",
+      "patterns": [
+        {
+          "include": "$self"
+        },
+        {
+          "include": "#signal"
+        },
+        {
+          "include": "#prop-custom"
+        },
+        {
+          "include": "#prop-force-required"
+        },
+        {
+          "include": "#method"
+        },
+        {
+          "include": "#on-prop"
+        },
+        {
+          "include": "#comp-inline"
+        },
+        {
+          "include": "#attr-general"
+        },
+        {
+          "include": "#attr-group-notation"
+        },
+        {
+          "name": "keyword.ohter.enum.qml",
+          "match": "\\b(enum)\\b"
+        }
+      ]
+    },
+    "signal": {
+      "patterns": [
+        {
+          "begin": "\\b(signal)\\s*([_a-zA-Z]\\w*)\\s*\\(",
+          "beginCaptures": {
+            "1": {
+              "name": "storage.type.signal.qml"
+            },
+            "2": {
+              "name": "entity.name.function.signal.name.qml"
+            }
+          },
+          "end": "\\)",
+          "patterns": [
+            {
+              "match": "(\\w+)\\s*:\\s*(\\w+)\\s*,?",
+              "captures": {
+                "1": {
+                  "name": "variable.parameter.signal.param-name.qml"
+                },
+                "2": {
+                  "name": "entity.name.type.signal.param-type.qml"
+                }
+              }
+            },
+            {
+              "match": "(\\w+)\\s+(\\w+)\\s*,?",
+              "captures": {
+                "1": {
+                  "name": "entity.name.type.signal.param-type.qml"
+                },
+                "2": {
+                  "name": "variable.parameter.signal.param-name.qml"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "match": "\\b(signal)\\s*([_a-zA-Z]\\w*)\\s*",
+          "captures": {
+            "1": {
+              "name": "storage.type.signal.qml"
+            },
+            "2": {
+              "name": "entity.name.function.signal.name.qml"
+            }
+          }
+        }
+      ]
+    },
+    "prop-custom": {
+      "patterns": [
+        {
+          "name": "storage.modifier.prop-custom.qml",
+          "match": "\\b(default|readonly|required)\\s+(?=property)"
+        },
+        {
+          "match": "\\b(property)\\s+([\\w<>]+)(?=\\s+\\w+\\s*:)",
+          "captures": {
+            "1": {
+              "name": "keyword.other.prop-custom.qml"
+            },
+            "2": {
+              "name": "storage.type.prop-custom.type.qml"
+            }
+          }
+        },
+        {
+          "match": "\\b(property)\\s+([\\w<>]+)\\s+(\\w+)\\s*$",
+          "captures": {
+            "1": {
+              "name": "keyword.other.prop-custom.qml"
+            },
+            "2": {
+              "name": "storage.type.prop-custom.type.qml"
+            },
+            "3": {
+              "name": "variable.parameter.prop-custom.name.qml"
+            }
+          }
+        }
+      ]
+    },
+    "prop-force-required": {
+      "match": "\\b(required)\\s+(\\w+)\\s*",
+      "captures": {
+        "1": {
+          "name": "storage.modifier.prop-force-required.qml"
+        },
+        "2": {
+          "name": "variable.parameter.prop-force-required.name.qml"
+        }
+      }
+    },
+    "method": {
+      "begin": "\\b(?=function)\\b",
+      "end": "(?<=\\})",
+      "patterns": [
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    "on-prop": {
+      "begin": "\\b([A-Z]\\w*)\\s+(on)\\s+(\\w+)\\s*{",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.name.type.on-prop.qml"
+        },
+        "2": {
+          "name": "keyword.control.on-prop.on.qml"
+        },
+        "3": {
+          "name": "variable.parameter.on-prop.prop.qml"
+        }
+      },
+      "end": "\\}",
+      "patterns": [
+        {
+          "include": "#object"
+        },
+        {
+          "include": "#attr-general"
+        }
+      ]
+    },
+    "comp-inline": {
+      "begin": "\\b(component)\\s+([A-Z]\\w*)\\s*:",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.other.comp-inline.qml"
+        },
+        "2": {
+          "name": "entity.name.type.comp-line.name.qml"
+        }
+      },
+      "end": "(?<=\\})",
+      "patterns": [
+        {
+          "include": "#object"
+        }
+      ]
+    },
+    "attr-group-notation": {
+      "begin": "\\b(\\w*)\\s*\\{",
+      "beginCaptures": {
+        "1": {
+          "name": "variable.parameter.attr-group-notation.qml"
+        }
+      },
+      "end": "\\}",
+      "patterns": [
+        {
+          "include": "#attr-general"
+        },
+        {
+          "include": "#comment"
+        }
+      ]
+    },
+    "attr-general": {
+      "patterns": [
+        {
+          "include": "#attr-object"
+        },
+        {
+          "include": "#attr-list"
+        },
+        {
+          "include": "#attr-block"
+        },
+        {
+          "include": "#attr-expr"
+        }
+      ],
+      "repository": {
+        "attr-object": {
+          "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[A-Z]\\w*\\s*\\{)",
+          "beginCaptures": {
+            "1": {
+              "name": "variable.parameter.attr-object.qml"
+            }
+          },
+          "end": "(?=\\})",
+          "patterns": [
+            {
+              "include": "#object"
+            }
+          ]
+        },
+        "attr-list": {
+          "begin": "\\b([\\w\\.]*)\\s*:\\s*\\[\\s*",
+          "beginCaptures": {
+            "1": {
+              "name": "variable.parameter.attr-list.qml"
+            }
+          },
+          "end": "\\]",
+          "patterns": [
+            {
+              "include": "#object"
+            },
+            {
+              "include": "source.js"
+            }
+          ]
+        },
+        "attr-block": {
+          "begin": "\\b([\\w\\.]*)\\s*:\\s*\\{\\s*",
+          "beginCaptures": {
+            "1": {
+              "name": "variable.parameter.attr-block.qml"
+            }
+          },
+          "end": "\\}",
+          "patterns": [
+            {
+              "include": "source.js"
+            }
+          ]
+        },
+        "attr-expr": {
+          "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[^\\s]+)",
+          "beginCaptures": {
+            "1": {
+              "name": "variable.parameter.attr-expr.qml"
+            }
+          },
+          "end": ";|$",
+          "patterns": [
+            {
+              "include": "source.js"
+            }
+          ]
+        }
+      }
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.qml",
+          "begin": "'",
+          "end": "'"
+        },
+        {
+          "name": "string.quoted.double.qml",
+          "begin": "\"",
+          "end": "\""
+        }
+      ]
+    },
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.qml",
+          "begin": "(\\/\\/)",
+          "end": "$",
+          "patterns": [
+            {
+              "include": "#comment-contents"
+            }
+          ]
+        },
+        {
+          "name": "comment.block.qml",
+          "begin": "(\\/\\*)",
+          "end": "(\\*\\/)",
+          "patterns": [
+            {
+              "include": "#comment-contents"
+            }
+          ]
+        }
+      ],
+      "repository": {
+        "comment-contents": {
+          "patterns": [
+            {
+              "name": "constant.language.qml",
+              "match": "\\b(NOTE|TODO|DEBUG|XXX)\\b"
+            },
+            {
+              "name": "invalid",
+              "match": "\\b(BUG|FIXME|WARNING)\\b"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
