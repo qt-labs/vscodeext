@@ -447,7 +447,7 @@
     "checkPackage": "ts-node ./src/scripts/check_package.ts",
     "generateLicenses": "ts-node ./src/scripts/generate_licenses.ts",
     "prettier": "prettier --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
-    "package": "npm ci && vsce package --out out"
+    "package": "npm ci && vsce package --readme-path README-marketplace.md --out out"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",
