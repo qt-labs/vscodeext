@@ -28,6 +28,7 @@ import {
 import { Project, ProjectManager } from '@/project';
 import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
+import { registerColorProvider } from '@/color-provider';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { Qmlls } from '@/qmlls';
 import { EXTENSION_ID } from '@/constants';
@@ -69,7 +70,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerScanForQtKitsCommand(),
     registerlaunchTargetFilenameWithoutExtension(),
     registerbuildDirectoryName(),
-    registerRestartQmllsCommand()
+    registerRestartQmllsCommand(),
+    registerColorProvider()
   );
 
   taskProvider = vscode.tasks.registerTaskProvider(
