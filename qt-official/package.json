@@ -195,36 +195,6 @@
     ],
     "languages": [
       {
-        "id": "qrc",
-        "configuration": "./res/lang/qrc/language-configuration.json",
-        "extensions": [
-          ".qrc",
-          ".qrc.cmakein"
-        ],
-        "aliases": [
-          "Qrc"
-        ],
-        "icon": {
-          "light": "res/icons/qrc-light.svg",
-          "dark": "res/icons/qrc-dark.svg"
-        }
-      },
-      {
-        "id": "qss",
-        "configuration": "./res/lang/qss/language-configuration.json",
-        "extensions": [
-          ".qss"
-        ],
-        "aliases": [
-          "QSS",
-          "Qss"
-        ],
-        "icon": {
-          "light": "res/icons/qss-light.svg",
-          "dark": "res/icons/qss-dark.svg"
-        }
-      },
-      {
         "id": "qml",
         "configuration": "./res/lang/qml/language-configuration.json",
         "extensions": [
@@ -251,37 +221,9 @@
           "QMLDir",
           "qmldir"
         ]
-      },
-      {
-        "id": "qdoc",
-        "configuration": "./res/lang/qdoc/language-configuration.json",
-        "extensions": [
-          ".qdoc",
-          ".qdocconf",
-          ".qdocinc"
-        ],
-        "aliases": [
-          "Qdoc",
-          "QDoc",
-          "qdoc"
-        ],
-        "icon": {
-          "light": "res/icons/qdoc-light.svg",
-          "dark": "res/icons/qdoc-dark.svg"
-        }
       }
     ],
     "grammars": [
-      {
-        "language": "qdoc",
-        "scopeName": "source.qdoc",
-        "path": "./res/lang/qdoc/qdoc.tmLanguage.json"
-      },
-      {
-        "language": "qrc",
-        "scopeName": "source.qrc",
-        "path": "./res/lang/qrc/qrc.tmLanguage.json"
-      },
       {
         "scopeName": "qt-official.injection",
         "path": "./res/lang/cpp/qt_cpp.injection.json",
@@ -289,11 +231,6 @@
           "source.c",
           "source.cpp"
         ]
-      },
-      {
-        "language": "qss",
-        "scopeName": "source.qss",
-        "path": "./res/lang/qss/qss.tmLanguage.json"
       },
       {
         "language": "qml",
