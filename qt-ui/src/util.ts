@@ -30,13 +30,6 @@ export function affectsConfig(
   return event.affectsConfiguration(`${constants.EXTENSION_ID}.${key}`, folder);
 }
 
-export async function waitUntilExtensionReady(extensionId: string) {
-  const promiseActivateCMake = vscode.extensions
-    .getExtension(extensionId)
-    ?.activate();
-  await promiseActivateCMake;
-}
-
 export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
