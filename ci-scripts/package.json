@@ -11,7 +11,10 @@
   },
   "scripts": {
     "compile": "tsc",
-    "pretest": "npm run compile && npm run lint",
+    "pretest:qt-core": "cd ../qt-core && npm run pretest",
+    "pretest:qt-official": "cd ../qt-official && npm run pretest",
+    "pretest:qt-ui": "cd ../qt-ui && npm run pretest",
+    "pretest:all": "npm run compile && npm run pretest:qt-core && npm run pretest:qt-official && npm run pretest:qt-ui",
     "ci-lint:qt-core": "ts-node ./src/ci_lint.ts --dir=\"../qt-core\" --exclude_licenses=\"qt-core\"",
     "ci-lint:qt-official": "ts-node ./src/ci_lint.ts --dir=\"../qt-official\" --exclude_licenses=\"qt-official\"",
     "ci-lint:qt-ui": "ts-node ./src/ci_lint.ts --dir=\"../qt-ui\" --exclude_licenses=\"qt-ui\"",
