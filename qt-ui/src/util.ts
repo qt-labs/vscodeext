@@ -9,7 +9,8 @@ import {
   IsMacOS,
   IsWindows,
   PlatformExecutableExtension,
-  exists
+  exists,
+  queryHostBinDirPath
 } from 'qt-lib';
 
 export function getConfig<T>(
@@ -55,11 +56,11 @@ export async function locateQtDesignerExePath(selectedQtPath: string) {
     return designerExePath;
   }
 
-  // const hostBinDir = await queryHostBinDirPath(selectedQtPath);
-  // designerExePath = getDesignerExePath(hostBinDir);
-  // if (await exists(designerExePath)) {
-  //   return designerExePath;
-  // }
+  const hostBinDir = await queryHostBinDirPath(selectedQtPath);
+  designerExePath = getDesignerExePath(hostBinDir);
+  if (await exists(designerExePath)) {
+    return designerExePath;
+  }
 
   if (!IsWindows) {
     designerExePath = '/usr/bin/designer';

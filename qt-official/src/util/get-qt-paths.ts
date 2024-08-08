@@ -135,31 +135,3 @@ export function generateEnvPathForQtInstallation(installation: string) {
   );
   return QtPathAddition;
 }
-
-// async function queryHostBinDirPath(selectedQtPath: string): Promise<string> {
-//   const qmakeExePath = await locateQmakeExeFilePath(selectedQtPath);
-//   const childProcess = child_process.exec(
-//     qmakeExePath + ' -query QT_HOST_BINS'
-//   );
-//   const promiseFirstLineOfOutput = new Promise<string>((resolve, reject) => {
-//     childProcess.stdout?.on('data', (data: string) => {
-//       resolve(data.toString().trim());
-//     });
-//     childProcess.stderr?.on('data', (data: string) => {
-//       reject(new Error(data.toString().trim()));
-//     });
-//   });
-//   const promiseProcessClose = new Promise<string>((resolve, reject) => {
-//     childProcess.on('close', () => {
-//       resolve('');
-//     });
-//     childProcess.on('error', (err) => {
-//       reject(err);
-//     });
-//   });
-//   const hostBinDir = await Promise.race([
-//     promiseFirstLineOfOutput,
-//     promiseProcessClose
-//   ]);
-//   return hostBinDir;
-// }
