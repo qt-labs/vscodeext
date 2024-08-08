@@ -31,11 +31,7 @@ export class UIProject implements ProjectBase {
     readonly _context: vscode.ExtensionContext
   ) {
     this._designerServer = new DesignerServer();
-    this._customWidgetsDesignerExePath = getConfig<string>(
-      CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
-      '',
-      this._folder
-    );
+    this._customWidgetsDesignerExePath = this.getQtCustomDesignerPath();
     logger.info(
       `${CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH}: "${this._customWidgetsDesignerExePath}"`
     );
@@ -57,11 +53,7 @@ export class UIProject implements ProjectBase {
           this._folder
         )
       ) {
-        this._customWidgetsDesignerExePath = getConfig<string>(
-          CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
-          '',
-          this._folder
-        );
+        this._customWidgetsDesignerExePath = this.getQtCustomDesignerPath();
         logger.info(
           `new ${CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH}:`,
           this._customWidgetsDesignerExePath
@@ -83,7 +75,7 @@ export class UIProject implements ProjectBase {
           if (this._designerClient) {
             this._designerClient.detach();
             this._designerClient = new DesignerClient(
-              this.getQtDesignerPath(),
+              this.getQtCustomDesignerPath(),
               this._designerServer.getPort()
             );
           }
@@ -91,7 +83,7 @@ export class UIProject implements ProjectBase {
       }
     });
   }
-  getQtDesignerPath() {
+  getQtCustomDesignerPath() {
     return getConfig<string>(
       CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
       '',
