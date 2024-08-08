@@ -15,6 +15,7 @@ import {
 import { UIEditorProvider } from '@/editors/ui/ui-editor';
 import { createUIProject, UIProject } from '@/project';
 import { EXTENSION_ID } from '@/constants';
+import { openWidgetDesigner } from '@/commands';
 
 const logger = createLogger('extension');
 
@@ -64,6 +65,12 @@ export async function activate(context: vscode.ExtensionContext) {
     processMessage(message);
   });
   context.subscriptions.push(UIEditorProvider.register(context));
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.openWidgetDesigner`,
+      openWidgetDesigner
+    )
+  );
 }
 
 export function deactivate() {

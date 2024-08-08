@@ -5,6 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as child_process from 'child_process';
 
 export const Home = os.homedir();
@@ -95,4 +96,45 @@ export async function locateQmakeExeFilePath(selectedQtPath: string) {
       path.join(selectedQtPath, 'bin', 'qmake6' + PlatformExecutableExtension)
     ))
   );
+}
+
+export async function findQtKits(dir: string): Promise<string[]> {
+  if (!dir || !fsSync.existsSync(dir)) {
+    return [];
+  }
+  const qtKits: string[] = [];
+  const items = await fs.readdir(dir, { withFileTypes: true });
+  for (const item of items) {
+    if (item.isDirectory() && matchesVersionPattern(item.name)) {
+      const kitItemPath = path.join(dir, item.name);
+      const kitItemDirContent = await fs.readdir(kitItemPath, {
+        withFileTypes: true
+      });
+      for (const subitem of kitItemDirContent) {
+        if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
+          const subdirFullPath = path.join(kitItemPath, subitem.name);
+          const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
+          try {
+            await fs.access(qtConfPath).then(() => {
+              qtKits.push(subdirFullPath);
+            });
+          } catch (err) {
+            if (isError(err)) {
+              console.error(err.message);
+            }
+          }
+        }
+      }
+    }
+  }
+  return qtKits;
+}
+
+export function isError<T>(e: T): e is T & Error {
+  return e instanceof Error;
+}
+
+export function matchesVersionPattern(installationPath: string): boolean {
+  // Check if the first character of the path is a digit (0-9)
+  return /^([0-9]+\.)+/.test(installationPath);
 }

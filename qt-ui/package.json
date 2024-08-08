@@ -38,6 +38,13 @@
         "{git,gitlens}:/**/*.ui": "default"
       }
     },
+    "commands": [
+      {
+        "command": "qt-ui.openWidgetDesigner",
+        "title": "%qt-ui.command.openWidgetDesigner.title%",
+        "category": "Qt"
+      }
+    ],
     "customEditors": [
       {
         "viewType": "qt-ui.uiEditor",

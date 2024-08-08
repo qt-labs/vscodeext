@@ -4,8 +4,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-import { createLogger, askForKitSelection } from 'qt-lib';
-import { isError } from '@/util/util';
+import { createLogger, askForKitSelection, isError } from 'qt-lib';
 import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
 
 const logger = createLogger('register-qt-path');

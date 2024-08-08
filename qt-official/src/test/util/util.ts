@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { matchesVersionPattern } from '../../util/get-qt-paths';
+import { matchesVersionPattern } from 'qt-lib';
 import { mangleQtInstallation } from '../../util/util';
 
 export function getFirstQtKit(qt_path: string | undefined) {

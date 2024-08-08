@@ -31,7 +31,3 @@ export function getFilenameWithoutExtension(filename: string): string {
 
   return splittedPath;
 }
-
-export function isError<T>(e: T): e is T & Error {
-  return e instanceof Error;
-}

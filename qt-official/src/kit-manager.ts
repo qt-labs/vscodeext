@@ -13,11 +13,12 @@ import {
   UserLocalDir,
   createLogger,
   QtInsRootConfigName,
-  GlobalWorkspace
+  GlobalWorkspace,
+  isError,
+  findQtKits
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import * as versions from '@util/versions';
-import * as util from '@util/util';
 import { Project } from '@/project';
 import { coreApi } from '@/extension';
 import { GlobalStateManager } from '@/state';
@@ -197,7 +198,7 @@ export class KitManager {
       ? KitManager.getWorkspaceFolderQtInsRoot(project.getFolder())
       : getCurrentGlobalQtInstallationRoot();
     const newQtInstallations = currentQtInsRoot
-      ? await KitManager.findQtKits(currentQtInsRoot)
+      ? await findQtKits(currentQtInsRoot)
       : [];
     project
       ? await this.updateQtKits(
@@ -218,43 +219,11 @@ export class KitManager {
     }
   }
 
-  static async findQtKits(dir: string): Promise<string[]> {
-    if (!dir || !fsSync.existsSync(dir)) {
-      return [];
-    }
-    const qtKits: string[] = [];
-    const items = await fs.readdir(dir, { withFileTypes: true });
-    for (const item of items) {
-      if (item.isDirectory() && qtPath.matchesVersionPattern(item.name)) {
-        const kitItemPath = path.join(dir, item.name);
-        const kitItemDirContent = await fs.readdir(kitItemPath, {
-          withFileTypes: true
-        });
-        for (const subitem of kitItemDirContent) {
-          if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
-            const subdirFullPath = path.join(kitItemPath, subitem.name);
-            const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
-            try {
-              await fs.access(qtConfPath).then(() => {
-                qtKits.push(subdirFullPath);
-              });
-            } catch (err) {
-              if (util.isError(err)) {
-                logger.error(err.message);
-              }
-            }
-          }
-        }
-      }
-    }
-    return qtKits;
-  }
-
   public async onQtInstallationRootChanged(
     qtInsRoot: string,
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const qtInstallations = await KitManager.findQtKits(qtInsRoot);
+    const qtInstallations = await findQtKits(qtInsRoot);
     if (qtInsRoot) {
       if (qtInstallations.length === 0) {
         const warningMessage = `Cannot find a Qt installation in "${qtInsRoot}".`;
@@ -279,7 +248,7 @@ export class KitManager {
     try {
       kits = JSON.parse(stringData) as Kit[];
     } catch (error) {
-      if (util.isError(error)) {
+      if (isError(error)) {
         logger.error('Error parsing cmake-kits.json:', error.message);
       }
     }
@@ -477,7 +446,7 @@ export class KitManager {
     try {
       currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
     } catch (error) {
-      if (util.isError(error)) {
+      if (isError(error)) {
         logger.error('Error parsing cmake-kits.json:', error.message);
       }
     }

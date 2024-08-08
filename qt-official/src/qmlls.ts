@@ -13,11 +13,12 @@ import {
 
 import {
   createLogger,
+  findQtKits,
+  isError,
   PlatformExecutableExtension,
   QtInsRootConfigName
 } from 'qt-lib';
 import * as versionutil from '@util/versions';
-import * as util from '@util/util';
 import { getCurrentGlobalQtInstallationRoot, KitManager } from '@/kit-manager';
 import { projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
@@ -79,7 +80,7 @@ export class Qmlls {
         this.startLanguageClient(qmllsExeConfig.qmllsPath);
       }
     } catch (error) {
-      if (util.isError(error)) {
+      if (isError(error)) {
         const message =
           'Cannot start QML language server. ' + createErrorString(error);
 
@@ -173,7 +174,7 @@ async function findMostRecentExecutableQmlLS(): Promise<
 
   for (const qtInsDir of allQtInsRootDirs) {
     const versionRegex = /^\d+\.\d+\.\d+$/;
-    const allQt = await KitManager.findQtKits(qtInsDir);
+    const allQt = await findQtKits(qtInsDir);
 
     for (const qt of allQt) {
       const relative = path.relative(qtInsDir, qt);

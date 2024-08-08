@@ -10,11 +10,6 @@ import { PlatformExecutableExtension } from 'qt-lib';
 const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 const NinjaFileName = 'ninja' + PlatformExecutableExtension;
 
-export function matchesVersionPattern(installationPath: string): boolean {
-  // Check if the first character of the path is a digit (0-9)
-  return /^([0-9]+\.)+/.test(installationPath);
-}
-
 async function pathOfDirectoryIfExists(
   dirPath: string
 ): Promise<string | undefined> {

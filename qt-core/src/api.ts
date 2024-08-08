@@ -50,7 +50,10 @@ export class CoreApiImpl implements CoreApi {
     this.processMessage(message);
   }
 
-  getValue<T>(folder: vscode.WorkspaceFolder, key: string): T | undefined {
+  getValue<T>(
+    folder: vscode.WorkspaceFolder | string,
+    key: string
+  ): T | undefined {
     return this._configs.get(folder)?.get(key) as T;
   }
 }
