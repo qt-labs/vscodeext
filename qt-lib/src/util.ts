@@ -34,7 +34,7 @@ export async function exists(filePath: string) {
 export async function existing(filePath: string) {
   try {
     await fs.access(filePath);
-    return path;
+    return filePath;
   } catch {
     return '';
   }
