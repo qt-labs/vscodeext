@@ -312,7 +312,7 @@
     "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
   },
   "scripts": {
-    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs",
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
@@ -337,6 +337,7 @@
     "@vscode/vsce": "^2.26.1",
     "chai": "^4.3.10",
     "commander": "^11.1.0",
+    "cross-env": "^7.0.3",
     "esbuild": "^0.20.1",
     "eslint": "^8.50.0",
     "glob": "^10.3.9",

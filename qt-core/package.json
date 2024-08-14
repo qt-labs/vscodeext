@@ -181,7 +181,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "NODE_ENV=production node ./esbuild.mjs",
+    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs",
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
@@ -197,6 +197,7 @@
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "@vscode/vsce": "^2.26.1",
+    "cross-env": "^7.0.3",
     "esbuild": "^0.20.1",
     "eslint": "^8.50.0",
     "prettier": "^3.0.3",
