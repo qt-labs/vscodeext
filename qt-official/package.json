@@ -308,17 +308,14 @@
     "theqtcompany.qt-ui",
     "ms-vscode.cmake-tools"
   ],
-  "config": {
-    "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
-  },
   "scripts": {
     "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs",
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "npm run prettierWrite && eslint . --fix",
-    "prettierWrite": "npm run prettierBase -- --write $npm_package_config_prettierPattern --log-level silent",
-    "prettierCheck": "npm run prettierBase -- --check $npm_package_config_prettierPattern",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\"",
     "package": "npm ci && npm run prettierCheck && eslint . && vsce package --readme-path doc/README-marketplace.md --out out"
   },

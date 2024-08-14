@@ -6,9 +6,6 @@
   "files": [
     "out"
   ],
-  "config": {
-    "prettierPattern": "\"**/*.{js,ts,json,mjs,cjs}\""
-  },
   "scripts": {
     "compile": "tsc",
     "pretest:qt-core": "cd ../qt-core && npm run pretest",
@@ -54,8 +51,8 @@
     "generateLicenses:qt-official": "npm run generateLicenses -- --dir=\"../qt-official\" --exclude=\"qt-official\" --output=\"../qt-official/ThirdPartyNotices.txt\"",
     "generateLicenses:qt-ui": "npm run generateLicenses -- --dir=\"../qt-ui\" --exclude=\"qt-ui\" --output=\"../qt-ui/ThirdPartyNotices.txt\"",
     "generateLicenses:all": "npm run generateLicenses:qt-core && npm run generateLicenses:qt-official && npm run generateLicenses:qt-ui",
-    "prettierWrite": "npm run prettierBase -- --write $npm_package_config_prettierPattern --log-level silent",
-    "prettierCheck": "npm run prettierBase -- --check $npm_package_config_prettierPattern",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\""
   },
   "devDependencies": {
