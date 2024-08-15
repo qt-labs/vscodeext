@@ -34,8 +34,8 @@ export function mangleQtInstallation(
   qtFolder: string,
   installation: string
 ): string {
-  installation = installation.replace(qtFolder, '');
-  const pathParts = installation.split(/[/\\:]+/).filter((n) => n);
+  installation = path.relative(qtFolder, installation);
+  const pathParts = installation.split(path.sep).filter(String);
   pathParts.unshift(path.basename(qtFolder));
   return pathParts.slice().join('-');
 }
