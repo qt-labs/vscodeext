@@ -1,7 +1,6 @@
 {
   "qt-official.command.registerQt.title": "Register Qt Installation",
   "qt-official.command.scanForQtKits.title": "Scan for Qt Kits",
-  "qt-official.command.pickQtInstallation.title": "Pick Default Qt Installation",
   "qt-official.debugger.cppdbg.snippet.label": "Qt: Debug with cppdbg",
   "qt-official.debugger.cppdbg.snippet.description": "Launch a Qt application with the cppdb debugger",
   "qt-official.debugger.lldb.snippet.label": "Qt: Debug with lldb",
