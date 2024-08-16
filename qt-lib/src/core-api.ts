@@ -3,9 +3,13 @@
 
 import * as vscode from 'vscode';
 
-export interface QtWorkspaceConfigMessage {
-  workspaceFolder: vscode.WorkspaceFolder;
+export class QtWorkspaceConfigMessage {
+  workspaceFolder: vscode.WorkspaceFolder | string;
   config: QtWorkspaceConfig;
+  constructor(folder?: vscode.WorkspaceFolder | string) {
+    this.workspaceFolder = folder ?? 'global';
+    this.config = new Map<string, string | QtWorkspaceType | undefined>();
+  }
 }
 
 export type QtWorkspaceConfig = Map<
@@ -21,7 +25,10 @@ export enum QtWorkspaceType {
 
 export interface CoreApi {
   update(config: QtWorkspaceConfigMessage): void;
-  getValue<T>(folder: vscode.WorkspaceFolder, key: string): T | undefined;
+  getValue<T>(
+    folder: vscode.WorkspaceFolder | string,
+    key: string
+  ): T | undefined;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
 }
 

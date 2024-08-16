@@ -7,15 +7,13 @@ import {
   CoreApi,
   getCoreApi,
   QtWorkspaceType,
-  getEmptyQtWorkspaceConfigMessage,
   createLogger,
-  initLogger
+  initLogger,
+  QtWorkspaceConfigMessage,
+  QtInsRootConfigName,
+  GlobalWorkspace
 } from 'qt-lib';
-import {
-  checkDefaultQtFolderPath,
-  getSelectedQtInstallationPath,
-  registerQtCommand
-} from '@cmd/register-qt-path';
+import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 import { registerKitDirectoryCommand } from '@cmd/kit-directory';
 import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
 import { registerResetQtExtCommand } from '@cmd/reset-qt-ext';
@@ -49,9 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
   kitManager = new KitManager(context);
   projectManager = new ProjectManager(context);
   coreApi = await getCoreApi();
-  if (vscode.workspace.workspaceFile !== undefined) {
-    kitManager.addWorkspaceFile(vscode.workspace.workspaceFile);
-  }
+
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
       const project = await Project.createProject(folder, context);
@@ -59,8 +55,6 @@ export async function activate(context: vscode.ExtensionContext) {
       kitManager.addProject(project);
     }
   }
-
-  registerQtCommand(context);
 
   context.subscriptions.push(
     registerKitDirectoryCommand(),
@@ -78,8 +72,12 @@ export async function activate(context: vscode.ExtensionContext) {
     WASMStartTaskProvider.WASMStartType,
     wasmStartTaskProvider
   );
+
+  coreApi?.onValueChanged((message) => {
+    logger.info('Received config change:', message.config as unknown as string);
+    processMessage(message);
+  });
   await kitManager.checkForAllQtInstallations();
-  checkDefaultQtFolderPath();
 
   await initCoreValues();
   logger.info('Core values initialized');
@@ -105,7 +103,7 @@ export async function initCoreValues() {
     const selectedKitPath = await getSelectedQtInstallationPath(
       project.getFolder()
     );
-    const message = getEmptyQtWorkspaceConfigMessage(folder);
+    const message = new QtWorkspaceConfigMessage(folder);
     if (selectedKitPath) {
       logger.info(
         `Setting selected kit path for ${folder.uri.fsPath} to ${selectedKitPath}`
@@ -116,4 +114,26 @@ export async function initCoreValues() {
     logger.info('Updating coreApi with message:', message as unknown as string);
     coreApi.update(message);
   }
+}
+
+function processMessage(message: QtWorkspaceConfigMessage) {
+  // check if workspace folder is a string
+  if (typeof message.workspaceFolder === 'string') {
+    if (message.workspaceFolder === GlobalWorkspace) {
+      void kitManager.onQtInstallationRootChanged(
+        message.config.get(QtInsRootConfigName) ?? ''
+      );
+      return;
+    }
+    return;
+  }
+  const project = projectManager.getProject(message.workspaceFolder);
+  if (!project) {
+    logger.info('Project not found');
+    return;
+  }
+  void kitManager.onQtInstallationRootChanged(
+    message.config.get(QtInsRootConfigName) ?? '',
+    project.folder
+  );
 }

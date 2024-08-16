@@ -14,7 +14,7 @@ const logger = createLogger('api');
 
 export class CoreApiImpl implements CoreApi {
   private readonly _configs = new Map<
-    vscode.WorkspaceFolder,
+    vscode.WorkspaceFolder | string,
     QtWorkspaceConfig
   >();
   private readonly _onValueChanged =

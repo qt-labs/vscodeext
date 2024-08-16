@@ -3,100 +3,12 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as path from 'path';
 
-import { Home, IsLinux, IsMacOS, IsWindows } from 'qt-lib';
+import { createLogger, askForKitSelection } from 'qt-lib';
 import { isError } from '@/util/util';
 import { CMAKE_GLOBAL_KITS_FILEPATH, Kit, KitManager } from '@/kit-manager';
-import { createLogger } from 'qt-lib';
-import { askForKitSelection } from 'qt-lib';
-import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('register-qt-path');
-
-export async function registerQt() {
-  const options: vscode.OpenDialogOptions = {
-    canSelectMany: false,
-    openLabel: 'Select Qt installation directory',
-    canSelectFiles: false,
-    canSelectFolders: true
-  };
-  const selectedQtFolderUri = await vscode.window.showOpenDialog(options);
-  if (selectedQtFolderUri?.[0] === undefined) {
-    return;
-  }
-  const selectedQtFolder = selectedQtFolderUri[0].fsPath;
-  if (selectedQtFolder) {
-    void KitManager.setGlobalQtFolder(selectedQtFolder);
-  }
-  return 0;
-}
-
-export async function setDoNotAskForDefaultQtFolder(value: boolean) {
-  await vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .update(
-      'doNotAskForDefaultQtFolder',
-      value,
-      vscode.ConfigurationTarget.Global
-    );
-}
-
-function getDoNotAskForDefaultQtFolder(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(EXTENSION_ID)
-      .get<boolean>('doNotAskForDefaultQtFolder') ?? false
-  );
-}
-
-export function checkDefaultQtFolderPath() {
-  if (getDoNotAskForDefaultQtFolder()) {
-    return;
-  }
-
-  if (KitManager.getCurrentGlobalQtFolder()) {
-    // Qt folder is already set. No need to check for default path
-    return;
-  }
-  let defaultPath = '';
-  if (IsLinux || IsMacOS) {
-    defaultPath = path.join(Home, 'Qt');
-  } else if (IsWindows) {
-    defaultPath = path.join('C:', 'Qt');
-  } else {
-    const errorMessage = 'Unsupported OS';
-    logger.error(errorMessage);
-    throw new Error(errorMessage);
-  }
-
-  const defaultPathExists = fs.existsSync(defaultPath);
-  if (!defaultPathExists) {
-    return;
-  }
-
-  const setDefaultPathButtonMessage = 'Set Qt folder';
-  const doNotShowAgainButtonMessage = 'Do not show again';
-  void vscode.window
-    .showInformationMessage(
-      `Qt folder was found at "${defaultPath}". Do you want to use it?`,
-      setDefaultPathButtonMessage,
-      doNotShowAgainButtonMessage
-    )
-    .then((response) => {
-      if (response === setDefaultPathButtonMessage) {
-        void KitManager.setGlobalQtFolder(defaultPath);
-      } else if (response === doNotShowAgainButtonMessage) {
-        void setDoNotAskForDefaultQtFolder(true);
-      }
-    });
-}
-
-export function registerQtCommand(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(`${EXTENSION_ID}.registerQt`, registerQt)
-  );
-}
 
 export async function checkSelectedKitandAskForKitSelection() {
   const selectedKit = await vscode.commands.executeCommand('cmake.buildKit');

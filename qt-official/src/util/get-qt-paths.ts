@@ -31,12 +31,12 @@ function qtToolsDirByQtRootDir(qtRootDir: string): string {
 }
 
 export function mangleQtInstallation(
-  qtFolder: string,
+  qtInsRoot: string,
   installation: string
 ): string {
-  installation = path.relative(qtFolder, installation);
+  installation = path.relative(qtInsRoot, installation);
   const pathParts = installation.split(path.sep).filter(String);
-  pathParts.unshift(path.basename(qtFolder));
+  pathParts.unshift(path.basename(qtInsRoot));
   return pathParts.slice().join('-');
 }
 

@@ -72,11 +72,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "qt-official.registerQt",
-        "title": "%qt-official.command.registerQt.title%",
-        "category": "Qt"
-      },
-      {
         "command": "qt-official.scanForQtKits",
         "title": "%qt-official.command.scanForQtKits.title%",
         "category": "Qt"
@@ -247,18 +242,6 @@
       "type": "object",
       "title": "Qt Official Configuration",
       "properties": {
-        "qt-official.qtFolder": {
-          "type": "string",
-          "default": "",
-          "description": "Specify the Qt folder",
-          "scope": "machine-overridable"
-        },
-        "qt-official.doNotAskForDefaultQtFolder": {
-          "type": "boolean",
-          "default": false,
-          "description": "Do not ask for default Qt folder",
-          "scope": "machine"
-        },
         "qt-official.qmlls.enabled": {
           "type": "boolean",
           "default": false,

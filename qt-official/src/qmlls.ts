@@ -11,10 +11,14 @@ import {
   LanguageClientOptions
 } from 'vscode-languageclient/node';
 
-import { createLogger, PlatformExecutableExtension } from 'qt-lib';
+import {
+  createLogger,
+  PlatformExecutableExtension,
+  QtInsRootConfigName
+} from 'qt-lib';
 import * as versionutil from '@util/versions';
 import * as util from '@util/util';
-import { KitManager } from '@/kit-manager';
+import { getCurrentGlobalQtInstallationRoot, KitManager } from '@/kit-manager';
 import { projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
 
@@ -34,7 +38,7 @@ export class Qmlls {
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (
         event.affectsConfiguration(QMLLS_CONFIG) ||
-        event.affectsConfiguration(`${EXTENSION_ID}.qtFolder`)
+        event.affectsConfiguration(`${EXTENSION_ID}.${QtInsRootConfigName}`)
       ) {
         void this.restart();
       }
@@ -158,21 +162,21 @@ export class Qmlls {
 async function findMostRecentExecutableQmlLS(): Promise<
   QmllsExeConfig | undefined
 > {
-  const allQtFolders = [
-    KitManager.getCurrentGlobalQtFolder(),
+  const allQtInsRootDirs = [
+    getCurrentGlobalQtInstallationRoot(),
     ...Array.from(projectManager.getProjects()).map((project) => {
-      return KitManager.getWorkspaceFolderQtFolder(project.folder);
+      return KitManager.getWorkspaceFolderQtInsRoot(project.folder);
     })
   ];
 
   const found: QmllsExeConfig[] = [];
 
-  for (const qtFolder of allQtFolders) {
+  for (const qtInsDir of allQtInsRootDirs) {
     const versionRegex = /^\d+\.\d+\.\d+$/;
-    const allQt = await KitManager.findQtInstallations(qtFolder);
+    const allQt = await KitManager.findQtKits(qtInsDir);
 
     for (const qt of allQt) {
-      const relative = path.relative(qtFolder, qt);
+      const relative = path.relative(qtInsDir, qt);
       const version = path.normalize(relative).split(path.sep)[0];
       if (!version || !versionRegex.test(version)) {
         continue;

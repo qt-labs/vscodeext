@@ -6,8 +6,8 @@ import * as cmakeAPi from 'vscode-cmake-tools';
 
 import { WorkspaceStateManager } from '@/state';
 import { coreApi, kitManager } from '@/extension';
-import { createLogger } from 'qt-lib';
-import { ProjectBase, getEmptyQtWorkspaceConfigMessage } from 'qt-lib';
+import { createLogger, QtWorkspaceConfigMessage } from 'qt-lib';
+import { ProjectBase } from 'qt-lib';
 import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 
 const logger = createLogger('project');
@@ -37,7 +37,7 @@ export class Project implements ProjectBase {
             const selectedKitPath = await getSelectedQtInstallationPath(
               this.folder
             );
-            const message = getEmptyQtWorkspaceConfigMessage(this.folder);
+            const message = new QtWorkspaceConfigMessage(this.folder);
             message.config.set('selectedKitPath', selectedKitPath);
             coreApi?.update(message);
           }

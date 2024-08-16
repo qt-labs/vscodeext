@@ -3,8 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger, BaseStateManager } from 'qt-lib';
-import { Kit } from '@/kit-manager';
+import { createLogger, QtInsRootConfigName, BaseStateManager } from 'qt-lib';
 
 const logger = createLogger('state');
 
@@ -19,26 +18,26 @@ export class WorkspaceStateManager extends BaseStateManager {
     }
     super(context, folder);
   }
-  public getWorkspaceQtKits(): Kit[] {
-    return this._get<Kit[]>('defaultQtKits', []);
+  public getQtInstallationRoot(): string {
+    return this._get<string>(QtInsRootConfigName, '');
   }
-  public setWorkspaceQtKits(kits: Kit[]): Thenable<void> {
-    return this._update('defaultQtKits', kits);
+  public setQtInstallationRoot(folder: string): Thenable<void> {
+    return this._update(QtInsRootConfigName, folder);
   }
   public async reset() {
-    await this.setWorkspaceQtKits([]);
+    await this.setQtInstallationRoot('');
   }
 }
 
 export class GlobalStateManager extends BaseStateManager {
-  public getGlobalQtKits(): Kit[] {
-    return this._get<Kit[]>('globalQtKits', []);
+  public getQtInstallationRoot(): string {
+    return this._get<string>(QtInsRootConfigName, '');
   }
-  public setGlobalQtKits(kits: Kit[]): Thenable<void> {
-    return this._update('globalQtKits', kits);
+  public setQtInstallationRoot(folder: string): Thenable<void> {
+    return this._update(QtInsRootConfigName, folder);
   }
 
   public async reset() {
-    await this.setGlobalQtKits([]);
+    await this.setQtInstallationRoot('');
   }
 }

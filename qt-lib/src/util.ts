@@ -7,8 +7,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as child_process from 'child_process';
 
-import { QtWorkspaceConfigMessage, QtWorkspaceType } from './core-api';
-
 export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
 export const IsMacOS = process.platform === 'darwin';
@@ -52,15 +50,6 @@ export function askForKitSelection() {
         void vscode.commands.executeCommand('cmake.selectKit');
       }
     });
-}
-
-export function getEmptyQtWorkspaceConfigMessage(
-  wokrspaceFolder: vscode.WorkspaceFolder
-): QtWorkspaceConfigMessage {
-  return {
-    workspaceFolder: wokrspaceFolder,
-    config: new Map<string, string | QtWorkspaceType | undefined>()
-  };
 }
 
 export function isMultiWorkspace(): boolean {

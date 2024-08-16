@@ -71,6 +71,10 @@ export function deactivate() {
 }
 
 function processMessage(message: QtWorkspaceConfigMessage) {
+  // check if workspace folder is a string
+  if (typeof message.workspaceFolder === 'string') {
+    return;
+  }
   const project = projectManager.getProject(message.workspaceFolder);
   if (!project) {
     logger.error('Project not found');

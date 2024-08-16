@@ -136,9 +136,9 @@ To view and change Qt settings, select `Qt: Qt Settings` in `Command Palette`.
 Setting | Description
 ------- | -----------
 Custom Widgets Designer Exe Path | Path to the folder where you installed Qt Widgets Designer.
-Do Not Ask for Default Qt Folder | Hides the prompt about setting the value of `Qt Folder`.
+Do Not Ask for Default Qt Installation Root | Hides the prompt about setting the value of `Qt Installation Root`.
 Open Online Documentation in External Browser | Opens Qt documentation in the default browser.
-Qt Folder | Path to the folder where you installed Qt.
+Qt Installation Root | Path to the folder where you installed Qt.
 Qmlls: Custom Exe Path | Path to the folder where you installed QML Language Server.
 Qmlls: Enabled | Turns on QML Language Server.
 Qmlls: Trace Lsp | Collects trace output from QML Language Server.

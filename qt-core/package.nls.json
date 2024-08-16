@@ -3,5 +3,6 @@
   "qt-core.command.documentationSearchManually.title": "Documentation: Search",
   "qt-core.command.documentationSearchForCurrentWord.title": "Documentation: Search for the current word",
   "qt-core.command.openSettings.title": "Open Qt Settings",
-  "qt-core.command.setRecommendedSettings.title": "Set the recommended Qt Extension settings"
+  "qt-core.command.setRecommendedSettings.title": "Set the recommended Qt Extension settings",
+  "qt-core.command.registerQt.title": "Register Qt Installation"
 }

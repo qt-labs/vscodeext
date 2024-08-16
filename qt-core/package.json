@@ -95,6 +95,11 @@
         "command": "qt-core.setRecommendedSettings",
         "title": "%qt-core.command.setRecommendedSettings.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.registerQt",
+        "title": "%qt-core.command.registerQt.title%",
+        "category": "Qt"
       }
     ],
     "languages": [
@@ -168,6 +173,18 @@
       "type": "object",
       "title": "Qt Core Configuration",
       "properties": {
+        "qt-core.qtInstallationRoot": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the Qt Installation Root",
+          "scope": "machine-overridable"
+        },
+        "qt-core.doNotAskForDefaultQtInstallationRoot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not ask for default Qt Installation Root",
+          "scope": "machine"
+        },
         "qt-core.openOnlineDocumentationInExternalBrowser": {
           "type": "boolean",
           "default": false,

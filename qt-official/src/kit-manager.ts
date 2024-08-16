@@ -11,14 +11,16 @@ import * as commandExists from 'command-exists';
 import {
   PlatformExecutableExtension,
   UserLocalDir,
-  createLogger
+  createLogger,
+  QtInsRootConfigName,
+  GlobalWorkspace
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import * as versions from '@util/versions';
 import * as util from '@util/util';
 import { Project } from '@/project';
-import { GlobalStateManager, WorkspaceStateManager } from '@/state';
-import { EXTENSION_ID } from '@/constants';
+import { coreApi } from '@/extension';
+import { GlobalStateManager } from '@/state';
 
 const logger = createLogger('kit-manager');
 
@@ -134,7 +136,6 @@ export class KitManager {
   projects = new Set<Project>();
   workspaceFile: vscode.Uri | undefined;
   globalStateManager: GlobalStateManager;
-  static readonly QtFolderConfig = 'qtFolder';
   static readonly MapMsvcPlatformToQt: Record<string, string> = {
     x64: '64',
     amd64_x86: '32',
@@ -159,48 +160,25 @@ export class KitManager {
 
   constructor(readonly context: vscode.ExtensionContext) {
     this.globalStateManager = new GlobalStateManager(context);
-    this.watchGlobalConfig(context);
   }
 
   public addProject(project: Project) {
     this.projects.add(project);
-    this.watchWorkspaceFolderConfig(this.context, project.getFolder());
     void this.checkForQtInstallations(project);
-  }
-
-  public addWorkspaceFile(workspaceFile: vscode.Uri) {
-    this.workspaceFile = workspaceFile;
-    this.watchWorkspaceFileConfig(this.context);
   }
 
   public removeProject(project: Project) {
     this.projects.delete(project);
   }
 
-  public static getCurrentGlobalQtFolder(): string {
-    const qtFolderConfig = this.getConfiguration().inspect<string>(
-      KitManager.QtFolderConfig
-    );
-    return qtFolderConfig?.globalValue ?? '';
-  }
-
   public async reset() {
     logger.info('Resetting KitManager');
-    await this.updateQtInstallations('', []);
+    await this.updateQtKits('', []);
     await this.globalStateManager.reset();
     for (const project of this.projects) {
-      await this.updateQtInstallations('', [], project.getFolder());
+      await this.updateQtKits('', [], project.getFolder());
       await project.getStateManager().reset();
     }
-  }
-
-  static async setGlobalQtFolder(qtFolder: string) {
-    logger.info(`Setting global Qt folder to: ${qtFolder}`);
-    const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-    const configTarget = util.isTestMode()
-      ? vscode.ConfigurationTarget.Workspace
-      : vscode.ConfigurationTarget.Global;
-    await config.update(KitManager.QtFolderConfig, qtFolder, configTarget);
   }
 
   public static getCMakeWorkspaceKitsFilepath(folder: vscode.WorkspaceFolder) {
@@ -212,46 +190,22 @@ export class KitManager {
     await this.checkForWorkspaceFolderQtInstallations();
   }
 
-  private watchWorkspaceFileConfig(context: vscode.ExtensionContext) {
-    context.subscriptions.push(
-      vscode.workspace.onDidChangeConfiguration(
-        (e: vscode.ConfigurationChangeEvent) => {
-          void e;
-          if (this.getWorkspaceFileQtFolder() !== '') {
-            void vscode.window.showWarningMessage(
-              `Qt folder specified in workspace file is not supported.`
-            );
-          }
-        }
-      )
-    );
-  }
-
   // If the project parameter is undefined, it means that it is a global check
   // otherwise, it is a workspace folder check
   private async checkForQtInstallations(project?: Project) {
-    const currentQtFolder = project
-      ? KitManager.getWorkspaceFolderQtFolder(project.getFolder())
-      : KitManager.getCurrentGlobalQtFolder();
-
-    const previousQtFolder = project
-      ? project.getStateManager().getQtFolder()
-      : this.globalStateManager.getQtFolder();
-    if (currentQtFolder !== previousQtFolder) {
-      project
-        ? await this.onQtFolderUpdated(currentQtFolder, project.getFolder())
-        : await this.onQtFolderUpdated(currentQtFolder);
-    }
-    const newQtInstallations = currentQtFolder
-      ? await KitManager.findQtInstallations(currentQtFolder)
+    const currentQtInsRoot = project
+      ? KitManager.getWorkspaceFolderQtInsRoot(project.getFolder())
+      : getCurrentGlobalQtInstallationRoot();
+    const newQtInstallations = currentQtInsRoot
+      ? await KitManager.findQtKits(currentQtInsRoot)
       : [];
     project
-      ? await this.updateQtInstallations(
-          currentQtFolder,
+      ? await this.updateQtKits(
+          currentQtInsRoot,
           newQtInstallations,
           project.getFolder()
         )
-      : await this.updateQtInstallations(currentQtFolder, newQtInstallations);
+      : await this.updateQtKits(currentQtInsRoot, newQtInstallations);
   }
 
   private async checkForGlobalQtInstallations() {
@@ -264,29 +218,29 @@ export class KitManager {
     }
   }
 
-  static async findQtInstallations(dir: string): Promise<string[]> {
+  static async findQtKits(dir: string): Promise<string[]> {
     if (!dir || !fsSync.existsSync(dir)) {
       return [];
     }
-    const qtInstallations: string[] = [];
+    const qtKits: string[] = [];
     const items = await fs.readdir(dir, { withFileTypes: true });
     for (const item of items) {
       if (item.isDirectory() && qtPath.matchesVersionPattern(item.name)) {
-        const installationItemPath = path.join(dir, item.name);
-        const installationItemDirContent = await fs.readdir(
-          installationItemPath,
+        const kitItemPath = path.join(dir, item.name);
+        const kitItemDirContent = await fs.readdir(
+          kitItemPath,
           { withFileTypes: true }
         );
-        for (const subitem of installationItemDirContent) {
+        for (const subitem of kitItemDirContent) {
           if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
             const subdirFullPath = path.join(
-              installationItemPath,
+              kitItemPath,
               subitem.name
             );
             const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
             try {
               await fs.access(qtConfPath).then(() => {
-                qtInstallations.push(subdirFullPath);
+                qtKits.push(subdirFullPath);
               });
             } catch (err) {
               if (util.isError(err)) {
@@ -297,37 +251,26 @@ export class KitManager {
         }
       }
     }
-    return qtInstallations;
+    return qtKits;
   }
 
-  private async saveSelectedQt(
-    qtFolder: string,
+  public async onQtInstallationRootChanged(
+    qtInsRoot: string,
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const qtInstallations = await KitManager.findQtInstallations(qtFolder);
-    if (qtFolder) {
+    const qtInstallations = await KitManager.findQtKits(qtInsRoot);
+    if (qtInsRoot) {
       if (qtInstallations.length === 0) {
-        const warningMessage = `Cannot find a Qt installation in "${qtFolder}".`;
+        const warningMessage = `Cannot find a Qt installation in "${qtInsRoot}".`;
         void vscode.window.showWarningMessage(warningMessage);
         logger.info(warningMessage);
       } else {
-        const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtFolder}".`;
+        const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtInsRoot}".`;
         void vscode.window.showInformationMessage(infoMessage);
         logger.info(infoMessage);
       }
     }
-    await this.updateQtInstallations(
-      qtFolder,
-      qtInstallations,
-      workspaceFolder
-    );
-    if (workspaceFolder) {
-      await this.getProject(workspaceFolder)
-        ?.getStateManager()
-        .setQtFolder(qtFolder);
-      return;
-    }
-    await this.globalStateManager.setQtFolder(qtFolder);
+    await this.updateQtKits(qtInsRoot, qtInstallations, workspaceFolder);
   }
 
   private static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
@@ -348,7 +291,7 @@ export class KitManager {
   }
 
   private static async *generateCMakeKitsOfQtInstallationPath(
-    qtFolder: string,
+    qtInsRoot: string,
     installation: string,
     loadedCMakeKits: Kit[]
   ) {
@@ -366,7 +309,7 @@ export class KitManager {
     if (locatedNinjaExePath) {
       qtPathEnv += path.delimiter + path.dirname(locatedNinjaExePath);
     }
-    const kitName = qtPath.mangleQtInstallation(qtFolder, installation);
+    const kitName = qtPath.mangleQtInstallation(qtInsRoot, installation);
     const kitPreferredGenerator = kitName.toLowerCase().includes('wasm_')
       ? 'Ninja'
       : CMakeDefaultGenerator;
@@ -467,11 +410,11 @@ export class KitManager {
   }
 
   private static async cmakeKitsFromQtInstallations(
-    qtFolder: string,
+    qtInstallationRoot: string,
     qtInstallations: string[]
   ) {
     const allCMakeKits = await KitManager.loadCMakeKitsFileJSON();
-    logger.info(`qtFolder: "${qtFolder}"`);
+    logger.info(`qtInstallationRoot: "${qtInstallationRoot}"`);
     logger.info(`Loaded CMake kits: ${JSON.stringify(allCMakeKits)}`);
     // Filter out kits generated by us, since we only want to use Kits
     // that were created by the cmake extension as templates.
@@ -485,7 +428,7 @@ export class KitManager {
     const kits = [];
     for (const installation of qtInstallations)
       for await (const kit of KitManager.generateCMakeKitsOfQtInstallationPath(
-        qtFolder,
+        qtInstallationRoot,
         installation,
         kitsFromCMakeExtension
       ))
@@ -493,13 +436,13 @@ export class KitManager {
     return kits;
   }
 
-  private async updateQtInstallations(
-    qtFolder: string,
+  private async updateQtKits(
+    qtInstallationRoot: string,
     qtInstallations: string[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
     const newGeneratedKits = await KitManager.cmakeKitsFromQtInstallations(
-      qtFolder,
+      qtInstallationRoot,
       qtInstallations
     );
     logger.info(`New generated kits: ${JSON.stringify(newGeneratedKits)}`);
@@ -552,21 +495,6 @@ export class KitManager {
     }
   }
 
-  private watchGlobalConfig(context: vscode.ExtensionContext) {
-    context.subscriptions.push(
-      vscode.workspace.onDidChangeConfiguration(
-        (e: vscode.ConfigurationChangeEvent) => {
-          void e;
-          const previousQtFolder = this.globalStateManager.getQtFolder();
-          const currentQtFolder = KitManager.getCurrentGlobalQtFolder();
-          if (currentQtFolder !== previousQtFolder) {
-            void this.onQtFolderUpdated(currentQtFolder);
-          }
-        }
-      )
-    );
-  }
-
   private getProject(folder: vscode.WorkspaceFolder) {
     for (const project of this.projects) {
       if (project.getFolder() === folder) {
@@ -574,31 +502,6 @@ export class KitManager {
       }
     }
     return undefined;
-  }
-
-  private watchWorkspaceFolderConfig(
-    context: vscode.ExtensionContext,
-    folder: vscode.WorkspaceFolder
-  ) {
-    context.subscriptions.push(
-      vscode.workspace.onDidChangeConfiguration(
-        (e: vscode.ConfigurationChangeEvent) => {
-          void e;
-          let projectStateManager: WorkspaceStateManager | undefined;
-          // TODO use map instead of array
-          this.projects.forEach((project) => {
-            if (project.getFolder() === folder) {
-              projectStateManager = project.getStateManager();
-            }
-          });
-          const previousQtFolder = projectStateManager?.getQtFolder() ?? '';
-          const currentQtFolder = KitManager.getWorkspaceFolderQtFolder(folder);
-          if (currentQtFolder !== previousQtFolder) {
-            void this.onQtFolderUpdated(currentQtFolder, folder);
-          }
-        }
-      )
-    );
   }
 
   private static getCMakeGenerator() {
@@ -692,37 +595,10 @@ export class KitManager {
     return '';
   }
 
-  private async onQtFolderUpdated(
-    newQtFolder: string,
-    folder?: vscode.WorkspaceFolder
-  ) {
-    if (newQtFolder) {
-      if (!fsSync.existsSync(newQtFolder)) {
-        logger.warn(`The specified Qt installation path does not exist.`);
-        void vscode.window.showWarningMessage(
-          `The specified Qt installation path does not exist.`
-        );
-      }
-    }
-    logger.info(`Qt folder updated: "${newQtFolder}"`);
-    await this.saveSelectedQt(newQtFolder, folder);
+  public static getWorkspaceFolderQtInsRoot(folder: vscode.WorkspaceFolder) {
+    return coreApi?.getValue<string>(folder, QtInsRootConfigName) ?? '';
   }
-
-  public static getWorkspaceFolderQtFolder(folder: vscode.WorkspaceFolder) {
-    const qtFolderConfig = KitManager.getConfiguration(folder).inspect<string>(
-      KitManager.QtFolderConfig
-    );
-    return qtFolderConfig?.workspaceFolderValue ?? '';
-  }
-
-  private getWorkspaceFileQtFolder() {
-    const qtFolderConfig = KitManager.getConfiguration(
-      this.workspaceFile
-    ).inspect<string>(KitManager.QtFolderConfig);
-    return qtFolderConfig?.workspaceValue ?? '';
-  }
-
-  private static getConfiguration(scope?: vscode.ConfigurationScope) {
-    return vscode.workspace.getConfiguration(EXTENSION_ID, scope);
-  }
+}
+export function getCurrentGlobalQtInstallationRoot(): string {
+  return coreApi?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
 }
