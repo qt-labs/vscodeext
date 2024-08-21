@@ -227,16 +227,12 @@ export class KitManager {
     for (const item of items) {
       if (item.isDirectory() && qtPath.matchesVersionPattern(item.name)) {
         const kitItemPath = path.join(dir, item.name);
-        const kitItemDirContent = await fs.readdir(
-          kitItemPath,
-          { withFileTypes: true }
-        );
+        const kitItemDirContent = await fs.readdir(kitItemPath, {
+          withFileTypes: true
+        });
         for (const subitem of kitItemDirContent) {
           if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
-            const subdirFullPath = path.join(
-              kitItemPath,
-              subitem.name
-            );
+            const subdirFullPath = path.join(kitItemPath, subitem.name);
             const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
             try {
               await fs.access(qtConfPath).then(() => {
