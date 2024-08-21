@@ -33,6 +33,11 @@
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "{git,gitlens}:/**/*.ui": "default"
+      }
+    },
     "customEditors": [
       {
         "viewType": "qt-ui.uiEditor",
