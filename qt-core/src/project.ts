@@ -7,7 +7,10 @@ import { createLogger, GlobalWorkspace, QtInsRootConfigName } from 'qt-lib';
 import { ProjectBase } from 'qt-lib';
 import { getConfiguration } from '@/util';
 import { GlobalStateManager, WorkspaceStateManager } from '@/state';
-import { onQtInsRootUpdated } from '@/installation-root';
+import {
+  getCurrentGlobalQtInstallationRoot,
+  onQtInsRootUpdated
+} from '@/installation-root';
 
 const logger = createLogger('project');
 
@@ -85,8 +88,7 @@ export class ProjectManager {
           void e;
           const previousQtInsRoot =
             this.globalStateManager.getQtInstallationRoot();
-          const currentQtInsRoot =
-            ProjectManager.getCurrentGlobalQtInstallationRoot();
+          const currentQtInsRoot = getCurrentGlobalQtInstallationRoot();
           if (currentQtInsRoot !== previousQtInsRoot) {
             void this.globalStateManager.setQtInstallationRoot(
               currentQtInsRoot
@@ -96,11 +98,6 @@ export class ProjectManager {
         }
       )
     );
-  }
-  static getCurrentGlobalQtInstallationRoot(): string {
-    const qtInsRootConfig =
-      getConfiguration().inspect<string>(QtInsRootConfigName);
-    return qtInsRootConfig?.globalValue ?? '';
   }
   public static getWorkspaceFolderQtInsRoot(folder: vscode.WorkspaceFolder) {
     const qtInsRootConfig =
