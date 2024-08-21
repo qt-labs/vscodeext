@@ -120,9 +120,9 @@ function processMessage(message: QtWorkspaceConfigMessage) {
   // check if workspace folder is a string
   if (typeof message.workspaceFolder === 'string') {
     if (message.workspaceFolder === GlobalWorkspace) {
-      void kitManager.onQtInstallationRootChanged(
-        message.config.get(QtInsRootConfigName) ?? ''
-      );
+      const qtInsRoot = message.config.get(QtInsRootConfigName);
+      if (qtInsRoot !== undefined)
+        void kitManager.onQtInstallationRootChanged(qtInsRoot);
       return;
     }
     return;
@@ -132,8 +132,8 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     logger.info('Project not found');
     return;
   }
-  void kitManager.onQtInstallationRootChanged(
-    message.config.get(QtInsRootConfigName) ?? '',
-    project.folder
-  );
+  const qtInsRoot = message.config.get(QtInsRootConfigName);
+  if (qtInsRoot !== undefined) {
+    void kitManager.onQtInstallationRootChanged(qtInsRoot, project.folder);
+  }
 }
