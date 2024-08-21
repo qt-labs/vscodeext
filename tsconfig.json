@@ -8,7 +8,7 @@
     "outDir": "out",
     "lib": ["ES2020", "DOM"],
     "sourceMap": true,
-    "rootDir": "src",
+    "rootDir": "scripts",
     "strict": true /* enable all strict type-checking options */,
     "noUncheckedIndexedAccess": true,
     "allowUnusedLabels": false,
@@ -17,8 +17,8 @@
     "exactOptionalPropertyTypes": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["scripts/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["scripts/**/*"]
 }

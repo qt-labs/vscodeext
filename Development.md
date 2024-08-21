@@ -1,9 +1,5 @@
 # Development Guide
 
-## Note
-
- All of the commands mentioned below should be run from the `ci-scripts` directory of the project.
-
 ## Build on the command line
 
 - Since the extension are dependent on `qt-lib`, it should be built first.

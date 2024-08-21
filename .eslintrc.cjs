@@ -1,6 +1,6 @@
 /* eslint-env node */
 module.exports = {
-  extends: ['../common/.eslintrc.cjs'],
+  extends: ['./common/.eslintrc.cjs'],
   plugins: ['@typescript-eslint'],
   parser: '@typescript-eslint/parser',
   parserOptions: {

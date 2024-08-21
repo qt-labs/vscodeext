@@ -12,7 +12,7 @@ function main() {
   program.parse(process.argv);
   const options = program.opts();
   const extensionRoot = path.resolve(__dirname, '../');
-  const targetExtensionRoot = options.dir as string;
+  const targetExtensionRoot = path.join(extensionRoot, options.dir as string);
   const exclude = options.exclude as string;
   const temp = path.join(targetExtensionRoot, 'ThirdPartyNotices_temp.txt');
   let isCatchedError = false;
@@ -34,7 +34,6 @@ function main() {
         stdio: 'inherit'
       }
     );
-
     const tempText = fs.readFileSync(temp, 'utf-8');
     const previousText = fs.readFileSync(previousFile, 'utf-8');
     if (tempText === previousText) {
