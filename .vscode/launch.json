@@ -6,12 +6,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run qt-official Extension",
+      "name": "Run qt-cpp Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-official"],
-      "outFiles": ["${workspaceFolder}/qt-official/out/**/*.js"],
-      "preLaunchTask": "npm qt-official watch"
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-cpp"],
+      "outFiles": ["${workspaceFolder}/qt-cpp/out/**/*.js"],
+      "preLaunchTask": "npm qt-cpp watch"
+    },
+    {
+      "name": "Run qt-qml Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-qml"],
+      "outFiles": ["${workspaceFolder}/qt-qml/out/**/*.js"],
+      "preLaunchTask": "npm qt-qml watch"
     },
     {
       "name": "Run qt-core Extension",

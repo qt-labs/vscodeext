@@ -34,7 +34,8 @@
   "pricing": "Free",
   "preview": true,
   "extensionPack": [
-    "theqtcompany.qt-official",
+    "theqtcompany.qt-cpp",
+    "theqtcompany.qt-qml",
     "theqtcompany.qt-core",
     "theqtcompany.qt-ui",
     "ms-vscode.cmake-tools",

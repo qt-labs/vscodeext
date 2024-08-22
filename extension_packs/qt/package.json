@@ -34,7 +34,7 @@
   "pricing": "Free",
   "preview": true,
   "extensionPack": [
-    "theqtcompany.qt-official"
+    "theqtcompany.qt-core"
   ],
   "scripts": {
     "package": "vsce package"

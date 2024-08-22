@@ -1,0 +1,12 @@
+{
+  "qt-cpp.command.scanForQtKits.title": "Scan for Qt Kits",
+  "qt-cpp.debugger.cppdbg.snippet.label": "Qt: Debug with cppdbg",
+  "qt-cpp.debugger.cppdbg.snippet.description": "Launch a Qt application with the cppdb debugger",
+  "qt-cpp.debugger.lldb.snippet.label": "Qt: Debug with lldb",
+  "qt-cpp.debugger.lldb.snippet.description": "Launch a Qt application with the lldb debugger",
+  "qt-cpp.debugger.cppvsdbg.snippet.label": "Qt: Debug with cppvsdbg (Windows)",
+  "qt-cpp.debugger.cppvsdbg.snippet.description": "Launch a Qt application with the Visual Studio Debugger",
+  "qt-cpp.command.resetQtExt.title": "Reset Qt Tools Extension State (For troubleshooting)",
+  "qt-cpp.debugger.wasm.snippet.label": "Qt: Debug Qt WASM with Chrome",
+  "qt-cpp.debugger.wasm.snippet.description": "Launch a Qt WebAssembly application with Chrome"
+}

@@ -5,7 +5,7 @@
   "tasks": [
     {
       "type": "shell",
-      "label": "npm qt-official watch",
+      "label": "npm qt-cpp watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",
       "isBackground": true,
@@ -17,7 +17,24 @@
         "isDefault": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/qt-official"
+        "cwd": "${workspaceFolder}/qt-cpp"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "npm qt-qml watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-qml"
       }
     },
     {

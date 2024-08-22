@@ -2,7 +2,7 @@
 
 This extension pack includes the following extensions for Qt development in Visual Studio Code:
 
-* [Qt](https://marketplace.visualstudio.com/items?itemName=theqtcompany.qt-official)
+* [Qt Core](https://marketplace.visualstudio.com/items?itemName=theqtcompany.qt-core)
 
 ## License
 

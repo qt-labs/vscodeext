@@ -18,11 +18,16 @@ jobs:
       - run: npm run compile:all
       - run: npm run ci-lint:all
       - run: npm run package:all
-      - name: Upload qt-official
+      - name: Upload qt-cpp
         uses: actions/upload-artifact@v4
         with:
-          name: qt-official-vsix
-          path: qt-official/out/*.vsix
+          name: qt-cpp-vsix
+          path: qt-cpp/out/*.vsix
+      - name: Upload qt-qml
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-qml-vsix
+          path: qt-qml/out/*.vsix
       - name: Upload qt-core
         uses: actions/upload-artifact@v4
         with:
