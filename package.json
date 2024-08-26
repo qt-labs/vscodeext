@@ -7,6 +7,8 @@
     "out"
   ],
   "scripts": {
+    "all_dev": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all && npm run pretest:all && npm run package:all && npm run install-ext:all",
+    "all": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all && npm run ci-lint:all && npm run package:all && npm run install-ext:all",
     "pretest:qt-core": "cd qt-core && npm run pretest",
     "pretest:qt-official": "cd qt-official && npm run pretest",
     "pretest:qt-ui": "cd qt-ui && npm run pretest",
