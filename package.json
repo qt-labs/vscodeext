@@ -43,7 +43,7 @@
     "compile:qt-official": "cd qt-official && npm run compile",
     "compile:qt-ui": "cd qt-ui && npm run compile",
     "compile:qt-lib": "cd qt-lib && npm run compile",
-    "compile:all": "npm run compile && npm run compile:qt-core && npm run compile:qt-official && npm run compile:qt-ui && npm run compile:qt-lib",
+    "compile:all": "npm run compile:qt-core && npm run compile:qt-official && npm run compile:qt-ui && npm run compile:qt-lib",
     "checkLicenses": "ts-node scripts/check_licenses.ts",
     "checkPackage": "ts-node scripts/check_package.ts",
     "checkStyle": "ts-node scripts/check_style.ts",
