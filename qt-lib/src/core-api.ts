@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import { CORE_EXTENSION_ID } from './constants';
 
 export class QtWorkspaceConfigMessage {
   workspaceFolder: vscode.WorkspaceFolder | string;
@@ -33,9 +34,11 @@ export interface CoreApi {
 }
 
 export async function getCoreApi(): Promise<CoreApi | undefined> {
-  const extension = vscode.extensions.getExtension('theqtcompany.qt-core');
+  const extension = vscode.extensions.getExtension(
+    `theqtcompany.${CORE_EXTENSION_ID}`
+  );
   if (!extension) {
-    console.error('[theqtcompany.qt-core] is not installed');
+    console.error(`[theqtcompany.${CORE_EXTENSION_ID}] is not installed`);
     return undefined;
   }
   let exports: CoreApi | undefined;
@@ -43,7 +46,10 @@ export async function getCoreApi(): Promise<CoreApi | undefined> {
     try {
       exports = (await extension.activate()) as CoreApi;
     } catch (e) {
-      console.error('Failed to activate [theqtcompany.qt-core]', e);
+      console.error(
+        `Failed to activate [theqtcompany.${CORE_EXTENSION_ID}]`,
+        e
+      );
       return undefined;
     }
   } else {

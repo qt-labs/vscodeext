@@ -45,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
       void vscode.commands.executeCommand(
         'workbench.action.openSettings',
-        '@ext:theqtcompany.qt-official @ext:theqtcompany.qt-ui @ext:theqtcompany.qt-core'
+        `@ext:theqtcompany.qt-official @ext:theqtcompany.qt-ui @ext:theqtcompany.${EXTENSION_ID}`
       );
     })
   );
