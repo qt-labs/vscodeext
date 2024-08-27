@@ -20,7 +20,7 @@ import {
   compareVersions,
   GlobalWorkspace
 } from 'qt-lib';
-import { coreApi, projectManager } from '@/extension';
+import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('qmlls');
@@ -163,7 +163,7 @@ async function findMostRecentExecutableQmlLS(): Promise<
 > {
   const allQtInsRootDirs: string[] = [];
   for (const project of projectManager.getProjects()) {
-    const qtInsRoot = coreApi?.getValue<string>(
+    const qtInsRoot = coreAPI?.getValue<string>(
       project.folder,
       QtInsRootConfigName
     );
@@ -171,7 +171,7 @@ async function findMostRecentExecutableQmlLS(): Promise<
       allQtInsRootDirs.push(qtInsRoot);
     }
   }
-  const globalQtInsRoot = coreApi?.getValue<string>(
+  const globalQtInsRoot = coreAPI?.getValue<string>(
     GlobalWorkspace,
     QtInsRootConfigName
   );

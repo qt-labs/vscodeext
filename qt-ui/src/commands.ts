@@ -11,7 +11,7 @@ import {
   GlobalWorkspace,
   CORE_EXTENSION_ID
 } from 'qt-lib';
-import { QtCoreApi, projectManager } from '@/extension';
+import { coreAPI, projectManager } from '@/extension';
 import { locateQtDesignerExePath } from '@/util';
 
 const logger = createLogger('commands');
@@ -22,7 +22,7 @@ export async function openWidgetDesigner() {
   // and run the designer
   const qtInsRoots: string[] = [];
 
-  const globalQtInstallationRoot = QtCoreApi?.getValue<string>(
+  const globalQtInstallationRoot = coreAPI?.getValue<string>(
     GlobalWorkspace,
     'qtInstallationRoot'
   );
@@ -30,7 +30,7 @@ export async function openWidgetDesigner() {
     qtInsRoots.push(globalQtInstallationRoot);
   }
   for (const project of projectManager.getProjects()) {
-    const qtInsRoot = QtCoreApi?.getValue<string>(
+    const qtInsRoot = coreAPI?.getValue<string>(
       project.folder,
       'qtInstallationRoot'
     );

@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import {
-  CoreApi,
+  CoreAPI,
   getCoreApi,
   QtWorkspaceConfigMessage,
   QtWorkspaceType,
@@ -20,14 +20,14 @@ import { openWidgetDesigner } from '@/commands';
 const logger = createLogger('extension');
 
 export let projectManager: ProjectManager<UIProject>;
-export let QtCoreApi: CoreApi | undefined;
+export let coreAPI: CoreAPI | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
   logger.info(`Activating ${context.extension.id}`);
-  QtCoreApi = await getCoreApi();
-  if (!QtCoreApi) {
-    const err = 'Failed to get CoreApi';
+  coreAPI = await getCoreApi();
+  if (!coreAPI) {
+    const err = 'Failed to get CoreAPI';
     logger.error(err);
     throw new Error(err);
   }
@@ -35,11 +35,11 @@ export async function activate(context: vscode.ExtensionContext) {
   projectManager = new ProjectManager<UIProject>(context, createUIProject);
   projectManager.onProjectAdded(async (project) => {
     logger.info('Project added:', project.folder.uri.fsPath);
-    const selectedKitPath = QtCoreApi?.getValue<string>(
+    const selectedKitPath = coreAPI?.getValue<string>(
       project.folder,
       'selectedKitPath'
     );
-    const workspaceType = QtCoreApi?.getValue<QtWorkspaceType>(
+    const workspaceType = coreAPI?.getValue<QtWorkspaceType>(
       project.folder,
       'workspaceType'
     );
@@ -60,7 +60,7 @@ export async function activate(context: vscode.ExtensionContext) {
       projectManager.addProject(project);
     }
   }
-  QtCoreApi.onValueChanged((message) => {
+  coreAPI.onValueChanged((message) => {
     logger.info('Received config change:', message.config as unknown as string);
     processMessage(message);
   });

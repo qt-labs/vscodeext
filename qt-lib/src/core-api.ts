@@ -24,7 +24,7 @@ export enum QtWorkspaceType {
   PythonExt = 'PythonExt'
 }
 
-export interface CoreApi {
+export interface CoreAPI {
   update(config: QtWorkspaceConfigMessage): void;
   getValue<T>(
     folder: vscode.WorkspaceFolder | string,
@@ -33,7 +33,7 @@ export interface CoreApi {
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
 }
 
-export async function getCoreApi(): Promise<CoreApi | undefined> {
+export async function getCoreApi(): Promise<CoreAPI | undefined> {
   const extension = vscode.extensions.getExtension(
     `theqtcompany.${CORE_EXTENSION_ID}`
   );
@@ -41,10 +41,10 @@ export async function getCoreApi(): Promise<CoreApi | undefined> {
     console.error(`[theqtcompany.${CORE_EXTENSION_ID}] is not installed`);
     return undefined;
   }
-  let exports: CoreApi | undefined;
+  let exports: CoreAPI | undefined;
   if (!extension.isActive) {
     try {
-      exports = (await extension.activate()) as CoreApi;
+      exports = (await extension.activate()) as CoreAPI;
     } catch (e) {
       console.error(
         `Failed to activate [theqtcompany.${CORE_EXTENSION_ID}]`,
@@ -53,7 +53,7 @@ export async function getCoreApi(): Promise<CoreApi | undefined> {
       return undefined;
     }
   } else {
-    exports = extension.exports as CoreApi;
+    exports = extension.exports as CoreAPI;
   }
   return exports;
 }

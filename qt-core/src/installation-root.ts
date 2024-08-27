@@ -15,7 +15,7 @@ import {
   QtWorkspaceConfigMessage
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { CoreAPI } from '@/extension';
+import { coreAPI } from '@/extension';
 
 const logger = createLogger('installation-root');
 
@@ -137,5 +137,5 @@ export function onQtInsRootUpdated(
 
   const message = new QtWorkspaceConfigMessage(folder);
   message.config.set(QtInsRootConfigName, newQtInstallationRoot);
-  CoreAPI.update(message);
+  coreAPI?.update(message);
 }

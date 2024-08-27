@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import {
-  CoreApi,
+  CoreAPI,
   createLogger,
   QtWorkspaceConfig,
   QtWorkspaceConfigMessage
@@ -12,7 +12,7 @@ import {
 
 const logger = createLogger('api');
 
-export class CoreApiImpl implements CoreApi {
+export class CoreAPIImpl implements CoreAPI {
   private readonly _configs = new Map<
     vscode.WorkspaceFolder | string,
     QtWorkspaceConfig

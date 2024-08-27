@@ -20,7 +20,7 @@ import {
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { Project } from '@/project';
-import { coreApi } from '@/extension';
+import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
 
 const logger = createLogger('kit-manager');
@@ -571,9 +571,9 @@ export class KitManager {
   }
 
   public static getWorkspaceFolderQtInsRoot(folder: vscode.WorkspaceFolder) {
-    return coreApi?.getValue<string>(folder, QtInsRootConfigName) ?? '';
+    return coreAPI?.getValue<string>(folder, QtInsRootConfigName) ?? '';
   }
 }
 export function getCurrentGlobalQtInstallationRoot(): string {
-  return coreApi?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
+  return coreAPI?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
 }

@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import {
-  CoreApi,
+  CoreAPI,
   getCoreApi,
   QtWorkspaceType,
   createLogger,
@@ -30,7 +30,7 @@ import { EXTENSION_ID } from '@/constants';
 
 export let kitManager: KitManager;
 export let projectManager: ProjectManager;
-export let coreApi: CoreApi | undefined;
+export let coreAPI: CoreAPI | undefined;
 
 let taskProvider: vscode.Disposable | undefined;
 
@@ -42,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
   kitManager = new KitManager(context);
   projectManager = new ProjectManager(context);
-  coreApi = await getCoreApi();
+  coreAPI = await getCoreApi();
 
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
@@ -67,7 +67,7 @@ export async function activate(context: vscode.ExtensionContext) {
     wasmStartTaskProvider
   );
 
-  coreApi?.onValueChanged((message) => {
+  coreAPI?.onValueChanged((message) => {
     logger.info('Received config change:', message.config as unknown as string);
     processMessage(message);
   });
@@ -86,15 +86,15 @@ export function deactivate() {
 }
 
 export async function initCoreValues() {
-  if (!coreApi) {
-    throw new Error('CoreApi is not initialized');
+  if (!coreAPI) {
+    throw new Error('CoreAPI is not initialized');
   }
   const globalUpdateMessage = new QtWorkspaceConfigMessage(GlobalWorkspace);
   globalUpdateMessage.config.set(
     QtInsRootConfigName,
     getCurrentGlobalQtInstallationRoot()
   );
-  coreApi.update(globalUpdateMessage);
+  coreAPI.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
     const folder = project.getFolder();
@@ -113,8 +113,8 @@ export async function initCoreValues() {
       QtInsRootConfigName,
       KitManager.getWorkspaceFolderQtInsRoot(folder)
     );
-    logger.info('Updating coreApi with message:', message as unknown as string);
-    coreApi.update(message);
+    logger.info('Updating coreAPI with message:', message as unknown as string);
+    coreAPI.update(message);
   }
 }
 

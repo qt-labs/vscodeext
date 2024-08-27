@@ -10,7 +10,7 @@ import {
   QtInsRootConfigName,
   QtWorkspaceConfigMessage
 } from 'qt-lib';
-import { CoreApiImpl } from '@/api';
+import { CoreAPIImpl } from '@/api';
 import { registerDocumentationCommands } from '@/online-docs';
 import { registerSetRecommendedSettingsCommand } from '@/recommended-settings';
 import {
@@ -23,7 +23,7 @@ import { Project, ProjectManager } from '@/project';
 
 const logger = createLogger('extension');
 
-export let CoreAPI: CoreApiImpl;
+export let coreAPI: CoreAPIImpl | undefined;
 let projectManager: ProjectManager;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -54,9 +54,9 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   checkDefaultQtInsRootPath();
-  CoreAPI = new CoreApiImpl();
+  coreAPI = new CoreAPIImpl();
   initCoreValues();
-  return CoreAPI;
+  return coreAPI;
 }
 
 export function deactivate() {
@@ -69,7 +69,7 @@ export function initCoreValues() {
     QtInsRootConfigName,
     getCurrentGlobalQtInstallationRoot()
   );
-  CoreAPI.update(globalUpdateMessage);
+  coreAPI?.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
     const folder = project.getFolder();
@@ -78,7 +78,7 @@ export function initCoreValues() {
       QtInsRootConfigName,
       ProjectManager.getWorkspaceFolderQtInsRoot(folder)
     );
-    logger.info('Updating coreApi with message:', message as unknown as string);
-    CoreAPI.update(message);
+    logger.info('Updating coreAPI with message:', message as unknown as string);
+    coreAPI?.update(message);
   }
 }
