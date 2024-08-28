@@ -1,6 +1,13 @@
 # Qt UI Extension for Visual Studio Code
 
-This extension provides support for `.ui` files.
+This extension provides support for designing widget-based UIs with
+[Qt Widgets Designer](https://doc.qt.io/qt-6/qtdesigner-manual.html)
+using `.ui` files.
+
+## Documentation
+
+For more information about using Qt extensions, go to
+[Qt Extensions for VS Code Documentation](https://doc-snapshots.qt.io/vscodeext/index.html).
 
 ## License
 

@@ -4,11 +4,11 @@ Develop Qt applications with Visual Studio Code.
 
 ## Features
 
-- QML syntax highlighting and code completion
+- Get QML syntax highlighting and code completion
+- Design Qt widgets-based UIs with Qt Widgets Designer
 - Build Qt projects with CMake
 - Debug Qt's C++ types
-- Design Qt widgets-based UIs with Qt Widgets Designer
-- Access Qt's documentation
+- Read Qt documentation
 
 ## Prerequisites
 
@@ -19,14 +19,16 @@ required. They will be installed automatically.
 ## Quick Start
 
 1. Install the extension.
-1. Register Qt installation: The extension prompts you to register the
+1. Register a Qt installation. The extension prompts you to register the
    Qt versions it detects.
-1. Open a Qt project and start developing!
+1. Open a Qt project and start developing.
 
-Check detailed guideline for using the extension
-[here](https://github.com/qt-labs/vscodeext#get-started).
+## Documentation
+
+For more information about using the extensions, go to
+[Qt Extensions for VS Code Documentation](https://doc-snapshots.qt.io/vscodeext/index.html).
 
 ## Issues
 
-If you encounter any issues with the extension, kindly [report the
+If you encounter any issues with the extension, please [report the
 issues](https://bugreports.qt.io/projects/VSCODEEXT).

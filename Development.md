@@ -9,17 +9,18 @@
 
 ## Pre-Commit
 
-Before every commit, `npm run ci-lint:all` should be run.
+Before every commit, run `npm run ci-lint:all`
 
 ## Package
 
-- To generate installable packages, run `npm run package:all`. This will generate
-`.vsix` files in the each extension's `out` directory.
-- Also `npm run package:<extension_name>` can be used to generate the package for a specific extension.
+- To generate installable packages, run `npm run package:all` to generate
+`.vsix` files in each extension's `out` directory.
+- Also, you can run `npm run package:<extension_name>` to generate the package for a specific extension.
 
 ## Install
 
-- To install all the extensions, run `npm run install:all` or `npm run install:<extension_name>` to install a specific extension.
+- To install all extensions, run `npm run install:all`
+- To install a particular extension, run `npm run install:<extension_name>`
 
 ## Dependencies
 

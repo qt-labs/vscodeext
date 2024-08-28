@@ -23,10 +23,10 @@ required. They will be installed automatically.
    Qt versions it detects.
 1. Open a Qt project and start developing!
 
-Check detailed guideline for using the extension
+Check detailed guidelines for using the extension
 [here](https://github.com/qt-labs/vscodeext#get-started).
 
 ## Issues
 
-If you encounter any issues with the extension, kindly [report the
+If you encounter any issues with the extension, please [report the
 issues](https://bugreports.qt.io/projects/VSCODEEXT).
