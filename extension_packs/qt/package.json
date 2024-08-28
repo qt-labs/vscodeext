@@ -34,7 +34,10 @@
   "pricing": "Free",
   "preview": true,
   "extensionPack": [
-    "theqtcompany.qt-core"
+    "theqtcompany.qt-core",
+    "theqtcompany.qt-cpp",
+    "theqtcompany.qt-qml",
+    "theqtcompany.qt-ui"
   ],
   "scripts": {
     "package": "vsce package"
