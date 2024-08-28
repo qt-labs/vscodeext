@@ -2,7 +2,7 @@
   "name": "qt-ui",
   "displayName": "Qt UI",
   "description": "Qt UI Support",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",

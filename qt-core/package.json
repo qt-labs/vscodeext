@@ -2,7 +2,7 @@
   "name": "qt-core",
   "displayName": "Qt Core",
   "description": "Qt Core",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
