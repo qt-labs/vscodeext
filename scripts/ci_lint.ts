@@ -32,6 +32,10 @@ function main() {
     cwd: extensionRoot,
     stdio: 'inherit'
   });
+  execSync(`npm run checkChangelog -- --dir="${targetExtensionRoot}"`, {
+    cwd: extensionRoot,
+    stdio: 'inherit'
+  });
 }
 
 main();
