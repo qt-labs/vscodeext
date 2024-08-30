@@ -1,0 +1,24 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-tos.html
+    \previouspage vscodeext-tutorials.html
+    \nextpage vscodeext-reference.html
+
+    \title How to
+
+    The following topics describe how to use \QVSC to perform a particular task.
+
+    \section1 Develop Qt applications
+
+    \generatelist vscodeext-how-to-cpp
+
+    \section1 Develop Qt Quick applications
+
+    \generatelist vscodeext-how-to-qml
+
+    \section1 Develop for the web
+
+    \generatelist vscodeext-how-to-wasm
+*/

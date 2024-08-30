@@ -1,0 +1,23 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-debug-apps.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+
+    \title Debug Qt applications
+
+    To debug an application:
+
+    \list 1
+        \li Go to \uicontrol {Run and Debug}.
+        \li Create a \e {launch.json} file.
+        \li Select \uicontrol {Add Configuration}, and then select a
+            \uicontrol {Qt: Debug} debug configuration that matches
+            your debugger.
+    \endlist
+*/

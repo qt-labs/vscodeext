@@ -1,0 +1,34 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-register-qt-installations.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+    \ingroup vscodeext-how-to-wasm
+
+    \title Register Qt installations
+
+    The Qt extensions check whether you have a Qt installation folder at the
+    default path and offer to save it in \l{Qt settings}.Then, they ask you
+    whether you want to register the Qt versions they found.
+
+    If you installed Qt somewhere else, register your Qt installation:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Register Qt Installation}.
+        \li Select the folder where you installed Qt, and then select
+            \uicontrol {Select the Qt installation path}.
+    \endlist
+
+    The command creates CMake kits for each installed Qt version.
+
+    \section1 Scan for Qt kits
+
+    If some Qt CMake kits are missing, go to \uicontrol {Command Palette} and
+    select \uicontrol {Qt: Scan for Qt Kits}.
+*/

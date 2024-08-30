@@ -1,0 +1,26 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-reference-kits.html
+    \previouspage vscodeext-reference.html
+
+    \ingroup vscodeext-reference
+
+    \title Kits
+
+    \brief Information about CMake kits.
+
+    \section1 Multiple kits with the same name
+
+    If you have multiple kits with the same name in different JSON files, the
+    search order is:
+
+    \list 1
+        \li \e {cmake-kits.json} in the \e {.vscode} folder of the workspace.
+        \li \e {cmake-tools-kits.json} in the local user settings folder.
+        \li JSON files in the \uicontrol {cmake.additionalKits} setting.
+    \endlist
+
+    \sa {Qt settings}
+*/

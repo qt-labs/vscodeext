@@ -1,0 +1,67 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-reference-qt-settings.html
+    \previouspage vscodeext-reference.html
+
+    \ingroup vscodeext-reference
+
+    \title Qt settings
+
+    \brief A summary of Qt settings.
+
+    To view and change Qt settings, go to \uicontrol {Command Palette} and select
+    \uicontrol {Qt: Qt Settings}.
+
+    \section1 General settings
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li Do Not Ask for Default Qt Installation Root
+        \li Hides the prompt about setting the value of
+            \uicontrol {Qt Installation Root}.
+    \row
+        \li Open Online Documentation in External Browser
+        \li Opens Qt documentation in the default browser.
+
+    \row
+        \li Qt Installation Root
+        \li Path to the folder where you installed Qt.
+    \endtable
+
+    \section1 Qt GUI settings
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li Custom Widgets Designer Exe Path
+        \li Path to the folder where you installed \QD.
+    \endtable
+
+    \section1 \QMLLS settings
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li Custom Exe Path
+        \li Path to the folder where you installed \QMLLS.
+
+    \row
+        \li Enabled
+        \li Turns on \QMLLS.
+    \row
+        \li Trace Lsp
+        \li Collects trace output from \QMLLS.
+    \row
+        \li Verbose Output
+        \li Shows verbose output from \QMLLS.
+    \endtable
+*/

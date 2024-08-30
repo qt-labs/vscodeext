@@ -1,0 +1,13 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-reference.html
+    \previouspage vscodeext-how-tos.html
+
+    \title Reference
+
+    The following topics contain reference information about configuring \QVSC.
+
+    \annotatedlist vscodeext-reference
+*/

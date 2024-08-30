@@ -1,0 +1,38 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-debug-apps-wasm.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-wasm
+
+    \title Debug Qt WebAssembly applications
+
+    To debug a Qt WebAssembly application:
+
+    \list 1
+        \li Open a \e {launch.json} file.
+        \li Select \uicontrol {Add Configuration}, and then select the
+            \uicontrol {Qt:Debug Qt WASM with Chrome} debug configuration.
+    \endlist
+
+    The \uicontrol {Qt: WASM Start} task in the \uicontrol {preLaunchTask}
+    section checks the required dependencies and prompts you to install them
+    if necessary.
+
+    For \uicontrol {multi-thread} Qt WebAssembly applications, set the following
+    configuration in \e {settings.json}:
+
+    \badcode
+    json
+     "livePreview.httpHeaders": {
+         "Cross-Origin-Embedder-Policy": "require-corp",
+         "Cross-Origin-Opener-Policy": "same-origin",
+         "Accept-Ranges": "bytes"
+     }
+    \endcode
+
+    Otherwise, you might see the \e {SharedArrayBuffer is not defined} error.
+*/

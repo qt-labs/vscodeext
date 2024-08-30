@@ -1,0 +1,40 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-read-qt-documentation.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+    \ingroup vscodeext-how-to-wasm
+
+    \title Read Qt documentation
+
+    To open the Qt documentation pages, go to \uicontrol {Command Palette} and
+    select \uicontrol {Qt: Documentation: Open Homepage}.
+
+    Qt documentation opens in Simple Browser in Visual Studio Code. To open it in
+    another browser, select \uicontrol {Open Online Documentation in External Browser}
+    in \l {Qt settings}.
+
+    \section1 Find documentation
+
+    To find documentation for the word you select in the editor, such as a class
+    or function name:
+
+    \list 1
+        \li Select a word in the editor.
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Documentation: Search for the current word}.
+    \endlist
+
+    To find any text in Qt documentation:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Documentation: Search}.
+        \li Type a search string and press \key {Enter}.
+    \endlist
+*/

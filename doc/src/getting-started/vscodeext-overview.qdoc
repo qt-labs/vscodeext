@@ -1,0 +1,53 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-overview.html
+    \previouspage vscodeext-getting-started.html
+    \nextpage vscodeext-how-to-install.html
+
+    \title Overview
+
+    Install \QVSC extensions to develop Qt and Qt Quick applications for the
+    desktop and web with VS Code.
+
+    You can install the following Qt extension packs:
+
+    \list
+        \li Qt C++
+        \li Qt Web Assembly
+    \endlist
+
+    You can also install individual extensions with or without extension packs.
+    The \e {Qt} extension pack contains all Qt extensions.
+
+    \section1 C++ development
+
+    With the Qt C++ extension, you can:
+
+    \list
+
+    \endlist
+
+    \section1 Qt Quick development
+
+    With the Qt Qml extension, you can:
+
+    \list
+        \li Get QML syntax highlighting and code completion
+    \endlist
+
+    \section1 Web development
+
+    With the Qt Qt Web Assembly extension pack, you can:
+
+    \list
+        \li Use Qt in your CMake project by selecting a generated Qt kit
+        \li Build Qt projects with CMake
+        \li Debug Qt for WebAssembly code
+        \li Handle Qt-specific file formats
+        \li Read Qt documentation
+    \endlist
+
+    \sa {Installation}
+*/

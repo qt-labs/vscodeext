@@ -1,0 +1,37 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-to-install.html
+    \previouspage vscodeext-getting-started.html
+    \nextpage vscodeext-how-tos.html
+
+    \title Installation
+
+    Install \QVSC extensions to develop Qt and Qt Quick applications with VS Code.
+    Select the Qt extension pack for the type of applications you develop:
+
+    \list
+        \li Qt C++ for developing Qt C++ and Qt Quick applications
+        \li Qt Web Assembly for developing applications for the web
+    \endlist
+
+    You can also install individual extensions with or without extension packs.
+    The \e {Qt} extension pack contains all Qt extensions.
+
+    \section1 Install extension packs
+
+    To install a Qt extension pack:
+
+    \list
+        \li Select the \uicontrol {Extensions} icon in the
+            \uicontrol {Activity Bar} or press \key {Ctrl+Shift+X}.
+        \li In \uicontrol {Extensions}, search for the extension pack.
+        \li Select \uicontrol {Install}.
+    \endlist
+
+    The \l {CMake For VisualStudio Code} and \l {CMake Tools} extensions are
+    installed automatically.
+
+    \sa {Register Qt installations}
+*/

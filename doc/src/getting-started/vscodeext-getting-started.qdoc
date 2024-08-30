@@ -1,0 +1,23 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-getting-started.html
+    \previouspage index.html
+    \nextpage vscodeext-overview.html
+
+    \title Getting started
+
+    To work on Qt projects in VS Code:
+
+    \list
+        \li \l {Installation}{Install a Qt extension}.
+        \li \l {Register Qt installations}.
+        \li Open a folder that contains a Qt CMake project (that has a
+            \e {CMakeLists.txt} file).
+        \li Go to \uicontrol {Command Palette} and select
+            \uicontrol {CMake: Select a Kit} to select a
+            kit that matches your Qt version and toolchain.
+        \li Select \uicontrol {CMake: Build} to build the project.
+    \endlist
+*/
