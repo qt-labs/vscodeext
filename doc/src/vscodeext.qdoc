@@ -5,7 +5,7 @@
     \page index.html
     \nextpage vscodeext-how-to-install.html
 
-    \title \QVSC Documentation
+    \title \QVSC
 
     \raw HTML
     <style>
@@ -28,7 +28,7 @@
                 \l {Installation}
             \li \b {GETTING STARTED}
 
-                Learn about the \QVSC features.
+                Get started with developing Qt applications with VS Code.
 
                 \l{Getting started}
             \li \b {REFERENCE}
@@ -41,7 +41,8 @@
 
     \section1 About
 
-    Develop Qt and Qt Quick applications for the desktop and web with VS Code.
+    Develop Qt and Qt Quick applications for the desktop and WebAssembly with
+    VS Code.
 
     To learn more about \QVSC, see \l {Overview}.
 
@@ -59,13 +60,13 @@
         \row
             \li \inlineimage demo-32x32.png
             \li \inlineimage build-32x32.png
-            \li \inlineimage settings-32x32.png
+            \li \inlineimage web-32x32.png
         \row
             \li Develop Qt applications
                 \generatelist vscodeext-how-to-cpp
             \li Develop Qt Quick applications
                 \generatelist vscodeext-how-to-qml
-            \li Develop for the web
+            \li Develop for WebAssembly
                 \generatelist vscodeext-how-to-wasm
     \endtable
     \enddiv

@@ -12,9 +12,13 @@
     \brief A summary of Qt settings.
 
     To view and change Qt settings, go to \uicontrol {Command Palette} and select
-    \uicontrol {Qt: Qt Settings}.
+    \uicontrol {Qt: Open Qt Settings}.
 
-    \section1 General settings
+    \image vscodeext-qt-settings.webp {Qt Settings}
+
+    \section1 Qt Core settings
+
+    Settings for the common features of the Qt extensions.
 
     \table
     \header
@@ -33,7 +37,9 @@
         \li Path to the folder where you installed Qt.
     \endtable
 
-    \section1 Qt GUI settings
+    \section1 Qt UI settings
+
+    Settings for handling \e {.ui} files.
 
     \table
     \header
@@ -46,6 +52,8 @@
 
     \section1 \QMLLS settings
 
+    Settings for \l{\QMLLS Reference}{\QMLLS}.
+
     \table
     \header
         \li Setting
@@ -56,7 +64,7 @@
 
     \row
         \li Enabled
-        \li Turns on \QMLLS.
+        \li Turns on \QMLLS when you activate an extension.
     \row
         \li Trace Lsp
         \li Collects trace output from \QMLLS.

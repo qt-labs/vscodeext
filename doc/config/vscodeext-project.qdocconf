@@ -17,9 +17,6 @@ imagedirs = ../images
 # exampledirs = ../examples
 # examples.fileextensions += *.qml *.svg
 
-depends +=    qtcore \
-              qtdoc
-
 defines += vscodeext
 
 sources.fileextensions         = "*.qdoc"
@@ -38,6 +35,14 @@ qhp.vscodeext.subprojects = manual
 qhp.vscodeext.subprojects.manual.title = Qt Extensions for VS Code
 qhp.vscodeext.subprojects.manual.indexTitle = All topics
 qhp.vscodeext.subprojects.manual.type = manual
+
+indexes  += $QT_INSTALL_DOCS/qtcmake/qtcmake.index \
+            $QT_INSTALL_DOCS/qtcore/qtcore.index \
+            $QT_INSTALL_DOCS/qtdoc/qtdoc.index \
+            $QT_INSTALL_DOCS/qtgui/qtgui.index \
+            $QT_INSTALL_DOCS/qtqml/qtqml.index \
+            $QT_INSTALL_DOCS/qtquick/qtquick.index \
+            $QT_INSTALL_DOCS/qtwidgets/qtwidgets.index
 
 # Doxygen compatibility commands
 

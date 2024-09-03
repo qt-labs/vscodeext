@@ -8,8 +8,8 @@
 
     \title Overview
 
-    Install \QVSC extensions to develop Qt and Qt Quick applications for the
-    desktop and web with VS Code.
+    With \QVSC, you can develop \l{Qt Widgets}{widget-based} and \l{Qt Quick}
+    applications for the desktop and web.
 
     You can install the following Qt extension packs:
 
@@ -23,10 +23,16 @@
 
     \section1 C++ development
 
-    With the Qt C++ extension, you can:
+    With the Qt C++ extension pack, you can:
 
     \list
-
+        \li Use Qt in your CMake project by selecting a generated Qt kit
+        \li Get QML syntax highlighting and code completion
+        \li Design Qt widgets-based UIs with \l{\QD}
+        \li Build Qt projects with \l{Build with CMake}{CMake}
+        \li Debug Qt's C++ types
+        \li Handle Qt-specific file formats
+        \li Read \l {Qt Documentation}
     \endlist
 
     \section1 Qt Quick development
@@ -34,12 +40,13 @@
     With the Qt Qml extension, you can:
 
     \list
-        \li Get QML syntax highlighting and code completion
+        \li Get QML syntax highlighting and code completion with
+            \l{\QMLLS Reference}{\QMLLS}
     \endlist
 
     \section1 Web development
 
-    With the Qt Qt Web Assembly extension pack, you can:
+    With the \l {Qt for WebAssembly} extension pack, you can:
 
     \list
         \li Use Qt in your CMake project by selecting a generated Qt kit

@@ -8,16 +8,16 @@
 
     \title Installation
 
-    Install \QVSC extensions to develop Qt and Qt Quick applications with VS Code.
+    Install \QVSC to develop Qt and Qt Quick applications with VS Code.
     Select the Qt extension pack for the type of applications you develop:
 
     \list
         \li Qt C++ for developing Qt C++ and Qt Quick applications
-        \li Qt Web Assembly for developing applications for the web
+        \li Qt WebAssembly for developing applications for WebAssembly
     \endlist
 
     You can also install individual extensions with or without extension packs.
-    The \e {Qt} extension pack contains all Qt extensions.
+    \e {Qt All Extensions Pack} contains all Qt extensions.
 
     \section1 Install extension packs
 
@@ -26,7 +26,7 @@
     \list
         \li Select the \uicontrol {Extensions} icon in the
             \uicontrol {Activity Bar} or press \key {Ctrl+Shift+X}.
-        \li In \uicontrol {Extensions}, search for the extension pack.
+        \li In \uicontrol {Extensions}, search for Qt extension packs.
         \li Select \uicontrol {Install}.
     \endlist
 

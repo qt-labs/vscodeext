@@ -37,4 +37,6 @@
             \uicontrol {Qt: Documentation: Search}.
         \li Type a search string and press \key {Enter}.
     \endlist
+
+    \sa {Qt settings}
 */

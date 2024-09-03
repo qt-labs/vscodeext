@@ -1,0 +1,36 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-to-turn-on-qmlls.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+    \ingroup vscodeext-how-to-wasm
+
+    \title Turn on \QMLLS
+
+    Since Qt 6.4, \QMLLS offers code completion and issues warnings for QML.
+
+    To turn on \QMLLS:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Open Qt Settings}.
+        \li Go to \uicontrol {Qt Qml Configuration}, and select
+            \uicontrol {Run qmmls when activating an extension}.
+    \endlist
+
+    \section1 Set \QMLLS location
+
+    If VS Code cannot find \QMLLS, set the path to it in \uicontrol {Settings}.
+
+    \section1 Configure \QMLLS output
+
+    To collect trace output from \QMLLS and to show verbose output from it,
+    go to \uicontrol {Settings}.
+
+    \sa {Qt settings}
+*/

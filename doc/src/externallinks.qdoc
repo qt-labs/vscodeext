@@ -17,3 +17,8 @@
 \externalpage https://doc.qt.io/qt-6/qtdesigner-manual.html
 \title \QD
 */
+
+/*!
+\externalpage https://doc.qt.io/index.html
+\title Qt Documentation
+*/

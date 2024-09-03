@@ -15,6 +15,13 @@
     \list 1
         \li Go to \uicontrol {Explorer}, and select a \e {.ui} file.
         \li Select \uicontrol {Open this file with \QD}.
+            \image vscodeext-open-ui-file.webp {Opening an .ui file in the Explorer}
         \li Use \l {\QD} to design a UI.
     \endlist
+
+    \section1 Set \QD location
+
+    If VS Code cannot find \QD, set the path to it in \uicontrol {Settings}.
+
+    \sa {Qt settings}
 */
