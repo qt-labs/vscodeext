@@ -69,10 +69,11 @@ export class Qmlls {
         // Don't start the language server if the version is older than 6.7.2
         // Because older versions of the qmlls are not stable
         if (compareVersions(qmllsExeConfig.qtVersion, '6.7.2') < 0) {
-          const errorMessage =
-            'QML Language Server version is older than 6.7.2';
-          logger.error(errorMessage);
-          throw new Error(errorMessage);
+          const infoMessage =
+            'Cannot turn on QML Language Server because the found Qt versions are older than 6.7.2. Please install a newer version of Qt.';
+          void vscode.window.showInformationMessage(infoMessage);
+          logger.info(infoMessage);
+          return;
         }
 
         this.startLanguageClient(qmllsExeConfig.qmllsPath);

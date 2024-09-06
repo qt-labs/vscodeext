@@ -90,7 +90,7 @@
       "properties": {
         "qt-qml.qmlls.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Run qmlls when activating an extension",
           "scope": "machine-overridable"
         },
