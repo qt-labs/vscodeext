@@ -12,7 +12,8 @@
 
     \title Turn on \QMLLS
 
-    Since Qt 6.4, \QMLLS offers code completion and issues warnings for QML.
+    \l{\QMLLS} offers code completion and issues warnings for QML. \QVSC support
+    \QMLLS from Qt 6.8.0, and later.
 
     To turn on \QMLLS:
 
@@ -20,12 +21,13 @@
         \li Go to \uicontrol {Command Palette}, and select
             \uicontrol {Qt: Open Qt Settings}.
         \li Go to \uicontrol {Qt Qml Configuration}, and select
-            \uicontrol {Run qmmls when activating an extension}.
+            \uicontrol {Run qmlls when activating an extension}.
     \endlist
 
     \section1 Set \QMLLS location
 
-    If VS Code cannot find \QMLLS, set the path to it in \uicontrol {Settings}.
+    To use \QMLLS when you develop with an older Qt version than Qt 6.8.0, set
+    the path to \QMLLS from Qt 6.8.0 or later in \uicontrol {Settings}.
 
     \section1 Configure \QMLLS output
 
