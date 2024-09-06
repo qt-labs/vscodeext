@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.9.2
+
+- Updated `README.md`.
+
 ## 0.9.1
 
 - Removed the `qt-official` extension.
