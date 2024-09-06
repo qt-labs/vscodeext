@@ -66,6 +66,14 @@
     "generateLicenses:qt-cpp": "npm run generateLicenses -- --dir=\"qt-cpp\" --exclude=\"qt-cpp\" --output=\"qt-cpp/ThirdPartyNotices.txt\"",
     "generateLicenses:qt-ui": "npm run generateLicenses -- --dir=\"qt-ui\" --exclude=\"qt-ui\" --output=\"qt-ui/ThirdPartyNotices.txt\"",
     "generateLicenses:all": "npm run generateLicenses:qt-core && npm run generateLicenses:qt-cpp && npm run generateLicenses:qt-ui && npm run generateLicenses:qt-qml",
+    "_prepublish": "git reset --hard && git clean -ffdx && npm ci && npm run ci:qt-lib && npm run compile:qt-lib && npm run ci-lint:qt-lib",
+    "publish:qt-core": "ts-node ./scripts/publish.ts --extension=\"qt-core\"",
+    "publish:qt-qml": "ts-node ./scripts/publish.ts --extension=\"qt-qml\"",
+    "publish:qt-cpp": "ts-node ./scripts/publish.ts --extension=\"qt-cpp\"",
+    "publish:qt-ui": "ts-node ./scripts/publish.ts --extension=\"qt-ui\"",
+    "publish:qt-cpp-pack": "npm run checkChangelog:qt-cpp-pack && cd extension_packs/cpp && npx vsce publish --pre-release",
+    "publish:qt-wasm-pack": "npm run checkChangelog:qt-wasm-pack && cd extension_packs/wasm && npx vsce publish --pre-release",
+    "publish:qt-all-pack": "npm run checkChangelog:qt-all-pack && cd extension_packs/qt && npx vsce publish --pre-release",
     "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\""
@@ -73,6 +81,7 @@
   "devDependencies": {
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
+    "@vscode/vsce": "^2.32.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "eslint": "^8.50.0",
