@@ -2,10 +2,22 @@
 
 This extension provides support for the common features of the Qt extensions.
 
+## Features
+
+- Get [QSS](https://doc.qt.io/qt-6/stylesheet-syntax.html) syntax highlighting
+- Get [QDoc](https://doc.qt.io/qt-6/qdoc-index.html) syntax highlighting
+- Get [QRC](https://doc.qt.io/qt-6/resources.html#qt-resource-collection-file-qrc) syntax highlighting
+- Read Qt documentation
+
 ## Documentation
 
 For more information about using Qt extensions, go to
-[Qt Extensions for VS Code Documentation](https://doc-snapshots.qt.io/vscodeext/index.html).
+[Qt Extensions for VS Code Documentation](https://doc.qt.io/vscodeext/index.html).
+
+## Issues
+
+If you encounter any issues with the extension, please [report the
+issues](https://bugreports.qt.io/projects/VSCODEEXT).
 
 ## License
 
