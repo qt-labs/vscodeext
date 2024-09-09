@@ -200,6 +200,12 @@ export class KitManager {
     const newQtInstallations = currentQtInsRoot
       ? await findQtKits(currentQtInsRoot)
       : [];
+    if (currentQtInsRoot) {
+      KitManager.showQtInstallationsMessage(
+        currentQtInsRoot,
+        newQtInstallations
+      );
+    }
     project
       ? await this.updateQtKits(
           currentQtInsRoot,
@@ -219,21 +225,28 @@ export class KitManager {
     }
   }
 
+  private static showQtInstallationsMessage(
+    qtInsRoot: string,
+    qtInstallations: string[]
+  ) {
+    if (qtInstallations.length === 0) {
+      const warningMessage = `Cannot find a Qt installation in "${qtInsRoot}".`;
+      void vscode.window.showWarningMessage(warningMessage);
+      logger.info(warningMessage);
+    } else {
+      const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtInsRoot}".`;
+      void vscode.window.showInformationMessage(infoMessage);
+      logger.info(infoMessage);
+    }
+  }
+
   public async onQtInstallationRootChanged(
     qtInsRoot: string,
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
     const qtInstallations = await findQtKits(qtInsRoot);
     if (qtInsRoot) {
-      if (qtInstallations.length === 0) {
-        const warningMessage = `Cannot find a Qt installation in "${qtInsRoot}".`;
-        void vscode.window.showWarningMessage(warningMessage);
-        logger.info(warningMessage);
-      } else {
-        const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtInsRoot}".`;
-        void vscode.window.showInformationMessage(infoMessage);
-        logger.info(infoMessage);
-      }
+      KitManager.showQtInstallationsMessage(qtInsRoot, qtInstallations);
     }
     await this.updateQtKits(qtInsRoot, qtInstallations, workspaceFolder);
   }
