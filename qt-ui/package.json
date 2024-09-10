@@ -26,7 +26,6 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
-  "preview": true,
   "activationEvents": [
     "workspaceContains:*.ui"
   ],

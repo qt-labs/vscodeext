@@ -32,7 +32,6 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
-  "preview": true,
   "extensionPack": [
     "theqtcompany.qt-cpp",
     "theqtcompany.qt-qml",

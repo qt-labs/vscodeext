@@ -29,7 +29,6 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
-  "preview": true,
   "activationEvents": [
     "onCommand:cmake.activeFolderName",
     "onCommand:cmake.activeFolderPath",

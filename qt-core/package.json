@@ -30,7 +30,6 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
-  "preview": true,
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
