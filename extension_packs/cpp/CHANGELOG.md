@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.0
+
+- 🎉 Our initial release 🎉
+
 ## 0.9.2
 
 - Removed the `qt-official` extension.
