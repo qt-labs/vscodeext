@@ -27,6 +27,8 @@
 
     The command creates CMake kits for each installed Qt version.
 
+    \image vscodeext-kits.webp {CMake kits for installed Qt versions}
+
     \section1 Scan for Qt kits
 
     If some Qt CMake kits are missing, go to \uicontrol {Command Palette} and

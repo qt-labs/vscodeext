@@ -30,6 +30,8 @@
             \uicontrol {Qt: Documentation: Search for the current word}.
     \endlist
 
+    \image vscodeext-documentation.webp {Qt documentation open in Simple Browser}
+
     To find any text in Qt documentation:
 
     \list 1

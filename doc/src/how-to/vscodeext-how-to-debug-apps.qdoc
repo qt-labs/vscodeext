@@ -14,7 +14,8 @@
     To debug an application:
 
     \list 1
-        \li Go to \uicontrol {Run and Debug}.
+        \li Go to \uicontrol {Run and Debug} (\key {Ctrl+Shift+V} or
+            \key {Cmd+Shift+V} on \macos).
         \li Create a \e {launch.json} file.
         \li Select \uicontrol {Add Configuration}, and then select a
             \uicontrol {Qt: Debug} debug configuration that matches

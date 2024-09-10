@@ -6,6 +6,8 @@
     \previouspage vscodeext-how-tos.html
     \nextpage vscodeext-reference.html
 
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
     \ingroup vscodeext-how-to-wasm
 
     \title Use Qt with other extensions

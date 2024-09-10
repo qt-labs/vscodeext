@@ -27,6 +27,7 @@
         \li Select the \uicontrol {Extensions} icon in the
             \uicontrol {Activity Bar} or press \key {Ctrl+Shift+X}.
         \li In \uicontrol {Extensions}, search for Qt extension packs.
+            \image vscodeext-installation.webp {Qt extensions in VS Code}
         \li Select \uicontrol {Install}.
     \endlist
 

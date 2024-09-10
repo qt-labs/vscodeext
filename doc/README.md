@@ -39,8 +39,8 @@ On the command-line, enter:
    `set QT_VER=6.8.0`
    `set QT_VERSION=6.8.0`
 3. Set the Qt Extensions for VS Code version:
-   `set QLSRV_VERSION=1.0.0`
-   `set QLSRV_VERSION_TAG=100`
+   `set VSCODEEXT_VERSION=1.0.0`
+   `set VSCODEEXT_VERSION_TAG=100`
 4. Enter the path to QDoc and the documentation configuration file:
    `C:\Qt\6.8.0\msvc2022_64\bin\qdoc.exe -indexdir %QT_INSTALL_DOCS% doc\online\vscodeext.qdocconf`
 
@@ -49,8 +49,8 @@ For example:
 `set QT_INSTALL_DOCS=C:\Qt\6.8.0\msvc2019_64\doc
  set QT_VER=6.8.0
  set QT_VERSION=6.8.0
- set QLSRV_VERSION=3.2.0
- set QLSRV_VERSION_TAG=320
+ set VSCODEEXT_VERSION=1.0.0
+ set VSCODEEXT_VERSION_TAG=100
  C:\Qt\6.8.0\msvc2022_64\bin\qdoc.exe -indexdir %QT_INSTALL_DOCS% doc\online\vscodeext.qdocconf`
 
 The documentation is generated in the `doc\html` folder.
@@ -59,4 +59,4 @@ The documentation is generated in the `doc\html` folder.
 
 On the command-line, enter:
 
-`QT_INSTALL_DOCS=~/Qt/6.8.0/gcc_64/doc QLSRV_VERSION=1.0.0 QLSRV_VERSION_TAG=100 ~/Qt/6.8.0/gcc_64/bin/qdoc -indexdir $QT_INSTALL_DOCS doc/online/vscodeext.qdocconf`
+`QT_INSTALL_DOCS=~/Qt/6.8.0/gcc_64/doc VSCODEEXT_VERSION=1.0.0 VSCODEEXT_VERSION_TAG=100 ~/Qt/6.8.0/gcc_64/bin/qdoc -indexdir $QT_INSTALL_DOCS doc/online/vscodeext.qdocconf`
