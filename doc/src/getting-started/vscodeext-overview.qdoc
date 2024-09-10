@@ -14,12 +14,12 @@
     You can install the following Qt extension packs:
 
     \list
+        \li Qt All Extensions Pack
         \li Qt C++
         \li Qt Web Assembly
     \endlist
 
     You can also install individual extensions with or without extension packs.
-    The \e {Qt} extension pack contains all Qt extensions.
 
     \section1 C++ development
 
