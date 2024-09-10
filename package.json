@@ -71,9 +71,9 @@
     "publish:qt-qml": "ts-node ./scripts/publish.ts --extension=\"qt-qml\"",
     "publish:qt-cpp": "ts-node ./scripts/publish.ts --extension=\"qt-cpp\"",
     "publish:qt-ui": "ts-node ./scripts/publish.ts --extension=\"qt-ui\"",
-    "publish:qt-cpp-pack": "npm run checkChangelog:qt-cpp-pack && cd extension_packs/cpp && npx vsce publish --pre-release",
-    "publish:qt-wasm-pack": "npm run checkChangelog:qt-wasm-pack && cd extension_packs/wasm && npx vsce publish --pre-release",
-    "publish:qt-all-pack": "npm run checkChangelog:qt-all-pack && cd extension_packs/qt && npx vsce publish --pre-release",
+    "publish:qt-cpp-pack": "npm run checkChangelog:qt-cpp-pack && cd extension_packs/cpp && npx vsce publish",
+    "publish:qt-wasm-pack": "npm run checkChangelog:qt-wasm-pack && cd extension_packs/wasm && npx vsce publish",
+    "publish:qt-all-pack": "npm run checkChangelog:qt-all-pack && cd extension_packs/qt && npx vsce publish",
     "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\""
