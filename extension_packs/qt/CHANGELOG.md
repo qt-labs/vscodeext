@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.1
+
+- Changed the display name to "Qt All Extensions Pack".
+- Removed the `pre-release` tag.
+
 ## 1.0.0
 
 - 🎉 Our initial release 🎉
