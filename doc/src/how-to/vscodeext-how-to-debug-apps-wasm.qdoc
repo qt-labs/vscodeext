@@ -26,7 +26,6 @@
     configuration in \e {settings.json}:
 
     \badcode
-    json
      "livePreview.httpHeaders": {
          "Cross-Origin-Embedder-Policy": "require-corp",
          "Cross-Origin-Opener-Policy": "same-origin",
