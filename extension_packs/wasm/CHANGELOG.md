@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.1
+
+- Removed the `pre-release` tag.
+
 ## 1.0.0
 
 - 🎉 Our initial release 🎉
