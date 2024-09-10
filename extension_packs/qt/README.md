@@ -1,4 +1,4 @@
-# Qt Extension Pack
+# Qt All Extensions Pack
 
 This extension pack includes all the extension packs for developing Qt and
 Qt Quick applications with Visual Studio Code.

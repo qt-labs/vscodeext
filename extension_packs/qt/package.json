@@ -1,6 +1,6 @@
 {
   "name": "qt",
-  "displayName": "Qt Extension Pack",
+  "displayName": "Qt All Extensions Pack",
   "description": "Recommended extensions for Qt development.",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
