@@ -23,5 +23,5 @@
 
     If VS Code cannot find \QD, set the path to it in \uicontrol {Settings}.
 
-    \sa {Qt settings}
+    \sa {Tutorial: Qt Widgets application}, {Qt settings}
 */

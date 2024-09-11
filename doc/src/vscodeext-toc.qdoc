@@ -18,6 +18,8 @@
                 \li \l{Overview}
                 \li \l{Installation}
             \endlist
+        \li \l{Tutorials}
+            \generatelist vscodeext-tutorials
         \li \l{How to}
             \list
             \li Develop Qt applications

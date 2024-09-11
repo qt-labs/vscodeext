@@ -31,11 +31,11 @@
                 Get started with developing Qt applications with VS Code.
 
                 \l{Getting started}
-            \li \b {REFERENCE}
+            \li \b {TUTORIALS}
 
-                Access detailed information about \QVSC settings.
+                Learn how to develop Qt and Qt Quick applications with \QVSC.
 
-                \l{Reference}
+                \l{Tutorials}
     \endtable
     \enddiv
 

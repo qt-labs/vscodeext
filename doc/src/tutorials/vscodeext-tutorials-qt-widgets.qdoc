@@ -1,0 +1,348 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-tutorials-qt-widgets.html
+    \previouspage vscodeext-tutorials.html
+    \nextpage vscodeext-how-tos.html
+
+    \ingroup vscodeext-tutorials
+
+    \title Tutorial: Qt Widgets application
+
+    This tutorial illustrates how to use \QVSC to create a \l {Qt Widgets}
+    application. You will need a project that you can develop further using
+    VS Code and \QD.
+
+    You can download the completed project from
+    \l{https://code.qt.io/cgit/qt-labs/vscodeext.git/tree/doc/tutorials/AddressBook}
+    {here}.
+
+    \image vscodeext-tutorial-widgets-ready.webp {AddressBook application}
+
+    \section1 Before you start
+
+    Before you start, you have to:
+
+    \list
+        \li \l {Installation}{Install \QVSC}
+        \li \l {Register Qt installations}
+        \li \l {Create a Qt Widgets application project}
+    \endlist
+
+    \section1 Create a Qt Widgets application project
+
+    To develop Qt applications, you need a project folder that has the code and
+    a project configuration file (\e CMakeLists.txt) that has instructions for
+    building the project.
+
+    The \e AddressBook project has two classes, each with a header, source, and
+    UI form:
+
+    \list
+        \li \c AddressBook (based on QMainWindow)
+        \li \c AddDialog (based on QDialog)
+    \endlist
+
+    To create a project:
+
+    \list 1
+        \li Create a folder called \e AddressBook.
+        \li In VS Code, go to \uicontrol File > \uicontrol {Open Folder}.
+        \li Go to \uicontrol File > \uicontrol {New File}, and create the
+            following files:
+            \list
+                \li \c main.cpp
+                \li \c addressbook.cpp
+                \li \c addressbook.h
+                \li \c adddialog.cpp
+                \li \c adddialog.h
+            \endlist
+        \li Go to \uicontrol File > \uicontrol {New Text File}, and create
+            the \e CMakeLists.txt file. For more information about CMake
+            configuration files, see \l{Getting started with CMake}.
+    \endlist
+
+    Next, create the main window of the application.
+
+    \section1 Design the main window
+
+    Use \QD to design the application's main window, which has
+    some widgets placed in layouts:
+
+    \image vscodeext-tutorial-widgets-main-window.webp {AddressBook's main window}
+
+    For more information about using \QD, see \l{\QD}{\QD Manual}.
+
+    \section2 Add widgets
+
+    To add widgets to the UI and to set properties for them:
+
+    \list 1
+        \li In VS Code \uicontrol {Explorer}, select \c addressbook.ui, and then
+            select \uicontrol {Open this file with \QD} to open it in \QD.
+            \image vscodeext-open-ui-file.webp {Opening addressbook.ui in the Explorer}
+        \li In the \uicontrol {New Form} dialog, select \uicontrol {Close}.
+        \li In \QD's \uicontrol {Widget Box}, select \uicontrol {List Widget} and
+            Drag it to the form to add a \l QListWidget.
+        \li In the \uicontrol {Property Editor}, set the \c ObjectName property
+            to \e addressList.
+        \li Drag two \uicontrol {Push Button} widgets to the top-right
+            corner of the form to add \l QPushButton objects for the
+            \uicontrol Add and \uicontrol Delete buttons.
+        \li Set the button names to \e addButton and \e deleteButton and
+            \uicontrol text property values to \e Add and \e Delete.
+        \li Drag two \uicontrol {Label} widgets to the form to add
+            \l QLabel objects for displaying the selected item in the list.
+        \li Rename the first label to \e nameLabel and change its
+            \uicontrol text property to \e {<No item selected>}.
+        \li Rename the second label to \e emailLabel and leave its
+            \uicontrol text property empty.
+    \endlist
+
+    Position the widgets as they appear in the screenshot above. To properly
+    position the widgets and to automatically resize them when the form is
+    resized, you need to add layouts to the form.
+
+    \section2 Add widgets to layouts
+
+    You will need a vertical layout for the buttons as well as a spacer to push
+    the buttons to the top of the layout. In addition, you will need a second
+    layout to manage the positioning of the other widgets as well as the button
+    layout.
+
+    To add widgets to layouts:
+
+    \list 1
+        \li Drag a \uicontrol {Vertical Spacer} item to the form to add a
+            spacer.
+        \li Select the buttons and the spacer, and then select \uicontrol Form >
+            \uicontrol {Lay Out Vertically} to add a vertical layout
+            (\l QVBoxLayout).
+        \li Select the list widgets, the two labels, and the button layout,
+            and then select \uicontrol Form > \uicontrol {Lay Out in a Grid} to
+            add a grid layout (\l QGridLayout).
+
+            \note Make sure that the labels are almost as wide as the form.
+            Otherwise, the grid layout will make them only as wide as the
+            address list.
+        \li Select \uicontrol Form > \uicontrol Preview to preview your form
+            without compiling it.
+        \li Go to \uicontrol File > \uicontrol Save to save the form.
+    \endlist
+
+    Build and run the application to check the main window.
+
+    \section1 Add a dialog
+
+    Now that the main window is ready, move on to add functionality to the
+    application. To have the application open a dialog when the user clicks
+    the \uicontrol Add button, create an \uicontrol {Add Address} dialog and
+    invoke the dialog from a slot that you connect to the \uicontrol Add button.
+
+    To add a dialog:
+
+    \list 1
+        \li In \QD, go to \uicontrol File > \uicontrol New, and select
+            \uicontrol {Dialog without Buttons}.
+        \li Select \uicontrol Create to create the dialog.
+        \li In the \uicontrol {Property Editor}, set the \c ObjectName property
+            to \e AddDialog.
+        \li Go to \uicontrol File > \uicontrol Save, and save the file as
+            \e {adddialog.ui}.
+    \endlist
+
+    Add the UI file to the project sources in the \e {CMakeLists.txt} file:
+
+    \badcode
+    set(PROJECT_SOURCES
+            main.cpp
+            addressbook.cpp
+            addressbook.h
+            addressbook.ui
+            adddialog.cpp
+            adddialog.h
+            adddialog.ui
+    )
+    \endcode
+
+    \section2 Design the dialog
+
+    \image vscodeext-tutorials-widgets-dialog.webp {Add Address Dialog}
+
+    To design the dialog:
+
+    \list 1
+        \li In \QD, set \e {Add Address} as the \uicontrol windowTitle.
+        \li Add a \uicontrol Label to the form and set its \uicontrol objectName
+            property to \e nameText and \uicontrol text property to \e {Name:}.
+        \li Add another \uicontrol Label and set its \uicontrol objectName
+            property to \e emailText and \uicontrol text property to
+            \e {Email:}.
+        \li Add a \uicontrol {Line Edit} (\l QLineEdit) and set its
+            \uicontrol objectName property to \e nameEdit. Leave the
+            \uicontrol text property empty.
+        \li Add another \uicontrol {Line Edit} and set its \uicontrol objectName
+            property to \e emailEdit. Leave the \uicontrol text property empty.
+        \li Select the labels and line edits, and then go to \uicontrol Form >
+            \uicontrol {Lay Out in a Grid} to add a grid layout.
+        \li Add a \uicontrol {Push Button} and set its \uicontrol objectName
+            property to \e okButton and \uicontrol text property to \e OK.
+        \li Add a horizontal spacer to the left of the button.
+        \li Add a horizontal layout for the spacer and the button.
+        \li Add a vertical spacer between the labels and the button.
+        \li Add a vertical layout for the labels and the spacer.
+        \li Add a grid layout for both layouts.
+        \li Go to \uicontrol Form > \uicontrol Preview to preview your form
+            without compiling it.
+        \li Go to \uicontrol File > \uicontrol Save to save the form.
+    \endlist
+
+    \section1 Connect to the dialog's OK button
+
+    To have the \uicontrol OK button invoke the QDialog::accept() slot, click
+    the \uicontrol {Edit Signals/Slots} toolbar button to enter
+    \l {Qt Designer's Signals and Slots Editing Mode}.
+
+    Click the \uicontrol OK button, drag the mouse cursor to an empty area of
+    the form, and release the mouse button. In the
+    \uicontrol {Configure Connection} dialog, connect the button's
+    QPushButton::clicked() signal to the form's QDialog::accept() slot.
+
+    \section1 Open dialogs from the main window
+
+    To invoke the dialog when the user selects \uicontrol Add in the main
+    window, you must add a slot to the \c AddressBook class and invoke
+    \c AddDialog from this slot.
+
+    Forms that you create using \QD call QMetaObject::connectSlotsByName() to
+    establish connections between signals that the form's child widgets
+    emit and slots that follow the naming convention \c {on_<sender>_<signal>()}.
+    For the application to react appropriately when the user clicks the
+    \uicontrol Add button, you must implement a slot called
+    \c{on_addButton_clicked()}.
+
+    To implement the slot, open the \c addressbook.h file in VS Code and
+    add a declaration for the slot:
+
+    \code
+    private slots:
+        void on_addButton_clicked();
+    \endcode
+
+    Then open \c addressbook.cpp, and add the slot definition:
+
+    \code
+    void AddressBook::on_addButton_clicked()
+    {
+        AddDialog dialog(this);
+        dialog.exec();
+    }
+    \endcode
+
+    To connect to some other signal, you must add the signal to the
+    \c AddressBook class. This requires editing both the header file,
+    \c addressbook.h, and the implementation file, \c addressbook.cpp.
+
+    Include \c adddialog.h to \c addressbook.cpp:
+
+    \code
+    #include "adddialog.h"
+    \endcode
+
+    To test your changes, build and run the application. Select the
+    \uicontrol Add button to open the \uicontrol {Add Address} dialog, and then
+    select \uicontrol OK to close it.
+
+    \section1 Add items to the list widget
+
+    When the user selects \uicontrol OK, an item should be added to the
+    QListWidget. To implement this function, change the code in the
+    \c {on_addButton_clicked()} slot, as follows:
+
+    \code
+    AddDialog dialog(this);
+
+        if (dialog.exec()) {
+            QString name = dialog.nameEdit->text();
+            QString email = dialog.emailEdit->text();
+
+            if (!name.isEmpty() && !email.isEmpty()) {
+                QListWidgetItem *item = new QListWidgetItem(name, ui.addressList);
+                item->setData(Qt::UserRole, email);
+                ui.addressList->setCurrentItem(item);
+            }
+        }
+    \endcode
+
+    The dialog is executed. If the user accepts it by selecting \uicontrol OK,
+    the \uicontrol Name and \uicontrol Email fields are extracted and a
+    QListWidgetItem that has the specified information is created.
+
+    \section1 Display the selected item
+
+    To update the \c nameLabel and the \c emailLabel at the bottom of the form
+    when the user selects an item in the list widget, add another slot to the
+    \c AddressBook class.
+
+    In the \c addressbook.h file, add the following code in the
+    \c{private slots} section of the class:
+
+    \code
+    void on_addressList_currentItemChanged();
+    \endcode
+
+    Then, add the block of code below to \c addressbook.cpp:
+
+    \code
+    void AddressBook::on_addressList_currentItemChanged()
+    {
+        QListWidgetItem *curItem = ui.addressList->currentItem();
+
+        if (curItem) {
+            ui.nameLabel->setText("Name: " + curItem->text());
+            ui.emailLabel->setText("Email: " + curItem->data(Qt::UserRole).toString());
+        } else {
+            ui.nameLabel->setText("<No item selected>");
+            ui.emailLabel->clear();
+        }
+    }
+    \endcode
+
+    The naming convention enables this slot to be automatically connected
+    to the QListWidget::currentItemChanged() signal of \c{addressList} and
+    be invoked whenever the selected item in the list changes.
+
+    \section1 Add functionality for the Delete button
+
+    To implement a slot for the \uicontrol Delete button, open the
+    \c addressbook.h file in Visual Studio and add a declaration for the
+    \c on_deleteButton_clicked() slot. Then open \c addressbook.cpp and add the
+    slot definition for \c on_deleteButton_clicked().
+
+    Type the following code in the slot's body:
+
+    \code
+    void AddressBook::on_deleteButton_clicked()
+    {
+        QListWidgetItem *curItem = ui.addressList->currentItem();
+
+        if (curItem) {
+            int row = ui.addressList->row(curItem);
+            ui.addressList->takeItem(row);
+            delete curItem;
+
+            if (ui.addressList->count() > 0)
+                ui.addressList->setCurrentRow(0);
+            else
+                on_addressList_currentItemChanged();
+        }
+    }
+    \endcode
+
+    Your application is now complete.
+
+    \sa {Design widgets-based UIs}
+*/
+
+*/
