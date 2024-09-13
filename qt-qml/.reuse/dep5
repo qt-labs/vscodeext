@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Qt Extension for Visual Studio Code
+Upstream-Contact: The Qt Company Ltd <https://www.qt.io/>
+Source: https://github.com/qt-labs/vscodeext
+
+Files: qt-qml/res/lang/qml/*.tmLanguage
+Copyright: 2016 Mads Kristensen
+License: Apache-2.0
