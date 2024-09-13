@@ -45,7 +45,7 @@
     "ci:qt-cpp": "cd qt-cpp && npm ci",
     "ci:qt-ui": "cd qt-ui && npm ci",
     "ci:qt-lib": "cd qt-lib && npm ci",
-    "ci:all": "concurrently \"npm ci\" \"npm run ci:qt-lib\" \"npm run ci:qt-core\" \"npm run ci:qt-cpp\" \"npm run ci:qt-ui\" \"npm run ci:qt-qml\"",
+    "ci:all": "npm ci && concurrently \"npm run ci:qt-lib\" \"npm run ci:qt-core\" \"npm run ci:qt-cpp\" \"npm run ci:qt-ui\" \"npm run ci:qt-qml\"",
     "ci:all_sync": "npm ci && npm run ci:qt-lib && npm run ci:qt-core && npm run ci:qt-cpp && npm run ci:qt-ui && npm run ci:qt-qml",
     "package:qt-core": "ts-node ./scripts/package.ts --extension=\"qt-core\"",
     "package:qt-qml": "ts-node ./scripts/package.ts --extension=\"qt-qml\"",
