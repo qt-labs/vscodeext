@@ -31,7 +31,7 @@
     "install-ext:qt-cpp": "ts-node ./scripts/install-ext.ts --dir=\"qt-cpp/out\" --name=\"qt-cpp\"",
     "install-ext:qt-ui": "ts-node ./scripts/install-ext.ts --dir=\"qt-ui/out\" --name=\"qt-ui\"",
     "install-ext:all": "concurrently \"npm run install-ext:qt-core\" \"npm run install-ext:qt-cpp\" \"npm run install-ext:qt-ui\" \"npm run install-ext:qt-qml\"",
-    "install-ext:all_sync": "npm run install-ext:qt-core && npm run install-ext:qt-cpp && npm run install-ext:qt-ui && npm run install-ext:qt-qml",
+    "install-ext:all_sync": "npm run install-ext:qt-core && npm run install-ext:qt-ui && npm run install-ext:qt-cpp && npm run install-ext:qt-qml",
     "install:qt-core": "cd qt-core && npm install",
     "install:qt-qml": "cd qt-qml && npm install",
     "install:qt-cpp": "cd qt-cpp && npm install",
