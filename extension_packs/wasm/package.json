@@ -46,6 +46,7 @@
     "ms-vscode.live-server"
   ],
   "scripts": {
+    "vscode:prepublish": "git rev-parse HEAD > commit",
     "package": "vsce package"
   }
 }

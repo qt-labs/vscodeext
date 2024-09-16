@@ -42,6 +42,7 @@
     "twxs.cmake"
   ],
   "scripts": {
+    "vscode:prepublish": "git rev-parse HEAD > commit",
     "package": "vsce package"
   }
 }

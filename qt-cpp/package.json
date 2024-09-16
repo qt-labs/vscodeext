@@ -199,7 +199,7 @@
     "ms-vscode.cmake-tools"
   ],
   "scripts": {
-    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs",
+    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",

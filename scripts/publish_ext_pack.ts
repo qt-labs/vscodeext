@@ -7,26 +7,29 @@ import { program } from 'commander';
 import * as fs from 'fs';
 
 function main() {
-  program.option('-ext, --extension <string>', 'Path to target extension root');
+  program.option('--pack <string>', 'Name of the extension pack to publish');
+  program.option('--dir <string>', 'Path to the extension pack root');
   program.option('--pre-release', 'Publish as pre-release');
   program.parse(process.argv);
   const options = program.opts();
-  const targetExtension = options.extension as string;
+  const targetExtensionPack = options.pack as string;
   const extensionRoot = path.resolve(__dirname, '../');
-  const targetExtensionRoot = path.join(extensionRoot, targetExtension);
+  const targetExtensionPackRoot = path.join(
+    extensionRoot,
+    options.dir as string
+  );
   const preRelease = options.preRelease as boolean;
   const publishCommand = `npx vsce publish ${preRelease ? '--pre-release' : ''}`;
 
-  execSync(`npm run _prepublish`, { stdio: 'inherit' });
-  execSync(`npm run ci:${targetExtension}`, { stdio: 'inherit' });
-  execSync(`npm run compile:${targetExtension}`, { stdio: 'inherit' });
-  execSync(`npm run ci-lint:${targetExtension}`, { stdio: 'inherit' });
+  execSync(`npm run checkChangelog:${targetExtensionPack}`, {
+    stdio: 'inherit'
+  });
   execSync(publishCommand, {
-    cwd: targetExtensionRoot,
+    cwd: targetExtensionPackRoot,
     stdio: 'inherit'
   });
   // Remove the generated `commit` file
-  fs.unlinkSync(path.join(targetExtension, 'commit'));
+  fs.unlinkSync(path.join(targetExtensionPackRoot, 'commit'));
 }
 
 main();
