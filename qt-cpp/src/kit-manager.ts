@@ -310,6 +310,9 @@ export class KitManager {
       isTrusted: true,
       preferredGenerator: {
         name: kitPreferredGenerator
+      },
+      cmakeSettings: {
+        QT_QML_GENERATE_QMLLS_INI: 'ON'
       }
     };
 
@@ -384,6 +387,7 @@ export class KitManager {
           ...{
             name: newKit.name + '-simulator',
             cmakeSettings: {
+              ...newKit.cmakeSettings,
               CMAKE_OSX_ARCHITECTURES: 'x86_64',
               CMAKE_OSX_SYSROOT: 'iphonesimulator'
             }
