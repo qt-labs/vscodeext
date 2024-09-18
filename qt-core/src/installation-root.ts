@@ -7,8 +7,7 @@ import * as vscode from 'vscode';
 
 import {
   Home,
-  IsLinux,
-  IsMacOS,
+  IsUnix,
   IsWindows,
   QtInsRootConfigName,
   createLogger,
@@ -56,23 +55,36 @@ export function checkDefaultQtInsRootPath() {
     // Qt installation root is already set. No need to check for default path
     return;
   }
-  let defaultPath = '';
-  if (IsLinux || IsMacOS) {
-    defaultPath = path.join(Home, 'Qt');
-  } else if (IsWindows) {
-    const winRoot =
-      process.env.WINDIR !== undefined
-        ? path.parse(process.env.WINDIR).root
-        : 'C:';
-    defaultPath = path.join(winRoot, 'Qt');
-  } else {
+
+  if (!IsUnix && !IsWindows) {
     const errorMessage = 'Unsupported OS';
     logger.error(errorMessage);
     throw new Error(errorMessage);
   }
-
-  const defaultPathExists = fs.existsSync(defaultPath);
-  if (!defaultPathExists) {
+  const defaultQtInsRootName = 'Qt';
+  const unixDefaultPats = [
+    path.join(Home, defaultQtInsRootName),
+    path.join(Home, 'dev', defaultQtInsRootName),
+    path.join('/', 'opt', defaultQtInsRootName)
+  ];
+  const winRoot =
+    process.env.WINDIR !== undefined
+      ? path.parse(process.env.WINDIR).root
+      : 'C:';
+  const winDefaultPaths = [
+    path.join(winRoot, defaultQtInsRootName),
+    path.join(winRoot, 'dev', defaultQtInsRootName)
+  ];
+  if (process.env.USERNAME) {
+    winDefaultPaths.push(
+      path.join(winRoot, 'Users', process.env.USERNAME, defaultQtInsRootName)
+    );
+  }
+  const defaultPaths = IsUnix ? unixDefaultPats : winDefaultPaths;
+  const foundDefaultPath = defaultPaths.find((defPath) =>
+    fs.existsSync(defPath)
+  );
+  if (!foundDefaultPath) {
     return;
   }
 
@@ -80,13 +92,13 @@ export function checkDefaultQtInsRootPath() {
   const doNotShowAgainButtonMessage = 'Do not show again';
   void vscode.window
     .showInformationMessage(
-      `Qt installation root was found at "${defaultPath}". Do you want to use it?`,
+      `Qt installation root was found at "${foundDefaultPath}". Do you want to use it?`,
       setDefaultPathButtonMessage,
       doNotShowAgainButtonMessage
     )
     .then((response) => {
       if (response === setDefaultPathButtonMessage) {
-        void setGlobalQtInstallationRoot(defaultPath);
+        void setGlobalQtInstallationRoot(foundDefaultPath);
       } else if (response === doNotShowAgainButtonMessage) {
         void setDoNotAskForDefaultQtInstallationRoot(true);
       }
