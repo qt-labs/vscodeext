@@ -12,7 +12,7 @@
 
     \title Use Qt with other extensions
 
-    To use the Qt extensions with other extensions, set the following recommended
+    To use \QVSC with other extensions, set the following recommended
     settings in \e {settings.json} or go to \uicontrol {Command Palette} and
     select \uicontrol {Qt: Set the recommended Qt Extension settings}.
 

@@ -1,7 +1,6 @@
 project     = vscodeext
-description = "Qt Extensions for VS Code"
+description = "Qt Extension for VS Code"
 url         = https://doc.qt.io/vscodeext
-version     = $VSCODEEXT_VERSION
 
 # Project contains only .qdoc sources, no PCH to generate
 moduleheader =
@@ -23,16 +22,16 @@ sources.fileextensions         = "*.qdoc"
 
 qhp.projects            = vscodeext
 qhp.vscodeext.file             = vscodeext.qhp
-qhp.vscodeext.namespace        = org.qt-project.vscodeext.$VSCODEEXT_VERSION_TAG
+qhp.vscodeext.namespace        = org.qt-project.vscodeext
 qhp.vscodeext.virtualFolder    = doc
-qhp.vscodeext.indexTitle       = Qt Extensions for VS Code $VSCODEEXT_VERSION
-qhp.vscodeext.filterAttributes = Qt Extensions for VS Code $VSCODEEXT_VERSION
-qhp.vscodeext.customFilters.vscodeext.name = Qt Extensions for VS Code $VSCODEEXT_VERSION
-qhp.vscodeext.customFilters.vscodeext.filterAttributes = Qt Extensions for VS Code $VSCODEEXT_VERSION
+qhp.vscodeext.indexTitle       = Qt Extension for VS Code
+qhp.vscodeext.filterAttributes = Qt Extension for VS Code
+qhp.vscodeext.customFilters.vscodeext.name = Qt Extension for VS Code
+qhp.vscodeext.customFilters.vscodeext.filterAttributes = Qt Extension for VS Code
 qhp.vscodeext.indexRoot        =
 
 qhp.vscodeext.subprojects = manual
-qhp.vscodeext.subprojects.manual.title = Qt Extensions for VS Code
+qhp.vscodeext.subprojects.manual.title = Qt Extension for VS Code
 qhp.vscodeext.subprojects.manual.indexTitle = All topics
 qhp.vscodeext.subprojects.manual.type = manual
 
@@ -51,14 +50,14 @@ macro.function                  = "\\fn"
 
 # Product name macros
 
-macro.QVSC                     = "Qt Extensions for VS Code"
+macro.QVSC                     = "Qt Extension for VS Code"
 
 outputdir                       = ../doc/html
 
-navigation.homepage = "Qt Extensions for VS Code"
+navigation.homepage = "Qt Extension for VS Code"
 
 # Auto-generate navigation linking based on "All topics":
 navigation.toctitles = "All topics"
 navigation.toctitles.inclusive = false
 
-buildversion = "Qt Extensions for VS Code $VSCODEEXT_VERSION"
+buildversion = "Qt Extension for VS Code"

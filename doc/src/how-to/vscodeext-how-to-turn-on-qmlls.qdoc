@@ -12,7 +12,7 @@
 
     \title Turn on \QMLLS
 
-    \l{\QMLLS} offers code completion and issues warnings for QML. \QVSC support
+    \l{\QMLLS} offers code completion and issues warnings for QML. \QVSC supports
     \QMLLS from Qt 6.8.0, and later.
 
     To turn on \QMLLS:
