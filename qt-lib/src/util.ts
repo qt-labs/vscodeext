@@ -149,15 +149,20 @@ export async function findQtKits(dir: string): Promise<string[]> {
       for (const subitem of kitItemDirContent) {
         if (subitem.isDirectory() && subitem.name.toLowerCase() != 'src') {
           const subdirFullPath = path.join(kitItemPath, subitem.name);
-          const qtConfPath = path.join(subdirFullPath, 'bin', 'qt.conf');
-          try {
-            await fs.access(qtConfPath).then(() => {
+          const binPath = path.join(subdirFullPath, 'bin'); // TODO don't hard-code 'bin'
+          let qtConfFound = false;
+          for (const fileName of ['qt.conf', 'target_qt.conf']) {
+            const qtConfPath = path.join(binPath, fileName);
+            if (await exists(qtConfPath)) {
               qtKits.push(subdirFullPath);
-            });
-          } catch (err) {
-            if (isError(err)) {
-              console.error(err.message);
+              qtConfFound = true;
+              break;
             }
+          }
+          if (!qtConfFound) {
+            console.error(
+              `Neither qt.conf nor target_qt.conf were found in '${subdirFullPath}'.`
+            );
           }
         }
       }
