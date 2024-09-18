@@ -12,6 +12,7 @@ export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
 export const IsMacOS = process.platform === 'darwin';
 export const IsLinux = process.platform === 'linux';
+export const IsUnix = IsMacOS || IsLinux;
 
 export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
 export const UserLocalDir = IsWindows
