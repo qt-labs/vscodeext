@@ -62,7 +62,7 @@ export function checkDefaultQtInsRootPath() {
     throw new Error(errorMessage);
   }
   const defaultQtInsRootName = 'Qt';
-  const unixDefaultPats = [
+  const unixDefaultPaths = [
     path.join(Home, defaultQtInsRootName),
     path.join(Home, 'dev', defaultQtInsRootName),
     path.join('/', 'opt', defaultQtInsRootName)
@@ -80,7 +80,7 @@ export function checkDefaultQtInsRootPath() {
       path.join(winRoot, 'Users', process.env.USERNAME, defaultQtInsRootName)
     );
   }
-  const defaultPaths = IsUnix ? unixDefaultPats : winDefaultPaths;
+  const defaultPaths = IsUnix ? unixDefaultPaths : winDefaultPaths;
   const foundDefaultPath = defaultPaths.find((defPath) =>
     fs.existsSync(defPath)
   );
