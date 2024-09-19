@@ -41,7 +41,7 @@ export function mangleMsvcKitName(installation: string): string {
     0,
     pathParts.findIndex((s) => s.toLowerCase() == 'qt')
   );
-  return pathParts.slice(qtIdx).join('-');
+  return pathParts.slice(qtIdx).join('_');
 }
 
 export async function locateNinjaExecutable(qtRootDir: string) {

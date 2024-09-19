@@ -542,9 +542,12 @@ export class KitManager {
       return isArchMatch && compareVersions(version, vsYear) >= 0;
     });
     for (const kit of msvcKitsWithArchitectureMatch) {
-      kit.name = qtPath.mangleMsvcKitName(
-        newKit.name + ' - ' + (kit.name || '')
-      );
+      // Replace `Visual Studio ` with `VS` in the kit name
+      // Replace all ' ' with '_', '-' with '_' and multiple '_' with single '_'
+      const tempKitName = kit.name
+        .replace('Visual Studio ', 'VS')
+        .replace(/[-_ ]+/g, '_');
+      kit.name = qtPath.mangleMsvcKitName(newKit.name + '_' + tempKitName);
       if (kit.preferredGenerator) {
         if (newKit.preferredGenerator) {
           kit.preferredGenerator.name = newKit.preferredGenerator.name;
