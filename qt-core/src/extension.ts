@@ -8,6 +8,7 @@ import {
   GlobalWorkspace,
   initLogger,
   QtInsRootConfigName,
+  AdditionalQtPathsName,
   QtWorkspaceConfigMessage
 } from 'qt-lib';
 import { CoreAPIImpl } from '@/api';
@@ -15,6 +16,7 @@ import { registerDocumentationCommands } from '@/online-docs';
 import { registerSetRecommendedSettingsCommand } from '@/recommended-settings';
 import {
   checkDefaultQtInsRootPath,
+  getCurrentGlobalAdditionalQtPaths,
   getCurrentGlobalQtInstallationRoot,
   registerQt
 } from '@/installation-root';
@@ -71,6 +73,10 @@ export function initCoreValues() {
     QtInsRootConfigName,
     getCurrentGlobalQtInstallationRoot()
   );
+  globalUpdateMessage.config.set(
+    AdditionalQtPathsName,
+    getCurrentGlobalAdditionalQtPaths()
+  );
   coreAPI?.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
@@ -79,6 +85,10 @@ export function initCoreValues() {
     message.config.set(
       QtInsRootConfigName,
       ProjectManager.getWorkspaceFolderQtInsRoot(folder)
+    );
+    message.config.set(
+      AdditionalQtPathsName,
+      ProjectManager.getWorkspaceFolderAdditionalQtPaths(folder)
     );
     logger.info('Updating coreAPI with message:', message as unknown as string);
     coreAPI?.update(message);

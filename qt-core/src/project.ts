@@ -3,13 +3,21 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger, GlobalWorkspace, QtInsRootConfigName } from 'qt-lib';
+import {
+  AdditionalQtPathsName,
+  createLogger,
+  GlobalWorkspace,
+  isEqualArrays,
+  QtInsRootConfigName
+} from 'qt-lib';
 import { ProjectBase } from 'qt-lib';
 import { getConfiguration } from '@/util';
 import { GlobalStateManager, WorkspaceStateManager } from '@/state';
 import {
   getCurrentGlobalQtInstallationRoot,
-  onQtInsRootUpdated
+  getCurrentGlobalAdditionalQtPaths,
+  onQtInsRootUpdated,
+  onAdditionalQtPathsUpdated
 } from '@/installation-root';
 
 const logger = createLogger('project');
@@ -62,6 +70,23 @@ export class Project implements ProjectBase {
             void this.stateManager.setQtInstallationRoot(currentQtInsRoot);
             onQtInsRootUpdated(currentQtInsRoot, folder);
           }
+          const previousAdditionalQtPaths =
+            this.stateManager.getAdditionalQtPaths();
+          const currentAdditionalQtPaths =
+            ProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
+          // TODO: Implement generic array comparison function
+
+          if (
+            !isEqualArrays(
+              currentAdditionalQtPaths.sort(),
+              previousAdditionalQtPaths.sort()
+            )
+          ) {
+            void this.stateManager.setAdditionalQtPaths(
+              currentAdditionalQtPaths
+            );
+            onAdditionalQtPathsUpdated(currentAdditionalQtPaths, folder);
+          }
         }
       )
     );
@@ -95,6 +120,23 @@ export class ProjectManager {
             );
             onQtInsRootUpdated(currentQtInsRoot, GlobalWorkspace);
           }
+          const previousAdditionalQtPaths =
+            this.globalStateManager.getAdditionalQtPaths();
+          const currentAdditionalQtPaths = getCurrentGlobalAdditionalQtPaths();
+          if (
+            !isEqualArrays(
+              currentAdditionalQtPaths.sort(),
+              previousAdditionalQtPaths.sort()
+            )
+          ) {
+            void this.globalStateManager.setAdditionalQtPaths(
+              currentAdditionalQtPaths
+            );
+            onAdditionalQtPathsUpdated(
+              currentAdditionalQtPaths,
+              GlobalWorkspace
+            );
+          }
         }
       )
     );
@@ -103,6 +145,14 @@ export class ProjectManager {
     const qtInsRootConfig =
       getConfiguration(folder).inspect<string>(QtInsRootConfigName);
     return qtInsRootConfig?.workspaceFolderValue ?? '';
+  }
+  public static getWorkspaceFolderAdditionalQtPaths(
+    folder: vscode.WorkspaceFolder
+  ) {
+    const config = getConfiguration(folder).inspect<string[]>(
+      AdditionalQtPathsName
+    );
+    return config?.workspaceFolderValue ?? [];
   }
   public addWorkspaceFile(workspaceFile: vscode.Uri) {
     this.workspaceFile = workspaceFile;

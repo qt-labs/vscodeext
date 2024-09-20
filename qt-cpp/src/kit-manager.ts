@@ -13,10 +13,12 @@ import {
   UserLocalDir,
   createLogger,
   QtInsRootConfigName,
+  AdditionalQtPathsName,
   GlobalWorkspace,
   compareVersions,
   findQtKits,
-  isError
+  isError,
+  QtInfo
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { Project } from '@/project';
@@ -148,9 +150,11 @@ export class KitManager {
   public async reset() {
     logger.info('Resetting KitManager');
     await this.updateQtKits('', []);
+    await this.updateQtPathsQtKits([]);
     await this.globalStateManager.reset();
     for (const project of this.projects) {
       await this.updateQtKits('', [], project.getFolder());
+      await this.updateQtPathsQtKits([], project.getFolder());
       await project.getStateManager().reset();
     }
   }
@@ -179,13 +183,21 @@ export class KitManager {
         newQtInstallations
       );
     }
-    project
-      ? await this.updateQtKits(
-          currentQtInsRoot,
-          newQtInstallations,
-          project.getFolder()
-        )
-      : await this.updateQtKits(currentQtInsRoot, newQtInstallations);
+    const additionalQtPaths = project
+      ? KitManager.getWorkspaceFolderAdditionalQtPaths(project.getFolder())
+      : getCurrentGlobalAdditionalQtPaths();
+
+    if (project) {
+      await this.updateQtKits(
+        currentQtInsRoot,
+        newQtInstallations,
+        project.getFolder()
+      );
+      await this.updateQtPathsQtKits(additionalQtPaths, project.getFolder());
+    } else {
+      await this.updateQtKits(currentQtInsRoot, newQtInstallations);
+      await this.updateQtPathsQtKits(additionalQtPaths);
+    }
   }
 
   private async checkForGlobalQtInstallations() {
@@ -222,6 +234,129 @@ export class KitManager {
       KitManager.showQtInstallationsMessage(qtInsRoot, qtInstallations);
     }
     await this.updateQtKits(qtInsRoot, qtInstallations, workspaceFolder);
+  }
+
+  private static generateKitsFromQtPathsInfo(qtPaths: string[]) {
+    const kits: Kit[] = [];
+    for (const p of qtPaths) {
+      const qtInfo = coreAPI?.getQtInfo(p);
+      if (!qtInfo) {
+        const warningMessage = `qtPaths info not found for "${p}".`;
+        void vscode.window.showWarningMessage(warningMessage);
+        logger.info(warningMessage);
+        continue;
+      }
+      const kit = KitManager.generateKitFromQtInfo(qtInfo);
+      if (kit) {
+        logger.info('newKit: ' + JSON.stringify(kit));
+        kits.push(kit);
+      }
+    }
+    return kits;
+  }
+
+  private static generateKitFromQtInfo(qtInfo: QtInfo) {
+    const kit: Kit = {
+      name: '',
+      isTrusted: true,
+      cmakeSettings: {
+        QT_QML_GENERATE_QMLLS_INI: 'ON'
+      }
+    };
+    const version = qtInfo.get('QT_VERSION');
+    kit.name = KitManager.kitNameFromQtInfo(qtInfo);
+    const preferredGenerator = kit.name
+      .toLowerCase()
+      .includes('wasm-emscripten')
+      ? 'Ninja'
+      : CMakeDefaultGenerator;
+    kit.preferredGenerator = {
+      name: preferredGenerator
+    };
+    const isQt6 = version?.startsWith('6') ?? false;
+    const libs = qtInfo.get('QT_INSTALL_LIBS');
+    if (!libs) {
+      return undefined;
+    }
+    const toolchainFile = path.join(
+      libs,
+      'cmake',
+      isQt6 ? 'Qt6' : 'Qt5',
+      `qt.toolchain.cmake`
+    );
+    kit.toolchainFile = toolchainFile;
+    const tempPath: string[] = [];
+    for (const [key, value] of qtInfo.qtpathsData) {
+      if (key.startsWith('QMAKE_') || key === 'QT_VERSION' || !value) {
+        continue;
+      }
+      tempPath.push(value);
+    }
+    tempPath.push('${env:PATH}');
+    // Remove duplicates
+    const pathEnv = Array.from(new Set(tempPath)).join(path.delimiter);
+    kit.environmentVariables = {
+      VSCODE_QT_QTPATHS_EXE: qtInfo.qtpathsExecutable,
+      PATH: pathEnv
+    };
+    return kit;
+  }
+
+  public async updateQtPathsQtKits(
+    paths: string[],
+    workspaceFolder?: vscode.WorkspaceFolder
+  ) {
+    const generatedKits = KitManager.generateKitsFromQtPathsInfo(paths);
+    logger.info(`QtPaths Generated kits: ${JSON.stringify(generatedKits)}`);
+    await this.updateCMakeKitsJsonForQtPathsQtKits(
+      generatedKits,
+      workspaceFolder
+    );
+    if (workspaceFolder) {
+      await this.getProject(workspaceFolder)
+        ?.getStateManager()
+        .setWorkspaceQtPathsQtKits(generatedKits);
+      return;
+    }
+    await this.globalStateManager.setGlobalQtPathsQtKits(generatedKits);
+  }
+
+  private static async parseCMakeKitsFile(cmakeKitsFile: string) {
+    if (!fsSync.existsSync(cmakeKitsFile)) {
+      return [];
+    }
+    const cmakeKitsFileContent = await fs.readFile(cmakeKitsFile, 'utf8');
+    let currentKits: Kit[] = [];
+    currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
+    return currentKits;
+  }
+
+  private async updateCMakeKitsJsonForQtPathsQtKits(
+    newGeneratedKits: Kit[],
+    workspaceFolder?: vscode.WorkspaceFolder
+  ) {
+    let previousQtKits: Kit[] = [];
+    if (workspaceFolder) {
+      const projectStateManager =
+        this.getProject(workspaceFolder)?.getStateManager();
+      if (projectStateManager) {
+        previousQtKits = projectStateManager.getWorkspaceQtPathsQtKits();
+      }
+    } else {
+      previousQtKits = this.globalStateManager.getGlobalQtPathsQtKits();
+    }
+    const cmakeKitsFile = workspaceFolder
+      ? path.join(workspaceFolder.uri.fsPath, '.vscode', 'cmake-kits.json')
+      : CMAKE_GLOBAL_KITS_FILEPATH;
+    const currentKits = await KitManager.parseCMakeKitsFile(cmakeKitsFile);
+    const newKits = currentKits.filter((kit) => {
+      // filter kits if previousQtKits contains the kit with the same name
+      return !previousQtKits.find((prevKit) => prevKit.name === kit.name);
+    });
+    newKits.push(...newGeneratedKits);
+    if (newKits.length !== 0 || fsSync.existsSync(cmakeKitsFile)) {
+      await fs.writeFile(cmakeKitsFile, JSON.stringify(newKits, null, 2));
+    }
   }
 
   private static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
@@ -374,6 +509,12 @@ export class KitManager {
     yield newKit;
   }
 
+  private static kitNameFromQtInfo(qtInfo: QtInfo) {
+    const qtVersion = qtInfo.get('QT_VERSION');
+    const targetMkSpec = qtInfo.get('QMAKE_XSPEC');
+    return 'Qt-' + qtVersion + '-' + targetMkSpec;
+  }
+
   private static async cmakeKitsFromQtInstallations(
     qtInstallationRoot: string,
     qtInstallations: string[]
@@ -421,15 +562,6 @@ export class KitManager {
       return;
     }
     await this.globalStateManager.setGlobalQtKits(newGeneratedKits);
-  }
-  private static async parseCMakeKitsFile(cmakeKitsFile: string) {
-    if (!fsSync.existsSync(cmakeKitsFile)) {
-      return [];
-    }
-    const cmakeKitsFileContent = await fs.readFile(cmakeKitsFile, 'utf8');
-    let currentKits: Kit[] = [];
-    currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
-    return currentKits;
   }
 
   private async updateCMakeKitsJson(
@@ -566,7 +698,17 @@ export class KitManager {
   public static getWorkspaceFolderQtInsRoot(folder: vscode.WorkspaceFolder) {
     return coreAPI?.getValue<string>(folder, QtInsRootConfigName) ?? '';
   }
+  public static getWorkspaceFolderAdditionalQtPaths(
+    folder: vscode.WorkspaceFolder
+  ) {
+    return coreAPI?.getValue<string[]>(folder, AdditionalQtPathsName) ?? [];
+  }
 }
 export function getCurrentGlobalQtInstallationRoot(): string {
   return coreAPI?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
+}
+export function getCurrentGlobalAdditionalQtPaths(): string[] {
+  return (
+    coreAPI?.getValue<string[]>(GlobalWorkspace, AdditionalQtPathsName) ?? []
+  );
 }

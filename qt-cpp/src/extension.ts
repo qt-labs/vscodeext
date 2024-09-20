@@ -11,6 +11,7 @@ import {
   initLogger,
   QtWorkspaceConfigMessage,
   QtInsRootConfigName,
+  AdditionalQtPathsName,
   GlobalWorkspace
 } from 'qt-lib';
 import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
@@ -112,10 +113,14 @@ function processMessage(message: QtWorkspaceConfigMessage) {
   // check if workspace folder is a string
   if (typeof message.workspaceFolder === 'string') {
     if (message.workspaceFolder === GlobalWorkspace) {
-      const qtInsRoot = message.config.get(QtInsRootConfigName);
-      if (qtInsRoot !== undefined)
+      const qtInsRoot = message.get<string>(QtInsRootConfigName);
+      if (qtInsRoot !== undefined) {
         void kitManager.onQtInstallationRootChanged(qtInsRoot);
-      return;
+      }
+      const additionalQtPaths = message.get<string[]>(AdditionalQtPathsName);
+      if (additionalQtPaths !== undefined) {
+        void kitManager.updateQtPathsQtKits(additionalQtPaths);
+      }
     }
     return;
   }
@@ -124,8 +129,12 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     logger.info('Project not found');
     return;
   }
-  const qtInsRoot = message.config.get(QtInsRootConfigName);
+  const qtInsRoot = message.get<string>(QtInsRootConfigName);
   if (qtInsRoot !== undefined) {
     void kitManager.onQtInstallationRootChanged(qtInsRoot, project.folder);
+  }
+  const additionalQtPaths = message.get<string[]>(AdditionalQtPathsName);
+  if (additionalQtPaths !== undefined) {
+    void kitManager.updateQtPathsQtKits(additionalQtPaths, project.folder);
   }
 }

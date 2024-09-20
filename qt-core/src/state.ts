@@ -3,7 +3,12 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger, QtInsRootConfigName, BaseStateManager } from 'qt-lib';
+import {
+  createLogger,
+  QtInsRootConfigName,
+  BaseStateManager,
+  AdditionalQtPathsName
+} from 'qt-lib';
 
 const logger = createLogger('state');
 
@@ -24,8 +29,15 @@ export class WorkspaceStateManager extends BaseStateManager {
   public setQtInstallationRoot(folder: string): Thenable<void> {
     return this._update(QtInsRootConfigName, folder);
   }
+  public getAdditionalQtPaths(): string[] {
+    return this._get<string[]>(AdditionalQtPathsName, []);
+  }
+  public setAdditionalQtPaths(paths: string[]): Thenable<void> {
+    return this._update(AdditionalQtPathsName, paths);
+  }
   public async reset() {
     await this.setQtInstallationRoot('');
+    await this.setAdditionalQtPaths([]);
   }
 }
 
@@ -36,8 +48,15 @@ export class GlobalStateManager extends BaseStateManager {
   public setQtInstallationRoot(folder: string): Thenable<void> {
     return this._update(QtInsRootConfigName, folder);
   }
+  public getAdditionalQtPaths(): string[] {
+    return this._get<string[]>(AdditionalQtPathsName, []);
+  }
+  public setAdditionalQtPaths(paths: string[]): Thenable<void> {
+    return this._update(AdditionalQtPathsName, paths);
+  }
 
   public async reset() {
     await this.setQtInstallationRoot('');
+    await this.setAdditionalQtPaths([]);
   }
 }

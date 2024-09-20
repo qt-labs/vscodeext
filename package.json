@@ -90,15 +90,15 @@
   },
   "devDependencies": {
     "@types/node": "^20.2.5",
-    "@vscode/vsce": "^2.32.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/vsce": "^2.32.0",
+    "concurrently": "^8.2.2",
     "eslint": "^8.50.0",
     "license-checker": "^25.0.1",
     "prettier": "^3.0.3",
     "ts-node": "^10.4.0",
-    "typescript": "^5.2.2",
-    "concurrently": "^8.2.2"
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "commander": "^12.1.0",

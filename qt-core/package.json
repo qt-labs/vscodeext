@@ -152,6 +152,15 @@
           "description": "Do not ask for default Qt Installation Root",
           "scope": "machine"
         },
+        "qt-core.additionalQtPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Specify additional Qt installations as paths to the qtpaths or qmake executable",
+          "scope": "machine-overridable"
+        },
         "qt-core.openOnlineDocumentationInExternalBrowser": {
           "type": "boolean",
           "default": false,

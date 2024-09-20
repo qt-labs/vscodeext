@@ -22,10 +22,19 @@ export class WorkspaceStateManager extends BaseStateManager {
   public getWorkspaceQtKits(): Kit[] {
     return this._get<Kit[]>('defaultQtKits', []);
   }
+  public getWorkspaceQtPathsQtKits(): Kit[] {
+    return this._get<Kit[]>('QtPathsQtKits', []);
+  }
+
+  public setWorkspaceQtPathsQtKits(kits: Kit[]): Thenable<void> {
+    return this._update('QtPathsQtKits', kits);
+  }
+
   public setWorkspaceQtKits(kits: Kit[]): Thenable<void> {
     return this._update('defaultQtKits', kits);
   }
   public async reset() {
+    await this.setWorkspaceQtPathsQtKits([]);
     await this.setWorkspaceQtKits([]);
   }
 }
@@ -37,8 +46,15 @@ export class GlobalStateManager extends BaseStateManager {
   public setGlobalQtKits(kits: Kit[]): Thenable<void> {
     return this._update('globalQtKits', kits);
   }
+  public getGlobalQtPathsQtKits(): Kit[] {
+    return this._get<Kit[]>('globalQtPathsQtKits', []);
+  }
+  public setGlobalQtPathsQtKits(kits: Kit[]): Thenable<void> {
+    return this._update('globalQtPathsQtKits', kits);
+  }
 
   public async reset() {
+    await this.setGlobalQtPathsQtKits([]);
     await this.setGlobalQtKits([]);
   }
 }

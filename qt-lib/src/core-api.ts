@@ -4,24 +4,49 @@
 import * as vscode from 'vscode';
 import { CORE_EXTENSION_ID } from './constants';
 
+export type QtWorkspaceConfig = Map<
+  string,
+  string | string[] | QtWorkspaceType | undefined
+>;
+
 export class QtWorkspaceConfigMessage {
   workspaceFolder: vscode.WorkspaceFolder | string;
   config: QtWorkspaceConfig;
   constructor(folder?: vscode.WorkspaceFolder | string) {
     this.workspaceFolder = folder ?? 'global';
-    this.config = new Map<string, string | QtWorkspaceType | undefined>();
+    this.config = new Map() as QtWorkspaceConfig;
+  }
+  get<T>(key: string, defaultValue?: T): T | undefined {
+    const value = this.config.get(key);
+    if (value === undefined) {
+      return defaultValue;
+    }
+    return value as T;
   }
 }
-
-export type QtWorkspaceConfig = Map<
-  string,
-  string | QtWorkspaceType | undefined
->;
 
 export enum QtWorkspaceType {
   CMakeExt = 'CMakeExt',
   CMakeCMD = 'CMakeCMD',
   PythonExt = 'PythonExt'
+}
+
+export type QtPathsData = Map<string, string>;
+
+export class QtInfo {
+  qtpathsExecutable: string;
+  qtpathsData: QtPathsData;
+
+  constructor(filePath: string) {
+    this.qtpathsExecutable = filePath;
+    this.qtpathsData = new Map() as QtPathsData;
+  }
+  public get(key: string): string | undefined {
+    return this.qtpathsData.get(key);
+  }
+  public set(key: string, value: string): void {
+    this.qtpathsData.set(key, value);
+  }
 }
 
 export interface CoreAPI {
@@ -31,6 +56,7 @@ export interface CoreAPI {
     key: string
   ): T | undefined;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
+  getQtInfo(qtPathsExecutable: string): QtInfo | undefined;
 }
 
 export async function getCoreApi(): Promise<CoreAPI | undefined> {

@@ -29,8 +29,8 @@ export function mangleQtInstallation(
   qtInsRoot: string,
   installation: string
 ): string {
-  installation = path.relative(qtInsRoot, installation);
-  const pathParts = installation.split(path.sep).filter(String);
+  const relativeInstallationPath = path.relative(qtInsRoot, installation);
+  const pathParts = relativeInstallationPath.split(path.sep).filter(String);
   pathParts.unshift(path.basename(qtInsRoot));
   return pathParts.slice().join('-');
 }

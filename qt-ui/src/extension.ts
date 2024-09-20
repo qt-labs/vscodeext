@@ -87,7 +87,7 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     logger.error('Project not found');
     return;
   }
-  const selectedKitPath = message.config.get('selectedKitPath');
+  const selectedKitPath = message.get<string>('selectedKitPath');
   if (selectedKitPath !== project.binDir) {
     void project.setBinDir(selectedKitPath);
   }

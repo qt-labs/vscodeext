@@ -179,3 +179,11 @@ export function matchesVersionPattern(installationPath: string): boolean {
   // Check if the first character of the path is a digit (0-9)
   return /^([0-9]+\.)+/.test(installationPath);
 }
+
+export function isPathToQtPathsOrQMake(filePath: string): boolean {
+  return filePath.match(/(qtpaths|qmake)[0-9]?(\.(exe|bat))?$/) ? true : false;
+}
+
+export function isEqualArrays<T>(a: T[], b: T[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
