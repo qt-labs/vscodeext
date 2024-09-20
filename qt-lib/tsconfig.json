@@ -16,6 +16,8 @@
     "allowUnreachableCode": false,
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
