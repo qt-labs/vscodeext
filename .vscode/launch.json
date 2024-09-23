@@ -36,7 +36,7 @@
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-ui"],
       "outFiles": ["${workspaceFolder}/qt-ui/out/**/*.js"],
       "cwd": "${workspaceFolder}/qt-ui",
-      "preLaunchTask": "npm: qt-ui watch"
+      "preLaunchTask": "npm qt-ui watch"
     }
   ]
 }

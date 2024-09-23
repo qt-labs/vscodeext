@@ -56,7 +56,7 @@
     },
     {
       "type": "shell",
-      "label": "npm: qt-ui watch",
+      "label": "npm qt-ui watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",
       "isBackground": true,
