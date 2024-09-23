@@ -422,6 +422,15 @@ export class KitManager {
     }
     await this.globalStateManager.setGlobalQtKits(newGeneratedKits);
   }
+  private static async parseCMakeKitsFile(cmakeKitsFile: string) {
+    if (!fsSync.existsSync(cmakeKitsFile)) {
+      return [];
+    }
+    const cmakeKitsFileContent = await fs.readFile(cmakeKitsFile, 'utf8');
+    let currentKits: Kit[] = [];
+    currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
+    return currentKits;
+  }
 
   private async updateCMakeKitsJson(
     newGeneratedKits: Kit[],
@@ -440,17 +449,7 @@ export class KitManager {
     const cmakeKitsFile = workspaceFolder
       ? path.join(workspaceFolder.uri.fsPath, '.vscode', 'cmake-kits.json')
       : CMAKE_GLOBAL_KITS_FILEPATH;
-    const cmakeKitsFileContent = fsSync.existsSync(cmakeKitsFile)
-      ? await fs.readFile(cmakeKitsFile, 'utf8')
-      : '[]';
-    let currentKits: Kit[] = [];
-    try {
-      currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
-    } catch (error) {
-      if (isError(error)) {
-        logger.error('Error parsing cmake-kits.json:', error.message);
-      }
-    }
+    const currentKits = await KitManager.parseCMakeKitsFile(cmakeKitsFile);
     const newKits = currentKits.filter((kit) => {
       // filter kits if previousQtKits contains the kit with the same name
       return !previousQtKits.find((prevKit) => prevKit.name === kit.name);
