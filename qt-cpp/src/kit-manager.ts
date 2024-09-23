@@ -32,8 +32,6 @@ export const CMAKE_GLOBAL_KITS_FILEPATH = path.join(
   'cmake-tools-kits.json'
 );
 
-type CompilerVendorEnum = 'Clang' | 'GCC' | 'MSVC';
-
 type Environment = Record<string, string | undefined>;
 
 interface CMakeGenerator {
@@ -42,32 +40,7 @@ interface CMakeGenerator {
   platform?: string | undefined;
 }
 
-interface KitDetect {
-  /**
-   * The vendor name of the kit
-   */
-  vendor?: CompilerVendorEnum;
-
-  /**
-   * The triple the kit
-   */
-  triple?: string;
-
-  /**
-   * The version of the kit
-   */
-  version?: string;
-
-  /**
-   * The version of the C runtime for the kit
-   * In most case it's equal to version, but for `Clang for MSVC`
-   * The Clang version are version
-   * The MSVC version are versionRuntime
-   */
-  versionRuntime?: string;
-}
-
-export interface Kit extends KitDetect {
+export interface Kit {
   /**
    * The name of the kit
    */
