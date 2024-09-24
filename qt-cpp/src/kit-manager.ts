@@ -576,7 +576,8 @@ export class KitManager {
       : CMAKE_GLOBAL_KITS_FILEPATH;
     const currentKits = await KitManager.parseCMakeKitsFile(cmakeKitsFile);
     const newKits = currentKits.filter((kit) => {
-      // filter kits if previousQtKits contains the kit with the same name
+      // Filter kits if previousQtKits contains the kit with the same name
+      // Otherwise, we will have duplicate Qt kits.
       return !previousQtKits.find((prevKit) => prevKit.name === kit.name);
     });
     newKits.push(...newGeneratedKits);
