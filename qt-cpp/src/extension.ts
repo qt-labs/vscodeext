@@ -24,7 +24,7 @@ import {
   registerlaunchTargetFilenameWithoutExtension
 } from '@cmd/launch-variables';
 import { Project, ProjectManager } from '@/project';
-import { getCurrentGlobalQtInstallationRoot, KitManager } from '@/kit-manager';
+import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { EXTENSION_ID } from '@/constants';
 
@@ -89,12 +89,6 @@ export async function initCoreValues() {
   if (!coreAPI) {
     throw new Error('CoreAPI is not initialized');
   }
-  const globalUpdateMessage = new QtWorkspaceConfigMessage(GlobalWorkspace);
-  globalUpdateMessage.config.set(
-    QtInsRootConfigName,
-    getCurrentGlobalQtInstallationRoot()
-  );
-  coreAPI.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
     const folder = project.getFolder();
@@ -109,10 +103,6 @@ export async function initCoreValues() {
       message.config.set('selectedKitPath', selectedKitPath);
     }
     message.config.set('workspaceType', QtWorkspaceType.CMakeExt);
-    message.config.set(
-      QtInsRootConfigName,
-      KitManager.getWorkspaceFolderQtInsRoot(folder)
-    );
     logger.info('Updating coreAPI with message:', message as unknown as string);
     coreAPI.update(message);
   }
