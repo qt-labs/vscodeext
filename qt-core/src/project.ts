@@ -149,12 +149,10 @@ export class ProjectManager {
         }
         project.dispose();
         this.projects.delete(project);
-        // kitManager.removeProject(project);
       }
       for (const folder of event.added) {
         const project = Project.createProject(folder, context);
         this.projects.add(project);
-        // kitManager.addProject(project);
       }
     });
   }
