@@ -10,15 +10,6 @@ export function isTestMode(): boolean {
   return process.env.QT_TESTING === '1';
 }
 
-export function mangleQtInstallation(installation: string): string {
-  const pathParts = installation.split(/[/\\:]+/).filter((n) => n);
-  const qtIdx = Math.max(
-    0,
-    pathParts.findIndex((s) => s.toLowerCase() == 'qt')
-  );
-  return pathParts.slice(qtIdx).join('-');
-}
-
 export function getFilenameWithoutExtension(filename: string): string {
   const separatedPath = filename.split(path.sep).pop();
   if (!separatedPath) {
