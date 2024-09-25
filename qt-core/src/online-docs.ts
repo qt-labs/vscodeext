@@ -78,54 +78,79 @@ async function search() {
     return;
   }
 
-  if (await tryToOpenDocumentationFor(value)) {
-    return;
-  }
-  await searchAndAskforResult(value);
+  searchAndAskforResult(value);
 }
-async function searchAndAskforResult(value: string) {
-  try {
-    const searchLink = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
-    const searchResponse = await fetch(searchLink + value);
-    if (!searchResponse.ok) {
-      throw new Error('Network response: ' + searchResponse.status);
-    }
+function searchAndAskforResult(value: string) {
+  let quickPickItems: {
+    label: string;
+    link: string;
+    detail: string;
+  }[] = [];
+  void vscode.window
+    .withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Searching...',
+        cancellable: true
+      },
+      async (progress, token) => {
+        void progress;
+        token.onCancellationRequested(() => {
+          return;
+        });
+        if (await tryToOpenDocumentationFor(value)) {
+          return;
+        }
+        try {
+          const searchLink = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
+          const searchResponse = await fetch(searchLink + value);
+          if (!searchResponse.ok) {
+            throw new Error('Network response: ' + searchResponse.status);
+          }
 
-    const searchResponseJson = (await searchResponse.json()) as SearchResponse;
-    if (!searchResponseJson.items) {
-      void vscode.window.showInformationMessage('No search results found.');
-      return;
-    }
-    const quickPickItems = searchResponseJson.items.map((item) => ({
-      label: item.title,
-      link: item.link,
-      detail: item.snippet
-    }));
-    const selected = await vscode.window.showQuickPick(quickPickItems, {
-      placeHolder: 'Select a search result'
+          const searchResponseJson =
+            (await searchResponse.json()) as SearchResponse;
+          if (!searchResponseJson.items) {
+            void vscode.window.showInformationMessage(
+              'No search results found.'
+            );
+            return;
+          }
+          quickPickItems = searchResponseJson.items.map((item) => ({
+            label: item.title,
+            link: item.link,
+            detail: item.snippet
+          }));
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+    )
+    .then(async () => {
+      if (quickPickItems.length === 0) {
+        return;
+      }
+      const selected = await vscode.window.showQuickPick(quickPickItems, {
+        placeHolder: 'Select a search result'
+      });
+      if (selected) {
+        openInBrowser(selected.link);
+      }
     });
-    if (selected) {
-      openInBrowser(selected.link);
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  }
 }
 
 function openHomepage() {
   openInBrowser('https://doc.qt.io');
 }
 
-async function searchForCurrentWord() {
+function searchForCurrentWord() {
   const word = getCurrentWord();
   if (word === '') {
     void vscode.window.showInformationMessage('No word found at the cursor.');
     return;
   }
-  if (await tryToOpenDocumentationFor(word)) {
-    return;
-  }
-  await searchAndAskforResult(word);
+
+  searchAndAskforResult(word);
 }
 
 export function registerDocumentationCommands() {
