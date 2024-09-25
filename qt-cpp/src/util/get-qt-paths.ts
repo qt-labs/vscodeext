@@ -118,7 +118,3 @@ export async function locateCMakeQtToolchainFile(installation: string) {
 
   return '';
 }
-
-export function qtRootByQtInstallation(installation: string) {
-  return path.normalize(path.join(installation, '..', '..'));
-}

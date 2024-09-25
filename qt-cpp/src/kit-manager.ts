@@ -394,12 +394,11 @@ export class KitManager {
     const promiseCmakeQtToolchainPath =
       qtPath.locateCMakeQtToolchainFile(installation);
 
-    const qtRootDir = qtPath.qtRootByQtInstallation(installation);
-    const promiseMingwPath = qtPath.locateMingwBinDirPath(qtRootDir);
+    const promiseMingwPath = qtPath.locateMingwBinDirPath(qtInsRoot);
     let qtPathEnv = KitManager.generateEnvPathForQtInstallation(installation);
     let locatedNinjaExePath = '';
     if (!commandExists.sync('ninja')) {
-      const promiseNinjaExecutable = qtPath.locateNinjaExecutable(qtRootDir);
+      const promiseNinjaExecutable = qtPath.locateNinjaExecutable(qtInsRoot);
       locatedNinjaExePath = await promiseNinjaExecutable;
     }
     if (locatedNinjaExePath) {
