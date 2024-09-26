@@ -165,8 +165,16 @@ export class KitManager {
   }
 
   public async checkForAllQtInstallations() {
-    await this.checkForGlobalQtInstallations();
-    await this.checkForWorkspaceFolderQtInstallations();
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Updating kits'
+      },
+      async () => {
+        await this.checkForGlobalQtInstallations();
+        await this.checkForWorkspaceFolderQtInstallations();
+      }
+    );
   }
 
   // If the project parameter is undefined, it means that it is a global check
@@ -234,7 +242,15 @@ export class KitManager {
     if (qtInsRoot) {
       KitManager.showQtInstallationsMessage(qtInsRoot, qtInstallations);
     }
-    await this.updateQtKits(qtInsRoot, qtInstallations, workspaceFolder);
+    void vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Updating kits'
+      },
+      async () => {
+        await this.updateQtKits(qtInsRoot, qtInstallations, workspaceFolder);
+      }
+    );
   }
 
   private static generateKitsFromQtPathsInfo(qtPaths: QtAdditionalPath[]) {
