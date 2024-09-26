@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import { program } from 'commander';
 import { execSync } from 'child_process';
+import { compare } from 'semver';
 
 function main() {
   program.option(
@@ -18,14 +19,22 @@ function main() {
 
   // try to find <name>-*.vsix in the output directory
   const files = fs.readdirSync(targetExtensionRoot);
-  const extension = files.find(
+  const extensionFiles = files.filter(
     (file) => file.startsWith(`${extensionName}-`) && file.endsWith('.vsix')
   );
-  if (!extension) {
+  if (extensionFiles.length === 0) {
     throw new Error(
-      `Extension ${extensionName} not found in the output directory`
+      `No extension files found in the output directory for ${extensionName}`
     );
   }
+  // Sort by version by using semver
+  extensionFiles.sort((a, b) => {
+    const versionA = a.split('-')[2]?.split('.vsix')[0] ?? '';
+    const versionB = b.split('-')[2]?.split('.vsix')[0] ?? '';
+    console.log(`Comparing ${versionA} and ${versionB}`);
+    return compare(versionA, versionB);
+  });
+  const extension = extensionFiles[extensionFiles.length - 1];
 
   execSync(`code --install-extension "${extension}"`, {
     cwd: targetExtensionRoot,
