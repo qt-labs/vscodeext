@@ -57,6 +57,7 @@ export interface CoreAPI {
   ): T | undefined;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
   getQtInfo(qtPathsExecutable: string): QtInfo | undefined;
+  reset(): void;
 }
 
 export async function getCoreApi(): Promise<CoreAPI | undefined> {

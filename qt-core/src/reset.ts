@@ -3,8 +3,11 @@
 
 import * as vscode from 'vscode';
 
+import { coreAPI } from '@/extension';
+
 export function resetCommand() {
   return vscode.commands.registerCommand('qt-core.reset', () => {
+    coreAPI?.reset();
     const extensions = ['qt-cpp', 'qt-qml', 'qt-ui'];
     extensions.forEach((extension) => {
       void vscode.commands.executeCommand(`${extension}.reset`);

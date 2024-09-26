@@ -60,6 +60,10 @@ export class CoreAPIImpl implements CoreAPI {
     return this._configs.get(folder)?.get(key) as T;
   }
 
+  reset() {
+    this._qtInfoCache.clear();
+  }
+
   getQtInfo(qtPathsExecutable: string): QtInfo | undefined {
     let result = this._qtInfoCache.get(qtPathsExecutable);
     if (result) return result;
