@@ -4,11 +4,12 @@
 import * as vscode from 'vscode';
 
 import { kitManager } from '@/extension';
+import { EXTENSION_ID } from '@/constants';
 
-export async function resetQtExt() {
+export async function reset() {
   await kitManager.reset();
 }
 
-export function registerResetQtExtCommand() {
-  return vscode.commands.registerCommand('qt-cpp.resetQtExt', resetQtExt);
+export function registerResetCommand() {
+  return vscode.commands.registerCommand(`${EXTENSION_ID}.reset`, reset);
 }
