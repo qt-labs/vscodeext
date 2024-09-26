@@ -13,7 +13,9 @@ const logger = createLogger('natvis');
 
 export function registerNatvisCommand() {
   const getNatvis = (version: string) => {
-    const extension = vscode.extensions.getExtension(`theqtcompany.${EXTENSION_ID}`);
+    const extension = vscode.extensions.getExtension(
+      `theqtcompany.${EXTENSION_ID}`
+    );
     if (!extension) {
       const error = 'Could not find the extension';
       logger.error(error);
