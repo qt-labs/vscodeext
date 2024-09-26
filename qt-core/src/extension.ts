@@ -20,6 +20,7 @@ import {
 } from '@/installation-root';
 import { EXTENSION_ID } from '@/constants';
 import { Project, ProjectManager } from '@/project';
+import { resetCommand } from '@/reset';
 
 const logger = createLogger('extension');
 
@@ -41,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
   context.subscriptions.push(...registerDocumentationCommands());
   context.subscriptions.push(registerSetRecommendedSettingsCommand());
+  context.subscriptions.push(resetCommand());
   context.subscriptions.push(
     vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
       void vscode.commands.executeCommand(

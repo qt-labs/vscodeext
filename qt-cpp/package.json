@@ -69,11 +69,6 @@
         "command": "qt-cpp.scanForQtKits",
         "title": "%qt-cpp.command.scanForQtKits.title%",
         "category": "Qt"
-      },
-      {
-        "command": "qt-cpp.resetQtExt",
-        "title": "%qt-cpp.command.resetQtExt.title%",
-        "category": "Qt"
       }
     ],
     "debuggers": [

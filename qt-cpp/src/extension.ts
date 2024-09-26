@@ -16,7 +16,7 @@ import {
 import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 import { registerKitDirectoryCommand } from '@cmd/kit-directory';
 import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
-import { registerResetQtExtCommand } from '@cmd/reset-qt-ext';
+import { registerResetCommand } from '@cmd/reset-qt-ext';
 import { registerNatvisCommand } from '@cmd/natvis';
 import { registerScanForQtKitsCommand } from '@cmd/scan-qt-kits';
 import {
@@ -55,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     registerKitDirectoryCommand(),
     registerMinGWgdbCommand(),
-    registerResetQtExtCommand(),
+    registerResetCommand(),
     ...registerNatvisCommand(),
     registerScanForQtKitsCommand(),
     registerlaunchTargetFilenameWithoutExtension(),
