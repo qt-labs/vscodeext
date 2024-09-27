@@ -92,10 +92,8 @@ export async function initCoreValues() {
   }
 
   for (const project of projectManager.getProjects()) {
-    const folder = project.getFolder();
-    const selectedKitPath = await getSelectedQtInstallationPath(
-      project.getFolder()
-    );
+    const folder = project.folder;
+    const selectedKitPath = await getSelectedQtInstallationPath(folder);
     const message = new QtWorkspaceConfigMessage(folder);
     if (selectedKitPath) {
       logger.info(

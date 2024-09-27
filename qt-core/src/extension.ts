@@ -80,7 +80,7 @@ export function initCoreValues() {
   coreAPI?.update(globalUpdateMessage);
 
   for (const project of projectManager.getProjects()) {
-    const folder = project.getFolder();
+    const folder = project.folder;
     const message = new QtWorkspaceConfigMessage(folder);
     message.config.set(
       QtInsRootConfigName,

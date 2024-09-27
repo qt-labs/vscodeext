@@ -49,9 +49,6 @@ export class Project implements ProjectBase {
   get stateManager() {
     return this._stateManager;
   }
-  public getFolder() {
-    return this._folder;
-  }
   get folder() {
     return this._folder;
   }
@@ -179,7 +176,7 @@ export class ProjectManager {
     );
   }
   public addProject(project: Project) {
-    logger.info('Adding project:', project.getFolder().uri.fsPath);
+    logger.info('Adding project:', project.folder.uri.fsPath);
     this.projects.add(project);
   }
   public getProjects() {
@@ -187,7 +184,7 @@ export class ProjectManager {
   }
   public getProject(folder: vscode.WorkspaceFolder) {
     return Array.from(this.projects).find(
-      (project) => project.getFolder() === folder
+      (project) => project.folder === folder
     );
   }
   private watchProjects(context: vscode.ExtensionContext) {
@@ -208,7 +205,7 @@ export class ProjectManager {
   }
   public findProjectContainingFile(uri: vscode.Uri) {
     return Array.from(this.projects).find((project) => {
-      const ret = uri.toString().startsWith(project.getFolder().uri.toString());
+      const ret = uri.toString().startsWith(project.folder.uri.toString());
       return ret;
     });
   }

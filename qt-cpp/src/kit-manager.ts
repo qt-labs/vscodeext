@@ -153,8 +153,8 @@ export class KitManager {
     await this.updateQtPathsQtKits([]);
     await this.globalStateManager.reset();
     for (const project of this.projects) {
-      await this.updateQtKits('', [], project.getFolder());
-      await this.updateQtPathsQtKits([], project.getFolder());
+      await this.updateQtKits('', [], project.folder);
+      await this.updateQtPathsQtKits([], project.folder);
       await project.getStateManager().reset();
     }
   }
@@ -172,7 +172,7 @@ export class KitManager {
   // otherwise, it is a workspace folder check
   private async checkForQtInstallations(project?: Project) {
     const currentQtInsRoot = project
-      ? KitManager.getWorkspaceFolderQtInsRoot(project.getFolder())
+      ? KitManager.getWorkspaceFolderQtInsRoot(project.folder)
       : getCurrentGlobalQtInstallationRoot();
     const newQtInstallations = currentQtInsRoot
       ? await findQtKits(currentQtInsRoot)
@@ -184,16 +184,16 @@ export class KitManager {
       );
     }
     const additionalQtPaths = project
-      ? KitManager.getWorkspaceFolderAdditionalQtPaths(project.getFolder())
+      ? KitManager.getWorkspaceFolderAdditionalQtPaths(project.folder)
       : getCurrentGlobalAdditionalQtPaths();
 
     if (project) {
       await this.updateQtKits(
         currentQtInsRoot,
         newQtInstallations,
-        project.getFolder()
+        project.folder
       );
-      await this.updateQtPathsQtKits(additionalQtPaths, project.getFolder());
+      await this.updateQtPathsQtKits(additionalQtPaths, project.folder);
     } else {
       await this.updateQtKits(currentQtInsRoot, newQtInstallations);
       await this.updateQtPathsQtKits(additionalQtPaths);
@@ -593,7 +593,7 @@ export class KitManager {
 
   private getProject(folder: vscode.WorkspaceFolder) {
     for (const project of this.projects) {
-      if (project.getFolder() === folder) {
+      if (project.folder === folder) {
         return project;
       }
     }
