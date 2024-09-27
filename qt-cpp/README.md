@@ -1,7 +1,7 @@
 # Qt C++ Extension for Visual Studio Code
 
-This extension lets you develop Qt C++ and Qt Quick applications with
-Visual Studio Code.
+This extension helps you develop Qt C++ projects with Visual Studio
+Code and CMake.
 
 ## Features
 
