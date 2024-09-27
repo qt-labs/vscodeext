@@ -66,7 +66,9 @@ export class CoreAPIImpl implements CoreAPI {
 
   getQtInfo(qtPathsExecutable: string): QtInfo | undefined {
     let result = this._qtInfoCache.get(qtPathsExecutable);
-    if (result) return result;
+    if (result) {
+      return result;
+    }
 
     result = new QtInfo(qtPathsExecutable);
 

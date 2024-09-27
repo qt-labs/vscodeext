@@ -526,13 +526,15 @@ export class KitManager {
     );
     logger.info(`Qt installations: ${JSON.stringify(qtInstallations)}`);
     const kits = [];
-    for (const installation of qtInstallations)
+    for (const installation of qtInstallations) {
       for await (const kit of KitManager.generateCMakeKitsOfQtInstallationPath(
         qtInstallationRoot,
         installation,
         kitsFromCMakeExtension
-      ))
+      )) {
         kits.push(kit);
+      }
+    }
     return kits;
   }
 

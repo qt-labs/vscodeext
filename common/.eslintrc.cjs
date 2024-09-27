@@ -20,7 +20,8 @@ module.exports = {
     '@typescript-eslint/prefer-find': 'error',
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/restrict-plus-operands': 'error',
-    '@typescript-eslint/switch-exhaustiveness-check': 'error'
+    '@typescript-eslint/switch-exhaustiveness-check': 'error',
+    "curly": "error",
   },
   root: true,
   ignorePatterns: ['out', 'src/test']
