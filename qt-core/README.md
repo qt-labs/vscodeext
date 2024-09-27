@@ -1,6 +1,11 @@
 # Qt Core Extension for Visual Studio Code
 
-This extension provides support for the common features of the Qt extensions.
+This extension provides basic functionality for other Qt extensions.
+
+For a more complete Qt developer experience, install the [Qt All
+Extensions
+Pack](https://marketplace.visualstudio.com/items?itemName=TheQtCompany.qt)
+or one of its dependencies.
 
 ## Features
 
