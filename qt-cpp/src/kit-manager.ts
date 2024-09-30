@@ -17,7 +17,8 @@ import {
   compareVersions,
   findQtKits,
   isError,
-  QtInfo
+  QtInfo,
+  QtAdditionalPath
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject } from '@/project';
@@ -235,12 +236,12 @@ export class KitManager {
     await this.updateQtKits(qtInsRoot, qtInstallations, workspaceFolder);
   }
 
-  private static generateKitsFromQtPathsInfo(qtPaths: string[]) {
+  private static generateKitsFromQtPathsInfo(qtPaths: QtAdditionalPath[]) {
     const kits: Kit[] = [];
     for (const p of qtPaths) {
       const qtInfo = coreAPI?.getQtInfo(p);
       if (!qtInfo) {
-        const warningMessage = `qtPaths info not found for "${p}".`;
+        const warningMessage = `qtPaths info not found for "${p.path}".`;
         void vscode.window.showWarningMessage(warningMessage);
         logger.info(warningMessage);
         continue;
@@ -263,9 +264,11 @@ export class KitManager {
       }
     };
     const version = qtInfo.get('QT_VERSION');
-    kit.name = KitManager.kitNameFromQtInfo(qtInfo);
-    const preferredGenerator = kit.name
-      .toLowerCase()
+    kit.name = qtInfo.name ? qtInfo.name : KitManager.kitNameFromQtInfo(qtInfo);
+
+    const preferredGenerator = qtInfo
+      .get('QMAKE_XSPEC')
+      ?.toLowerCase()
       .includes('wasm-emscripten')
       ? 'Ninja'
       : CMakeDefaultGenerator;
@@ -302,7 +305,7 @@ export class KitManager {
   }
 
   public async updateQtPathsQtKits(
-    paths: string[],
+    paths: QtAdditionalPath[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
     const generatedKits = KitManager.generateKitsFromQtPathsInfo(paths);
@@ -694,14 +697,19 @@ export class KitManager {
   public static getWorkspaceFolderAdditionalQtPaths(
     folder: vscode.WorkspaceFolder
   ) {
-    return coreAPI?.getValue<string[]>(folder, AdditionalQtPathsName) ?? [];
+    return (
+      coreAPI?.getValue<QtAdditionalPath[]>(folder, AdditionalQtPathsName) ?? []
+    );
   }
 }
 export function getCurrentGlobalQtInstallationRoot(): string {
   return coreAPI?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
 }
-export function getCurrentGlobalAdditionalQtPaths(): string[] {
+export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
   return (
-    coreAPI?.getValue<string[]>(GlobalWorkspace, AdditionalQtPathsName) ?? []
+    coreAPI?.getValue<QtAdditionalPath[]>(
+      GlobalWorkspace,
+      AdditionalQtPathsName
+    ) ?? []
   );
 }

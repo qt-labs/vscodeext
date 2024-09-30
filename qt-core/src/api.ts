@@ -9,7 +9,8 @@ import {
   createLogger,
   QtWorkspaceConfig,
   QtWorkspaceConfigMessage,
-  QtInfo
+  QtInfo,
+  QtAdditionalPath
 } from 'qt-lib';
 
 const logger = createLogger('api');
@@ -21,7 +22,7 @@ export class CoreAPIImpl implements CoreAPI {
   >();
   private readonly _onValueChanged =
     new vscode.EventEmitter<QtWorkspaceConfigMessage>();
-  private readonly _qtInfoCache = new Map<string, QtInfo>();
+  private readonly _qtInfoCache = new Map<QtAdditionalPath, QtInfo>();
 
   public get onValueChanged() {
     return this._onValueChanged.event;
@@ -64,15 +65,15 @@ export class CoreAPIImpl implements CoreAPI {
     this._qtInfoCache.clear();
   }
 
-  getQtInfo(qtPathsExecutable: string): QtInfo | undefined {
-    let result = this._qtInfoCache.get(qtPathsExecutable);
+  getQtInfo(qtAdditionalPath: QtAdditionalPath): QtInfo | undefined {
+    let result = this._qtInfoCache.get(qtAdditionalPath);
     if (result) {
       return result;
     }
 
-    result = new QtInfo(qtPathsExecutable);
+    result = new QtInfo(qtAdditionalPath.path, qtAdditionalPath.name);
 
-    const ret = spawnSync(qtPathsExecutable, ['-query'], {
+    const ret = spawnSync(qtAdditionalPath.path, ['-query'], {
       encoding: 'utf8',
       timeout: 1000
     });
@@ -90,7 +91,7 @@ export class CoreAPIImpl implements CoreAPI {
       }
     }
 
-    this._qtInfoCache.set(qtPathsExecutable, result);
+    this._qtInfoCache.set(qtAdditionalPath, result);
     return result;
   }
 }

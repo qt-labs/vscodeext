@@ -7,7 +7,8 @@ import {
   createLogger,
   QtInsRootConfigName,
   BaseStateManager,
-  AdditionalQtPathsName
+  AdditionalQtPathsName,
+  QtAdditionalPath
 } from 'qt-lib';
 
 const logger = createLogger('state');
@@ -29,10 +30,10 @@ export class WorkspaceStateManager extends BaseStateManager {
   public setQtInstallationRoot(folder: string): Thenable<void> {
     return this._update(QtInsRootConfigName, folder);
   }
-  public getAdditionalQtPaths(): string[] {
-    return this._get<string[]>(AdditionalQtPathsName, []);
+  public getAdditionalQtPaths(): QtAdditionalPath[] {
+    return this._get<QtAdditionalPath[]>(AdditionalQtPathsName, []);
   }
-  public setAdditionalQtPaths(paths: string[]): Thenable<void> {
+  public setAdditionalQtPaths(paths: QtAdditionalPath[]): Thenable<void> {
     return this._update(AdditionalQtPathsName, paths);
   }
   public async reset() {
@@ -48,10 +49,10 @@ export class GlobalStateManager extends BaseStateManager {
   public setQtInstallationRoot(folder: string): Thenable<void> {
     return this._update(QtInsRootConfigName, folder);
   }
-  public getAdditionalQtPaths(): string[] {
-    return this._get<string[]>(AdditionalQtPathsName, []);
+  public getAdditionalQtPaths(): QtAdditionalPath[] {
+    return this._get<QtAdditionalPath[]>(AdditionalQtPathsName, []);
   }
-  public setAdditionalQtPaths(paths: string[]): Thenable<void> {
+  public setAdditionalQtPaths(paths: QtAdditionalPath[]): Thenable<void> {
     return this._update(AdditionalQtPathsName, paths);
   }
 

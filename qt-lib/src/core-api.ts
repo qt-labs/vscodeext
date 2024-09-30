@@ -4,9 +4,31 @@
 import * as vscode from 'vscode';
 import { CORE_EXTENSION_ID } from './constants';
 
+export interface QtAdditionalPath {
+  name?: string | undefined;
+  path: string;
+}
+
+// Implement sorter for QtAdditionalPath
+export function compareQtAdditionalPath(
+  a: QtAdditionalPath,
+  b: QtAdditionalPath
+): number {
+  if (a.name === undefined && b.name === undefined) {
+    return a.path.localeCompare(b.path);
+  }
+  if (a.name === undefined) {
+    return -1;
+  }
+  if (b.name === undefined) {
+    return 1;
+  }
+  return a.name.localeCompare(b.name);
+}
+
 export type QtWorkspaceConfig = Map<
   string,
-  string | string[] | QtWorkspaceType | undefined
+  string | QtAdditionalPath[] | QtWorkspaceType | undefined
 >;
 
 export class QtWorkspaceConfigMessage {
@@ -36,8 +58,10 @@ export type QtPathsData = Map<string, string>;
 export class QtInfo {
   qtpathsExecutable: string;
   qtpathsData: QtPathsData;
+  name?: string | undefined;
 
-  constructor(filePath: string) {
+  constructor(filePath: string, name?: string) {
+    this.name = name;
     this.qtpathsExecutable = filePath;
     this.qtpathsData = new Map() as QtPathsData;
   }
@@ -56,7 +80,7 @@ export interface CoreAPI {
     key: string
   ): T | undefined;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
-  getQtInfo(qtPathsExecutable: string): QtInfo | undefined;
+  getQtInfo(qtPathsExecutable: QtAdditionalPath): QtInfo | undefined;
   reset(): void;
 }
 

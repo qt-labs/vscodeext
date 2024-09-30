@@ -12,7 +12,8 @@ import {
   QtWorkspaceConfigMessage,
   QtInsRootConfigName,
   AdditionalQtPathsName,
-  GlobalWorkspace
+  GlobalWorkspace,
+  QtAdditionalPath
 } from 'qt-lib';
 import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 import { registerKitDirectoryCommand } from '@cmd/kit-directory';
@@ -115,7 +116,9 @@ function processMessage(message: QtWorkspaceConfigMessage) {
       if (qtInsRoot !== undefined) {
         void kitManager.onQtInstallationRootChanged(qtInsRoot);
       }
-      const additionalQtPaths = message.get<string[]>(AdditionalQtPathsName);
+      const additionalQtPaths = message.get<QtAdditionalPath[]>(
+        AdditionalQtPathsName
+      );
       if (additionalQtPaths !== undefined) {
         void kitManager.updateQtPathsQtKits(additionalQtPaths);
       }
@@ -131,7 +134,9 @@ function processMessage(message: QtWorkspaceConfigMessage) {
   if (qtInsRoot !== undefined) {
     void kitManager.onQtInstallationRootChanged(qtInsRoot, project.folder);
   }
-  const additionalQtPaths = message.get<string[]>(AdditionalQtPathsName);
+  const additionalQtPaths = message.get<QtAdditionalPath[]>(
+    AdditionalQtPathsName
+  );
   if (additionalQtPaths !== undefined) {
     void kitManager.updateQtPathsQtKits(additionalQtPaths, project.folder);
   }

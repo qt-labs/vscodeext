@@ -8,10 +8,12 @@ import {
   createLogger,
   GlobalWorkspace,
   isEqualArrays,
-  QtInsRootConfigName
+  QtInsRootConfigName,
+  QtAdditionalPath,
+  compareQtAdditionalPath
 } from 'qt-lib';
 import { ProjectBase } from 'qt-lib';
-import { getConfiguration } from '@/util';
+import { convertAdditionalQtPaths, getConfiguration } from '@/util';
 import { GlobalStateManager, WorkspaceStateManager } from '@/state';
 import {
   getCurrentGlobalQtInstallationRoot,
@@ -122,8 +124,8 @@ export class ProjectManager {
           const currentAdditionalQtPaths = getCurrentGlobalAdditionalQtPaths();
           if (
             !isEqualArrays(
-              currentAdditionalQtPaths.sort(),
-              previousAdditionalQtPaths.sort()
+              currentAdditionalQtPaths.sort(compareQtAdditionalPath),
+              previousAdditionalQtPaths.sort(compareQtAdditionalPath)
             )
           ) {
             void this.globalStateManager.setAdditionalQtPaths(
@@ -143,13 +145,17 @@ export class ProjectManager {
       getConfiguration(folder).inspect<string>(QtInsRootConfigName);
     return qtInsRootConfig?.workspaceFolderValue ?? '';
   }
+
   public static getWorkspaceFolderAdditionalQtPaths(
     folder: vscode.WorkspaceFolder
-  ) {
-    const config = getConfiguration(folder).inspect<string[]>(
+  ): QtAdditionalPath[] {
+    const config = getConfiguration(folder).inspect<(string | object)[]>(
       AdditionalQtPathsName
     );
-    return config?.workspaceFolderValue ?? [];
+    if (config?.workspaceFolderValue) {
+      return convertAdditionalQtPaths(config.workspaceFolderValue);
+    }
+    return [];
   }
   public addWorkspaceFile(workspaceFile: vscode.Uri) {
     this.workspaceFile = workspaceFile;

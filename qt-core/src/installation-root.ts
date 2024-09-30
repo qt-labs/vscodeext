@@ -13,10 +13,12 @@ import {
   AdditionalQtPathsName,
   createLogger,
   isPathToQtPathsOrQMake,
-  QtWorkspaceConfigMessage
+  QtWorkspaceConfigMessage,
+  QtAdditionalPath
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
+import { convertAdditionalQtPaths } from '@/util';
 
 const logger = createLogger('installation-root');
 
@@ -36,9 +38,15 @@ export function getCurrentGlobalQtInstallationRoot(): string {
   return qtInsRootConfig?.globalValue ?? '';
 }
 
-export function getCurrentGlobalAdditionalQtPaths(): string[] {
-  const config = getConfiguration().inspect<string[]>(AdditionalQtPathsName);
-  return config?.globalValue ?? [];
+export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
+  const config = getConfiguration().inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  if (config?.globalValue) {
+    return convertAdditionalQtPaths(config.globalValue);
+  }
+
+  return [];
 }
 
 function getConfiguration() {
@@ -160,16 +168,16 @@ export function onQtInsRootUpdated(
 }
 
 export function onAdditionalQtPathsUpdated(
-  newPaths: string[],
+  newPaths: QtAdditionalPath[],
   folder: vscode.WorkspaceFolder | string
 ) {
   for (const p of newPaths) {
-    if (!fs.existsSync(p)) {
-      const msg = `The specified additional Qt installation '${p}' does not exist.`;
+    if (!fs.existsSync(p.path)) {
+      const msg = `The specified additional Qt installation '${p.path}' does not exist.`;
       logger.warn(msg);
       void vscode.window.showWarningMessage(msg);
-    } else if (!isPathToQtPathsOrQMake(p)) {
-      const msg = `The specified additional Qt installation '${p}' does not point to qtpaths nor qmake.`;
+    } else if (!isPathToQtPathsOrQMake(p.path)) {
+      const msg = `The specified additional Qt installation '${p.path}' does not point to qtpaths nor qmake.`;
       logger.error(msg);
       void vscode.window.showWarningMessage(msg);
     }

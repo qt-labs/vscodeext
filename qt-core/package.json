@@ -155,7 +155,10 @@
         "qt-core.additionalQtPaths": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": [
+              "string",
+              "object"
+            ]
           },
           "default": [],
           "description": "Specify additional Qt installations as paths to the qtpaths or qmake executable",
