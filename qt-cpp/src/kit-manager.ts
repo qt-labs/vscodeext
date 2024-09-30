@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fsSync from 'fs';
 import * as fs from 'fs/promises';
-import * as os from 'os';
 import * as commandExists from 'command-exists';
 
 import {
@@ -429,7 +428,7 @@ export class KitManager {
     }
     const toolchain = path.basename(installation);
     const tokens = toolchain.split('_');
-    let platform = tokens[0] ?? '';
+    const platform = tokens[0] ?? '';
     if (platform != 'android') {
       if (platform.startsWith('msvc')) {
         newKit = {
@@ -446,8 +445,6 @@ export class KitManager {
         yield* KitManager.generateMsvcKits(newKit, msvcKitsClone);
         return;
       } else if (platform.startsWith('mingw')) {
-        platform = os.platform();
-        logger.info(`Platform: ${platform}`);
         const mingwDirPath = await promiseMingwPath;
         logger.info(`Mingw dir path: ${mingwDirPath}`);
         if (mingwDirPath) {
@@ -471,10 +468,7 @@ export class KitManager {
             }
           };
         }
-      } else if (platform.startsWith('linux')) {
-        platform = 'linux';
       } else if (platform.startsWith('macos')) {
-        platform = 'darwin';
         newKit = {
           ...newKit,
           ...{
