@@ -288,7 +288,7 @@ export class KitManager {
     );
     kit.toolchainFile = toolchainFile;
     const tempPath: string[] = [];
-    for (const [key, value] of qtInfo.qtpathsData) {
+    for (const [key, value] of qtInfo.data) {
       if (key.startsWith('QMAKE_') || key === 'QT_VERSION' || !value) {
         continue;
       }
@@ -298,7 +298,7 @@ export class KitManager {
     // Remove duplicates
     const pathEnv = Array.from(new Set(tempPath)).join(path.delimiter);
     kit.environmentVariables = {
-      VSCODE_QT_QTPATHS_EXE: qtInfo.qtpathsExecutable,
+      VSCODE_QT_QTPATHS_EXE: qtInfo.qtPathsBin,
       PATH: pathEnv
     };
     return kit;

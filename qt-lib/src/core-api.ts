@@ -56,20 +56,19 @@ export enum QtWorkspaceType {
 export type QtPathsData = Map<string, string>;
 
 export class QtInfo {
-  qtpathsExecutable: string;
-  qtpathsData: QtPathsData;
-  name?: string | undefined;
+  data: QtPathsData;
 
-  constructor(filePath: string, name?: string) {
-    this.name = name;
-    this.qtpathsExecutable = filePath;
-    this.qtpathsData = new Map() as QtPathsData;
+  constructor(
+    public readonly qtPathsBin: string,
+    public readonly name?: string
+  ) {
+    this.data = new Map() as QtPathsData;
   }
   public get(key: string): string | undefined {
-    return this.qtpathsData.get(key);
+    return this.data.get(key);
   }
   public set(key: string, value: string): void {
-    this.qtpathsData.set(key, value);
+    this.data.set(key, value);
   }
 }
 
