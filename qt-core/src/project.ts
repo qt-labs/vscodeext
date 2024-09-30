@@ -161,6 +161,12 @@ export class ProjectManager {
     ).inspect<string>(QtInsRootConfigName);
     return qtInsRootConfig?.workspaceValue ?? '';
   }
+  private getWorkspaceFileQtAdditionalPaths() {
+    const additionalQtPaths = getConfiguration(
+      this.workspaceFile
+    ).inspect<string>(AdditionalQtPathsName);
+    return additionalQtPaths?.workspaceValue ?? '';
+  }
   private watchWorkspaceFileConfig(context: vscode.ExtensionContext) {
     context.subscriptions.push(
       vscode.workspace.onDidChangeConfiguration(
@@ -169,6 +175,11 @@ export class ProjectManager {
           if (this.getWorkspaceFileQtInsRoot() !== '') {
             void vscode.window.showWarningMessage(
               `Qt installation root specified in workspace file is not supported.`
+            );
+          }
+          if (this.getWorkspaceFileQtAdditionalPaths() !== '') {
+            void vscode.window.showWarningMessage(
+              `Additional Qt paths specified in workspace file are not supported.`
             );
           }
         }
