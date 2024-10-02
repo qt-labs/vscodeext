@@ -15,20 +15,13 @@ import { registerColorProvider } from '@/color-provider';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { Qmlls } from '@/qmlls';
 import { EXTENSION_ID } from '@/constants';
-import { QMLProject } from '@/project';
+import { QMLProject, createQMLProject } from '@/project';
 
 export let projectManager: ProjectManager<QMLProject>;
 export let qmlls: Qmlls;
 export let coreAPI: CoreAPI | undefined;
 
 const logger = createLogger('extension');
-
-function createQMLProject(
-  folder: vscode.WorkspaceFolder,
-  context: vscode.ExtensionContext
-) {
-  return new QMLProject(folder, context);
-}
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
