@@ -299,8 +299,16 @@ export class KitManager {
 
     const isQt6 = version?.startsWith('6') ?? false;
     if (isQt6) {
-      kit.toolchainFile = path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
+      const toolchainFile = path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
+      if (!fsSync.existsSync(toolchainFile)) {
+        const warn = `Toolchain file not found: ${toolchainFile}`;
+        void vscode.window.showWarningMessage(warn);
+        logger.error(warn);
+        return undefined;
+      }
+      kit.toolchainFile = toolchainFile;
     }
+
     const tempPath: string[] = [];
     for (const [key, value] of qtInfo.data) {
       if (key.startsWith('QMAKE_') || key === 'QT_VERSION' || !value) {
