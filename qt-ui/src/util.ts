@@ -8,7 +8,7 @@ import * as constants from '@/constants';
 import {
   IsMacOS,
   IsWindows,
-  PlatformExecutableExtension,
+  OSExeSuffix,
   exists,
   queryHostBinDirPath
 } from 'qt-lib';
@@ -35,9 +35,7 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const DesignerExeName = IsMacOS
-  ? 'Designer'
-  : 'designer' + PlatformExecutableExtension;
+const DesignerExeName = IsMacOS ? 'Designer' : 'designer' + OSExeSuffix;
 
 export async function locateQtDesignerExePath(selectedQtPath: string) {
   const getDesignerExePath = (selectedQtBinPath: string) => {

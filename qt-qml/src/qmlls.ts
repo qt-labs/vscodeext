@@ -15,7 +15,7 @@ import {
   createLogger,
   findQtKits,
   isError,
-  PlatformExecutableExtension,
+  OSExeSuffix,
   QtInsRootConfigName,
   compareVersions,
   GlobalWorkspace
@@ -195,7 +195,7 @@ async function findMostRecentExecutableQmlLS(): Promise<
 
       found.push({
         qtVersion: version,
-        qmllsPath: path.join(qt, 'bin', 'qmlls' + PlatformExecutableExtension)
+        qmllsPath: path.join(qt, 'bin', 'qmlls' + OSExeSuffix)
       });
     }
   }

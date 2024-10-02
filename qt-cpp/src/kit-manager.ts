@@ -8,7 +8,7 @@ import * as fs from 'fs/promises';
 import * as commandExists from 'command-exists';
 
 import {
-  PlatformExecutableExtension,
+  OSExeSuffix,
   UserLocalDir,
   createLogger,
   QtInsRootConfigName,
@@ -459,11 +459,8 @@ export class KitManager {
             ...newKit,
             ...{
               compilers: {
-                C: path.join(mingwDirPath, 'gcc' + PlatformExecutableExtension),
-                CXX: path.join(
-                  mingwDirPath,
-                  'g++' + PlatformExecutableExtension
-                )
+                C: path.join(mingwDirPath, 'gcc' + OSExeSuffix),
+                CXX: path.join(mingwDirPath, 'g++' + OSExeSuffix)
               }
             }
           };

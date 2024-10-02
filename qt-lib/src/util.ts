@@ -14,7 +14,7 @@ export const IsMacOS = process.platform === 'darwin';
 export const IsLinux = process.platform === 'linux';
 export const IsUnix = IsMacOS || IsLinux;
 
-export const PlatformExecutableExtension = IsWindows ? '.exe' : '';
+export const OSExeSuffix = IsWindows ? '.exe' : '';
 export const UserLocalDir = IsWindows
   ? process.env.LOCALAPPDATA ?? ''
   : path.join(Home, '.local/share');
@@ -90,12 +90,8 @@ export async function queryHostBinDirPath(
 
 export async function locateQmakeExeFilePath(selectedQtPath: string) {
   return (
-    (await existing(
-      path.join(selectedQtPath, 'bin', 'qmake' + PlatformExecutableExtension)
-    )) ||
-    (await existing(
-      path.join(selectedQtPath, 'bin', 'qmake6' + PlatformExecutableExtension)
-    ))
+    (await existing(path.join(selectedQtPath, 'bin', 'qmake' + OSExeSuffix))) ||
+    (await existing(path.join(selectedQtPath, 'bin', 'qmake6' + OSExeSuffix)))
   );
 }
 

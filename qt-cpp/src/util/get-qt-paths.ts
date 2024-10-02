@@ -5,10 +5,10 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 
 import * as fsutil from '@util/fs';
-import { PlatformExecutableExtension } from 'qt-lib';
+import { OSExeSuffix } from 'qt-lib';
 
 const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
-const NinjaFileName = 'ninja' + PlatformExecutableExtension;
+const NinjaFileName = 'ninja' + OSExeSuffix;
 
 async function pathOfDirectoryIfExists(
   dirPath: string
