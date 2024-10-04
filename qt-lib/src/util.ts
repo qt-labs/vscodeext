@@ -13,6 +13,10 @@ export const IsWindows = process.platform === 'win32';
 export const IsMacOS = process.platform === 'darwin';
 export const IsLinux = process.platform === 'linux';
 export const IsUnix = IsMacOS || IsLinux;
+export const IsArm64 = os.arch() === 'arm64';
+export const IsArm32 = os.arch() === 'arm';
+export const Isx86 = os.arch() === 'x86' || os.arch() === 'ia32';
+export const Isx64 = os.arch() === 'x64';
 
 export const OSExeSuffix = IsWindows ? '.exe' : '';
 export const UserLocalDir = IsWindows
