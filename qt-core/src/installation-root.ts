@@ -14,7 +14,8 @@ import {
   createLogger,
   isPathToQtPathsOrQMake,
   QtWorkspaceConfigMessage,
-  QtAdditionalPath
+  QtAdditionalPath,
+  IsMacOS
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
@@ -93,6 +94,31 @@ export function checkDefaultQtInsRootPath() {
   if (process.env.USERNAME) {
     winDefaultPaths.push(
       path.join(winRoot, 'Users', process.env.USERNAME, defaultQtInsRootName)
+    );
+  }
+  if (process.env.USERPROFILE) {
+    winDefaultPaths.push(
+      path.join(process.env.USERPROFILE, defaultQtInsRootName)
+    );
+  }
+  if (process.env.SYSTEMDRIVE) {
+    winDefaultPaths.push(
+      path.join(process.env.SYSTEMDRIVE, defaultQtInsRootName)
+    );
+  }
+  if (process.env.HOMEDRIVE && process.env.HOMEPATH) {
+    winDefaultPaths.push(
+      path.join(
+        process.env.HOMEDRIVE,
+        process.env.HOMEPATH,
+        defaultQtInsRootName
+      )
+    );
+  }
+  if (IsMacOS) {
+    unixDefaultPaths.push(path.join('/', 'Applications', defaultQtInsRootName));
+    unixDefaultPaths.push(
+      path.join(Home, 'Applications', defaultQtInsRootName)
     );
   }
   const defaultPaths = IsUnix ? unixDefaultPaths : winDefaultPaths;
