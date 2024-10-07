@@ -7,6 +7,7 @@ import { CORE_EXTENSION_ID } from './constants';
 export interface QtAdditionalPath {
   name?: string | undefined;
   path: string;
+  isVCPKG?: boolean;
 }
 
 // Implement sorter for QtAdditionalPath
@@ -60,7 +61,8 @@ export class QtInfo {
 
   constructor(
     public readonly qtPathsBin: string,
-    public readonly name?: string
+    public readonly name?: string,
+    public readonly isVCPKG?: boolean
   ) {
     this.data = new Map() as QtPathsData;
   }

@@ -24,6 +24,7 @@ import { EXTENSION_ID } from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
 import { resetCommand } from '@/reset';
 import { registerQtByQtpaths } from '@/qtpaths';
+import { checkVcpkg } from '@/vcpkg';
 
 const logger = createLogger('extension');
 
@@ -60,6 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   checkDefaultQtInsRootPath();
+  checkVcpkg();
   coreAPI = new CoreAPIImpl();
   initCoreValues();
   return coreAPI;

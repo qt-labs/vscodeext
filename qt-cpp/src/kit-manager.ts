@@ -20,7 +20,8 @@ import {
   QtInfo,
   QtAdditionalPath,
   generateDefaultQtPathsName,
-  IsWindows
+  IsWindows,
+  getVCPKGRoot
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject } from '@/project';
@@ -323,13 +324,10 @@ export class KitManager {
 
     const isQt6 = version?.startsWith('6') ?? false;
     if (isQt6) {
-      const toolchainFile = path.join(
-        libs,
-        'cmake',
-        'Qt6',
-        `qt.toolchain.cmake`
-      );
-      if (!fsSync.existsSync(toolchainFile)) {
+      const toolchainFile = qtInfo.isVCPKG
+        ? KitManager.getVCPKGToolchainFile()
+        : path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
+      if (!toolchainFile || !fsSync.existsSync(toolchainFile)) {
         const warn = `Toolchain file not found: ${toolchainFile}`;
         void vscode.window.showWarningMessage(warn);
         logger.error(warn);
@@ -807,6 +805,13 @@ export class KitManager {
     return (
       coreAPI?.getValue<QtAdditionalPath[]>(folder, AdditionalQtPathsName) ?? []
     );
+  }
+  private static getVCPKGToolchainFile() {
+    const vckpgRoot = getVCPKGRoot();
+    if (!vckpgRoot) {
+      return undefined;
+    }
+    return path.join(vckpgRoot, 'scripts', 'buildsystems', 'vcpkg.cmake');
   }
 }
 export function getCurrentGlobalQtInstallationRoot(): string {

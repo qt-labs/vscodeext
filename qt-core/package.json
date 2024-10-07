@@ -157,6 +157,12 @@
           "description": "Do not ask for default Qt Installation Root",
           "scope": "machine"
         },
+        "qt-core.doNotAskForVCPKG": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not ask for vcpkg",
+          "scope": "machine"
+        },
         "qt-core.additionalQtPaths": {
           "type": "array",
           "items": {
@@ -190,6 +196,7 @@
     "package": "vsce package --out out"
   },
   "devDependencies": {
+    "@types/command-exists": "^1.2.3",
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
@@ -203,6 +210,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "command-exists": "^1.2.9",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
     "typescript": "^5.2.2",

@@ -7,7 +7,8 @@ import {
   AdditionalQtPathsName,
   createLogger,
   generateDefaultQtPathsName,
-  GlobalWorkspace
+  GlobalWorkspace,
+  QtAdditionalPath
 } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
 import { onAdditionalQtPathsUpdated } from '@/installation-root';
@@ -33,25 +34,25 @@ export function registerQtByQtpaths() {
           if (!selectedPath) {
             return;
           }
-          addQtPathToSettings(selectedPath);
+          addQtPathToSettings({ path: selectedPath });
         }
       });
     }
   );
 }
 
-function addQtPathToSettings(qtPath: string) {
+export function addQtPathToSettings(qtPath: QtAdditionalPath) {
   const config = getConfiguration();
   const additionalQtPaths = config.inspect<(string | object)[]>(
     AdditionalQtPathsName
   );
   let valueToSet: (string | object)[] = [];
-  const info = coreAPI?.getQtInfo({ path: qtPath });
+  const info = coreAPI?.getQtInfo(qtPath);
   if (!info) {
-    throw new Error(`Failed to get Qt info for ${qtPath}`);
+    throw new Error(`Failed to get Qt info for ${qtPath.path}`);
   }
   const name = generateDefaultQtPathsName(info);
-  const valueToAdd = { name: name, path: qtPath };
+  const valueToAdd = { name: name, path: qtPath.path };
   if (additionalQtPaths?.globalValue) {
     additionalQtPaths.globalValue.push(valueToAdd);
     valueToSet = additionalQtPaths.globalValue;
@@ -59,7 +60,7 @@ function addQtPathToSettings(qtPath: string) {
     logger.info(`${AdditionalQtPathsName} not found in the settings`);
     valueToSet = [valueToAdd];
   }
-  logger.info(`Adding ${qtPath} to the settings`);
+  logger.info(`Adding ${qtPath.path} to the settings`);
   void config.update(
     AdditionalQtPathsName,
     valueToSet,

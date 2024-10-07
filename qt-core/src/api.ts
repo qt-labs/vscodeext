@@ -133,7 +133,11 @@ export class CoreAPIImpl implements CoreAPI {
       return result;
     }
 
-    result = new QtInfo(qtAdditionalPath.path, qtAdditionalPath.name);
+    result = new QtInfo(
+      qtAdditionalPath.path,
+      qtAdditionalPath.name,
+      qtAdditionalPath.isVCPKG
+    );
     let output: string;
     const retFristTry = spawnSync(qtAdditionalPath.path, ['-query'], {
       encoding: 'utf8',

@@ -226,5 +226,18 @@ function deepEqual<T>(x: T, y: T): boolean {
 export function generateDefaultQtPathsName(qtInfo: QtInfo): string {
   const qtVersion = qtInfo.get('QT_VERSION');
   const targetMkSpec = qtInfo.get('QMAKE_XSPEC');
-  return 'Qt-' + qtVersion + '-' + targetMkSpec;
+  const vcpkg = qtInfo.isVCPKG ? 'vcpkg-' : '';
+  return 'Qt-' + vcpkg + qtVersion + '-' + targetMkSpec;
+}
+
+export function inVCPKGRoot(p: string) {
+  const vcpkgRoot = getVCPKGRoot();
+  if (!vcpkgRoot) {
+    return false;
+  }
+  return p.startsWith(vcpkgRoot);
+}
+
+export function getVCPKGRoot() {
+  return process.env.VCPKG_ROOT;
 }

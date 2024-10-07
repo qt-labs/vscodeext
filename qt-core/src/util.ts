@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import { spawnSync } from 'child_process';
 
+import { QtAdditionalPath, inVCPKGRoot } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { QtAdditionalPath } from 'qt-lib';
 import untildify from 'untildify';
 
 export function getConfiguration(scope?: vscode.ConfigurationScope) {
@@ -16,11 +17,22 @@ export function convertAdditionalQtPaths(
 ): QtAdditionalPath[] {
   return value.map((element) => {
     if (typeof element === 'string') {
-      return { path: untildify(element) };
+      return { path: untildify(element), isVCPKG: inVCPKGRoot(element) };
     }
     const ret = element as QtAdditionalPath;
+    ret.isVCPKG = inVCPKGRoot(ret.path);
     ret.path = untildify(ret.path);
-
     return ret;
   });
+}
+
+export function getQueryOutput(exePath: string) {
+  const ret = spawnSync(exePath, ['-query'], {
+    encoding: 'utf8',
+    timeout: 1000
+  });
+  if (ret.error ?? ret.status !== 0) {
+    return undefined;
+  }
+  return ret;
 }
