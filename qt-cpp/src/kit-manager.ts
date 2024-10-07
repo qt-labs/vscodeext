@@ -20,7 +20,7 @@ import {
   QtInfo
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
-import { Project } from '@/project';
+import { CppProject } from '@/project';
 import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
 
@@ -108,7 +108,7 @@ export interface Kit {
 }
 
 export class KitManager {
-  projects = new Set<Project>();
+  projects = new Set<CppProject>();
   workspaceFile: vscode.Uri | undefined;
   globalStateManager: GlobalStateManager;
   static readonly MapMsvcPlatformToQt: Record<string, string> = {
@@ -137,12 +137,12 @@ export class KitManager {
     this.globalStateManager = new GlobalStateManager(context);
   }
 
-  public addProject(project: Project) {
+  public addProject(project: CppProject) {
     this.projects.add(project);
     void this.checkForQtInstallations(project);
   }
 
-  public removeProject(project: Project) {
+  public removeProject(project: CppProject) {
     this.projects.delete(project);
   }
 
@@ -169,7 +169,7 @@ export class KitManager {
 
   // If the project parameter is undefined, it means that it is a global check
   // otherwise, it is a workspace folder check
-  private async checkForQtInstallations(project?: Project) {
+  private async checkForQtInstallations(project?: CppProject) {
     const currentQtInsRoot = project
       ? KitManager.getWorkspaceFolderQtInsRoot(project.folder)
       : getCurrentGlobalQtInstallationRoot();

@@ -23,7 +23,7 @@ import {
 const logger = createLogger('project');
 
 // Project class represents a workspace folder in the extension.
-export class Project implements ProjectBase {
+export class CoreProject implements ProjectBase {
   private readonly _stateManager: WorkspaceStateManager;
   private _qtInstallationRoot: string | undefined;
   private constructor(
@@ -44,7 +44,7 @@ export class Project implements ProjectBase {
     context: vscode.ExtensionContext
   ) {
     logger.info('Creating project:"' + folder.uri.fsPath + '"');
-    return new Project(folder, context);
+    return new CoreProject(folder, context);
   }
   get stateManager() {
     return this._stateManager;
@@ -96,7 +96,7 @@ export class Project implements ProjectBase {
 
 export class ProjectManager {
   globalStateManager: GlobalStateManager;
-  projects = new Set<Project>();
+  projects = new Set<CoreProject>();
   workspaceFile: vscode.Uri | undefined;
   constructor(readonly context: vscode.ExtensionContext) {
     this.globalStateManager = new GlobalStateManager(context);
@@ -186,7 +186,7 @@ export class ProjectManager {
       )
     );
   }
-  public addProject(project: Project) {
+  public addProject(project: CoreProject) {
     logger.info('Adding project:', project.folder.uri.fsPath);
     this.projects.add(project);
   }
@@ -209,7 +209,7 @@ export class ProjectManager {
         this.projects.delete(project);
       }
       for (const folder of event.added) {
-        const project = Project.createProject(folder, context);
+        const project = CoreProject.createProject(folder, context);
         this.projects.add(project);
       }
     });

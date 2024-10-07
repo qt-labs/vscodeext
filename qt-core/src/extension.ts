@@ -21,7 +21,7 @@ import {
   registerQt
 } from '@/installation-root';
 import { EXTENSION_ID } from '@/constants';
-import { Project, ProjectManager } from '@/project';
+import { CoreProject, ProjectManager } from '@/project';
 import { resetCommand } from '@/reset';
 
 const logger = createLogger('extension');
@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
-      const project = Project.createProject(folder, context);
+      const project = CoreProject.createProject(folder, context);
       projectManager.addProject(project);
     }
   }

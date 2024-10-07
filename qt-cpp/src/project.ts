@@ -13,7 +13,7 @@ import { getSelectedQtInstallationPath } from '@cmd/register-qt-path';
 const logger = createLogger('project');
 
 // Project class represents a workspace folder in the extension.
-export class Project implements ProjectBase {
+export class CppProject implements ProjectBase {
   private readonly _stateManager: WorkspaceStateManager;
   private readonly _cmakeProject: cmakeAPi.Project | undefined;
   private constructor(
@@ -56,7 +56,7 @@ export class Project implements ProjectBase {
     if (api) {
       cmakeProject = await api.getProject(folder.uri);
     }
-    return new Project(folder, context, cmakeProject);
+    return new CppProject(folder, context, cmakeProject);
   }
   public getStateManager() {
     return this._stateManager;
@@ -71,11 +71,11 @@ export class Project implements ProjectBase {
 }
 
 export class ProjectManager {
-  projects = new Set<Project>();
+  projects = new Set<CppProject>();
   constructor(readonly context: vscode.ExtensionContext) {
     this.watchProjects(context);
   }
-  public addProject(project: Project) {
+  public addProject(project: CppProject) {
     logger.info('Adding project:', project.folder.uri.fsPath);
     this.projects.add(project);
   }
@@ -99,7 +99,7 @@ export class ProjectManager {
         kitManager.removeProject(project);
       }
       for (const folder of event.added) {
-        const project = await Project.createProject(folder, context);
+        const project = await CppProject.createProject(folder, context);
         this.projects.add(project);
         kitManager.addProject(project);
       }
