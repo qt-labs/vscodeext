@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fsSync from 'fs';
 import * as fs from 'fs/promises';
-import * as commandExists from 'command-exists';
+import commandExists from 'command-exists';
 
 import {
   OSExeSuffix,
