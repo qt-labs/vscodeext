@@ -8,6 +8,8 @@ import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as child_process from 'child_process';
 
+import { QtInfo } from './core-api';
+
 export const Home = os.homedir();
 export const IsWindows = process.platform === 'win32';
 export const IsMacOS = process.platform === 'darwin';
@@ -186,4 +188,10 @@ export function isPathToQtPathsOrQMake(filePath: string): boolean {
 
 export function isEqualArrays<T>(a: T[], b: T[]): boolean {
   return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+export function generateDefaultQtPathsName(qtInfo: QtInfo): string {
+  const qtVersion = qtInfo.get('QT_VERSION');
+  const targetMkSpec = qtInfo.get('QMAKE_XSPEC');
+  return 'Qt-' + qtVersion + '-' + targetMkSpec;
 }

@@ -67,6 +67,11 @@
         "command": "qt-core.reset",
         "title": "%qt-core.command.reset.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.registerQtByQtpaths",
+        "title": "%qt-core.command.registerQtByQtpaths.title%",
+        "category": "Qt"
       }
     ],
     "languages": [

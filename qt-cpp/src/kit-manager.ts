@@ -19,6 +19,7 @@ import {
   isError,
   QtInfo,
   QtAdditionalPath,
+  generateDefaultQtPathsName,
   IsWindows
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
@@ -281,7 +282,7 @@ export class KitManager {
       }
     };
     const version = qtInfo.get('QT_VERSION');
-    kit.name = qtInfo.name ? qtInfo.name : KitManager.kitNameFromQtInfo(qtInfo);
+    kit.name = qtInfo.name ? qtInfo.name : generateDefaultQtPathsName(qtInfo);
 
     const preferredGenerator = qtInfo
       .get('QMAKE_XSPEC')
@@ -532,12 +533,6 @@ export class KitManager {
     }
     logger.info('newKit: ' + JSON.stringify(newKit));
     yield newKit;
-  }
-
-  private static kitNameFromQtInfo(qtInfo: QtInfo) {
-    const qtVersion = qtInfo.get('QT_VERSION');
-    const targetMkSpec = qtInfo.get('QMAKE_XSPEC');
-    return 'Qt-' + qtVersion + '-' + targetMkSpec;
   }
 
   private static async getKitsByCMakeExtension() {

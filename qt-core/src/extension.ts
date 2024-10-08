@@ -23,6 +23,7 @@ import {
 import { EXTENSION_ID } from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
 import { resetCommand } from '@/reset';
+import { registerQtByQtpaths } from '@/qtpaths';
 
 const logger = createLogger('extension');
 
@@ -45,6 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(...registerDocumentationCommands());
   context.subscriptions.push(registerSetRecommendedSettingsCommand());
   context.subscriptions.push(resetCommand());
+  context.subscriptions.push(registerQtByQtpaths());
   context.subscriptions.push(
     vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
       void vscode.commands.executeCommand(

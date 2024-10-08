@@ -5,5 +5,6 @@
   "qt-core.command.openSettings.title": "Open Qt Settings",
   "qt-core.command.setRecommendedSettings.title": "Set the recommended Qt Extension settings",
   "qt-core.command.registerQt.title": "Register Qt Installation",
-  "qt-core.command.reset.title": "Reset Qt Tools Extension State (For troubleshooting)"
+  "qt-core.command.reset.title": "Reset Qt Tools Extension State (For troubleshooting)",
+  "qt-core.command.registerQtByQtpaths.title": "Register Qt (by qtpaths or qmake)"
 }
