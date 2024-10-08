@@ -56,7 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
-      const project = createUIProject(folder, context);
+      const project = await createUIProject(folder, context);
       projectManager.addProject(project);
     }
   }

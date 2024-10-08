@@ -3,17 +3,17 @@
 
 import * as vscode from 'vscode';
 
-import { ProjectBase } from 'qt-lib';
+import { Project } from 'qt-lib';
 
-export function createQMLProject(
+export async function createQMLProject(
   folder: vscode.WorkspaceFolder,
   context: vscode.ExtensionContext
 ) {
-  return new QMLProject(folder, context);
+  return Promise.resolve(new QMLProject(folder, context));
 }
 
 // Project class represents a workspace folder in the extension.
-export class QMLProject implements ProjectBase {
+export class QMLProject implements Project {
   public constructor(
     readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext

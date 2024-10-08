@@ -25,13 +25,13 @@ import {
   registerbuildDirectoryName,
   registerlaunchTargetFilenameWithoutExtension
 } from '@cmd/launch-variables';
-import { CppProject, ProjectManager } from '@/project';
+import { createCppProject, CppProjectManager } from '@/project';
 import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { EXTENSION_ID } from '@/constants';
 
 export let kitManager: KitManager;
-export let projectManager: ProjectManager;
+export let projectManager: CppProjectManager;
 export let coreAPI: CoreAPI | undefined;
 
 let taskProvider: vscode.Disposable | undefined;
@@ -43,12 +43,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   initLogger(EXTENSION_ID);
   kitManager = new KitManager(context);
-  projectManager = new ProjectManager(context);
+  projectManager = new CppProjectManager(context);
   coreAPI = await getCoreApi();
 
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
-      const project = await CppProject.createProject(folder, context);
+      const project = await createCppProject(folder, context);
       projectManager.addProject(project);
       kitManager.addProject(project);
     }

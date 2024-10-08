@@ -7,21 +7,21 @@ import untildify from 'untildify';
 
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
-import { createLogger, QtWorkspaceType, ProjectBase } from 'qt-lib';
+import { createLogger, QtWorkspaceType, Project } from 'qt-lib';
 import { getConfig, affectsConfig, locateQtDesignerExePath } from '@/util';
 import { CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH } from '@/constants';
 
 const logger = createLogger('project');
 
-export function createUIProject(
+export async function createUIProject(
   folder: vscode.WorkspaceFolder,
   context: vscode.ExtensionContext
 ) {
-  return new UIProject(folder, context);
+  return Promise.resolve(new UIProject(folder, context));
 }
 
 // Project class represents a workspace folder in the extension.
-export class UIProject implements ProjectBase {
+export class UIProject implements Project {
   private _workspaceType: QtWorkspaceType | undefined;
   private _binDir: string | undefined;
   private _designerClient: DesignerClient | undefined;

@@ -13,7 +13,7 @@ import {
   QtAdditionalPath,
   compareQtAdditionalPath
 } from 'qt-lib';
-import { ProjectBase } from 'qt-lib';
+import { Project, ProjectManager } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
 import { GlobalStateManager, WorkspaceStateManager } from '@/state';
 import {
@@ -25,11 +25,19 @@ import {
 
 const logger = createLogger('project');
 
+export async function createCoreProject(
+  folder: vscode.WorkspaceFolder,
+  context: vscode.ExtensionContext
+) {
+  logger.info('Creating project:"' + folder.uri.fsPath + '"');
+  return Promise.resolve(new CoreProject(folder, context));
+}
+
 // Project class represents a workspace folder in the extension.
-export class CoreProject implements ProjectBase {
+export class CoreProject implements Project {
   private readonly _stateManager: WorkspaceStateManager;
   private _qtInstallationRoot: string | undefined;
-  private constructor(
+  constructor(
     private readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
   ) {
@@ -41,13 +49,6 @@ export class CoreProject implements ProjectBase {
   }
   get qtInstallationRoot() {
     return this._qtInstallationRoot ?? '';
-  }
-  static createProject(
-    folder: vscode.WorkspaceFolder,
-    context: vscode.ExtensionContext
-  ) {
-    logger.info('Creating project:"' + folder.uri.fsPath + '"');
-    return new CoreProject(folder, context);
   }
   get stateManager() {
     return this._stateManager;
@@ -65,7 +66,7 @@ export class CoreProject implements ProjectBase {
           void e;
           const previousQtInsRoot = this.stateManager.getQtInstallationRoot();
           const currentQtInsRoot =
-            ProjectManager.getWorkspaceFolderQtInsRoot(folder);
+            CoreProjectManager.getWorkspaceFolderQtInsRoot(folder);
           if (currentQtInsRoot !== previousQtInsRoot) {
             void this.stateManager.setQtInstallationRoot(currentQtInsRoot);
             onQtInsRootUpdated(currentQtInsRoot, folder);
@@ -73,7 +74,7 @@ export class CoreProject implements ProjectBase {
           const previousAdditionalQtPaths =
             this.stateManager.getAdditionalQtPaths();
           const currentAdditionalQtPaths =
-            ProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
+            CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
           // TODO: Implement generic array comparison function
 
           if (
@@ -97,14 +98,18 @@ export class CoreProject implements ProjectBase {
   }
 }
 
-export class ProjectManager {
+export class CoreProjectManager extends ProjectManager<CoreProject> {
   globalStateManager: GlobalStateManager;
-  projects = new Set<CoreProject>();
   workspaceFile: vscode.Uri | undefined;
   constructor(readonly context: vscode.ExtensionContext) {
+    super(context, createCoreProject);
     this.globalStateManager = new GlobalStateManager(context);
     this.watchGlobalConfig(context);
     this.watchProjects(context);
+
+    this.onProjectAdded((project: CoreProject) => {
+      logger.info('Adding project:', project.folder.uri.fsPath);
+    });
   }
   private watchGlobalConfig(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -193,45 +198,5 @@ export class ProjectManager {
         }
       )
     );
-  }
-  public addProject(project: CoreProject) {
-    logger.info('Adding project:', project.folder.uri.fsPath);
-    this.projects.add(project);
-  }
-  public getProjects() {
-    return this.projects;
-  }
-  public getProject(folder: vscode.WorkspaceFolder) {
-    return Array.from(this.projects).find(
-      (project) => project.folder === folder
-    );
-  }
-  private watchProjects(context: vscode.ExtensionContext) {
-    vscode.workspace.onDidChangeWorkspaceFolders((event) => {
-      for (const folder of event.removed) {
-        const project = this.getProject(folder);
-        if (!project) {
-          continue;
-        }
-        project.dispose();
-        this.projects.delete(project);
-      }
-      for (const folder of event.added) {
-        const project = CoreProject.createProject(folder, context);
-        this.projects.add(project);
-      }
-    });
-  }
-  public findProjectContainingFile(uri: vscode.Uri) {
-    return Array.from(this.projects).find((project) => {
-      const ret = uri.toString().startsWith(project.folder.uri.toString());
-      return ret;
-    });
-  }
-  dispose() {
-    for (const project of this.projects) {
-      project.dispose();
-    }
-    this.projects.clear();
   }
 }

@@ -3,26 +3,26 @@
 
 import * as vscode from 'vscode';
 
-export interface ProjectBase {
+export interface Project {
   folder: vscode.WorkspaceFolder;
   dispose(): void;
 }
 
-export class ProjectManager<ProjectType extends ProjectBase> {
+export class ProjectManager<ProjectType extends Project> {
   projects = new Set<ProjectType>();
   private readonly _addEmitter = new vscode.EventEmitter<ProjectType>();
   private readonly _removeEmitter = new vscode.EventEmitter<ProjectType>();
   private _newProjectCallback: (
     folder: vscode.WorkspaceFolder,
     context: vscode.ExtensionContext
-  ) => ProjectType | undefined;
+  ) => Promise<ProjectType | undefined>;
 
   constructor(
     readonly context: vscode.ExtensionContext,
     newProjectCallback: (
       folder: vscode.WorkspaceFolder,
       context: vscode.ExtensionContext
-    ) => ProjectType | undefined
+    ) => Promise<ProjectType | undefined>
   ) {
     this._newProjectCallback = newProjectCallback;
     this.watchProjects(context);
@@ -42,7 +42,7 @@ export class ProjectManager<ProjectType extends ProjectBase> {
     callback: (
       folder: vscode.WorkspaceFolder,
       context: vscode.ExtensionContext
-    ) => ProjectType | undefined
+    ) => Promise<ProjectType | undefined>
   ) {
     this._newProjectCallback = callback;
   }
@@ -69,8 +69,8 @@ export class ProjectManager<ProjectType extends ProjectBase> {
     return this._removeEmitter.event;
   }
 
-  private watchProjects(context: vscode.ExtensionContext) {
-    vscode.workspace.onDidChangeWorkspaceFolders((event) => {
+  protected watchProjects(context: vscode.ExtensionContext) {
+    vscode.workspace.onDidChangeWorkspaceFolders(async (event) => {
       for (const folder of event.removed) {
         const project = this.getProject(folder);
         if (!project) {
@@ -80,7 +80,7 @@ export class ProjectManager<ProjectType extends ProjectBase> {
         this.removeProject(project);
       }
       for (const folder of event.added) {
-        const project = this._newProjectCallback(folder, context);
+        const project = await this._newProjectCallback(folder, context);
         if (!project) {
           continue;
         }

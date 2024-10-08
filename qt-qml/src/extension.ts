@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
-      const project = createQMLProject(folder, context);
+      const project = await createQMLProject(folder, context);
       projectManager.addProject(project);
     }
   }

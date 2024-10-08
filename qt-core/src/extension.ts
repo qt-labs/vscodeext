@@ -21,24 +21,24 @@ import {
   registerQt
 } from '@/installation-root';
 import { EXTENSION_ID } from '@/constants';
-import { CoreProject, ProjectManager } from '@/project';
+import { createCoreProject, CoreProjectManager } from '@/project';
 import { resetCommand } from '@/reset';
 
 const logger = createLogger('extension');
 
 export let coreAPI: CoreAPIImpl | undefined;
-let projectManager: ProjectManager;
+let projectManager: CoreProjectManager;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
   logger.info(`Activating ${context.extension.id}`);
-  projectManager = new ProjectManager(context);
+  projectManager = new CoreProjectManager(context);
   if (vscode.workspace.workspaceFile !== undefined) {
     projectManager.addWorkspaceFile(vscode.workspace.workspaceFile);
   }
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
-      const project = CoreProject.createProject(folder, context);
+      const project = await createCoreProject(folder, context);
       projectManager.addProject(project);
     }
   }
@@ -84,11 +84,11 @@ export function initCoreValues() {
     const message = new QtWorkspaceConfigMessage(folder);
     message.config.set(
       QtInsRootConfigName,
-      ProjectManager.getWorkspaceFolderQtInsRoot(folder)
+      CoreProjectManager.getWorkspaceFolderQtInsRoot(folder)
     );
     message.config.set(
       AdditionalQtPathsName,
-      ProjectManager.getWorkspaceFolderAdditionalQtPaths(folder)
+      CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder)
     );
     logger.info('Updating coreAPI with message:', message as unknown as string);
     coreAPI?.update(message);
