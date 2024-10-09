@@ -1,6 +1,6 @@
 {
   "name": "qt",
-  "displayName": "Qt All Extensions Pack",
+  "displayName": "Qt Extension Pack",
   "description": "Recommended extensions for Qt development.",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://bugreports.qt.io/projects/VSCODEEXT"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "engines": {
     "vscode": "^1.78.0"
   },

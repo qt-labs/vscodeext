@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.2
+
+- Changed the display name to "Qt Extension Pack".
+
 ## 1.0.1
 
 - Changed the display name to "Qt All Extensions Pack".
