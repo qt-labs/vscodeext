@@ -18,7 +18,8 @@ import {
   findQtKits,
   isError,
   QtInfo,
-  QtAdditionalPath
+  QtAdditionalPath,
+  IsWindows
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject } from '@/project';
@@ -379,12 +380,13 @@ export class KitManager {
   }
 
   private static generateEnvPathForQtInstallation(installation: string) {
+    if (!IsWindows) {
+      return undefined;
+    }
     const installationBinDir = path.join(installation, 'bin');
-    const QtPathAddition = [
-      installation,
-      installationBinDir,
-      '${env:PATH}'
-    ].join(path.delimiter);
+    const QtPathAddition = [installationBinDir, '${env:PATH}'].join(
+      path.delimiter
+    );
     return QtPathAddition;
   }
 
@@ -404,7 +406,11 @@ export class KitManager {
       locatedNinjaExePath = await promiseNinjaExecutable;
     }
     if (locatedNinjaExePath) {
-      qtPathEnv += path.delimiter + path.dirname(locatedNinjaExePath);
+      if (qtPathEnv) {
+        qtPathEnv += path.delimiter + path.dirname(locatedNinjaExePath);
+      } else {
+        qtPathEnv = path.dirname(locatedNinjaExePath);
+      }
     }
     const kitName = qtPath.mangleQtInstallation(qtInsRoot, installation);
     const kitPreferredGenerator = kitName.toLowerCase().includes('wasm_')
