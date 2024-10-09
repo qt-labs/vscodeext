@@ -519,7 +519,8 @@ export class KitManager {
     // that were created by the cmake extension as templates.
     const kitsFromCMakeExtension = allCMakeKits.filter(
       (kit) =>
-        kit.environmentVariables?.VSCODE_QT_INSTALLATION_ROOT === undefined
+        kit.environmentVariables?.VSCODE_QT_INSTALLATION_ROOT === undefined &&
+        kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE === undefined
     );
     logger.info(
       `Kits from CMake extension: ${JSON.stringify(kitsFromCMakeExtension)}`
