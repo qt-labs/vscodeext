@@ -120,7 +120,9 @@ export class KitManager {
     x86_amd64: '64',
     amd64: '64',
     win32: '32',
-    x86: '32'
+    x86: '32',
+    x86_64: '64',
+    i386: '32'
   };
   static readonly MsvcInfoRegexp = /msvc(\d\d\d\d)_(.+)/; // msvcYEAR_ARCH
   static readonly MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
@@ -268,8 +270,13 @@ export class KitManager {
     );
   }
 
-  private static generateKitsFromQtPathsInfo(qtPaths: QtAdditionalPath[]) {
+  private static async generateKitsFromQtPathsInfo(
+    qtPaths: QtAdditionalPath[]
+  ) {
     const kits: Kit[] = [];
+    const cmakeKits = IsWindows
+      ? KitManager.getKitsByCMakeExtension()
+      : undefined;
     for (const p of qtPaths) {
       const qtInfo = coreAPI?.getQtInfo(p);
       if (!qtInfo) {
@@ -278,16 +285,18 @@ export class KitManager {
         logger.info(warningMessage);
         continue;
       }
-      const kit = KitManager.generateKitFromQtInfo(qtInfo);
-      if (kit) {
-        logger.info('newKit: ' + JSON.stringify(kit));
-        kits.push(kit);
+      const kit = KitManager.generateKitFromQtInfo(qtInfo, await cmakeKits);
+      for await (const k of kit) {
+        logger.info('newKit: ' + JSON.stringify(k));
+        if (k) {
+          kits.push(k);
+        }
       }
     }
     return kits;
   }
 
-  private static generateKitFromQtInfo(qtInfo: QtInfo) {
+  private static *generateKitFromQtInfo(qtInfo: QtInfo, cmakeOnlyKits?: Kit[]) {
     const kit: Kit = {
       name: '',
       isTrusted: true,
@@ -343,14 +352,69 @@ export class KitManager {
       VSCODE_QT_QTPATHS_EXE: qtInfo.qtPathsBin,
       PATH: pathEnv
     };
-    return kit;
+    if (qtInfo.get('QMAKE_XSPEC')?.includes('-msvc')) {
+      const msvcKitsClone: Kit[] = JSON.parse(
+        JSON.stringify(cmakeOnlyKits)
+      ) as Kit[];
+      logger.info(`MSVC kits clone: ${JSON.stringify(msvcKitsClone)}`);
+      const msvcMajor = Number(qtInfo.get(`MSVC_MAJOR_VERSION`) ?? '-1') * 100;
+      const msvcMinor = Number(qtInfo.get(`MSVC_MINOR_VERSION`) ?? '-1');
+      if (msvcMajor < 0 || msvcMinor < 0) {
+        logger.warn(`MSVC version: ${msvcMajor}.${msvcMinor}`);
+        yield undefined;
+        return;
+      }
+      const vsyear = KitManager.convertMSCVERToYear(msvcMajor + msvcMinor);
+      if (!vsyear) {
+        logger.warn(`vsyear: ${vsyear}`);
+        yield undefined;
+        return;
+      }
+      const arch = KitManager.MapMsvcPlatformToQt[qtInfo.get('ARCH') ?? ''];
+      if (!arch) {
+        logger.warn(`arch: ${arch}`);
+        yield undefined;
+        return;
+      }
+      yield* KitManager.generateMsvcKits(
+        kit,
+        msvcKitsClone,
+        arch,
+        vsyear,
+        qtInfo.name
+      );
+      return;
+    }
+    yield kit;
+  }
+  private static convertMSCVERToYear(mscver: number) {
+    switch (mscver) {
+      case 1600:
+        return '2010';
+      case 1700:
+        return '2012';
+      case 1800:
+        return '2013';
+      case 1900:
+        return '2015';
+    }
+    if (mscver >= 1910 && mscver <= 1916) {
+      return '2017';
+    }
+    if (mscver >= 1920 && mscver <= 1929) {
+      return '2019';
+    }
+    if (mscver >= 1930 && mscver <= 1939) {
+      return '2022';
+    }
+    return undefined;
   }
 
   public async updateQtPathsQtKits(
     paths: QtAdditionalPath[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
-    const generatedKits = KitManager.generateKitsFromQtPathsInfo(paths);
+    const generatedKits = await KitManager.generateKitsFromQtPathsInfo(paths);
     logger.info(`QtPaths Generated kits: ${JSON.stringify(generatedKits)}`);
     await this.updateCMakeKitsJsonForQtPathsQtKits(
       generatedKits,
@@ -656,7 +720,8 @@ export class KitManager {
     newKit: Kit,
     loadedCMakeKits: Kit[],
     architecture: string,
-    vsYear: string
+    vsYear: string,
+    kitName?: string
   ) {
     logger.info('vsYear: ' + vsYear);
     logger.info('architecture: ' + architecture);
@@ -687,10 +752,12 @@ export class KitManager {
     for (const kit of msvcKitsWithArchitectureMatch) {
       // Replace `Visual Studio ` with `VS` in the kit name
       // Replace all ' ' with '_', '-' with '_' and multiple '_' with single '_'
-      const tempKitName = kit.name
+      const kitNameSuffix = kit.name
         .replace('Visual Studio ', 'VS')
         .replace(/[-_ ]+/g, '_');
-      kit.name = qtPath.mangleMsvcKitName(newKit.name + '_' + tempKitName);
+      kit.name = qtPath.mangleMsvcKitName(
+        (kitName ?? newKit.name) + '_' + kitNameSuffix
+      );
       if (kit.preferredGenerator) {
         kit.preferredGenerator.name = newKit.preferredGenerator.name;
         if (kit.preferredGenerator.name == CMakeDefaultGenerator) {
