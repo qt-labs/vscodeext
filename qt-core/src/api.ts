@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { spawnSync } from 'child_process';
 
 import {
@@ -49,6 +50,36 @@ export class CoreAPIImpl implements CoreAPI {
     if (changed) {
       this._onValueChanged.fire(message);
     }
+  }
+
+  private static obtainArch(qtInfo: QtInfo) {
+    const keysToCheckForQConfigPri = [
+      'QT_HOST_PATH',
+      'QT_INSTALL_PREFIX',
+      'QT_INSTALL_ARCHDATA',
+      'QT_HOST_PREFIX',
+      'QT_HOST_DATA',
+      'QT_INSTALL_DATA'
+    ];
+    for (const key of keysToCheckForQConfigPri) {
+      const p = qtInfo.get(key);
+      if (!p) {
+        continue;
+      }
+      const qconfigPriPath = path.join(p, 'mkspecs', 'qconfig.pri');
+      if (fs.existsSync(qconfigPriPath)) {
+        const content = fs.readFileSync(qconfigPriPath, 'utf8');
+        const keysToCheck = ['QT_ARCHS', 'QT_TARGET_ARCH', 'QT_ARCH'];
+        for (const k of keysToCheck) {
+          const match = content.match(new RegExp(`${k}\\s*\\=\\s*(.*)`));
+          if (match) {
+            return match[1];
+          }
+        }
+      }
+    }
+
+    return undefined;
   }
 
   update(message: QtWorkspaceConfigMessage) {
@@ -114,6 +145,14 @@ export class CoreAPIImpl implements CoreAPI {
       if (key) {
         result.set(key.trim(), value.trim());
       }
+    }
+    const arch = CoreAPIImpl.obtainArch(result);
+    if (arch) {
+      result.set('ARCH', arch);
+    } else {
+      logger.warn(
+        `Could not determine architecture for ${qtAdditionalPath.path}`
+      );
     }
 
     this._qtInfoCache.set(qtAdditionalPath, result);
