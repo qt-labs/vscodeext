@@ -72,15 +72,39 @@ export class CoreAPIImpl implements CoreAPI {
     }
 
     result = new QtInfo(qtAdditionalPath.path, qtAdditionalPath.name);
-
-    const ret = spawnSync(qtAdditionalPath.path, ['-query'], {
+    let output: string;
+    const retFristTry = spawnSync(qtAdditionalPath.path, ['-query'], {
       encoding: 'utf8',
       timeout: 1000
     });
-    if (ret.error ?? ret.status !== 0) {
+    if (retFristTry.status === 1) {
+      const retOldQtPaths = spawnSync(
+        qtAdditionalPath.path,
+        ['--binaries-dir'],
+        {
+          encoding: 'utf8',
+          timeout: 1000
+        }
+      );
+      if (retOldQtPaths.error ?? retOldQtPaths.status !== 0) {
+        return undefined;
+      }
+      const outputOldQtPaths = retOldQtPaths.stdout;
+      const qmakePath = path.join(outputOldQtPaths.trim(), 'qmake');
+      const retQmake = spawnSync(qmakePath, ['-query'], {
+        encoding: 'utf8',
+        timeout: 1000
+      });
+      if (retQmake.error ?? retQmake.status !== 0) {
+        return undefined;
+      }
+      output = retQmake.stdout;
+    } else if (retFristTry.error ?? retFristTry.status !== 0) {
       return undefined;
+    } else {
+      output = retFristTry.stdout;
     }
-    const output = ret.stdout;
+
     const lines = output.split('\n');
     for (const line of lines) {
       // split the line by the first `:`
