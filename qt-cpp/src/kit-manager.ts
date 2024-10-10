@@ -292,18 +292,15 @@ export class KitManager {
     kit.preferredGenerator = {
       name: preferredGenerator
     };
-    const isQt6 = version?.startsWith('6') ?? false;
     const libs = qtInfo.get('QT_INSTALL_LIBS');
     if (!libs) {
       return undefined;
     }
-    const toolchainFile = path.join(
-      libs,
-      'cmake',
-      isQt6 ? 'Qt6' : 'Qt5',
-      `qt.toolchain.cmake`
-    );
-    kit.toolchainFile = toolchainFile;
+
+    const isQt6 = version?.startsWith('6') ?? false;
+    if (isQt6) {
+      kit.toolchainFile = path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
+    }
     const tempPath: string[] = [];
     for (const [key, value] of qtInfo.data) {
       if (key.startsWith('QMAKE_') || key === 'QT_VERSION' || !value) {
