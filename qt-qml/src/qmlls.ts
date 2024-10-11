@@ -10,6 +10,7 @@ import {
   LanguageClient,
   LanguageClientOptions
 } from 'vscode-languageclient/node';
+import untildify from 'untildify';
 
 import {
   createLogger,
@@ -55,7 +56,10 @@ export class Qmlls {
     try {
       if (configs.get<string>('customExePath')) {
         const customPath = configs.get<string>('customExePath') ?? '';
-        const res = spawnSync(customPath, ['--help'], { timeout: 1000 });
+        const untildifiedCustomPath = untildify(customPath);
+        const res = spawnSync(untildifiedCustomPath, ['--help'], {
+          timeout: 1000
+        });
         if (res.status !== 0) {
           throw res.error ?? new Error(res.stderr.toString());
         }

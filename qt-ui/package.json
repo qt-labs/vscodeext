@@ -134,6 +134,7 @@
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "module-alias": "^2.2.3",
     "typescript": "^5.2.2",
-    "qt-lib": "file:../qt-lib"
+    "qt-lib": "file:../qt-lib",
+    "untildify": "^5.0.0"
   }
 }

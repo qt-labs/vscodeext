@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import untildify from 'untildify';
 
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
@@ -84,10 +85,8 @@ export class UIProject implements ProjectBase {
     });
   }
   getQtCustomDesignerPath() {
-    return getConfig<string>(
-      CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
-      '',
-      this._folder
+    return untildify(
+      getConfig<string>(CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH, '', this._folder)
     );
   }
 

@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import { EXTENSION_ID } from '@/constants';
 import { QtAdditionalPath } from 'qt-lib';
+import untildify from 'untildify';
 
 export function getConfiguration(scope?: vscode.ConfigurationScope) {
   return vscode.workspace.getConfiguration(EXTENSION_ID, scope);
@@ -15,8 +16,11 @@ export function convertAdditionalQtPaths(
 ): QtAdditionalPath[] {
   return value.map((element) => {
     if (typeof element === 'string') {
-      return { path: element };
+      return { path: untildify(element) };
     }
-    return element as QtAdditionalPath;
+    const ret = element as QtAdditionalPath;
+    ret.path = untildify(ret.path);
+
+    return ret;
   });
 }
