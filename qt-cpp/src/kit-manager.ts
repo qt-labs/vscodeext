@@ -299,7 +299,12 @@ export class KitManager {
 
     const isQt6 = version?.startsWith('6') ?? false;
     if (isQt6) {
-      const toolchainFile = path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
+      const toolchainFile = path.join(
+        libs,
+        'cmake',
+        'Qt6',
+        `qt.toolchain.cmake`
+      );
       if (!fsSync.existsSync(toolchainFile)) {
         const warn = `Toolchain file not found: ${toolchainFile}`;
         void vscode.window.showWarningMessage(warn);
