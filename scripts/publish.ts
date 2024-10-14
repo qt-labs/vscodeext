@@ -5,6 +5,7 @@ import * as path from 'path';
 import { execSync } from 'child_process';
 import { program } from 'commander';
 import * as fs from 'fs';
+import * as semver from 'semver';
 
 import * as common from './common';
 
@@ -24,7 +25,21 @@ function main() {
     : 'origin';
   const publishCommand = `npx vsce publish ${preRelease ? '--pre-release' : ''}`;
   const version = common.getExtensionVersion(targetExtensionRoot);
-
+  const isEven = (num: number) => num % 2 === 0;
+  const parsedVersion = semver.parse(version);
+  if (parsedVersion === null) {
+    throw new Error(`Invalid version: ${version}`);
+  }
+  if (isEven(parsedVersion.minor) && preRelease) {
+    throw new Error(
+      `Cannot publish pre-release version for even minor version: ${version}`
+    );
+  }
+  if (!isEven(parsedVersion.minor) && !preRelease) {
+    throw new Error(
+      `Cannot publish stable version for odd minor version: ${version}`
+    );
+  }
   common.checkForTagCommit(targetExtension, version);
 
   execSync(`npm run _prepublish`, { stdio: 'inherit' });
