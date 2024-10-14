@@ -171,8 +171,6 @@
     "typescript": "^5.2.2",
     "vscode-languageclient": "^9.0.1",
     "qt-lib": "file:../qt-lib",
-    "winston": "^3.13.0",
-    "winston-transport-vscode": "^0.1.0",
     "untildify": "^5.0.0"
   }
 }

@@ -230,8 +230,6 @@
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
     "typescript": "^5.2.2",
-    "vscode-cmake-tools": "^1.2.0",
-    "winston": "^3.13.0",
-    "winston-transport-vscode": "^0.1.0"
+    "vscode-cmake-tools": "^1.2.0"
   }
 }
