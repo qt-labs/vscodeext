@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import * as cmakeAPi from 'vscode-cmake-tools';
+import * as cmakeApi from 'vscode-cmake-tools';
 
 import { WorkspaceStateManager } from '@/state';
 import { coreAPI, kitManager } from '@/extension';
@@ -17,8 +17,8 @@ export async function createCppProject(
   context: vscode.ExtensionContext
 ) {
   logger.info('Creating project:"' + folder.uri.fsPath + '"');
-  const api = await cmakeAPi.getCMakeToolsApi(cmakeAPi.Version.latest);
-  let cmakeProject: cmakeAPi.Project | undefined;
+  const api = await cmakeApi.getCMakeToolsApi(cmakeApi.Version.latest);
+  let cmakeProject: cmakeApi.Project | undefined;
   if (api) {
     cmakeProject = await api.getProject(folder.uri);
   }
@@ -28,19 +28,19 @@ export async function createCppProject(
 // Project class represents a workspace folder in the extension.
 export class CppProject implements Project {
   private readonly _stateManager: WorkspaceStateManager;
-  private readonly _cmakeProject: cmakeAPi.Project | undefined;
+  private readonly _cmakeProject: cmakeApi.Project | undefined;
   constructor(
     private readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext,
-    cmakeProject: cmakeAPi.Project | undefined
+    cmakeProject: cmakeApi.Project | undefined
   ) {
     this._cmakeProject = cmakeProject;
     this._stateManager = new WorkspaceStateManager(_context, _folder);
 
     if (this._cmakeProject) {
       this._cmakeProject.onSelectedConfigurationChanged(
-        async (configurationType: cmakeAPi.ConfigurationType) => {
-          if (configurationType === cmakeAPi.ConfigurationType.Kit) {
+        async (configurationType: cmakeApi.ConfigurationType) => {
+          if (configurationType === cmakeApi.ConfigurationType.Kit) {
             let selectedCMakeKit =
               await vscode.commands.executeCommand<string>('cmake.buildKit');
             logger.info('Selected kit:', selectedCMakeKit);
