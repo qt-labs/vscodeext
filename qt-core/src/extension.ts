@@ -27,7 +27,7 @@ import { resetCommand } from '@/reset';
 const logger = createLogger('extension');
 
 export let coreAPI: CoreAPIImpl | undefined;
-let projectManager: CoreProjectManager;
+export let projectManager: CoreProjectManager;
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);

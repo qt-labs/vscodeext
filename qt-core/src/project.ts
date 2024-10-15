@@ -56,6 +56,11 @@ export class CoreProject implements Project {
   get folder() {
     return this._folder;
   }
+
+  public async reset() {
+    return this.stateManager.reset();
+  }
+
   private watchWorkspaceFolderConfig(
     context: vscode.ExtensionContext,
     folder: vscode.WorkspaceFolder
@@ -198,5 +203,11 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
         }
       )
     );
+  }
+  public reset() {
+    void this.globalStateManager.reset();
+    for (const project of this.projects) {
+      void project.reset();
+    }
   }
 }
