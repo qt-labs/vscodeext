@@ -187,7 +187,40 @@ export function isPathToQtPathsOrQMake(filePath: string): boolean {
 }
 
 export function isEqualArrays<T>(a: T[], b: T[]): boolean {
-  return a.length === b.length && a.every((v, i) => v === b[i]);
+  return a.length === b.length && a.every((v, i) => deepEqual(v, b[i]));
+}
+
+function deepEqual<T>(x: T, y: T): boolean {
+  if (x === y) {
+    return true;
+  }
+
+  if (
+    typeof x !== 'object' ||
+    x === null ||
+    typeof y !== 'object' ||
+    y === null
+  ) {
+    return false;
+  }
+
+  const keysX = Object.keys(x as never);
+  const keysY = Object.keys(y as never);
+
+  if (keysX.length !== keysY.length) {
+    return false;
+  }
+
+  for (const key of keysX) {
+    if (
+      !keysY.includes(key) ||
+      !deepEqual((x as never)[key], (y as never)[key])
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 export function generateDefaultQtPathsName(qtInfo: QtInfo): string {
