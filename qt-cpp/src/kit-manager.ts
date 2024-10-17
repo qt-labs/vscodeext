@@ -673,11 +673,15 @@ export class KitManager {
         return false;
       }
       logger.info('version: ' + version);
-      const msvcTargetArch =
-        kit.preferredGenerator?.platform ?? kit.visualStudioArchitecture ?? '';
+      const msvcTargetArch = kit.visualStudioArchitecture ?? '';
+      const msvcTargetPlatformArch = kit.preferredGenerator?.platform ?? '';
       logger.info('msvcTargetArch: ' + msvcTargetArch);
       const targetArchitecture = KitManager.MapMsvcPlatformToQt[msvcTargetArch];
-      const isArchMatch = targetArchitecture == architecture;
+      const targetPlatformArch =
+        KitManager.MapMsvcPlatformToQt[msvcTargetPlatformArch];
+      const isArchMatch =
+        targetArchitecture == architecture &&
+        targetPlatformArch == architecture;
       return isArchMatch && compareVersions(version, vsYear) >= 0;
     });
     for (const kit of msvcKitsWithArchitectureMatch) {
