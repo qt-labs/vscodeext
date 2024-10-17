@@ -467,18 +467,21 @@ export class KitManager {
     const platform = tokens[0] ?? '';
     if (platform != 'android') {
       if (platform.startsWith('msvc')) {
-        newKit = {
-          ...newKit,
-          ...{
-            visualStudio: toolchain,
-            visualStudioArchitecture: tokens[-1]
-          }
-        };
         const msvcKitsClone: Kit[] = JSON.parse(
           JSON.stringify(loadedCMakeKits)
         ) as Kit[];
         logger.info(`MSVC kits clone: ${JSON.stringify(msvcKitsClone)}`);
-        yield* KitManager.generateMsvcKits(newKit, msvcKitsClone);
+        const msvcInfoMatch =
+          toolchain.match(KitManager.MsvcInfoRegexp) ??
+          toolchain.match(KitManager.MsvcInfoNoArchRegexp);
+        const vsYear = msvcInfoMatch?.at(1) ?? '';
+        const architecture = msvcInfoMatch?.at(2) ?? '32';
+        yield* KitManager.generateMsvcKits(
+          newKit,
+          msvcKitsClone,
+          architecture,
+          vsYear
+        );
         return;
       } else if (platform.startsWith('mingw')) {
         const mingwDirPath = await promiseMingwPath;
@@ -635,14 +638,14 @@ export class KitManager {
     return generator ? generator : CMakeDefaultGenerator;
   }
 
-  private static *generateMsvcKits(newKit: Kit, loadedCMakeKits: Kit[]) {
-    const msvcInfoMatch =
-      newKit.visualStudio?.match(KitManager.MsvcInfoRegexp) ??
-      newKit.visualStudio?.match(KitManager.MsvcInfoNoArchRegexp);
-    const vsYear = msvcInfoMatch?.at(1) ?? '';
+  private static *generateMsvcKits(
+    newKit: Kit,
+    loadedCMakeKits: Kit[],
+    architecture: string,
+    vsYear: string
+  ) {
     logger.info('vsYear: ' + vsYear);
-    logger.info('newKit.visualStudio: ' + newKit.visualStudio);
-    const architecture = msvcInfoMatch?.at(2) ?? '32';
+    logger.info('architecture: ' + architecture);
     newKit.preferredGenerator = {
       ...newKit.preferredGenerator,
       ...{
@@ -650,17 +653,6 @@ export class KitManager {
         // toolset: 'host='+SupportedArchitectureMSVC
       }
     };
-    if (architecture) {
-      newKit = {
-        ...newKit,
-        ...{
-          visualStudioArchitecture: architecture.toUpperCase()
-        }
-      };
-    }
-    logger.info(
-      'newKit.visualStudioArchitecture: ' + newKit.visualStudioArchitecture
-    );
     const msvcKitsWithArchitectureMatch = loadedCMakeKits.filter((kit) => {
       const version = KitManager.getMsvcYear(kit);
       if (!version) {
@@ -682,22 +674,20 @@ export class KitManager {
         .replace(/[-_ ]+/g, '_');
       kit.name = qtPath.mangleMsvcKitName(newKit.name + '_' + tempKitName);
       if (kit.preferredGenerator) {
-        if (newKit.preferredGenerator) {
-          kit.preferredGenerator.name = newKit.preferredGenerator.name;
-          if (kit.preferredGenerator.name == CMakeDefaultGenerator) {
-            if (newKit.cmakeSettings) {
-              if (kit.cmakeSettings == undefined) {
-                kit.cmakeSettings = {};
-              }
-              kit.cmakeSettings = {
-                ...newKit.cmakeSettings,
-                ...kit.cmakeSettings
-              };
+        kit.preferredGenerator.name = newKit.preferredGenerator.name;
+        if (kit.preferredGenerator.name == CMakeDefaultGenerator) {
+          if (newKit.cmakeSettings) {
+            if (kit.cmakeSettings == undefined) {
+              kit.cmakeSettings = {};
             }
-            // Generator 'Ninja Multi-Config' does not support platform & toolset specification
-            kit.preferredGenerator.platform = undefined;
-            kit.preferredGenerator.toolset = undefined;
+            kit.cmakeSettings = {
+              ...newKit.cmakeSettings,
+              ...kit.cmakeSettings
+            };
           }
+          // Generator 'Ninja Multi-Config' does not support platform & toolset specification
+          kit.preferredGenerator.platform = undefined;
+          kit.preferredGenerator.toolset = undefined;
         }
       } else {
         kit.preferredGenerator = newKit.preferredGenerator;
