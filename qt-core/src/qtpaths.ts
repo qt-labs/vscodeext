@@ -17,24 +17,27 @@ import { EXTENSION_ID } from '@/constants';
 const logger = createLogger('qtpaths');
 
 export function registerQtByQtpaths() {
-  return vscode.commands.registerCommand(`${EXTENSION_ID}.registerQtByQtpaths`, () => {
-    const options: vscode.OpenDialogOptions = {
-      canSelectMany: false,
-      openLabel: 'Select',
-      title: 'Select a qtpaths or qmake executable',
-      canSelectFiles: true,
-      canSelectFolders: false
-    };
-    void vscode.window.showOpenDialog(options).then((selected) => {
-      if (selected) {
-        const selectedPath = selected[0]?.fsPath;
-        if (!selectedPath) {
-          return;
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.registerQtByQtpaths`,
+    () => {
+      const options: vscode.OpenDialogOptions = {
+        canSelectMany: false,
+        openLabel: 'Select',
+        title: 'Select a qtpaths or qmake executable',
+        canSelectFiles: true,
+        canSelectFolders: false
+      };
+      void vscode.window.showOpenDialog(options).then((selected) => {
+        if (selected) {
+          const selectedPath = selected[0]?.fsPath;
+          if (!selectedPath) {
+            return;
+          }
+          addQtPathToSettings(selectedPath);
         }
-        addQtPathToSettings(selectedPath);
-      }
-    });
-  });
+      });
+    }
+  );
 }
 
 function addQtPathToSettings(qtPath: string) {
