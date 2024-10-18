@@ -16,6 +16,7 @@ import {
   createLogger,
   findQtKits,
   isError,
+  exists,
   OSExeSuffix,
   QtInsRootConfigName,
   compareVersions,
@@ -23,6 +24,7 @@ import {
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
+import * as installer from '@/installer';
 
 const logger = createLogger('qmlls');
 const QMLLS_CONFIG = `${EXTENSION_ID}.qmlls`;
@@ -48,6 +50,30 @@ export class Qmlls {
   }
 
   public async start() {
+    try {
+      const r = await installer.checkStatus();
+      logger.info('Status Check: ', r.message);
+
+      if (r.assetToInstall) {
+        if (!(await installer.getUserConsent())) {
+          throw new Error('User declined to install qmlls');
+        }
+
+        logger.info(
+          `Installing: ${r.assetToInstall.name}, ${r.assetToInstall.tag_name}`
+        );
+
+        await installer.install(r.assetToInstall);
+        logger.info('Installation done');
+      }
+    } catch (error) {
+      logger.warn(isError(error) ? error.message : String(error));
+    }
+
+    await this.startQmlls();
+  }
+
+  private async startQmlls() {
     const configs = vscode.workspace.getConfiguration(QMLLS_CONFIG);
     if (!configs.get<boolean>('enabled', false)) {
       return;
@@ -66,6 +92,12 @@ export class Qmlls {
 
         this.startLanguageClient(customPath);
       } else {
+        const installed = installer.getExpectedQmllsPath();
+        if (await exists(installed)) {
+          this.startLanguageClient(installed);
+          return;
+        }
+
         const qmllsExeConfig = await findMostRecentExecutableQmlLS();
         if (!qmllsExeConfig) {
           throw new Error('not found');

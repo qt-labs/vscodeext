@@ -149,6 +149,7 @@
     "@types/license-checker": "^25.0.6",
     "@types/node": "^20.2.5",
     "@types/vscode": "^1.78.0",
+    "@types/yauzl": "^2.10.3",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "@vscode/l10n-dev": "^0.0.30",
@@ -171,6 +172,7 @@
     "typescript": "^5.2.2",
     "vscode-languageclient": "^9.0.1",
     "qt-lib": "file:../qt-lib",
-    "untildify": "^5.0.0"
+    "untildify": "^5.0.0",
+    "yauzl": "^3.1.3"
   }
 }
