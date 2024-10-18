@@ -25,7 +25,7 @@ import {
   registerbuildDirectoryName,
   registerlaunchTargetFilenameWithoutExtension
 } from '@cmd/launch-variables';
-import { createCppProject, CppProjectManager } from '@/project';
+import { createCppProject, CppProjectManager, CppProject } from '@/project';
 import { KitManager } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { EXTENSION_ID } from '@/constants';
@@ -110,34 +110,27 @@ export async function initCoreValues() {
 
 function processMessage(message: QtWorkspaceConfigMessage) {
   // check if workspace folder is a string
+  let project: CppProject | undefined;
   if (typeof message.workspaceFolder === 'string') {
-    if (message.workspaceFolder === GlobalWorkspace) {
-      const qtInsRoot = message.get<string>(QtInsRootConfigName);
-      if (qtInsRoot !== undefined) {
-        void kitManager.onQtInstallationRootChanged(qtInsRoot);
-      }
-      const additionalQtPaths = message.get<QtAdditionalPath[]>(
-        AdditionalQtPathsName
-      );
-      if (additionalQtPaths !== undefined) {
-        kitManager.onQtPathsChanged(additionalQtPaths);
-      }
+    if (message.workspaceFolder !== GlobalWorkspace) {
+      throw new Error('Invalid global workspace');
     }
-    return;
+  } else {
+    project = projectManager.getProject(message.workspaceFolder);
+    if (!project) {
+      logger.info('Project not found');
+      return;
+    }
   }
-  const project = projectManager.getProject(message.workspaceFolder);
-  if (!project) {
-    logger.info('Project not found');
-    return;
-  }
+
   const qtInsRoot = message.get<string>(QtInsRootConfigName);
   if (qtInsRoot !== undefined) {
-    void kitManager.onQtInstallationRootChanged(qtInsRoot, project.folder);
+    void kitManager.onQtInstallationRootChanged(qtInsRoot, project?.folder);
   }
   const additionalQtPaths = message.get<QtAdditionalPath[]>(
     AdditionalQtPathsName
   );
   if (additionalQtPaths !== undefined) {
-    kitManager.onQtPathsChanged(additionalQtPaths, project.folder);
+    kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
   }
 }
