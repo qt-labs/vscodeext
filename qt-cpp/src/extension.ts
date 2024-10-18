@@ -120,7 +120,7 @@ function processMessage(message: QtWorkspaceConfigMessage) {
         AdditionalQtPathsName
       );
       if (additionalQtPaths !== undefined) {
-        void kitManager.updateQtPathsQtKits(additionalQtPaths);
+        kitManager.onQtPathsChanged(additionalQtPaths);
       }
     }
     return;
@@ -138,6 +138,6 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     AdditionalQtPathsName
   );
   if (additionalQtPaths !== undefined) {
-    void kitManager.updateQtPathsQtKits(additionalQtPaths, project.folder);
+    kitManager.onQtPathsChanged(additionalQtPaths, project.folder);
   }
 }
