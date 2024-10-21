@@ -7,7 +7,6 @@
     "out"
   ],
   "scripts": {
-    "pretest": "npm run prettierWrite && npx tsc --noEmit && eslint . --fix",
     "all_dev": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all && npm run pretest:all && npm run package:all && npm run install-ext:all_sync",
     "all": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all && npm run ci-lint:all && npm run package:all && npm run install-ext:all_sync",
     "all_sync": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all_sync && npm run ci-lint:all_sync && npm run package:all_sync && npm run install-ext:all_sync",
@@ -15,6 +14,7 @@
     "all_dev:qt-qml": "npm run ci:qt-qml && npm run pretest:qt-qml && npm run package:qt-qml && npm run install-ext:qt-qml",
     "all_dev:qt-cpp": "npm run ci:qt-cpp && npm run pretest:qt-cpp && npm run package:qt-cpp && npm run install-ext:qt-cpp",
     "all_dev:qt-ui": "npm run ci:qt-ui && npm run pretest:qt-ui && npm run package:qt-ui && npm run install-ext:qt-ui",
+    "pretest": "npm run prettierWrite && npx tsc --noEmit && eslint . --fix --cache",
     "pretest:qt-core": "cd qt-core && npm run pretest",
     "pretest:qt-qml": "cd qt-qml && npm run pretest",
     "pretest:qt-cpp": "cd qt-cpp && npm run pretest",
@@ -77,6 +77,8 @@
     "generateLicenses:qt-qml": "npm run generateLicenses -- --dir=\"qt-qml\" --exclude=\"qt-qml\" --output=\"qt-qml/ThirdPartyNotices.txt\"",
     "generateLicenses:qt-cpp": "npm run generateLicenses -- --dir=\"qt-cpp\" --exclude=\"qt-cpp\" --output=\"qt-cpp/ThirdPartyNotices.txt\"",
     "generateLicenses:qt-ui": "npm run generateLicenses -- --dir=\"qt-ui\" --exclude=\"qt-ui\" --output=\"qt-ui/ThirdPartyNotices.txt\"",
+    "generateLicenses:all": "concurrently \"npm run generateLicenses:qt-core\" \"npm run generateLicenses:qt-cpp\" \"npm run generateLicenses:qt-ui\" \"npm run generateLicenses:qt-qml\"",
+    "generateLicenses:all_sync": "npm run generateLicenses:qt-core && npm run generateLicenses:qt-cpp && npm run generateLicenses:qt-ui && npm run generateLicenses:qt-qml",
     "_prepublish_git": "git reset --hard && git clean -ffdx",
     "_prepublish": "npm run _prepublish_git && npm ci && npm run ci:qt-lib && npm run compile:qt-lib && npm run ci-lint:qt-lib",
     "publish:qt-core": "ts-node ./scripts/publish.ts --extension=\"qt-core\"",
@@ -86,8 +88,6 @@
     "publish:qt-cpp-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/cpp\" --pack=\"qt-cpp-pack\"",
     "publish:qt-wasm-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/wasm\" --pack=\"qt-wasm-pack\"",
     "publish:qt-all-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/qt\" --pack=\"qt-all-pack\"",
-    "generateLicenses:all": "concurrently \"npm run generateLicenses:qt-core\" \"npm run generateLicenses:qt-cpp\" \"npm run generateLicenses:qt-ui\" \"npm run generateLicenses:qt-qml\"",
-    "generateLicenses:all_sync": "npm run generateLicenses:qt-core && npm run generateLicenses:qt-cpp && npm run generateLicenses:qt-ui && npm run generateLicenses:qt-qml",
     "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\""

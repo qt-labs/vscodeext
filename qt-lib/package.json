@@ -10,7 +10,7 @@
     "compile": "tsc",
     "pretest": "npm run compile && npm run lint",
     "ci-lint": "npm run prettierCheck && eslint . ",
-    "lint": "npm run prettierWrite && eslint . --fix",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\""

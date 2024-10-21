@@ -12,3 +12,4 @@ package.nls.qps-ploc.json
 build
 src/test/util/dependencies
 .cache
+.eslintcache

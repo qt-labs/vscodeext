@@ -9,7 +9,7 @@ function main() {
   program.parse(process.argv);
   const options = program.opts();
   const targetExtensionRoot = options.dir as string;
-  execSync(`eslint .`, {
+  execSync(`eslint . --cache`, {
     cwd: targetExtensionRoot,
     stdio: 'inherit'
   });

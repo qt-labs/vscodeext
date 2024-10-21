@@ -17,7 +17,7 @@ function main() {
     cwd: extensionRoot,
     stdio: 'inherit'
   });
-  execSync(`eslint .`, {
+  execSync(`eslint . --cache`, {
     cwd: targetExtensionRoot,
     stdio: 'inherit'
   });
