@@ -10,6 +10,7 @@
     "sourceMap": true,
     "rootDirs": ["src"],
     "strict": true /* enable all strict type-checking options */,
+    "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,

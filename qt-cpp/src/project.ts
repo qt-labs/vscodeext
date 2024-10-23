@@ -72,7 +72,7 @@ export class CppProject implements Project {
 }
 
 export class CppProjectManager extends ProjectManager<CppProject> {
-  constructor(readonly context: vscode.ExtensionContext) {
+  constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createCppProject);
 
     this.watchProjects(context);

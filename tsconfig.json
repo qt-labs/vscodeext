@@ -10,6 +10,7 @@
     "sourceMap": true,
     "rootDir": "scripts",
     "strict": true /* enable all strict type-checking options */,
+    "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,

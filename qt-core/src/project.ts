@@ -106,7 +106,7 @@ export class CoreProject implements Project {
 export class CoreProjectManager extends ProjectManager<CoreProject> {
   globalStateManager: GlobalStateManager;
   workspaceFile: vscode.Uri | undefined;
-  constructor(readonly context: vscode.ExtensionContext) {
+  constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createCoreProject);
     this.globalStateManager = new GlobalStateManager(context);
     this.watchGlobalConfig(context);

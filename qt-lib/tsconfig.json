@@ -11,6 +11,7 @@
     "declaration": true,
     "rootDir": "src",
     "strict": true /* enable all strict type-checking options */,
+    "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
