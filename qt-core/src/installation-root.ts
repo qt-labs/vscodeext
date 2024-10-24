@@ -23,7 +23,7 @@ import { convertAdditionalQtPaths } from '@/util';
 
 const logger = createLogger('installation-root');
 
-export async function setDoNotAskForDefaultQtInstallationRoot(value: boolean) {
+async function setDoNotAskForDefaultQtInstallationRoot(value: boolean) {
   await vscode.workspace
     .getConfiguration(EXTENSION_ID)
     .update(
@@ -31,6 +31,14 @@ export async function setDoNotAskForDefaultQtInstallationRoot(value: boolean) {
       value,
       vscode.ConfigurationTarget.Global
     );
+}
+
+function getDoNotAskForDefaultQtInstallationRoot(): boolean {
+  return (
+    vscode.workspace
+      .getConfiguration(EXTENSION_ID)
+      .get<boolean>('doNotAskForDefaultQtInstallationRoot') ?? false
+  );
 }
 
 export function getCurrentGlobalQtInstallationRoot(): string {
@@ -52,14 +60,6 @@ export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
 
 function getConfiguration() {
   return vscode.workspace.getConfiguration(EXTENSION_ID);
-}
-
-function getDoNotAskForDefaultQtInstallationRoot(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(EXTENSION_ID)
-      .get<boolean>('doNotAskForDefaultQtInstallationRoot') ?? false
-  );
 }
 
 export function checkDefaultQtInsRootPath() {
