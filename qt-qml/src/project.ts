@@ -63,6 +63,15 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
       project.getConfigValues();
     }
   }
+  getBuildDirs() {
+    const buildDirs = [];
+    for (const project of this.getProjects()) {
+      if (project.buildDir) {
+        buildDirs.push(project.buildDir);
+      }
+    }
+    return buildDirs;
+  }
 }
 // Project class represents a workspace folder in the extension.
 export class QMLProject implements Project {

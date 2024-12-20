@@ -1,5 +1,11 @@
 {
   "qt-qml.command.restartQmlls.title": "Restart QML language server",
   "qt-qml.command.checkQmllsUpdate.title": "Check for QML language server update",
-  "qt-qml.command.downloadQmlls.title": "Download the most recent QML language server"
+  "qt-qml.command.downloadQmlls.title": "Download the most recent QML language server",
+  "qt-qml.debug.qmlDebugging.label": "Qt: QML: Attach by port",
+  "qt-qml.debug.qmlDebugging.description": "Launch a QML application with the QML debugger",
+  "qt-qml.debug.cppdbg.label": "Qt: Debug with cppdbg and QML debugger",
+  "qt-qml.debug.cppdbg.description": "Launch a QML application with C++ debugger and attach with QML debugger",
+  "qt-qml.debug.cppvsdbg.label": "Qt: Debug with cppdbg and QML debugger (Windows)",
+  "qt-qml.debug.cppvsdbg.description": "Launch a QML application with Visual Studio Debugger and attach with QML debugger"
 }

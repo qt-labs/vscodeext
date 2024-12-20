@@ -24,7 +24,8 @@
       "@/*": ["src/*"],
       "@cmd/*": ["src/commands/*"],
       "@task/*": ["src/tasks/*"],
-      "@util/*": ["src/util/*"]
+      "@util/*": ["src/util/*"],
+      "@debug/*": ["src/debug/*"]
     }
   },
   "include": ["src/**/*"]
