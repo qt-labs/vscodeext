@@ -176,7 +176,144 @@
           "scope": "machine"
         }
       }
-    }
+    },
+    "breakpoints": [
+      {
+        "language": "qml"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "qml",
+        "label": "QML debugger",
+        "runtime": "node",
+        "configurationAttributes": {
+          "attach": {
+            "required": [
+              "host",
+              "port"
+            ],
+            "properties": {
+              "host": {
+                "type": "string",
+                "description": "Hostname (or IP address) of the target program's debug service",
+                "default": "localhost"
+              },
+              "port": {
+                "type": [
+                  "number",
+                  "string"
+                ],
+                "description": "Port of the target program's debug service"
+              },
+              "buildDirs": {
+                "type": "array",
+                "description": "List of build directories to include in the debugger. This variable is useful when the build directory is not in the workspace.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "qml",
+            "request": "attach",
+            "name": "Attach to QML debugger",
+            "host": "localhost",
+            "port": "^\"Custom port or \\${command:qt-qml.debugPort} for compound usage\""
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "%qt-qml.debug.qmlDebugging.label%",
+            "description": "%qt-qml.debug.qmlDebugging.description%",
+            "body": {
+              "name": "%qt-qml.debug.qmlDebugging.label%",
+              "type": "qml",
+              "request": "attach",
+              "host": "localhost",
+              "port": "^\"Custom port or \\${command:qt-qml.debugPort} for compound usage\""
+            }
+          },
+          {
+            "label": "%qt-qml.debug.cppdbg.label%",
+            "description": "%qt-qml.debug.cppdbg.description%",
+            "body": {
+              "name": "%qt-qml.debug.cppdbg.label%",
+              "type": "cppdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt-cpp.natvis}\"",
+              "showDisplayString": true,
+              "args": [
+                "^\"-qmljsdebugger=host:localhost,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
+              ],
+              "linux": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "/usr/bin/gdb"
+              },
+              "osx": {
+                "MIMode": "lldb"
+              },
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.qtDir}\""
+                  },
+                  {
+                    "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+                    "value": "^\"\\${command:qt-cpp.QT_QPA_PLATFORM_PLUGIN_PATH}\""
+                  },
+                  {
+                    "name": "QML_IMPORT_PATH",
+                    "value": "^\"\\${command:qt-cpp.QML_IMPORT_PATH}\""
+                  }
+                ],
+                "MIMode": "gdb",
+                "miDebuggerPath": "^\"\\${command:qt-cpp.minGWgdb}\""
+              }
+            }
+          },
+          {
+            "label": "%qt-qml.debug.cppvsdbg.label%",
+            "description": "%qt-qml.debug.cppvsdbg.description%",
+            "body": {
+              "name": "%qt-qml.debug.cppvsdbg.label%",
+              "type": "cppvsdbg",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\"",
+              "stopAtEntry": false,
+              "cwd": "^\"\\${workspaceFolder}\"",
+              "visualizerFile": "^\"\\${command:qt-cpp.natvis}\"",
+              "args": [
+                "^\"-qmljsdebugger=host:localhost,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
+              ],
+              "windows": {
+                "environment": [
+                  {
+                    "name": "PATH",
+                    "value": "^\"\\${env:PATH};\\${command:qt-cpp.qtDir}\""
+                  },
+                  {
+                    "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+                    "value": "^\"\\${command:qt-cpp.QT_QPA_PLATFORM_PLUGIN_PATH}\""
+                  },
+                  {
+                    "name": "QML_IMPORT_PATH",
+                    "value": "^\"\\${command:qt-cpp.QML_IMPORT_PATH}\""
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
   },
   "taskDefinitions": [
     {
@@ -221,8 +358,14 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@vscode/debugadapter": "^1.68.0",
+    "@vscode/debugprotocol": "^1.68.0",
     "@vscode/l10n": "^0.0.16",
+    "async-mutex": "^0.5.0",
+    "fast-xml-parser": "^5.0.8",
+    "get-port": "^7.1.0",
     "module-alias": "^2.2.3",
+    "promise-socket": "^8.0.0",
     "qt-lib": "file:../qt-lib",
     "typescript": "^5.6.3",
     "untildify": "^5.0.0",

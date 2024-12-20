@@ -15,14 +15,22 @@ import {
 } from 'qt-lib';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
+import { registerDebugPort } from '@cmd/debug';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
 import { getDoNotAskForDownloadingQmlls, Qmlls, QmllsStatus } from '@/qmlls';
 import { EXTENSION_ID } from '@/constants';
 import { QMLProjectManager, createQMLProject } from '@/project';
 import { registerResetCommand } from '@cmd/reset';
+import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter';
+import {
+  acquirePortTaskProvider,
+  AcquirePortTaskProvider
+} from './tasks/acquire-port';
 
 export let projectManager: QMLProjectManager;
 export let coreAPI: CoreAPI | undefined;
+
+let taskProvider: vscode.Disposable | undefined;
 
 const logger = createLogger('extension');
 
@@ -55,11 +63,17 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(
+    registerDebugPort(),
     registerRestartQmllsCommand(),
     registerCheckQmllsUpdateCommand(),
     registerDownloadQmllsCommand(),
     vscode.languages.registerColorProvider('qml', createColorProvider()),
-    registerResetCommand()
+    registerResetCommand(),
+    registerQmlDebugAdapterFactory()
+  );
+  taskProvider = vscode.tasks.registerTaskProvider(
+    AcquirePortTaskProvider.type,
+    acquirePortTaskProvider
   );
   telemetry.sendEvent(`activated`);
   projectManager.getConfigValues();
@@ -82,6 +96,9 @@ export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
   telemetry.dispose();
   projectManager.dispose();
+  if (taskProvider) {
+    taskProvider.dispose();
+  }
 }
 
 function processMessage(message: QtWorkspaceConfigMessage) {
