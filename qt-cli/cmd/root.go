@@ -16,7 +16,6 @@ var verbose bool
 var rootCmd = &cobra.Command{
 	Use:     "qtcli",
 	Short:   util.Msg("A CLI for creating Qt project and files"),
-	Version: "0.1",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
@@ -32,6 +31,10 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func SetVersion(v string) {
+	rootCmd.Version = v
 }
 
 func init() {
