@@ -1,0 +1,7 @@
+version: "1"
+
+steps:
+  - id: title
+    type: input
+    question: "Enter a window title:"
+    default: "Form"

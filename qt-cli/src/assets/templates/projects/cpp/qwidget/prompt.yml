@@ -1,0 +1,39 @@
+version: "1"
+
+steps:
+  - id: qtMajorVersion
+    type: picker
+    question: "Qt version:"
+    default: "6"
+    items:
+      - text: Qt6
+        data: "6"
+      - text: Qt5
+        data: "5"
+
+  - id: useForm
+    type: confirm
+    question: "Use form?"
+    default: true
+
+  - id: useTranslation
+    type: confirm
+    question: "Use translation?"
+    default: false
+
+  - id: language
+    type: input
+    question: "Target language (e.g. en_US, ko_KR):"
+    default: en_US
+    when: "{{ .useTranslation }}"
+    rules:
+      - required: true
+      - match: "^[a-z]{2}_[A-Z]{2}$"
+
+consts:
+  - usePragmaOnce: false
+  - className: Widget
+  - baseClass: QWidget
+  - uiUsage: 'pointer' # "pointer, inherit, member"
+  - uiHeaderFile: ui_widget.h
+  - includeGuard: WIDGET_H

@@ -3,6 +3,7 @@
 For building a native exectuable, use the `build` command.
 
 ```bash
+$ cd src
 $ go build .
 ```
 
@@ -15,6 +16,7 @@ To build for a different platform and architecture, set `GOOS` and `GOARCH` envi
 For example, if you run,
 
 ```bash
+$ cd src
 $ GOOS=darwin GOARCH=arm64 go build .
 $ GOOS=windows GOARCH=amd64 go build .
 ```

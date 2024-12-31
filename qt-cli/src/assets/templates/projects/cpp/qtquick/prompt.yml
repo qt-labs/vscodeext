@@ -1,0 +1,35 @@
+version: "1"
+
+steps:
+  - id: minimumQtVersion
+    type: picker
+    question: "Minimum Qt version:"
+    default: "6.4"
+    items:
+      - text: "6.5"
+      - text: "6.4"
+      - text: "6.2"
+
+  - id: useVirtualKeyboard
+    type: confirm
+    question: "Use virtual keyboard"
+    default: false
+
+  - id: qqcStyle
+    type: picker
+    question: "Qt Quick Controls style:"
+    default: ""
+    items:
+      - text: <None>
+        data: ""
+      - text: Material
+      - text: Universal
+
+  - id: qqcTheme
+    type: picker
+    question: "Qt Quick Controls theme:"
+    default: Light
+    when: '{{ not (eq .qqcStyle "") }}'
+    items:
+      - text: Light
+      - text: Dark

@@ -1,0 +1,13 @@
+version: "1"
+type: project
+files:
+  - in: CMakeLists.txt
+  - in: Main.qml
+  - in: main.cpp
+
+  - in: qtquickcontrols2.conf
+    when: '{{ not (eq .qqcStyle "") }}'
+
+  - in: '@/common/git.ignore'
+    out: .gitignore
+    bypass: true

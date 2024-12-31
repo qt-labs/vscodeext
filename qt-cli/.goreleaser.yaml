@@ -4,6 +4,7 @@ version: 2
 project_name: qtcli
 builds:
   - id: qtcli
+    dir: ./src
     goos:
       - linux
       - windows

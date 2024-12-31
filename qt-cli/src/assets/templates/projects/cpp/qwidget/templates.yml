@@ -1,0 +1,18 @@
+version: "1"
+type: project
+files:
+  - in: CMakeLists.txt
+  - in: main.cpp
+  - in: widget.cpp
+  - in: widget.h
+
+  - in: widget.ui
+    when: '{{ .useForm }}'
+
+  - in: '@/common/file.ts'
+    out: '{{ .name }}_{{ .language }}.ts'
+    when: '{{ .useTranslation }}'
+
+  - in: '@/common/git.ignore'
+    out: .gitignore
+    bypass: true

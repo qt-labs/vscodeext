@@ -1,0 +1,5 @@
+version: "1"
+
+files:
+  - in: '@/common/file.ts'
+    out: '{{ .name }}.ts'

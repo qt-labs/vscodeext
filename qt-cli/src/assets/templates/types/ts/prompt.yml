@@ -1,0 +1,11 @@
+version: "1"
+
+steps:
+  - id: language
+    type: input
+    question: "Target language (e.g. en_US, ko_KR):"
+    default: en_US
+    rules:
+      - required: true
+      - match: "^[a-z]{2}_[A-Z]{2}$"
+
