@@ -72,6 +72,16 @@
         "command": "qt-core.registerQtByQtpaths",
         "title": "%qt-core.command.registerQtByQtpaths.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.createNewFile",
+        "title": "%qt-core.command.createNewFile.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-core.createNewProject",
+        "title": "%qt-core.command.createNewProject.title%",
+        "category": "Qt"
       }
     ],
     "languages": [
