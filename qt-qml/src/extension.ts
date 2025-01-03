@@ -10,9 +10,9 @@ import {
   initLogger,
   telemetry,
   QtWorkspaceConfigMessage,
-  waitForQtCpp
+  waitForQtCpp,
+  createColorProvider
 } from 'qt-lib';
-import { registerColorProvider } from '@/color-provider';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
@@ -58,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerRestartQmllsCommand(),
     registerCheckQmllsUpdateCommand(),
     registerDownloadQmllsCommand(),
-    registerColorProvider(),
+    vscode.languages.registerColorProvider('qml', createColorProvider()),
     registerResetCommand()
   );
   telemetry.sendEvent(`activated`);
