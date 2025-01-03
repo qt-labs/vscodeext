@@ -3,14 +3,7 @@
 
 import * as vscode from 'vscode';
 
-export function registerColorProvider() {
-  return vscode.languages.registerColorProvider(
-    'qml',
-    createArgbHexColorProvider()
-  );
-}
-
-function createArgbHexColorProvider() {
+export function createColorProvider() {
   return {
     provideDocumentColors(document: vscode.TextDocument) {
       const regex = /#[0-9a-f]{3,8}\b/gi;

@@ -9,7 +9,8 @@ import {
   initLogger,
   QtInsRootConfigName,
   AdditionalQtPathsName,
-  telemetry
+  telemetry,
+  createColorProvider
 } from 'qt-lib';
 import { CoreAPIImpl } from '@/api';
 import { registerDocumentationCommands } from '@/online-docs';
@@ -61,6 +62,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(`${EXTENSION_ID}.registerQt`, registerQt)
   );
+  context.subscriptions.push(
+    vscode.languages.registerColorProvider('qss', createColorProvider())
+  );
+
   telemetry.sendEvent(`activated`);
 
   checkDefaultQtInsRootPath();
