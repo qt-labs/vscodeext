@@ -3,6 +3,7 @@
 
 import * as os from 'os';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { spawnSync } from 'child_process';
@@ -39,7 +40,22 @@ export function isValidNewName(name: string): boolean {
 }
 
 export function fallbackWorkingDir(): string {
-  return path.join(os.homedir(), 'Documents');
+  const docs = path.join(os.homedir(), 'Documents');
+  const settings =
+    vscode.workspace
+      .getConfiguration('files')
+      .get<string>('dialog.defaultPath') ?? '';
+
+  try {
+    const o = settings.trim();
+    if (fsSync.statSync(o).isDirectory()) {
+      return o;
+    }
+  } catch (e) {
+    return docs;
+  }
+
+  return docs;
 }
 
 export async function openUri(uri: vscode.Uri) {
