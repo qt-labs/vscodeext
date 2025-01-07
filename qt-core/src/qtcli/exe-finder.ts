@@ -50,15 +50,19 @@ function findQtcliPrefix(): string {
 }
 
 async function findQtcliIn(dir: string, prefix: string) {
-  const files = await fs.readdir(dir, { withFileTypes: true });
+  try {
+    const files = await fs.readdir(dir, { withFileTypes: true });
 
-  for (const file of files) {
-    if (file.isFile() && file.name.startsWith(prefix)) {
-      const fullPath = path.join(dir, file.name);
-      if (isValidQtcliPath(fullPath)) {
-        return fullPath;
+    for (const file of files) {
+      if (file.isFile() && file.name.startsWith(prefix)) {
+        const fullPath = path.join(dir, file.name);
+        if (isValidQtcliPath(fullPath)) {
+          return fullPath;
+        }
       }
     }
+  } catch (e) {
+    return undefined;
   }
 
   return undefined;
