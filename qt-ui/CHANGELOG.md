@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.2.0 (Jan 8, 2025)
+
+🎉 **Added**
+
+- Check also for `qmake.bat` in the Qt installation directory
+- Wait until `qt-cpp` is activated
+
 ## 1.1.0 (Dec 4, 2024)
 
 🎉 **Added**

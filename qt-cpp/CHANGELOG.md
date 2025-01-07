@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.2.0 (Jan 8, 2025)
+
+⚠️ **Changed**
+
+- Removed dependency on `qt-ui`
+
+🐞 **Fixed**
+
+- The race condition while writing to `cmake-kits.json`
+
 ## 1.1.0 (Dec 4, 2024)
 
 🎉 **Added**

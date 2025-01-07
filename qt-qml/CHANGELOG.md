@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.0 (Jan 8, 2025)
+
+🎉 **Added**
+
+- Wait until `qt-cpp` is activated
+
 ## 1.1.0 (Dec 4, 2024)
 
 🎉 **Added**
