@@ -2,7 +2,7 @@
   "name": "qt-qml",
   "displayName": "Qt Qml",
   "description": "Qt Qml Support",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
