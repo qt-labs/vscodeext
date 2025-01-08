@@ -20,9 +20,9 @@ builds:
       - -X main.version={{ .Version }}
     binary: >-
       {{ .ProjectName }}_
-      {{- .Version }}_
       {{- .Os }}_
-      {{- .Arch }}
+      {{- .Arch }}_
+      {{- .Version }}
     no_unique_dist_dir: true
     ignore:
       - goos: linux
@@ -32,8 +32,8 @@ builds:
 
 universal_binaries:
   - name_template: >-
-      {{ .ProjectName }}_
-      {{- .Version }}_darwin_fat
+      {{ .ProjectName }}_darwin_fat_
+      {{- .Version }}
     hooks:
       post: cp {{ .Path }} {{ dir .Path }}/../{{ .Name }} # get out of sub-directory
 
