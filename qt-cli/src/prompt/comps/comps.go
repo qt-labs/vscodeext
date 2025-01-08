@@ -19,7 +19,7 @@ func NewConfirm() *InputPrompt {
 func NewPicker() *ListPrompt {
 	return &ListPrompt{
 		compType:    prompt.CompTypePicker,
-		help:        util.Msg("Use the arrow keys to move, Enter to select"),
+		help:        util.Msg("Use the arrow keys to move, Enter to select."),
 		multiSelect: false,
 	}
 }
@@ -28,7 +28,7 @@ func NewChoices() *ListPrompt {
 	return &ListPrompt{
 		compType: prompt.CompTypeChoices,
 		help: util.Msg(
-			"Use the space key to toggle selection, Enter key to finish"),
+			"Use the space key to toggle selection, Enter key to finish."),
 		multiSelect: true,
 	}
 }
