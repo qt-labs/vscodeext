@@ -16,9 +16,29 @@
     \list 1
         \li Go to \uicontrol {Run and Debug} (\key {Ctrl+Shift+V} or
             \key {Cmd+Shift+V} on \macos).
-        \li Create a \e {launch.json} file.
-        \li Select \uicontrol {Add Configuration}, and then select a
+            \image vscode-run-and-debug.webp {Run and Debug in VS Code}
+        \li Create a \e {launch.json} file (1) that contains launch configurations.
+            For more information, see \l{VS Code: Debugging} in the VS Code
+            documentation.
+        \li Select \uicontrol {Add Configuration} (2), and then select a
             \uicontrol {Qt: Debug} debug configuration that matches
             your debugger.
+        \li Check the launch target (3). To change it, select the
+            target name or go to \uicontrol {Command Palette} and
+            select \uicontrol {CMake: Set Launch/Debug Target}.
     \endlist
+
+    Select one of the following Qt debug configurations:
+
+    \list
+        \li \uicontrol {Qt: Debug with cppdbg} for debugging C/C++ applications
+            with GDB.
+        \li \uicontrol {Qt: Debug with cppvsdbg} for debugging C/C++
+            applications with the Visual Studio Windows debugger.
+        \li \uicontrol {Qt: Debug with lldb} for debugging with LLDB.
+        \li \uicontrol {Qt: Debug Qt WASM with Chrome} for debugging
+            Qt WebAssembly applications with Chrome.
+    \endlist
+
+    \sa {Debug Qt WebAssembly applications}
 */

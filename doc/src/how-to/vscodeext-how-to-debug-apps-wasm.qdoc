@@ -15,7 +15,7 @@
     \list 1
         \li Open a \e {launch.json} file.
         \li Select \uicontrol {Add Configuration}, and then select the
-            \uicontrol {Qt:Debug Qt WASM with Chrome} debug configuration.
+            \uicontrol {Qt: Debug Qt WASM with Chrome} debug configuration.
     \endlist
 
     The \uicontrol {Qt: WASM Start} task in the \uicontrol {preLaunchTask}

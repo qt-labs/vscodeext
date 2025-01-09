@@ -27,3 +27,7 @@
 \externalpage https://doc.qt.io/index.html
 \title Qt Documentation
 */
+/*!
+\externalpage https://code.visualstudio.com/Docs/editor/debugging
+\title VS Code: Debugging
+*/
