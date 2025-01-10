@@ -7,6 +7,10 @@
 - Ship the `qt-cli` extension with `qt-core`
 - New project and file creation features via `qt-cli`
 
+## 1.2.1 (Jan 10, 2025)
+
+The same as `1.2.0`
+
 ## 1.2.0 (Jan 8, 2025)
 
 - Color provider for `qss` files

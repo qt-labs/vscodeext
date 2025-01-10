@@ -4,6 +4,12 @@
 
 The same as `1.2.0`
 
+## 1.2.1 (Jan 10, 2025)
+
+🐞 **Fixed**
+
+- Backport [Refactor communication between core and extensions](https://github.com/qt-labs/vscodeext/commit/b02c70db6ba873c3bea446eee15dae63759667a8) to fix [QTBUG-131702](https://bugreports.qt.io/browse/QTBUG-131702)
+
 ## 1.2.0 (Jan 8, 2025)
 
 🎉 **Added**
