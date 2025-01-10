@@ -8,13 +8,14 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { spawnSync } from 'child_process';
 
-import { createLogger, isError } from 'qt-lib';
+import { createLogger, isError, OSExeSuffix } from 'qt-lib';
 
 export enum QtcliAction {
   NewFile,
   NewProject
 }
 
+export const QtcliExeName = 'qtcli' + OSExeSuffix;
 export const logger = createLogger('qtcli');
 
 export function errorString<T>(e: T) {

@@ -19,10 +19,12 @@ builds:
       - -w # strip DWARF debugging information
       - -X main.version={{ .Version }}
     binary: >-
-      {{ .ProjectName }}_
-      {{- .Os }}_
-      {{- .Arch }}_
-      {{- .Version }}
+      qtcli-
+      {{- if eq .Os "linux" }}ubuntu
+      {{- else if eq .Os "darwin" }}macos
+      {{- else }}{{ .Os }}{{- end }}-
+      {{- .Arch }}-
+      {{- .Version }}/qtcli
     no_unique_dist_dir: true
     ignore:
       - goos: linux
@@ -31,11 +33,9 @@ builds:
         goarch: arm64
 
 universal_binaries:
-  - name_template: >-
-      {{ .ProjectName }}_darwin_fat_
-      {{- .Version }}
+  - name_template: qtcli
     hooks:
-      post: cp {{ .Path }} {{ dir .Path }}/../{{ .Name }} # get out of sub-directory
+      post: mv {{ .Path | dir }} dist/qtcli-macos-fat-{{- .Version }}/
 
 snapshot:
   version_template: '{{ .Version }}'
