@@ -9,7 +9,9 @@
 
 ## 1.2.1 (Jan 10, 2025)
 
-The same as `1.2.0`
+🐞 **Fixed**
+
+- Revert the F1 key binding for help
 
 ## 1.2.0 (Jan 8, 2025)
 
