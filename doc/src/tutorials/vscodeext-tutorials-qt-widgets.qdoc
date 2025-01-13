@@ -47,21 +47,21 @@
     To create a project:
 
     \list 1
-        \li Create a folder called \e AddressBook.
-        \li In VS Code, go to \uicontrol File > \uicontrol {Open Folder}.
-        \li Go to \uicontrol File > \uicontrol {New File}, and create the
-            following files:
-            \list
-                \li \c main.cpp
-                \li \c addressbook.cpp
-                \li \c addressbook.h
-                \li \c adddialog.cpp
-                \li \c adddialog.h
-            \endlist
-        \li Go to \uicontrol File > \uicontrol {New Text File}, and create
-            the \e CMakeLists.txt file. For more information about CMake
-            configuration files, see \l{Getting started with CMake}.
+        \li Go to \uicontrol {Command Palette}, and then select
+            \uicontrol {Qt: Create New Project}.
+        \li In \uicontrol {New Project}, enter \e AddressBook.
+            \image vscodeext-create-new-project.webp {New Project dialog}
+        \li In \uicontrol {Terminal}, select the
+            \uicontrol {[Default] @projects/cpp/qwidget} preset.
+            \image vscodeext-create-new-project-pick-preset-widgets.webp {Pick a preset in Terminal}
+        \li Select a CMake kit for the project.
     \endlist
+
+    Project files are generated in an \e AddressBook folder in the current
+    directory with default settings. For this tutorial, rename \e {widget.cpp},
+    \e {widget.h}, and \e {widget.ui} to \e {addressbook.cpp}, \e {addressbook.h},
+    and \e {addressbook.ui}. Then, change the default class name \e {Widget} to
+    \e {AddressBook} everywhere.
 
     Next, create the main window of the application.
 
@@ -342,5 +342,5 @@
 
     Your application is now complete.
 
-    \sa {Design widgets-based UIs}
+    \sa {Create Qt projects}, {Add files to projects}, {Design widgets-based UIs}
 */
