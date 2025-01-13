@@ -1,0 +1,42 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-create-files.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+
+    \title Add files to projects
+
+    To create a file in the current project directory, select or create a preset
+    for a particular file type:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and then select
+            \uicontrol {Qt: Create New File}.
+        \li In \uicontrol {New File}, enter a name for the file.
+            \image vscodeext-create-new-file.webp {New File dialog}
+        \li In \uicontrol {Terminal}, select a preset or
+            \uicontrol {Manually select features} to create your own preset.
+            \image vscodeext-create-new-file-pick-preset-ui.webp {Pick a preset in Terminal}
+        \li Select a CMake kit for the project.
+    \endlist
+
+    \section1 File presets
+
+    Select one of the following file presets:
+
+    \list
+        \li \c {[Default] @types/qml} creates a QML file (.qml).
+        \li \c {[Default] @types/qrc} creates a Qt resource file (.qrc).
+        \li \c {[Default] @types/ts} creates a translation file (.ts).
+        \li \c {[Default] @types/ui} creates a Qt Widgets form file (.ui).
+        \li \c {[Manually select features]} creates a new preset with the
+            default values you select.
+    \endlist
+
+    \sa {Tutorial: Qt Widgets application}, {Create Qt projects}
+*/
