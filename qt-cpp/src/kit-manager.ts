@@ -43,6 +43,7 @@ export const CMAKE_GLOBAL_KITS_FILEPATH = path.join(
   'cmake-tools-kits.json'
 );
 
+const envPath = '${env:PATH}';
 type Environment = Record<string, string | undefined>;
 
 interface CMakeGenerator {
@@ -357,7 +358,7 @@ export class KitManager {
       }
       tempPath.push(value);
     }
-    tempPath.push('${env:PATH}');
+    tempPath.push(envPath);
     // Remove duplicates
     const pathEnv = Array.from(new Set(tempPath)).join(path.delimiter);
     kit.environmentVariables = {
@@ -512,9 +513,7 @@ export class KitManager {
       return undefined;
     }
     const installationBinDir = path.join(installation, 'bin');
-    const QtPathAddition = [installationBinDir, '${env:PATH}'].join(
-      path.delimiter
-    );
+    const QtPathAddition = [installationBinDir, envPath].join(path.delimiter);
     return QtPathAddition;
   }
 
