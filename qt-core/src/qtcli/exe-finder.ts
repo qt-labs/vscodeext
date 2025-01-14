@@ -41,9 +41,9 @@ function findQtcliPrefix(): string {
   if (platform === 'win32') {
     return 'qtcli_windows';
   } else if (platform === 'darwin') {
-    return 'qtcli_macos';
+    return 'qtcli_darwin';
   } else if (platform === 'linux') {
-    return 'qtcli_ubuntu';
+    return 'qtcli_linux';
   } else {
     throw new Error(`Platform '${platform}' is not supported`);
   }

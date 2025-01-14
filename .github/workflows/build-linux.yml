@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build qtcli
+        uses: ./.github/workflows/qtcli
+        with:
+          working-directory: ./qt-cli
+          deploy-target: ./qt-core/res/qtcli
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

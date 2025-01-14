@@ -1,0 +1,54 @@
+name: Build qtcli binaries
+
+inputs:
+  working-directory:
+      description: 'Root directory of qt-cli (relative to repository root)'
+      default: '.'
+      required: false
+  deploy-target:
+    description: 'Folder where built binaries will be copied'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-go@v4
+      with:
+        go-version-file: ${{ inputs.working-directory }}/src/go.mod
+        cache-dependency-path: ${{ inputs.working-directory }}/src/go.sum
+        cache: true
+
+    - name: Setup build environment
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        V=$(head -n 1 version.txt | xargs)
+        H=$(git rev-parse --short $GITHUB_SHA)
+        echo QTCLI_VERSION=$V >> $GITHUB_ENV
+        echo QTCLI_SHORT_HASH=$H >> $GITHUB_ENV
+        echo "- $(go version)"
+        echo "- qtcli version $V ($H)"
+
+    - name: Run goreleaser
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        version: '~> v2'
+        distribution: goreleaser
+        args: release --snapshot --clean
+        workdir: ${{ inputs.working-directory }}
+      env:
+        GORELEASER_CURRENT_TAG: ${{ env.QTCLI_VERSION }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: qtcli-${{ env.QTCLI_VERSION }}-${{ env.QTCLI_SHORT_HASH }}
+        path: ${{ inputs.working-directory }}/dist/*
+
+    - name: Copy output files
+      shell: bash
+      if: ${{ inputs.deploy-target != '' }}
+      run: |
+        mkdir -p ${{ inputs.deploy-target }}
+        cp ${{ inputs.working-directory }}/dist/qtcli_linux* ${{ inputs.deploy-target }}
+        cp ${{ inputs.working-directory }}/dist/qtcli_windows* ${{ inputs.deploy-target }}
+        cp ${{ inputs.working-directory }}/dist/qtcli_darwin_fat* ${{ inputs.deploy-target }}

@@ -47,3 +47,11 @@ $ goreleaser --snapshot --clean --skip=publish
 ```
 
 Artifacts will be saved in the `dist/` folder.
+
+If your project doesn't have a valid git tag,
+set the `GORELEASER_CURRENT_TAG` environment variable like below:
+
+```bash
+$ GORELEASER_CURRENT_TAG=1.0.0 goreleaser --snapshot --clean
+$ GORELEASER_CURRENT_TAG=$(head -n 1 version.txt | xargs) goreleaser --snapshot --clean
+```
