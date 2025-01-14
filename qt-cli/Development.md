@@ -55,3 +55,18 @@ set the `GORELEASER_CURRENT_TAG` environment variable like below:
 $ GORELEASER_CURRENT_TAG=1.0.0 goreleaser --snapshot --clean
 $ GORELEASER_CURRENT_TAG=$(head -n 1 version.txt | xargs) goreleaser --snapshot --clean
 ```
+
+### How to generate 3rd party licenses
+
+To generate the licenses, install `go-licenses` first.
+
+```bash
+$ go install github.com/google/go-licenses@latest
+```
+
+After changing to the `src/` directory, run `go-licenses report` with the prepared template file.
+
+```bash
+$ cd src
+$ go-licenses report . --template ../others/ThirdPartyNotices.tpl --ignore qtcli > ../ThirdPartyNotices.txt
+```
