@@ -510,7 +510,7 @@ export class KitManager {
 
   private static generateEnvPathForQtInstallation(installation: string) {
     if (!IsWindows) {
-      return undefined;
+      return envPath;
     }
     const installationBinDir = path.join(installation, 'bin');
     const QtPathAddition = [installationBinDir, envPath].join(path.delimiter);
@@ -544,7 +544,8 @@ export class KitManager {
     newKit.name = kitName;
     newKit.environmentVariables = {
       VSCODE_QT_INSTALLATION: installation,
-      PATH: qtPathEnv
+      // If it is just envPath, not need to set it.
+      PATH: qtPathEnv === envPath ? undefined : qtPathEnv
     };
 
     const toolchainFilePath = await promiseCmakeQtToolchainPath;
