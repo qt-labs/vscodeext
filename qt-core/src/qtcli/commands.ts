@@ -80,7 +80,7 @@ async function findQtcliExePath(context: vscode.ExtensionContext) {
   const finder = new QtcliExeFinder();
   finder.addPossibleDir(process.cwd());
   finder.addPossibleDir((process.env.PATH ?? '').split(path.delimiter));
-  finder.addPossibleDir(path.join(context.extensionPath, 'res', 'qtcli'));
+  finder.addDistDir(path.join(context.extensionPath, 'res', 'qtcli'));
 
   return finder.run();
 }

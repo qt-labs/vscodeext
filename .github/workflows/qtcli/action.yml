@@ -2,11 +2,12 @@ name: Build qtcli binaries
 
 inputs:
   working-directory:
-      description: 'Root directory of qt-cli (relative to repository root)'
-      default: '.'
-      required: false
+    description: 'Root directory of qt-cli (relative to repository root)'
+    default: '.'
+    required: false
   deploy-target:
     description: 'Folder where built binaries will be copied'
+    required: false
 
 runs:
   using: "composite"
@@ -49,6 +50,4 @@ runs:
       if: ${{ inputs.deploy-target != '' }}
       run: |
         mkdir -p ${{ inputs.deploy-target }}
-        cp ${{ inputs.working-directory }}/dist/qtcli_linux* ${{ inputs.deploy-target }}
-        cp ${{ inputs.working-directory }}/dist/qtcli_windows* ${{ inputs.deploy-target }}
-        cp ${{ inputs.working-directory }}/dist/qtcli_darwin_fat* ${{ inputs.deploy-target }}
+        cp -r ${{ inputs.working-directory }}/dist/qtcli-* ${{ inputs.deploy-target }}

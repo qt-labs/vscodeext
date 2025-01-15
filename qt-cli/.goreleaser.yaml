@@ -22,12 +22,12 @@ builds:
       - -X main.version={{ .Version }}
       - -X main.timestamp={{ .Timestamp }}
       - -X main.commit={{ .FullCommit }}
-
     binary: >-
-      {{ .ProjectName }}_
-      {{- .Os }}_
-      {{- .Arch }}_
-      {{- .Version }}
+      {{- if eq .Os "darwin" }}_intermediate/{{ end -}}
+      qtcli-
+      {{- .Os }}-
+      {{- .Arch }}-
+      {{- .Version }}/qtcli
     no_unique_dist_dir: true
     ignore:
       - goos: linux
@@ -36,11 +36,9 @@ builds:
         goarch: arm64
 
 universal_binaries:
-  - name_template: >-
-      {{ .ProjectName }}_darwin_fat_
-      {{- .Version }}
+  - name_template: qtcli
     hooks:
-      post: cp {{ .Path }} {{ dir .Path }}/../{{ .Name }} # get out of sub-directory
+      post: mv {{ .Path | dir }} dist/qtcli-darwin-fat-{{- .Version }}/
 
 snapshot:
   version_template: '{{ .Version }}'
