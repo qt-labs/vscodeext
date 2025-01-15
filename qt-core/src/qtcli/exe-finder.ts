@@ -4,10 +4,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { isValidQtcliPath, logger, errorString } from './common';
+import { QtcliExeName, isValidQtcliPath, logger, errorString } from './common';
 
 export class QtcliExeFinder {
   private readonly _dirCandidates: string[] = [];
+  private readonly _distDirs: string[] = [];
 
   public addPossibleDir(dirs: string | string[]) {
     if (typeof dirs === 'string') {
@@ -17,12 +18,23 @@ export class QtcliExeFinder {
     }
   }
 
+  public addDistDir(dir: string) {
+    this._distDirs.push(dir);
+  }
+
   public async run() {
     try {
-      const prefix = findQtcliPrefix();
-
       for (const dir of this._dirCandidates) {
-        const fullPath = await findQtcliIn(dir, prefix);
+        const fullPath = await findQtcliIn(dir);
+        if (fullPath) {
+          return fullPath;
+        }
+      }
+
+      const prefix = findQtcliOsPrefix();
+
+      for (const distDir of this._distDirs) {
+        const fullPath = await findQtcliInDist(distDir, prefix);
         if (fullPath) {
           return fullPath;
         }
@@ -35,27 +47,44 @@ export class QtcliExeFinder {
   }
 }
 
-function findQtcliPrefix(): string {
+function findQtcliOsPrefix(): string {
   const platform = process.platform;
 
   if (platform === 'win32') {
-    return 'qtcli_windows';
-  } else if (platform === 'darwin') {
-    return 'qtcli_darwin';
-  } else if (platform === 'linux') {
-    return 'qtcli_linux';
+    return 'qtcli-windows-';
+  } else if (platform === 'darwin' || platform === 'linux') {
+    return `qtcli-${platform}-`;
   } else {
     throw new Error(`Platform '${platform}' is not supported`);
   }
 }
 
-async function findQtcliIn(dir: string, prefix: string) {
+async function findQtcliIn(dir: string) {
   try {
     const files = await fs.readdir(dir, { withFileTypes: true });
 
     for (const file of files) {
-      if (file.isFile() && file.name.startsWith(prefix)) {
+      if (file.isFile() && file.name === QtcliExeName) {
         const fullPath = path.join(dir, file.name);
+        if (isValidQtcliPath(fullPath)) {
+          return fullPath;
+        }
+      }
+    }
+  } catch (e) {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+async function findQtcliInDist(distDir: string, prefix: string) {
+  try {
+    const entries = await fs.readdir(distDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory() && entry.name.startsWith(prefix)) {
+        const fullPath = path.join(distDir, entry.name, QtcliExeName);
         if (isValidQtcliPath(fullPath)) {
           return fullPath;
         }
