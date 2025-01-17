@@ -7,7 +7,7 @@
 - Ship the `qt-cli` extension with `qt-core`
 - New project and file creation features via `qt-cli`
 
-## 1.2.1 (Jan 10, 2025)
+## 1.2.1 (Jan 17, 2025)
 
 🐞 **Fixed**
 

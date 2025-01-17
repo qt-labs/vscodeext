@@ -6,7 +6,7 @@
 
 - Initialize kits with QML debug definitions
 
-## 1.2.1 (Jan 10, 2025)
+## 1.2.1 (Jan 17, 2025)
 
 The same as `1.2.0`
 
