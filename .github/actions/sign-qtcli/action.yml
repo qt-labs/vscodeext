@@ -1,0 +1,77 @@
+name: Sign qtcli binaries
+
+inputs:
+  build-artifact:
+    description: 'Artifact name of built binaries'
+    required: true
+
+  worker-token:
+    description: 'Token for accessing the worker'
+    required: true
+
+  worker-owner:
+    description: 'Owner of the repository'
+    default: TheQtCompanyRnD
+
+  worker-repo:
+    description: 'Repository name of the worker'
+    default: qtcli-workflow
+
+  worker-workflow:
+    description: 'Workflow file name to use'
+    default: sign-qtcli.yml
+
+  worker-branch:
+    description: 'Branch to use'
+    default: main
+
+  deploy-target:
+    description: 'Folder where built binaries will be copied'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Trigger the worker
+      id: worker
+      uses: convictional/trigger-workflow-and-wait@v1.6.5
+      with:
+        owner: ${{ inputs.worker-owner }}
+        repo: ${{ inputs.worker-repo }}
+        github_token: ${{ inputs.worker-token }}
+        workflow_file_name: ${{ inputs.worker-workflow }}
+        ref: ${{ inputs.worker-branch }}
+        client_payload: |
+          {
+            "build-repo": "${{ github.repository }}",
+            "build-run-id": "${{ github.run_id }}",
+            "build-artifact": "${{ inputs.build-artifact }}"
+          }
+        wait_interval: 10
+        wait_workflow: true
+        trigger_workflow: true
+        propagate_failure: true
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.build-artifact }}-signed
+        github-token: ${{ inputs.worker-token }}
+        repository: ${{ inputs.worker-owner }}/${{ inputs.worker-repo }}
+        run-id: ${{ steps.worker.outputs.workflow_id }}
+        path: "./signed-qtcli"
+
+    - name: Upload signed qtcli
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.build-artifact }}-signed
+        path: "./signed-qtcli/*"
+
+    - name: Deploy files (signed)
+      if: ${{ inputs.deploy-target != '' }}
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.deploy-target }}
+        cp -r ./signed-qtcli/qtcli-* ${{ inputs.deploy-target }}
+        find . -type f -name "qtcli" -exec chmod 755 {} \;
+        echo "---------------------------------"
+        cd ${{ inputs.deploy-target }} && find . && du -h
