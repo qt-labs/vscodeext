@@ -5,11 +5,11 @@ package common
 
 import "strings"
 
-type TargetType string
+type TargetType int
 
 const (
-	TargetTypeFile    TargetType = "File"
-	TargetTypeProject TargetType = "Project"
+	TargetTypeFile TargetType = iota
+	TargetTypeProject
 )
 
 func TargetTypeFromString(s string) TargetType {
@@ -25,5 +25,5 @@ func TargetTypeToString(t TargetType) string {
 		return "project"
 	}
 
-	return "files"
+	return "file"
 }

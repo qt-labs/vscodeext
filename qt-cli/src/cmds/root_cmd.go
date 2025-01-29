@@ -14,8 +14,8 @@ import (
 var verbose = false
 
 var rootCmd = &cobra.Command{
-	Use:     "qtcli",
-	Short:   util.Msg("A CLI for creating Qt project and files"),
+	Use:   "qtcli",
+	Short: util.Msg("A CLI for creating Qt project and files"),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
@@ -41,5 +41,4 @@ func init() {
 	rootCmd.SilenceUsage = true
 	rootCmd.PersistentFlags().BoolVarP(
 		&verbose, "verbose", "v", false, util.Msg("Enable verbose output"))
-
 }

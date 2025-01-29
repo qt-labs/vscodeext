@@ -99,7 +99,7 @@ func (f *UserPresetFile) GetAllNames() []string {
 	return all
 }
 
-func (f *UserPresetFile) GetItems() []common.PresetData {
+func (f *UserPresetFile) GetAll() []common.PresetData {
 	return f.contents.Items
 }
 
@@ -196,4 +196,38 @@ func (f *UserPresetFile) Rename(from string, to string) error {
 	}
 
 	return f.Remove(from)
+}
+
+// manager
+type UserPresetManager struct {
+	file *UserPresetFile
+}
+
+func NewUserPresetManager(f *UserPresetFile) UserPresetManager {
+	return UserPresetManager{file: f}
+}
+
+func (m UserPresetManager) GetAll() []common.PresetData {
+	return m.file.GetAll()
+}
+
+func (m UserPresetManager) FindByType(
+	t common.TargetType,
+) []common.PresetData {
+	return m.file.GetItemsOfTargetType(t)
+}
+
+func (m UserPresetManager) FindByName(name string) (common.PresetData, error) {
+	return m.file.FindByName(name)
+}
+
+func (m UserPresetManager) FindByTypeAndName(
+	t common.TargetType,
+	name string,
+) (common.PresetData, error) {
+	return common.FindByTypeAndName(m, t, name)
+}
+
+func (m UserPresetManager) GetFile() *UserPresetFile {
+	return m.file
 }

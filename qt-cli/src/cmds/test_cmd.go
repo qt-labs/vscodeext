@@ -30,16 +30,16 @@ var testPromptCmd = &cobra.Command{
 			return createNotFoundError(args[0])
 		}
 
-		name := args[0][1:]
+		name := args[0]
 
-		for _, p := range runner.FindAllDefaultPresets() {
-			if p.TemplateDir == name {
-				options, err := runner.RunPromptFromDir(name)
+		for _, p := range runner.Presets.Default.GetAll() {
+			if p.Name == name {
+				options, err := runner.RunPromptFromDir(name[1:])
 				if err != nil {
 					return err
 				}
 
-				item := p.ToPresetData()
+				item := p
 				item.Options = options
 				printPreset(item)
 				return nil
@@ -61,9 +61,9 @@ var testDefaultCmd = &cobra.Command{
 
 		name := args[0][1:]
 
-		for _, p := range runner.FindAllDefaultPresets() {
+		for _, p := range runner.Presets.Default.GetAll() {
 			if name == p.TemplateDir {
-				printPreset(p.ToPresetData())
+				printPreset(p)
 				return nil
 			}
 		}
