@@ -16,7 +16,12 @@ import (
 )
 
 var GeneratorEnv *generator.Env
-var AllUserPresets *formats.UserPresetFile
+
+var Presets struct {
+	Default DefaultPresetManager
+	User    formats.UserPresetManager
+	Any     common.CompositePresetManager
+}
 
 func init() {
 	baseFS, err := fs.Sub(assets.Assets, "templates")
@@ -42,5 +47,20 @@ func init() {
 		logrus.Fatal(err)
 	}
 
-	AllUserPresets = userPresets
+	// preset managers
+	userPresetManager := formats.NewUserPresetManager(userPresets)
+	defaultPresetManager := NewDefaultPresetManager(GeneratorEnv.FS)
+
+	Presets = struct {
+		Default DefaultPresetManager
+		User    formats.UserPresetManager
+		Any     common.CompositePresetManager
+	}{
+		Default: defaultPresetManager,
+		User:    userPresetManager,
+		Any: common.NewCompositePresetManager(
+			userPresetManager,
+			defaultPresetManager,
+		),
+	}
 }

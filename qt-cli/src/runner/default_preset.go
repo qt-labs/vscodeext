@@ -4,7 +4,7 @@
 package runner
 
 import (
-	"fmt"
+	"errors"
 	"io/fs"
 	"path"
 	"qtcli/common"
@@ -12,99 +12,90 @@ import (
 	"qtcli/util"
 )
 
-type DefaultPresets struct {
-	Type         common.TargetType
-	TemplateDirs []string
+type DefaultPresetManager struct {
+	baseFS  fs.FS
+	presets map[common.TargetType][]common.PresetData
 }
 
-type DefaultPreset struct {
-	Name        string
-	TypeId      common.TargetType
-	TemplateDir string
-}
-
-func (p DefaultPreset) GetName() string {
-	return p.Name
-}
-
-func (p DefaultPreset) GetTypeId() common.TargetType {
-	return p.TypeId
-}
-
-func (p DefaultPreset) GetDescription() string {
-	return ""
-}
-
-func (p DefaultPreset) GetTemplateDir() string {
-	return p.TemplateDir
-}
-
-func (p DefaultPreset) GetOptions() util.StringAnyMap {
-	fullPath := path.Join(
-		p.TemplateDir,
-		common.PromptFileName)
-
-	f := formats.NewPromptFileFS(GeneratorEnv.FS, fullPath)
-	if err := f.Open(); err != nil {
-		return util.StringAnyMap{}
+func NewDefaultPresetManager(baseFS fs.FS) DefaultPresetManager {
+	presets := map[common.TargetType][]common.PresetData{
+		common.TargetTypeFile:    loadPresets(baseFS, common.TargetTypeFile),
+		common.TargetTypeProject: loadPresets(baseFS, common.TargetTypeProject),
 	}
 
-	return f.ExtractDefaults()
-}
-
-func (p DefaultPreset) ToPresetData() common.PresetData {
-	return common.PresetData{
-		Name:        p.Name,
-		TypeName:    common.TargetTypeToString(p.TypeId),
-		TemplateDir: p.TemplateDir,
-		Options:     p.GetOptions(),
+	return DefaultPresetManager{
+		baseFS:  baseFS,
+		presets: presets,
 	}
 }
 
-// helpers
-func FindAllDefaultPresets() []DefaultPreset {
-	all := []DefaultPreset{}
-	all = append(all, FindDefaultPresets(common.TargetTypeProject)...)
-	all = append(all, FindDefaultPresets(common.TargetTypeFile)...)
-
-	return all
+func (m DefaultPresetManager) GetAll() []common.PresetData {
+	return append(
+		m.FindByType(common.TargetTypeProject),
+		m.FindByType(common.TargetTypeFile)...,
+	)
 }
 
-func FindDefaultPresets(t common.TargetType) []DefaultPreset {
-	all := []DefaultPreset{}
-	names, err := findAllDefaultPresetNames(t)
+func (m DefaultPresetManager) FindByType(
+	t common.TargetType,
+) []common.PresetData {
+	presets, exists := m.presets[t]
+	if exists {
+		return presets
+	}
+
+	return []common.PresetData{}
+}
+
+func loadPresets(baseFS fs.FS, t common.TargetType) []common.PresetData {
+	all := []common.PresetData{}
+	dirs, err := findAllTemplateDirNames(baseFS, t)
 
 	if err == nil {
-		for _, name := range names {
-			all = append(all, DefaultPreset{
-				Name:        "[Default] @" + name,
-				TypeId:      t,
-				TemplateDir: name,
-			})
+		for _, dir := range dirs {
+			p := common.PresetData{
+				Name:        "@" + dir,
+				TypeName:    common.TargetTypeToString(t),
+				TemplateDir: dir,
+				Options:     readDefaultOptions(baseFS, dir),
+			}
+
+			all = append(all, p)
 		}
 	}
 
 	return all
 }
 
-func FindDefaultPresetByTemplateDir(t common.TargetType, dir string) (
-	DefaultPreset, error) {
-	presets := FindDefaultPresets(t)
+func (m DefaultPresetManager) FindByName(
+	name string,
+) (common.PresetData, error) {
+	all := m.GetAll()
 
-	for _, preset := range presets {
-		if dir == preset.TemplateDir {
+	for _, preset := range all {
+		if preset.GetName() == name {
 			return preset, nil
 		}
 	}
 
-	return DefaultPreset{},
-		fmt.Errorf(util.Msg("cannot find default preset, given = '%v'"), dir)
+	return common.PresetData{}, errors.New("not found")
 }
 
-func findAllDefaultPresetNames(t common.TargetType) ([]string, error) {
+func (m DefaultPresetManager) FindByTypeAndName(
+	t common.TargetType,
+	name string,
+) (common.PresetData, error) {
+	return common.FindByTypeAndName(m, t, name)
+}
+
+// helpers
+func findAllTemplateDirNames(
+	baseFS fs.FS,
+	t common.TargetType,
+) ([]string, error) {
 	var found []string
 
-	err := fs.WalkDir(GeneratorEnv.FS, ".",
+	err := fs.WalkDir(baseFS, ".",
 		func(walkingPath string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -112,8 +103,7 @@ func findAllDefaultPresetNames(t common.TargetType) ([]string, error) {
 
 			if d.IsDir() && walkingPath != "." {
 				fullPath := path.Join(walkingPath, common.TemplateFileName)
-				templateFile := formats.NewTemplateFileFS(
-					GeneratorEnv.FS, fullPath)
+				templateFile := formats.NewTemplateFileFS(baseFS, fullPath)
 				err := templateFile.Open()
 
 				if err == nil && templateFile.GetTargetType() == t {
@@ -125,4 +115,15 @@ func findAllDefaultPresetNames(t common.TargetType) ([]string, error) {
 		})
 
 	return found, err
+}
+
+func readDefaultOptions(baseFS fs.FS, templateDir string) util.StringAnyMap {
+	fullPath := path.Join(templateDir, common.PromptFileName)
+
+	f := formats.NewPromptFileFS(baseFS, fullPath)
+	if err := f.Open(); err != nil {
+		return util.StringAnyMap{}
+	}
+
+	return f.ExtractDefaults()
 }

@@ -28,3 +28,13 @@ func (r *Result) Print(output io.Writer) {
 
 	w.Flush()
 }
+
+func (r *Result) GetOutputFilePaths() []string {
+	all := []string{}
+
+	for _, item := range *r {
+		all = append(all, item.OutputFilePath)
+	}
+
+	return all
+}
