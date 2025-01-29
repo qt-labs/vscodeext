@@ -58,27 +58,14 @@ func RunFilePromptByExt(ext string) (common.Preset, error) {
 func FindPresetOrRunSelector(
 	t common.TargetType, givenPresetName string) (common.Preset, error) {
 	if len(givenPresetName) != 0 {
-		return findPresetByName(t, givenPresetName)
+		return Presets.Any.FindByTypeAndName(t, givenPresetName)
 	}
 
 	return runPresetSelector(t)
 }
 
-func findPresetByName(
-	t common.TargetType, givenPresetName string) (common.Preset, error) {
-	if strings.HasPrefix(givenPresetName, "@") {
-		return FindDefaultPresetByTemplateDir(t, givenPresetName[1:])
-	}
-
-	return AllUserPresets.Find(t, givenPresetName)
-}
-
 func runPresetSelector(t common.TargetType) (common.Preset, error) {
-	all := []common.Preset{}
-	all = append(all, toPresetList(AllUserPresets.GetItemsOfTargetType(t))...)
-	all = append(all, toPresetList(FindDefaultPresets(t))...)
-
-	items := createPickerItems(all)
+	items := createPickerItems(Presets.Any.GetItemsByType(t))
 	items = append(items, comps.NewItem(util.Msg("[Manually select features]")))
 	picked, err := comps.NewPicker().
 		Question(util.Msg("Pick a preset")).
@@ -109,8 +96,7 @@ func runPresetSelector(t common.TargetType) (common.Preset, error) {
 }
 
 func runManualConfig(t common.TargetType) (common.Preset, error) {
-	presetItems := toPresetList(FindDefaultPresets(t))
-	pickerItems := createPickerItems(presetItems)
+	pickerItems := createPickerItems(Presets.Default.FindByType(t))
 
 	result, err := comps.NewPicker().
 		Question(util.Msg("Pick an item to use:")).
@@ -145,8 +131,8 @@ func runManualConfig(t common.TargetType) (common.Preset, error) {
 
 	if len(newName) != 0 {
 		presetData.Name = newName
-		AllUserPresets.Add(presetData)
-		AllUserPresets.Save()
+		Presets.User.GetFile().Add(presetData)
+		Presets.User.GetFile().Save()
 	}
 
 	return presetData, nil
@@ -206,25 +192,14 @@ func runPresetSavePrompt() string {
 	return strings.TrimSpace(s)
 }
 
-func createPickerItems(presets []common.Preset) []comps.ListItem {
+func createPickerItems(presets []common.PresetData) []comps.ListItem {
 	items := make([]comps.ListItem, len(presets))
 
 	for i, preset := range presets {
 		items[i] = comps.
-			NewItem(preset.GetName()).
-			Description(preset.GetDescription()).
+			NewItem(preset.GetDescription()).
 			Data(preset)
 	}
 
 	return items
-}
-
-func toPresetList[T common.Preset](items []T) []common.Preset {
-	all := make([]common.Preset, len(items))
-
-	for i, item := range items {
-		all[i] = item
-	}
-
-	return all
 }

@@ -6,12 +6,10 @@ package cmds
 import (
 	"errors"
 	"fmt"
-	"qtcli/common"
 	"qtcli/formats"
 	"qtcli/prompt/comps"
 	"qtcli/runner"
 	"qtcli/util"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -29,19 +27,17 @@ var presetListCmd = &cobra.Command{
 	Short: util.Msg("List the names of all presets"),
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		if userPresets().GetCount() == 0 {
+		items := runner.Presets.User.GetAll()
+		if len(items) == 0 {
 			fmt.Println(util.Msg("<no custom preset>"))
-		} else {
-			for _, item := range userPresets().GetItems() {
-				fmt.Printf("%s -> @%s\n", item.GetName(), item.GetDescription())
-			}
 		}
 
 		if lsAllPresets {
-			all := runner.FindAllDefaultPresets()
-			for _, item := range all {
-				fmt.Printf("%s (%s)\n", item.GetName(), item.GetTypeId())
-			}
+			items = append(items, runner.Presets.Default.GetAll()...)
+		}
+
+		for _, item := range items {
+			fmt.Println(item.GetDescription())
 		}
 	},
 }
@@ -51,31 +47,13 @@ var presetCatCmd = &cobra.Command{
 	Short: util.Msg("Print the contents of the given preset"),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		item := common.PresetData{}
 		name := args[0]
-
-		if !strings.HasPrefix(name, "@") {
-			i, err := userPresets().FindByName(name)
-			if err != nil {
-				return err
-			}
-
-			item = i
-		} else {
-			name = name[1:]
-
-			for _, p := range runner.FindAllDefaultPresets() {
-				if p.GetTemplateDir() == name {
-					item = p.ToPresetData()
-					break
-				}
-			}
+		item, err := runner.Presets.Any.FindByName(name)
+		if err != nil {
+			return err
 		}
 
-		if len(item.TemplateDir) != 0 {
-			fmt.Println(item.ToYaml())
-		}
-
+		fmt.Println(item.ToYaml())
 		return nil
 	},
 }
@@ -161,7 +139,7 @@ func getConfirm(msg string) bool {
 }
 
 func userPresets() *formats.UserPresetFile {
-	return runner.AllUserPresets
+	return runner.Presets.User.GetFile()
 }
 
 func init() {

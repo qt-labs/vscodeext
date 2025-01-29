@@ -4,7 +4,9 @@
 package common
 
 import (
+	"fmt"
 	"qtcli/util"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,6 +14,7 @@ import (
 type Preset interface {
 	GetName() string
 	GetTypeId() TargetType
+	GetTypeName() string
 	GetDescription() string
 	GetTemplateDir() string
 	GetOptions() util.StringAnyMap
@@ -32,8 +35,16 @@ func (p PresetData) GetTypeId() TargetType {
 	return TargetTypeFromString(p.TypeName)
 }
 
+func (p PresetData) GetTypeName() string {
+	return TargetTypeToString(p.GetTypeId())
+}
+
 func (p PresetData) GetDescription() string {
-	return p.TemplateDir
+	if strings.HasPrefix(p.Name, "@") {
+		return fmt.Sprintf("[Default] %s", p.Name)
+	} else {
+		return fmt.Sprintf("%s (-> @%s)", p.Name, p.TemplateDir)
+	}
 }
 
 func (p PresetData) GetTemplateDir() string {
