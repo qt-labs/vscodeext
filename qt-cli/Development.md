@@ -70,3 +70,13 @@ After changing to the `src/` directory, run `go-licenses report` with the prepar
 $ cd src
 $ go-licenses report . --template ../others/ThirdPartyNotices.tpl --ignore qtcli > ../ThirdPartyNotices.txt
 ```
+
+### How to run end-to-end tests
+
+To run e2e tests, build `qtcli` and output it to the `tests/` directory.
+Then run the tests in the `tests/e2e` directory.
+
+```bash
+$ go build -C ./src -o ../tests
+$ go test -C ./tests/e2e -v
+```
