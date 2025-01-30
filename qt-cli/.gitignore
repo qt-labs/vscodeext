@@ -1,1 +1,3 @@
 dist/
+tests/qtcli
+tests/qtcli.exe
