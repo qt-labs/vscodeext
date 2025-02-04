@@ -20,7 +20,8 @@ import {
   OSExeSuffix,
   QtInsRootConfigName,
   compareVersions,
-  GlobalWorkspace
+  GlobalWorkspace,
+  telemetry
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
@@ -98,6 +99,7 @@ export async function fetchAssetAndDecide(options?: {
           return { code: DecisionCode.UserDeclined };
         }
       }
+      telemetry.sendAction('UserConsentNewerVersionOfQmlls');
       return { code: DecisionCode.NeedToUpdate, asset };
     } catch (error) {
       logger.warn(isError(error) ? error.message : String(error));
@@ -206,7 +208,7 @@ export class Qmlls {
         if (res.status !== 0) {
           throw res.error ?? new Error(res.stderr.toString());
         }
-
+        telemetry.sendAction('customQmllsUsage');
         this.startLanguageClient(customPath);
       } else {
         const installed = installer.getExpectedQmllsPath();
@@ -321,6 +323,7 @@ export class Qmlls {
         logger.info(
           `QML Language Server started for ${this._folder.name} ${qmllsPath}`
         );
+        telemetry.sendEvent('QmllsStarted');
       })
       .catch(() => {
         void vscode.window.showErrorMessage('Cannot start QML language server');
