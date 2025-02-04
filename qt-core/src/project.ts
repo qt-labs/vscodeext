@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 import untildify from 'untildify';
-import { isEqual } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 
 import {
   AdditionalQtPathsName,
@@ -11,7 +11,8 @@ import {
   GlobalWorkspace,
   QtInsRootConfigName,
   QtAdditionalPath,
-  compareQtAdditionalPath
+  compareQtAdditionalPath,
+  telemetry
 } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
@@ -107,6 +108,9 @@ export class CoreProject implements Project {
       `Setting additional Qt paths for ${folder.uri.fsPath} to: ${additionalQtPaths.join(', ')}`
     );
     logger.info('Config values initialized for:', folder.uri.fsPath);
+    if (!isEmpty(additionalQtPaths)) {
+      telemetry.sendEvent('additionalQtPathsUsedWorkspace');
+    }
   }
 
   dispose() {

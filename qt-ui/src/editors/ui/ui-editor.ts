@@ -3,7 +3,12 @@
 
 import * as vscode from 'vscode';
 
-import { askForKitSelection, createLogger, QtWorkspaceType } from 'qt-lib';
+import {
+  askForKitSelection,
+  createLogger,
+  QtWorkspaceType,
+  telemetry
+} from 'qt-lib';
 import { getNonce, getUri } from '@/editors/util';
 import { projectManager } from '@/extension';
 import { delay } from '@/util';
@@ -62,6 +67,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           while (!designerServer.isClientConnected()) {
             await delay(100);
           }
+          telemetry.sendAction('openWithDesigner');
           designerServer.sendFile(document.uri.fsPath);
           logger.info('File sent to designer server: ' + document.uri.fsPath);
           break;
