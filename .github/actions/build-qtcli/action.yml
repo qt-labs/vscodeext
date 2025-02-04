@@ -4,10 +4,14 @@ inputs:
   working-directory:
     description: 'Root directory of qt-cli (relative to repository root)'
     default: '.'
-    required: false
+
   deploy-target:
     description: 'Folder where built binaries will be copied'
-    required: false
+
+outputs:
+  artifact-name:
+    description: 'Build artifact name'
+    value: ${{ steps.setup-env.outputs.artifact-name }}
 
 runs:
   using: "composite"
@@ -19,13 +23,15 @@ runs:
         cache: true
 
     - name: Setup build environment
+      id: setup-env
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
         V=$(head -n 1 version.txt | xargs)
         H=$(git rev-parse --short $GITHUB_SHA)
-        echo QTCLI_VERSION=$V >> $GITHUB_ENV
-        echo QTCLI_SHORT_HASH=$H >> $GITHUB_ENV
+
+        echo "QTCLI_VERSION=$V" >> $GITHUB_ENV
+        echo "artifact-name=qtcli-$V-$H" >> $GITHUB_OUTPUT
         echo "- $(go version)"
         echo "- qtcli version $V ($H)"
 
@@ -46,15 +52,18 @@ runs:
       env:
         GORELEASER_CURRENT_TAG: ${{ env.QTCLI_VERSION }}
 
-    - name: Upload artifacts
+    - name: Upload artifact
+      id: step-artifacts-upload
       uses: actions/upload-artifact@v4
       with:
-        name: qtcli-${{ env.QTCLI_VERSION }}-${{ env.QTCLI_SHORT_HASH }}
-        path: ${{ inputs.working-directory }}/dist/*
+        name: ${{ steps.setup-env.outputs.artifact-name }}
+        path: ${{ inputs.working-directory }}/dist/bin/*
 
-    - name: Copy output files
+    - name: Deploy files (unsigned)
       shell: bash
       if: ${{ inputs.deploy-target != '' }}
       run: |
         mkdir -p ${{ inputs.deploy-target }}
-        cp -r ${{ inputs.working-directory }}/dist/qtcli-* ${{ inputs.deploy-target }}
+        cp -r ${{ inputs.working-directory }}/dist/bin/qtcli-* ${{ inputs.deploy-target }}
+        echo "---------------------------------"
+        cd ${{ inputs.deploy-target }} && find . && du -h

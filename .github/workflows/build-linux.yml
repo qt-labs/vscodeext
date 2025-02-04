@@ -1,17 +1,37 @@
 name: Build on Linux
+
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      enable-qtcli-signing:
+        description: "Enable qtcli signing (true/false)"
+        default: "false"
+        required: true
 
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # qtcli
       - name: Build qtcli
-        uses: ./.github/workflows/qtcli
+        id: build-qtcli
+        uses: ./.github/actions/build-qtcli
         with:
           working-directory: ./qt-cli
           deploy-target: ./qt-core/res/qtcli
+
+      - name: Sign qtcli
+        uses: ./.github/actions/sign-qtcli
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enable-qtcli-signing == 'true' }}
+        with:
+          build-artifact: ${{ steps.build-qtcli.outputs.artifact-name }}
+          worker-token: ${{ secrets.PAT }}
+          deploy-target: ./qt-core/res/qtcli
+
+      # extensions
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
