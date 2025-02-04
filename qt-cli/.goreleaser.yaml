@@ -24,7 +24,7 @@ builds:
       - -X main.commit={{ .FullCommit }}
     binary: >-
       {{- if eq .Os "darwin" }}_intermediate/{{ end -}}
-      qtcli-
+      bin/qtcli-
       {{- .Os }}-
       {{- .Arch }}-
       {{- .Version }}/qtcli
@@ -37,8 +37,10 @@ builds:
 
 universal_binaries:
   - name_template: qtcli
+    replace: true
     hooks:
-      post: mv {{ .Path | dir }} dist/qtcli-darwin-fat-{{- .Version }}/
+      post:
+        - mv {{ .Path | dir }} dist/bin/qtcli-darwin-all-{{- .Version }}/
 
 snapshot:
   version_template: '{{ .Version }}'
