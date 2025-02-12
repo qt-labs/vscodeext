@@ -142,6 +142,12 @@
           "description": "Use custom QML Language Server arguments instead of the default ones",
           "scope": "machine-overridable"
         },
+        "qt-qml.qmlls.customDocsPath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the documentation path for QML Language Server",
+          "scope": "machine-overridable"
+        },
         "qt-qml.qmlls.additionalImportPaths": {
           "type": "array",
           "items": {

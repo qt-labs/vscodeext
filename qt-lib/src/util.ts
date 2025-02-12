@@ -237,6 +237,18 @@ export async function waitForQtCpp() {
   }
 }
 
+export function findQtPathsInKitDir(dir: string): string | undefined {
+  const exeNames = [`qtpaths${OSExeSuffix}`, `qtpaths6${OSExeSuffix}`];
+
+  for (const exeName of exeNames) {
+    const exePath = path.join(dir, 'bin', exeName);
+    if (fsSync.existsSync(exePath)) {
+      return exePath;
+    }
+  }
+  return undefined;
+}
+
 class FileWriter {
   private readonly files = new Map<
     string,

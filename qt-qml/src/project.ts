@@ -4,7 +4,12 @@
 import * as vscode from 'vscode';
 import path from 'path';
 
-import { Project, ProjectManager, createLogger } from 'qt-lib';
+import {
+  Project,
+  ProjectManager,
+  createLogger,
+  findQtPathsInKitDir
+} from 'qt-lib';
 import { Qmlls } from '@/qmlls';
 import { coreAPI } from '@/extension';
 
@@ -93,11 +98,29 @@ export class QMLProject implements Project {
     this.qtpathsExe = coreAPI?.getValue<string>(this.folder, 'selectedQtPaths');
     this.buildDir = coreAPI?.getValue<string>(this.folder, 'buildDir');
   }
+  getDocsPathFromKitDir(kitDir: string) {
+    const qtpaths = findQtPathsInKitDir(kitDir);
+    if (!qtpaths) {
+      logger.error(`Cannot find qtpaths in: ${this.kitPath}`);
+      return undefined;
+    }
+    const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
+    if (!qtInfo) {
+      logger.error('Cannot find qtInfo');
+      return undefined;
+    }
+    return qtInfo.get('QT_INSTALL_DOCS');
+  }
 
   updateQmllsParams() {
     this.qmlls.clearImportPaths();
     if (this.kitPath) {
       this.qmlls.addImportPath(path.join(this.kitPath, 'qml'));
+      const docsPath = this.getDocsPathFromKitDir(this.kitPath);
+      if (docsPath) {
+        logger.info('Setting docs path:', docsPath);
+        this.qmlls.docsPath = docsPath;
+      }
     } else if (this.qtpathsExe) {
       const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe);
       if (!info) {
@@ -108,6 +131,11 @@ export class QMLProject implements Project {
         throw new Error('Could not find QT_INSTALL_QML');
       }
       this.qmlls.addImportPath(qmlImportPath);
+      const docsPath = info.get('QT_INSTALL_DOCS');
+      if (docsPath) {
+        logger.info('Setting docs path:', docsPath);
+        this.qmlls.docsPath = docsPath;
+      }
     }
   }
   set buildDir(buildDir: string | undefined) {

@@ -119,6 +119,7 @@ export async function fetchAssetAndDecide(options?: {
 }
 
 export class Qmlls {
+  private _docsPath: string | undefined;
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _importPaths = new Set<string>();
   private _client: LanguageClient | undefined;
@@ -149,6 +150,14 @@ export class Qmlls {
 
   addImportPath(importPath: string) {
     this._importPaths.add(importPath);
+  }
+
+  get docsPath() {
+    return this._docsPath;
+  }
+
+  set docsPath(docsPath: string | undefined) {
+    this._docsPath = docsPath;
   }
 
   removeImportPath(importPath: string) {
@@ -282,6 +291,18 @@ export class Qmlls {
         'additionalImportPaths',
         []
       );
+
+      let docsPath = configs.get<string>('customDocsPath', '');
+      if (docsPath) {
+        // If qt-qml.qmlls.customDocsPath is set, use it instead of the path from the kit
+        docsPath = untildify(docsPath);
+      } else {
+        docsPath = this.docsPath ?? '';
+      }
+
+      if (docsPath) {
+        args.push(`-d${docsPath}`);
+      }
 
       const toImportParam = (p: string) => {
         return `-I${p}`;
