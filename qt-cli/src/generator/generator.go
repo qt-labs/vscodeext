@@ -10,6 +10,7 @@ import (
 	"qtcli/common"
 	"qtcli/formats"
 	"qtcli/util"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -226,5 +227,12 @@ func (g *Generator) evalWhenCondition(file formats.TemplateItem) (bool, error) {
 }
 
 func polishOutput(contents string) string {
-	return strings.TrimLeft(contents, " \t\r\n")
+	tooManyLinesWin := regexp.MustCompile(`(\r\n){3,}`)
+	tooManyLinesUnix := regexp.MustCompile(`\n{3,}`)
+
+	v := strings.TrimLeft(contents, " \t\r\n")
+	v = tooManyLinesWin.ReplaceAllString(v, "\r\n\r\n")
+	v = tooManyLinesUnix.ReplaceAllString(v, "\n\n")
+
+	return v
 }
