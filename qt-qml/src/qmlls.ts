@@ -291,6 +291,11 @@ export class Qmlls {
       args.push(toImportParam(importPath))
     );
 
+    const useNoCMakeCalls = configs.get<boolean>('useNoCMakeCalls', false);
+    if (useNoCMakeCalls) {
+      args.push('--no-cmake-calls');
+    }
+
     logger.info('Starting QML Language Server with:', args.join(';'));
     const serverOptions: ServerOptions = {
       command: qmllsPath,
