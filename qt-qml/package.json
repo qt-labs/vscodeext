@@ -148,6 +148,12 @@
           "description": "Use the QML_IMPORT_PATH environment variable to look for QML Modules. When set to true, the \"-E\" command argument will be added when starting qmlls",
           "scope": "machine-overridable"
         },
+        "qt-qml.qmlls.useNoCMakeCalls": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use --no-cmake-calls option when starting QML Language Server",
+          "scope": "machine-overridable"
+        },
         "qt-qml.doNotAskForQmllsDownload": {
           "type": "boolean",
           "default": false,
