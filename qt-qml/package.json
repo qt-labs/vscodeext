@@ -133,6 +133,15 @@
           "description": "Specify the custom QML Language Server executable path",
           "scope": "machine-overridable"
         },
+        "qt-qml.qmlls.customArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Use custom QML Language Server arguments instead of the default ones",
+          "scope": "machine-overridable"
+        },
         "qt-qml.qmlls.additionalImportPaths": {
           "type": "array",
           "items": {
