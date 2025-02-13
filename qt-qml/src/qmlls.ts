@@ -257,43 +257,48 @@ export class Qmlls {
         `QML Language Server - ${this._folder.name}`
       );
     }
-    const args: string[] = [];
-    if (verboseOutput) {
-      args.push('--verbose');
-    }
+    let args: string[] = [];
+    const customArgs = configs.get<string[]>('customArgs', []);
+    if (customArgs.length > 0) {
+      args = customArgs;
+    } else {
+      if (verboseOutput) {
+        args.push('--verbose');
+      }
 
-    const useQmlImportPathEnvVar = configs.get<boolean>(
-      'useQmlImportPathEnvVar',
-      false
-    );
-    if (useQmlImportPathEnvVar) {
-      args.push('-E');
-    }
+      const useQmlImportPathEnvVar = configs.get<boolean>(
+        'useQmlImportPathEnvVar',
+        false
+      );
+      if (useQmlImportPathEnvVar) {
+        args.push('-E');
+      }
 
-    if (this._buildDir) {
-      args.push(`-b${this._buildDir}`);
-    }
+      if (this._buildDir) {
+        args.push(`-b${this._buildDir}`);
+      }
 
-    const additionalImportPaths = configs.get<string[]>(
-      'additionalImportPaths',
-      []
-    );
+      const additionalImportPaths = configs.get<string[]>(
+        'additionalImportPaths',
+        []
+      );
 
-    const toImportParam = (p: string) => {
-      return `-I${p}`;
-    };
+      const toImportParam = (p: string) => {
+        return `-I${p}`;
+      };
 
-    additionalImportPaths.forEach((importPath) => {
-      args.push(toImportParam(importPath));
-    });
+      additionalImportPaths.forEach((importPath) => {
+        args.push(toImportParam(importPath));
+      });
 
-    this._importPaths.forEach((importPath) =>
-      args.push(toImportParam(importPath))
-    );
+      this._importPaths.forEach((importPath) =>
+        args.push(toImportParam(importPath))
+      );
 
-    const useNoCMakeCalls = configs.get<boolean>('useNoCMakeCalls', false);
-    if (useNoCMakeCalls) {
-      args.push('--no-cmake-calls');
+      const useNoCMakeCalls = configs.get<boolean>('useNoCMakeCalls', false);
+      if (useNoCMakeCalls) {
+        args.push('--no-cmake-calls');
+      }
     }
 
     logger.info('Starting QML Language Server with:', args.join(';'));
