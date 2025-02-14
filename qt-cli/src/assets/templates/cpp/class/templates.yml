@@ -1,0 +1,33 @@
+version: "1"
+
+files:
+  - in: cpp-class.h
+    out: '{{ .headerFileName }}'
+
+  - in: cpp-class.cpp
+    out: '{{ .sourceFileName }}'
+
+fields:
+  - className: '{{ .name | QtCpp.ExtractClassName }}'
+  - headerFileName: '{{ .className }}.h'
+  - sourceFileName: '{{ .className }}.cpp'
+  - sharedDataClass: '{{ .className }}Data'
+  - baseClass: |
+      {{ if .customBaseClass }}{{ .customBaseClass }}
+      {{ else }}{{ .qtBaseClass }}
+      {{ end }}
+  - parentClass: |
+      {{ if eq .baseClass "QObject" }}QObject
+      {{ else if or (eq .baseClass "QWidget") (eq .baseClass "QMainWindow") }}QWidget
+      {{ else if eq .baseClass "QQuickItem"}}QQuickItem
+      {{ else if .isQObject }}QObject
+      {{ end }}
+  - includeGuardName: '{{ .name | QtCpp.MakeIncludeGuard }}'
+  - namespaceOpening: |
+      {{ range .name | QtCpp.ExtractNamespaces }}
+      namespace {{ . }} {
+      {{- end }}
+  - namespaceClosing: |
+      {{ range .name | QtCpp.ExtractNamespaces | Qt.Reverse }}
+      } // namespace {{ . }}
+      {{- end }}

@@ -28,8 +28,12 @@ func RunQtcli(t *testing.T, checker func(string), args ...string) {
 	cmd := exec.Command(qtcliPath, args...)
 	cmd.Dir = tempDir
 
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("cannot run command: %v", err)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Errorf("qtcli command failed: %v", err)
+		t.Errorf("- dir: %v", cmd.Dir)
+		t.Errorf("- cmd: %v", cmd.String())
+		t.Fatalf("- out: %v", string(out))
 	}
 
 	checker(tempDir)
