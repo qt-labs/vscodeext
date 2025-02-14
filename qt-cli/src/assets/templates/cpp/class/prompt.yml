@@ -1,0 +1,38 @@
+version: "1"
+
+steps:
+  - id: qtBaseClass
+    question: "Base class:"
+    type: picker
+    items:
+      - text: QObject
+      - text: QWidget
+      - text: QMainWindow
+      - text: QQuickItem
+      - text: <Custom>
+        data: ""
+    default: QObject
+
+  - id: customBaseClass
+    type: input
+    question: "Enter a class name:"
+    default: ""
+    when: '{{ eq .qtBaseClass "" }}'
+    rules:
+      - match: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+
+  - id: isQObject
+    type: confirm
+    question: "Is QObject?"
+    default: false
+    when: '{{ eq .qtBaseClass "" }}'
+
+  - id: useQSharedData
+    type: confirm
+    question: "Use QSharedData?"
+    default: false
+
+  - id: usePragmaOnce
+    type: confirm
+    question: "Use #pragma once?"
+    default: false

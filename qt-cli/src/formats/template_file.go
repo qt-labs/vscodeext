@@ -20,9 +20,10 @@ type TemplateFile struct {
 }
 
 type TemplateFileContents struct {
-	Version  string         `yaml:"version"`
-	TypeName string         `yaml:"type"`
-	Files    []TemplateItem `yaml:"files"`
+	Version  string              `yaml:"version"`
+	TypeName string              `yaml:"type"`
+	Files    []TemplateItem      `yaml:"files"`
+	Fields   []util.StringAnyMap `yaml:"fields"`
 }
 
 type TemplateItem struct {
@@ -66,4 +67,8 @@ func (f *TemplateFile) GetTargetType() common.TargetType {
 
 func (f *TemplateFile) GetFileItems() []TemplateItem {
 	return f.contents.Files
+}
+
+func (f *TemplateFile) GetFields() []util.StringAnyMap {
+	return f.contents.Fields
 }
