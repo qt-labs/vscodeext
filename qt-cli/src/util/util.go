@@ -9,8 +9,10 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 type StringAnyMap map[string]interface{}
@@ -147,4 +149,17 @@ func IsValidFileName(name string) bool {
 	file.Close()
 	os.Remove(testPath)
 	return true
+}
+
+func SendSigTermOrKill(pid int) error {
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return err
+	}
+
+	if runtime.GOOS == "windows" {
+		return process.Kill()
+	} else {
+		return process.Signal(syscall.SIGTERM)
+	}
 }

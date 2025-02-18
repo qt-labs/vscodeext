@@ -20,6 +20,10 @@ var rootCmd = &cobra.Command{
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
 		}
+
+		logrus.SetFormatter(&logrus.TextFormatter{
+			ForceColors: true,
+		})
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
