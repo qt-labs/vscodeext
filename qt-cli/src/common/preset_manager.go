@@ -33,7 +33,7 @@ func (m CompositePresetManager) GetAll() []PresetData {
 	return all
 }
 
-func (m CompositePresetManager) GetItemsByType(t TargetType) []PresetData {
+func (m CompositePresetManager) FindByType(t TargetType) []PresetData {
 	all := []PresetData{}
 
 	for _, c := range m.comps {

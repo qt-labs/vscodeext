@@ -65,7 +65,7 @@ func FindPresetOrRunSelector(
 }
 
 func runPresetSelector(t common.TargetType) (common.Preset, error) {
-	items := createPickerItems(Presets.Any.GetItemsByType(t))
+	items := createPickerItems(Presets.Any.FindByType(t))
 	items = append(items, comps.NewItem(util.Msg("[Manually select features]")))
 	picked, err := comps.NewPicker().
 		Question(util.Msg("Pick a preset")).
