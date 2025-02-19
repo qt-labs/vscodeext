@@ -193,7 +193,7 @@ export class CoreAPIImpl implements CoreAPI {
         result.set('ARCH', arch);
       } else {
         logger.warn(
-          `Could not determine architecture for ${qtAdditionalPath.path}`
+          `Cannot determine architecture for ${qtAdditionalPath.path}`
         );
       }
       const msvcVersion = CoreAPIImpl.obtainMSVCVersions(qconfigPriContent);

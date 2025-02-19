@@ -20,7 +20,7 @@ async function findMinGWgdbPath(): Promise<string | undefined> {
   }
   const insRoot = getQtInsRoot(kit);
   if (!insRoot) {
-    const message = `Could not find VSCODE_QT_INSTALLATION in the selected kit: ${kit.name}`;
+    const message = `Cannot find VSCODE_QT_INSTALLATION in the selected kit: ${kit.name}`;
     void vscode.window.showErrorMessage(message);
     return undefined;
   }

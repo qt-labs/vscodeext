@@ -105,7 +105,7 @@ async function main() {
         }
       }
       if (!found) {
-        throw new Error(`Could not find license file for ${name} in ${repo}`);
+        throw new Error(`Cannot find license file for ${name} in ${repo}`);
       }
     } else {
       const licenseFile = fs.readFileSync(license.licenseFile, 'utf-8');
