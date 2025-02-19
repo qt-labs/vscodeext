@@ -124,11 +124,11 @@ export class QMLProject implements Project {
     } else if (this.qtpathsExe) {
       const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe);
       if (!info) {
-        throw new Error('Could not find Qt info');
+        throw new Error('Cannot find Qt info');
       }
       const qmlImportPath = info.get('QT_INSTALL_QML');
       if (!qmlImportPath) {
-        throw new Error('Could not find QT_INSTALL_QML');
+        throw new Error('Cannot find QT_INSTALL_QML');
       }
       this.qmlls.addImportPath(qmlImportPath);
       const docsPath = info.get('QT_INSTALL_DOCS');

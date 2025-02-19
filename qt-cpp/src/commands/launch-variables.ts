@@ -98,7 +98,7 @@ export function qtDirCommand() {
       const ret = paths.join(path.delimiter);
       return ret;
     }
-    logger.error('Could not find the selected Qt installation path');
+    logger.error('Cannot find the selected Qt installation path');
     return undefined;
   });
 }
@@ -117,7 +117,7 @@ export function registerKitDirectoryCommand() {
       if (insRoot) {
         return insRoot;
       }
-      const message = `Could not find VSCODE_QT_FOLDER in the selected kit: ${kit.name}`;
+      const message = `Cannot find VSCODE_QT_FOLDER in the selected kit: ${kit.name}`;
       void vscode.window.showErrorMessage(message);
       return undefined;
     }

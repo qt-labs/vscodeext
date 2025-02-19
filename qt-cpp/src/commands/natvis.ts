@@ -18,13 +18,13 @@ export function registerNatvisCommand() {
       `theqtcompany.${EXTENSION_ID}`
     );
     if (!extension) {
-      const error = 'Could not find the extension';
+      const error = 'Cannot find the extension';
       logger.error(error);
       throw new Error(error);
     }
     const extensionPath = extension.extensionPath;
     if (!extensionPath) {
-      const error = 'Could not find the extension path';
+      const error = 'Cannot find the extension path';
       logger.error(error);
       throw new Error(error);
     }
@@ -35,7 +35,7 @@ export function registerNatvisCommand() {
       `qt${version}.natvis.xml`
     );
     if (!fs.existsSync(natvisFile)) {
-      const error = `Could not find the natvis file: ${natvisFile}`;
+      const error = `Cannot find the natvis file: ${natvisFile}`;
       logger.error(error);
       throw new Error(error);
     }
@@ -55,7 +55,7 @@ export function registerNatvisCommand() {
       if (version) {
         const majorVersion = version.split('.')[0];
         if (!majorVersion) {
-          throw new Error('Could not determine the major version');
+          throw new Error('Cannot determine the major version');
         }
         return getNatvis(majorVersion);
       }

@@ -42,7 +42,7 @@ async function askNameAndRun(
 ) {
   const exePath = await findQtcliExePath(context);
   if (!exePath) {
-    const msg = 'Could not find qtcli executable.';
+    const msg = 'Cannot find qtcli executable.';
     logger.error(msg);
     void vscode.window.showErrorMessage(
       msg +
