@@ -1,9 +1,5 @@
 # Change Log
 
-- ## 1.2.0 (Feb 6, 2025)
-
-The same as `1.0.2`. Bump version for consistency.
-
 ## 1.0.2
 
 - Changed the display name to "Qt Extension Pack".
