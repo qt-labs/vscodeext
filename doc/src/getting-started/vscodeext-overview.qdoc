@@ -53,5 +53,36 @@
         \li Read Qt documentation
     \endlist
 
+    \section1 Usage data collection
+
+    \QVSC collects anonymous data about how you use it to help Qt to improve it:
+
+    \list
+        \li Operating system on your computer
+        \li \QVSC version
+        \li Visual Studio Code version
+        \li Date and time when you activate extensions, as well as the total
+            number or activations
+        \li Date and time when you run \QVSC commands, as well as the total
+            number of times you run each command
+        \li Values of some settings you specify for \QVSC
+        \li Exceptions
+        \li Date and time when you download \QMLLS, as well as the total
+            number of downloads
+        \li Name of CMake kit toolchain and the Qt version that you use to
+            build projects
+    \endlist
+
+    \QVSC never collects the following data:
+
+    \list
+        \li Source code
+        \li File paths
+        \li Folder structure of your projects
+        \li Values of settings you specify for VS Code or other plugins than
+            \QVSC
+        \li Build output
+    \endlist
+
     \sa {Installation}
 */
