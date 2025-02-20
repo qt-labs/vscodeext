@@ -54,41 +54,57 @@ export class UIProject implements Project {
         );
       }
     }
-    const eventHandler = vscode.workspace.onDidChangeConfiguration((event) => {
-      if (
-        affectsConfig(
-          event,
-          CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
-          this._folder
-        )
-      ) {
-        this._customWidgetsDesignerExePath = this.getQtCustomDesignerPath();
-        logger.info(
-          `new ${CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH}:`,
-          this._customWidgetsDesignerExePath
-        );
+    const eventHandler = vscode.workspace.onDidChangeConfiguration(
+      async (event) => {
         if (
-          this._customWidgetsDesignerExePath &&
-          UIProject.checkCustomDesignerExePath(
-            this._customWidgetsDesignerExePath
+          affectsConfig(
+            event,
+            CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
+            this._folder
           )
         ) {
-          this.designerClient = new DesignerClient(
-            this._customWidgetsDesignerExePath,
-            this._designerServer.getPort()
+          this._customWidgetsDesignerExePath = this.getQtCustomDesignerPath();
+          logger.info(
+            `new ${CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH}:`,
+            this._customWidgetsDesignerExePath
           );
-        } else {
-          // That means the user has removed the path.
-          // So, we need to detach the client.
-          if (this._designerClient) {
+          if (
+            this._customWidgetsDesignerExePath &&
+            UIProject.checkCustomDesignerExePath(
+              this._customWidgetsDesignerExePath
+            )
+          ) {
             this.designerClient = new DesignerClient(
-              this.getQtCustomDesignerPath(),
+              this._customWidgetsDesignerExePath,
               this._designerServer.getPort()
             );
+          } else {
+            // That means the user has removed the path.
+            // So, we need to detach the client and get the designer from qtpaths
+            // or bin dir.
+            if (this._designerClient) {
+              if (this._binDir) {
+                this.designerClient = await this.getNewDesignerClient(
+                  this._binDir
+                );
+              } else if (this._qtpathsExe) {
+                const designer = await locateDesignerFromQtPaths(
+                  this._qtpathsExe
+                );
+                if (designer) {
+                  this.designerClient = new DesignerClient(
+                    designer,
+                    this.designerServer.getPort()
+                  );
+                }
+              } else {
+                this.designerClient = undefined;
+              }
+            }
           }
         }
       }
-    });
+    );
     this._disposables.push(eventHandler);
   }
   getQtCustomDesignerPath() {
@@ -132,18 +148,21 @@ export class UIProject implements Project {
         );
       }
     };
-    if (qtpathsExe) {
-      void locateDesignerFromQtPaths(qtpathsExe).then(setDesignerClient);
-    } else {
-      this.designerClient = undefined;
+
+    if (!this._customWidgetsDesignerExePath) {
+      if (qtpathsExe) {
+        void locateDesignerFromQtPaths(qtpathsExe).then(setDesignerClient);
+      } else {
+        this.designerClient = undefined;
+      }
     }
     this._qtpathsExe = qtpathsExe;
   }
 
   async setBinDir(binDir: string | undefined) {
     if (binDir !== this._binDir) {
+      this._binDir = binDir;
       if (!this._customWidgetsDesignerExePath) {
-        this._binDir = binDir;
         if (binDir) {
           this.designerClient = await this.getNewDesignerClient(binDir);
         } else {
