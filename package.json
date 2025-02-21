@@ -89,7 +89,8 @@
     "publish:qt-all-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/qt\" --pack=\"qt-all-pack\"",
     "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,json,mjs,cjs}\"",
-    "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\""
+    "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\"",
+    "auditFix": "npm audit fix --force && cd qt-lib && npm audit fix --force && cd ../qt-core && npm audit fix --force && cd ../qt-cpp && npm audit fix --force && cd ../qt-ui && npm audit fix --force && cd ../qt-qml && npm audit fix --force"
   },
   "devDependencies": {
     "@types/node": "^20.2.5",
