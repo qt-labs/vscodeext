@@ -9,22 +9,48 @@ import * as semver from 'semver';
 
 import * as common from './common';
 
+function extractAndPlaceQtCli(qtcorePath: string, zipPath: string) {
+  try {
+    const outputDir = path.join(qtcorePath, 'res', 'qtcli');
+    // Remove outputDir if it exists to clean up the previous extraction
+    if (fs.existsSync(outputDir)) {
+      console.log(`Removing existing ${outputDir}`);
+      fs.rmdirSync(outputDir, { recursive: true });
+    }
+    console.log(`Creating "${outputDir}"`);
+    fs.mkdirSync(outputDir, { recursive: true });
+    // Unzipper removes permissions from the files, so use local tools like `unzip`
+    // https://github.com/ZJONSSON/node-unzipper/issues/216
+    console.log(`Extracting "${zipPath}" to "${outputDir}"`);
+    execSync(`unzip -o ${zipPath} -d ${outputDir}`, { stdio: 'inherit' });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
 function main() {
   common.checkForUncommittedChanges();
   program.option('-ext, --extension <string>', 'Path to target extension root');
   program.option('--pre-release', 'Publish as pre-release');
   program.option('--git-remote <string>', 'Git remote to push to');
+  program.option('--qt-cli <string>', 'Signed qt-cli.zip path');
   program.parse(process.argv);
   const options = program.opts();
   const targetExtension = options.extension as string;
   const extensionRoot = path.resolve(__dirname, '../');
   const targetExtensionRoot = path.join(extensionRoot, targetExtension);
+  const qtcliZipPath = options.qtCli as string;
   const preRelease = options.preRelease as boolean;
   const remote = (options.gitRemote as string)
     ? (options.gitRemote as string)
     : 'origin';
   const publishCommand = `npx vsce publish ${preRelease ? '--pre-release' : ''}`;
   const version = common.getExtensionVersion(targetExtensionRoot);
+  const isQtcore = targetExtension.includes('qt-core');
+  if (isQtcore && !qtcliZipPath) {
+    throw new Error('qt-cli.zip path must be provided for qt-core extension');
+  }
   const isEven = (num: number) => num % 2 === 0;
   const parsedVersion = semver.parse(version);
   if (parsedVersion === null) {
@@ -49,6 +75,9 @@ function main() {
     cwd: extensionRoot,
     stdio: 'inherit'
   });
+  if (isQtcore) {
+    extractAndPlaceQtCli(targetExtensionRoot, qtcliZipPath);
+  }
   execSync(publishCommand, {
     cwd: targetExtensionRoot,
     stdio: 'inherit'
