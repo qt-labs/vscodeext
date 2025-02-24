@@ -13,7 +13,7 @@
     "all_dev:qt-qml": "ts-node ./scripts/all_dev.ts --extension=\"qt-qml\"",
     "all_dev:qt-cpp": "ts-node ./scripts/all_dev.ts --extension=\"qt-cpp\"",
     "all_dev:qt-ui": "ts-node ./scripts/all_dev.ts --extension=\"qt-ui\"",
-    "pretest": "npm run prettierWrite && npx tsc --incremental --noEmit && eslint . --fix --cache",
+    "pretest": "npm run prettierWrite && npx tsc --incremental --noEmit && eslint scripts --fix --cache",
     "pretest:qt-core": "cd qt-core && npm run pretest",
     "pretest:qt-qml": "cd qt-qml && npm run pretest",
     "pretest:qt-cpp": "cd qt-cpp && npm run pretest",
