@@ -206,6 +206,8 @@
     "package": "vsce package --out out"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
     "@types/command-exists": "^1.2.3",
     "@types/lodash": "^4.17.12",
     "@types/node": "^20.17.0",

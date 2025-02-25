@@ -240,6 +240,8 @@
     "package": "vsce package --out out"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
     "@types/command-exists": "^1.2.3",
     "@types/license-checker": "^25.0.6",
     "@types/node": "^20.17.0",

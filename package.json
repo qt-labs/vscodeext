@@ -93,20 +93,21 @@
     "auditFix": "npm audit fix --force && cd qt-lib && npm audit fix --force && cd ../qt-core && npm audit fix --force && cd ../qt-cpp && npm audit fix --force && cd ../qt-ui && npm audit fix --force && cd ../qt-qml && npm audit fix --force"
   },
   "devDependencies": {
+    "@eslint/js": "^9.21.0",
     "@types/node": "^20.2.5",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "@vscode/vsce": "^2.32.0",
     "concurrently": "^8.2.2",
-    "eslint": "^8.50.0",
+    "eslint": "^8.57.1",
     "license-checker": "^25.0.1",
     "prettier": "^3.0.3",
     "semver": "^7.6.3",
     "ts-node": "^10.4.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.25.0"
   },
   "dependencies": {
-    "commander": "^12.1.0",
-    "typescript": "^5.2.2"
+    "commander": "^12.1.0"
   }
 }
