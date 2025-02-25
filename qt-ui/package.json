@@ -115,6 +115,8 @@
     "package": "vsce package --out out"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
     "@types/node": "^20.17.0",
     "@types/vscode": "^1.94.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
