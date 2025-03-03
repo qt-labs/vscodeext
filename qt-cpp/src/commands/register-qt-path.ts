@@ -79,6 +79,9 @@ export async function getSelectedKit(
     folder !== undefined
       ? KitManager.getCMakeWorkspaceKitsFilepath(folder)
       : '';
+  if (!CMAKE_GLOBAL_KITS_FILEPATH) {
+    throw new Error('CMAKE_GLOBAL_KITS_FILEPATH is undefined.');
+  }
   const kitFiles = [workspaceFolderKitsPath, CMAKE_GLOBAL_KITS_FILEPATH];
   if (addtionalKits) {
     kitFiles.push(...addtionalKits);

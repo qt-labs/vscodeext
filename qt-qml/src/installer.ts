@@ -15,7 +15,7 @@ import { setDoNotAskForDownloadingQmlls } from '@/qmlls';
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;
 const DownloadDir = os.tmpdir();
-const InstallDir = path.join(UserLocalDir, 'qmlls');
+const InstallDir = installerDir();
 const ExtractDir = path.join(InstallDir, 'files');
 const QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
 const ReleaseJsonPath = path.join(InstallDir, 'release.json');
@@ -28,6 +28,12 @@ interface Asset {
   created_at: string;
 }
 
+function installerDir() {
+  if (!UserLocalDir) {
+    throw new Error('Cannot determine the user local directory');
+  }
+  return path.join(UserLocalDir, 'qmlls');
+}
 export interface AssetWithTag extends Asset {
   tag_name: string;
 }

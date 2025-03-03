@@ -37,11 +37,22 @@ import { QtVersionFromKit } from '@util/util';
 const logger = createLogger('kit-manager');
 
 export const CMakeDefaultGenerator = 'Ninja';
-const CMakeToolsDir = path.join(UserLocalDir, 'CMakeTools');
-export const CMAKE_GLOBAL_KITS_FILEPATH = path.join(
-  CMakeToolsDir,
-  'cmake-tools-kits.json'
-);
+const CMakeToolsDir = cmakeToolsDir();
+export const CMAKE_GLOBAL_KITS_FILEPATH = cmakeGlobalKitsFilepath();
+
+function cmakeGlobalKitsFilepath() {
+  if (!CMakeToolsDir) {
+    return undefined;
+  }
+  return path.join(CMakeToolsDir, 'cmake-tools-kits.json');
+}
+
+function cmakeToolsDir() {
+  if (!UserLocalDir) {
+    return undefined;
+  }
+  return path.join(UserLocalDir, 'CMakeTools');
+}
 
 const envPath = '${env:PATH}';
 type Environment = Record<string, string | undefined>;
@@ -469,6 +480,9 @@ export class KitManager {
     const cmakeKitsFile = workspaceFolder
       ? path.join(workspaceFolder.uri.fsPath, '.vscode', 'cmake-kits.json')
       : CMAKE_GLOBAL_KITS_FILEPATH;
+    if (cmakeKitsFile === undefined) {
+      throw new Error('CMake tools directory not found');
+    }
     const currentKits = await KitManager.parseCMakeKitsFile(cmakeKitsFile);
     const newKits = currentKits.filter((kit) => {
       // filter kits if previousQtKits contains the kit with the same name
@@ -492,6 +506,9 @@ export class KitManager {
   }
 
   private static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
+    if (CMAKE_GLOBAL_KITS_FILEPATH === undefined) {
+      throw new Error('CMake tools directory not found');
+    }
     if (!fsSync.existsSync(CMAKE_GLOBAL_KITS_FILEPATH)) {
       return [];
     }
@@ -694,6 +711,9 @@ export class KitManager {
     const cmakeKitsFile = workspaceFolder
       ? path.join(workspaceFolder.uri.fsPath, '.vscode', 'cmake-kits.json')
       : CMAKE_GLOBAL_KITS_FILEPATH;
+    if (cmakeKitsFile === undefined) {
+      throw new Error('CMake tools directory not found');
+    }
     const currentKits = await KitManager.parseCMakeKitsFile(cmakeKitsFile);
     const newKits = currentKits.filter((kit) => {
       // Filter kits if previousQtKits contains the kit with the same name

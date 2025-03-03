@@ -11,7 +11,7 @@ import * as async from 'async';
 import { QtInfo } from './core-api';
 import { telemetry } from './telemetry';
 
-export const Home = os.homedir();
+export const Home = userHome();
 export const IsWindows = process.platform === 'win32';
 export const IsMacOS = process.platform === 'darwin';
 export const IsLinux = process.platform === 'linux';
@@ -22,12 +22,40 @@ export const Isx86 = os.arch() === 'x86' || os.arch() === 'ia32';
 export const Isx64 = os.arch() === 'x64';
 
 export const OSExeSuffix = IsWindows ? '.exe' : '';
-export const UserLocalDir = IsWindows
-  ? (process.env.LOCALAPPDATA ?? '')
-  : path.join(Home, '.local/share');
+export const UserLocalDir = userLocalDir();
 
 export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function userLocalDir() {
+  if (process.platform === 'win32') {
+    return localAppData();
+  } else {
+    const xdg_dir = process.env.XDG_DATA_HOME;
+    if (xdg_dir) {
+      return xdg_dir;
+    }
+    if (Home) {
+      return path.join(Home, '.local/share');
+    }
+    return undefined;
+  }
+
+  function localAppData() {
+    return process.env.LOCALAPPDATA;
+  }
+}
+
+function userHome() {
+  if (process.platform === 'win32') {
+    return path.join(
+      process.env.HOMEDRIVE ?? 'C:',
+      process.env.HOMEPATH ?? 'Users\\Public'
+    );
+  } else {
+    return process.env.HOME ?? process.env.PROFILE ?? os.homedir();
+  }
 }
 
 export async function exists(filePath: string) {
