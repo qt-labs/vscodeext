@@ -81,6 +81,9 @@ export function checkDefaultQtInsRootPath() {
     throw new Error(errorMessage);
   }
   const defaultQtInsRootName = 'Qt';
+  if (!Home) {
+    throw new Error('Home is undefined');
+  }
   const unixDefaultPaths = [
     path.join(Home, defaultQtInsRootName),
     path.join(Home, 'dev', defaultQtInsRootName),
