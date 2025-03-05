@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.1 (Mar 5, 2025)
+
+⏪ **Reverted**
+
+- F1 keybinding for documentation search [VSCODEEXT-123](https://bugreports.qt.io/browse/VSCODEEXT-123)
+
 ## 1.3.0 (Jan 9, 2025)
 
 🎉 **Added**

@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.1 (Mar 5, 2025)
+
+🐞 **Fixed**
+
+- Missing `${env:PATH}` in environment variables when `Ninja` is not in the system path [VSCODEEXT-132](https://bugreports.qt.io/browse/VSCODEEXT-132)
+
 ## 1.3.0 (Jan 9, 2025)
 
 🎉 **Added**
