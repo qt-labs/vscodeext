@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.1 (Mar 5, 2025)
+
+🐞 **Fixed**
+
+- Switching between `qt-ui.customWidgetsDesignerExePath` and kit paths [VSCODEEXT-141](https://bugreports.qt.io/browse/VSCODEEXT-141)
+
 ## 1.3.0 (Jan 9, 2025)
 
 The same as `1.2.0`
