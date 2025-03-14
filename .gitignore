@@ -15,3 +15,5 @@ src/test/util/dependencies
 .eslintcache
 tsconfig.tsbuildinfo
 qt-core/res/qtcli/*
+qt-cpp/res/natvis/*
+.natvis-copy-timestamp

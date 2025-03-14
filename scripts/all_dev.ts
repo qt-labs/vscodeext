@@ -33,6 +33,12 @@ function main() {
     cwd: extensionRoot,
     stdio: 'inherit'
   });
+  if (targetExtension === 'qt-cpp') {
+    execSync(`npm run prepareNatvisFiles`, {
+      cwd: extensionRoot,
+      stdio: 'inherit'
+    });
+  }
   execSync(`npm run package:${targetExtension}`, {
     cwd: extensionRoot,
     stdio: 'inherit'
