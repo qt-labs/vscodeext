@@ -1,0 +1,3 @@
+[submodule "debugging_helpers"]
+	path = debugging_helpers
+	url = https://code.qt.io/qt-labs/vs-debugtools.git
