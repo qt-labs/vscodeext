@@ -14,8 +14,8 @@
     To debug an application:
 
     \list 1
-        \li Go to \uicontrol {Run and Debug} (\key {Ctrl+Shift+V} or
-            \key {Cmd+Shift+V} on \macos).
+        \li Go to \uicontrol {Run and Debug} (\key {Ctrl+Shift+D} or
+            \key {Cmd+Shift+D} on \macos).
             \image vscode-run-and-debug.webp {Run and Debug in VS Code}
         \li Create a \e {launch.json} file (1) that contains launch configurations.
             For more information, see \l{VS Code: Debugging} in the VS Code
