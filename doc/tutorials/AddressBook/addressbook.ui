@@ -67,7 +67,6 @@
     <item row="2" column="0" colspan="2">
      <widget class="QLabel" name="emailLabel">
       <property name="text">
-       <string>Email</string>
       </property>
      </widget>
     </item>
