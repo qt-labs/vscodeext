@@ -11,8 +11,7 @@
     \title Tutorial: Qt Widgets application
 
     This tutorial illustrates how to use \QVSC to create a \l [QtWidgets] {Qt Widgets}
-    application. You will need a project that you can develop further using
-    VS Code and \QD.
+    application.
 
     You can download the completed project from
     \l{https://code.qt.io/cgit/qt-labs/vscodeext.git/tree/doc/tutorials/AddressBook}
@@ -27,7 +26,6 @@
     \list
         \li \l {Installation}{Install \QVSC}
         \li \l {Register Qt installations}
-        \li \l {Create a Qt Widgets application project}
     \endlist
 
     \section1 Create a Qt Widgets application project
@@ -40,7 +38,7 @@
     UI form:
 
     \list
-        \li \c AddressBook (based on QMainWindow)
+        \li \c AddressBook (based on QWidget)
         \li \c AddDialog (based on QDialog)
     \endlist
 
@@ -57,20 +55,18 @@
         \li Select a CMake kit for the project.
     \endlist
 
-    Project files are generated in an \e AddressBook folder in the current
-    directory with default settings. For this tutorial, rename \e {widget.cpp},
-    \e {widget.h}, and \e {widget.ui} to \e {addressbook.cpp}, \e {addressbook.h},
-    and \e {addressbook.ui}. Then, change the default class name \e {Widget} to
-    \e {AddressBook} everywhere.
+    Project files are generated in an \e AddressBook folder at the default path
+    with default settings. In this tutorial, the project files are called
+    \e {addressbook.cpp}, \e {addressbook.h}, and \e {addressbook.ui}.
 
-    Next, create the main window of the application.
+    Next, create the main view of the application.
 
-    \section1 Design the main window
+    \section1 Design the main view
 
-    Use \QD to design the application's main window, which has
+    Use \QD to design the application's main view, which has
     some widgets placed in layouts:
 
-    \image vscodeext-tutorial-widgets-main-window.webp {AddressBook's main window}
+    \image vscodeext-tutorial-widgets-main-view.webp {AddressBook's main view}
 
     For more information about using \QD, see \l{\QD}{\QD Manual}.
 
@@ -82,16 +78,16 @@
         \li In VS Code \uicontrol {Explorer}, select \c addressbook.ui, and then
             select \uicontrol {Open this file with \QD} to open it in \QD.
             \image vscodeext-open-ui-file.webp {Opening addressbook.ui in the Explorer}
-        \li In the \uicontrol {New Form} dialog, select \uicontrol {Close}.
         \li In \QD's \uicontrol {Widget Box}, select \uicontrol {List Widget} and
             Drag it to the form to add a \l QListWidget.
-        \li In the \uicontrol {Property Editor}, set the \c ObjectName property
+        \li In the \uicontrol {Property Editor}, set the \c objectName property
             to \e addressList.
         \li Drag two \uicontrol {Push Button} widgets to the top-right
             corner of the form to add \l QPushButton objects for the
             \uicontrol Add and \uicontrol Delete buttons.
-        \li Set the button names to \e addButton and \e deleteButton and
-            \uicontrol text property values to \e Add and \e Delete.
+        \li Set the \c objectName properties of the buttons to \e addButton and
+            \e deleteButton and \uicontrol text property values to \e Add and
+            \e Delete.
         \li Drag two \uicontrol {Label} widgets to the form to add
             \l QLabel objects for displaying the selected item in the list.
         \li Rename the first label to \e nameLabel and change its
@@ -131,11 +127,11 @@
         \li Go to \uicontrol File > \uicontrol Save to save the form.
     \endlist
 
-    Build and run the application to check the main window.
+    Build and run the application to check the main view.
 
     \section1 Add a dialog
 
-    Now that the main window is ready, move on to add functionality to the
+    Now that the main view is ready, move on to add functionality to the
     application. To have the application open a dialog when the user clicks
     the \uicontrol Add button, create an \uicontrol {Add Address} dialog and
     invoke the dialog from a slot that you connect to the \uicontrol Add button.
@@ -209,10 +205,10 @@
     \uicontrol {Configure Connection} dialog, connect the button's
     QPushButton::clicked() signal to the form's QDialog::accept() slot.
 
-    \section1 Open dialogs from the main window
+    \section1 Open dialogs from the main view
 
     To invoke the dialog when the user selects \uicontrol Add in the main
-    window, you must add a slot to the \c AddressBook class and invoke
+    view, you must add a slot to the \c AddressBook class and invoke
     \c AddDialog from this slot.
 
     Forms that you create using \QD call QMetaObject::connectSlotsByName() to
