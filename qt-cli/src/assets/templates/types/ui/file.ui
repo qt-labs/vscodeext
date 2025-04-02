@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Form</class>
- <widget class="{{ .base }}" name="Form">
+ <widget class="{{ .baseClass }}" name="Form">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>{{ .title }}</string>
   </property>
+{{- if eq .baseClass "QMainWindow" }}
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+{{- end }}
  </widget>
  <resources/>
  <connections/>
