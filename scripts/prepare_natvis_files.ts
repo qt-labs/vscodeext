@@ -30,12 +30,12 @@ function processNatvisFiles(): boolean {
     return false;
   }
 
-  // Get all .natvis.xml files from source directory
+  // Get all .natvis files from source directory
   let files: string[];
   try {
     files = fs
       .readdirSync(sourceDir)
-      .filter((file) => file.endsWith('.natvis.xml'));
+      .filter((file) => file.endsWith('.natvis'));
   } catch (error) {
     console.error(
       `Error: Failed to read source directory ${sourceDir}:`,
@@ -45,7 +45,7 @@ function processNatvisFiles(): boolean {
   }
 
   if (files.length === 0) {
-    console.error('Error: No .natvis.xml files found in source directory.');
+    console.error('Error: No .natvis files found in source directory.');
     console.log('Check the state of the git submodule.');
     return false;
   }

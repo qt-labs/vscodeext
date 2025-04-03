@@ -28,11 +28,12 @@ export function registerNatvisCommand() {
       logger.error(error);
       throw new Error(error);
     }
+    const natvisSuffix = '.natvis';
     const natvisFile = path.join(
       extensionPath,
       'res',
       'natvis',
-      `qt${version}.natvis.xml`
+      `qt${version}${natvisSuffix}`
     );
     if (!fs.existsSync(natvisFile)) {
       const error = `Cannot find the natvis file: ${natvisFile}`;
