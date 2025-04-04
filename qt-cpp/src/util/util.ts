@@ -1,10 +1,16 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { getQtInsRoot, getQtPathsExe } from '@/commands/register-qt-path';
+import * as path from 'path';
+
+import {
+  getQtInsRoot,
+  getQtPathsExe,
+  getSelectedKit,
+  IsQtKit
+} from '@/commands/register-qt-path';
 import { coreAPI } from '@/extension';
 import { Kit } from '@/kit-manager';
-import * as path from 'path';
 
 /**
  * Returns true if the extension is currently running tests.
@@ -36,6 +42,19 @@ export function QtVersionFromKit(kit: Kit) {
   if (qtPathsExe) {
     const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
     return qtInfo?.get('QT_VERSION');
+  }
+  return undefined;
+}
+
+export async function getMajorQtVersion() {
+  const kit = await getSelectedKit();
+  if (!kit || !IsQtKit(kit)) {
+    return undefined;
+  }
+  const version = QtVersionFromKit(kit);
+  if (version) {
+    const majorVersion = version.split('.')[0];
+    return majorVersion;
   }
   return undefined;
 }
