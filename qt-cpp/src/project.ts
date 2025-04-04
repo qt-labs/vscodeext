@@ -3,13 +3,21 @@
 
 import * as vscode from 'vscode';
 import * as cmakeApi from 'vscode-cmake-tools';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as crypto from 'crypto';
+import { isEmpty, isEqual } from 'lodash';
 
 import { WorkspaceStateManager } from '@/state';
 import { coreAPI, kitManager } from '@/extension';
 import {
   createLogger,
+  IsLinux,
+  IsMacOS,
+  IsWindows,
   QtWorkspaceConfigMessage,
-  QtWorkspaceType
+  QtWorkspaceType,
+  telemetry
 } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
 import {
@@ -18,8 +26,15 @@ import {
   getSelectedKit
 } from '@cmd/register-qt-path';
 import { analyzeKit } from '@/kit-manager';
+import * as cmakeFileApi from '@/cmake-file-api';
+import { getMajorQtVersion } from '@/util/util';
 
 const logger = createLogger('project');
+
+interface target {
+  name: string;
+  filePath: string;
+}
 
 export async function createCppProject(
   folder: vscode.WorkspaceFolder,
@@ -87,8 +102,11 @@ export class CppProject implements Project {
         );
       const onCodeModelChangedHandler = this._cmakeProject.onCodeModelChanged(
         async () => {
+          if (!this._cmakeProject) {
+            throw new Error('CMake project is not defined');
+          }
           const prevbuildDir = this._buildDir;
-          const currentBuildDir = await this._cmakeProject?.getBuildDirectory();
+          const currentBuildDir = await this._cmakeProject.getBuildDirectory();
           if (prevbuildDir !== currentBuildDir) {
             logger.info(
               'Build directory changed:',
@@ -103,10 +121,242 @@ export class CppProject implements Project {
             );
             coreAPI?.notify(message);
           }
+          // Obtain used Qt modules if telemetry is enabled
+          if (vscode.env.isTelemetryEnabled) {
+            await this.obtainUsedQtModules();
+          }
         }
       );
       this._disposables.push(onCodeModelChangedHandler);
       this._disposables.push(onSelectedConfigurationChangedHandler);
+    }
+  }
+  private async obtainUsedQtModules() {
+    if (!this._cmakeProject) {
+      throw new Error('CMake project is not defined');
+    }
+    if (!this._cmakeProject.codeModel) {
+      throw new Error('Code model is not defined');
+    }
+    // Obtain used Qt modules
+    const buildDir = await this._cmakeProject.getBuildDirectory();
+    if (!buildDir) {
+      logger.warn(
+        'Build directory is not defined. Cannot obtain used Qt modules.'
+      );
+      return;
+    }
+    const buildType = await this._cmakeProject.getActiveBuildType();
+    if (!buildType) {
+      logger.warn('Build type is not defined. Cannot obtain used Qt modules.');
+      return;
+    }
+
+    const configurations = this._cmakeProject.codeModel.configurations;
+    // Get all projects from configurations
+    const projects = configurations.flatMap((c) => c.projects);
+
+    // Filter out targets which are not UTILITY, and assign wtih name as string
+    const targets: string[] = [];
+    for (const project of projects) {
+      targets.push(
+        ...project.targets
+          .filter((t) => t.type !== 'UTILITY')
+          .map((t) => t.name)
+      );
+    }
+
+    // .cmake/api/v1/reply
+    const cmakeFileApiPath = path.join(
+      buildDir,
+      '.cmake',
+      'api',
+      'v1',
+      'reply'
+    );
+    // Filter out json files in cmakeFileApiPath
+    const jsonFiles = await vscode.workspace.fs.readDirectory(
+      vscode.Uri.file(cmakeFileApiPath)
+    );
+
+    // Filter out json files starting with "target-<targetName>-<buildType>"
+    const targetJsonFiles: target[] = [];
+    for (const file of jsonFiles) {
+      for (const target of targets) {
+        if (file[0].startsWith(`target-${target}-${buildType}`)) {
+          targetJsonFiles.push({
+            name: target,
+            filePath: path.join(cmakeFileApiPath, file[0])
+          });
+        }
+      }
+    }
+    let changed = false;
+    for (const t of targetJsonFiles) {
+      let modules = CppProject.parseCmakeFileApi(t.filePath, buildType);
+      if (isEmpty(modules)) {
+        continue;
+      }
+      if (IsMacOS) {
+        const majorVersion = await getMajorQtVersion();
+        if (majorVersion) {
+          modules = modules.map((module) => {
+            module = module.replace('Qt', `Qt${majorVersion}`);
+            return module;
+          });
+        }
+      }
+      const prevModules = this.getStateManager().getModules();
+      const targetModules = prevModules.get(t.name);
+      // First time setting modules or modules changed
+      if (!targetModules || !isEqual(targetModules, modules)) {
+        prevModules.set(t.name, modules);
+        const targetId = crypto
+          .createHash('sha1')
+          .update(this.folder.uri.fsPath + t.name)
+          .digest('hex');
+
+        telemetry.sendEvent('QtModules', {
+          targetId: targetId,
+          qtmodules: modules.join(',')
+        });
+        changed = true;
+        await this.getStateManager().setModules(prevModules);
+      }
+    }
+    if (changed) {
+      await this.CleanupTargetsForTelemetry(targets);
+    }
+  }
+  private async CleanupTargetsForTelemetry(targets: string[]) {
+    // Delete non-existing targets from state
+    const currentModules = this.getStateManager().getModules();
+    const currentTargets = Array.from(currentModules.keys());
+    const targetsToDelete = currentTargets.filter(
+      (target) => !targets.includes(target)
+    );
+    for (const target of targetsToDelete) {
+      currentModules.delete(target);
+    }
+    if (targetsToDelete.length > 0) {
+      await this.getStateManager().setModules(currentModules);
+    }
+  }
+  private static parseCmakeFileApi(file: string, buildType: string) {
+    try {
+      const fileContent = fs.readFileSync(file, 'utf8');
+      const jsonContent = JSON.parse(fileContent) as cmakeFileApi.Target;
+      let frameworks: string[] = [];
+      if (IsMacOS) {
+        frameworks = CppProject.parseCmakeFileApiContentMacOS(jsonContent);
+      } else if (IsLinux) {
+        frameworks = CppProject.parseCmakeFileApiContentLinux(jsonContent);
+      } else if (IsWindows) {
+        frameworks = CppProject.parseCmakeFileApiContentWindows(
+          jsonContent,
+          buildType
+        );
+      }
+
+      // Remove duplicates
+      frameworks = [...new Set(frameworks)];
+      return frameworks;
+    } catch (error) {
+      logger.info(
+        `Cannot parse CMake file API JSON file: ${file}. ${String(error)}`
+      );
+      return [];
+    }
+  }
+  private static parseCmakeFileApiContentLinux(content: cmakeFileApi.Target) {
+    try {
+      const frameworks: string[] = [];
+      for (const commandFragment of content.link.commandFragments) {
+        if (commandFragment.role !== 'libraries') {
+          continue;
+        }
+        const splitFragment = commandFragment.fragment.split(',');
+        const filteredFragment = splitFragment.filter((fragment) => {
+          return fragment.includes('libQt');
+        });
+        if (filteredFragment.length === 0) {
+          continue;
+        }
+        const refinedFragments = filteredFragment.map((fragment) => {
+          // Remove the path and extension and get the name without lib prefix
+          const name = path.parse(fragment).name;
+          const refinedName = name.replace('lib', '');
+          // Cut until the first dot
+          const dotIndex = refinedName.indexOf('.');
+          const finalName =
+            dotIndex !== -1 ? refinedName.slice(0, dotIndex) : refinedName;
+          return finalName;
+        });
+        frameworks.push(...refinedFragments);
+      }
+      return frameworks;
+    } catch (error) {
+      logger.warn(
+        `Error parsing CMake file API JSON content. Error: ${String(error)}`
+      );
+      return [];
+    }
+  }
+  private static parseCmakeFileApiContentWindows(
+    content: cmakeFileApi.Target,
+    buildType: string
+  ) {
+    try {
+      const frameworks: string[] = [];
+      for (const commandFragment of content.link.commandFragments) {
+        if (commandFragment.role !== 'libraries') {
+          continue;
+        }
+        const splitFragment = commandFragment.fragment.split(',');
+        const filteredFragment = splitFragment.filter((fragment) => {
+          return fragment.includes('Qt6') || fragment.includes('Qt5');
+        });
+        const refinedFragments = filteredFragment.map((fragment) => {
+          // Remove the path and extension and get the name without lib prefix
+          const name = path.parse(fragment).name;
+          if (buildType === 'Debug' || buildType === 'RelWithDebInfo') {
+            // Check if the name contains 'd' at the end
+            if (name.endsWith('d')) {
+              return name.slice(0, -1);
+            }
+          }
+          return name;
+        });
+        frameworks.push(...refinedFragments);
+      }
+      return frameworks;
+    } catch (error) {
+      logger.warn(
+        `Error parsing CMake file API JSON content. Error: ${String(error)}`
+      );
+      return [];
+    }
+  }
+  private static parseCmakeFileApiContentMacOS(content: cmakeFileApi.Target) {
+    try {
+      const frameworks: string[] = [];
+      for (const compileGroup of content.compileGroups) {
+        for (const framework of compileGroup.frameworks) {
+          if (framework.path) {
+            const name = path.parse(framework.path).name;
+            // Check if the framework is a Qt module
+            if (name.startsWith('Qt')) {
+              frameworks.push(name);
+            }
+          }
+        }
+      }
+      return frameworks;
+    } catch (error) {
+      logger.warn(
+        `Error parsing CMake file API JSON content. Error: ${String(error)}`
+      );
+      return [];
     }
   }
   async initConfigValues() {

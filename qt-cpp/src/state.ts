@@ -8,6 +8,8 @@ import { Kit } from '@/kit-manager';
 
 const logger = createLogger('state');
 
+type QtModules = Record<string, string[]>;
+
 export class WorkspaceStateManager extends BaseStateManager {
   constructor(
     context: vscode.ExtensionContext,
@@ -25,7 +27,17 @@ export class WorkspaceStateManager extends BaseStateManager {
   public getWorkspaceQtPathsQtKits(): Kit[] {
     return this._get<Kit[]>('QtPathsQtKits', []);
   }
-
+  public getModules(): Map<string, string[]> {
+    const obj = this._get<QtModules>('QtModules', {});
+    return new Map<string, string[]>(Object.entries(obj));
+  }
+  public setModules(modules: Map<string, string[]>): Thenable<void> {
+    const obj: QtModules = {};
+    modules.forEach((value, key) => {
+      obj[key] = value;
+    });
+    return this._update('QtModules', obj);
+  }
   public setWorkspaceQtPathsQtKits(kits: Kit[]): Thenable<void> {
     return this._update('QtPathsQtKits', kits);
   }
