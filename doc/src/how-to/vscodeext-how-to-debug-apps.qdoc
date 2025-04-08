@@ -8,18 +8,32 @@
 
     \ingroup vscodeext-how-to-cpp
     \ingroup vscodeext-how-to-qml
+    \ingroup vscodeext-how-to-wasm
 
     \title Debug Qt applications
 
-    To debug an application:
+    You can interrupt a running application before it terminates or to find out
+    why the application does not work correctly. Set breakpoints to stop the
+    application for examining and changing variables, setting new breakpoints, or
+    removing old ones, and then continue running the application.
+
+    When the application stops, you can examine certain data in the debugger.
+    The availability of data depends on the compiler settings when compiling the
+    application and the exact location where the application stops. Use the
+    standard VS Code functions to step through the code and examine the changes
+    in variables: step into, step over, and step out.
+
+    For more information, see \l{VS Code: Debugging} in the VS Code documentation.
+
+    \section1 Configure a project for debugging
+
+    To add a Qt debug configuration for an application:
 
     \list 1
         \li Go to \uicontrol {Run and Debug} (\key {Ctrl+Shift+D} or
             \key {Cmd+Shift+D} on \macos).
-            \image vscode-run-and-debug.webp {Run and Debug in VS Code}
+            \image {vscode-run-and-debug.webp} {Run and Debug in VS Code}
         \li Create a \e {launch.json} file (1) that contains launch configurations.
-            For more information, see \l{VS Code: Debugging} in the VS Code
-            documentation.
         \li Select \uicontrol {Add Configuration} (2), and then select a
             \uicontrol {Qt: Debug} debug configuration that matches
             your debugger.
@@ -28,17 +42,28 @@
             select \uicontrol {CMake: Set Launch/Debug Target}.
     \endlist
 
+    \section1 Qt debug configurations
+
     Select one of the following Qt debug configurations:
 
     \list
         \li \uicontrol {Qt: Debug with cppdbg} for debugging C/C++ applications
             with GDB.
-        \li \uicontrol {Qt: Debug with cppvsdbg} for debugging C/C++
+        \li \uicontrol {Qt: Debug with cppvsdbg (Windows)} for debugging C/C++
             applications with the Visual Studio Windows debugger.
+        \li \uicontrol {Qt: QML: Attach by port} for attaching the QML debugger
+            to a running application to debug QML code.
+        \li \uicontrol {Qt: Debug with cppdbg and QML debugger} for
+            debugging Qt Quick applications that contain C/C++ code with GDB and
+            the QML debugger.
+        \li \uicontrol {Qt: Debug with cppvsdbg and QML debugger (Windows)} for
+            debugging Qt Quick applications that contain C/C++ code with the
+            Visual Studio Windows debugger and the QML debugger.
         \li \uicontrol {Qt: Debug with lldb} for debugging with LLDB.
         \li \uicontrol {Qt: Debug Qt WASM with Chrome} for debugging
             Qt WebAssembly applications with Chrome.
     \endlist
 
-    \sa {Debug Qt WebAssembly applications}
+    \sa {Debug Qt Quick applications}, {Debug Qt WebAssembly applications},
+    {VS Code: Debugging}
 */
