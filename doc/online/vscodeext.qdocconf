@@ -1,4 +1,5 @@
 # Run qdoc from the directory that contains this file.
+include($QT_INSTALL_DOCS/global/qt-html-templates-online.qdocconf)
 include(../config/vscodeext-project.qdocconf)
 include($QT_INSTALL_DOCS/global/macros.qdocconf)
 include($QT_INSTALL_DOCS/global/macros-online.qdocconf)
@@ -15,8 +16,6 @@ HTML.footer = \
     "   Qt and respective logos are trademarks of The Qt Company Ltd " \
     "   in Finland and/or other countries worldwide. All other trademarks are property\n" \
     "   of their respective owners. </p>\n"
-
-include($QT_INSTALL_DOCS/global/qt-html-templates-online.qdocconf)
 
 # Add an .html file with sidebar content, used in the online style
 HTML.stylesheets               += ../config/style/qt5-sidebar.html

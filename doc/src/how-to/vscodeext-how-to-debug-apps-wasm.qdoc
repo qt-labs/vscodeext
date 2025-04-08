@@ -10,10 +10,11 @@
 
     \title Debug Qt WebAssembly applications
 
-    To debug a Qt WebAssembly application:
+    To debug a Qt WebAssembly application with Chrome:
 
     \list 1
-        \li Open a \e {launch.json} file.
+        \li Open a \e {launch.json} file. For more information, see
+            \l {Debug Qt applications}.
         \li Select \uicontrol {Add Configuration}, and then select the
             \uicontrol {Qt: Debug Qt WASM with Chrome} debug configuration.
     \endlist
@@ -21,6 +22,8 @@
     The \uicontrol {Qt: WASM Start} task in the \uicontrol {preLaunchTask}
     section checks the required dependencies and prompts you to install them
     if necessary.
+
+    \section1 Debug multi-thread applications
 
     For \uicontrol {multi-thread} Qt WebAssembly applications, set the following
     configuration in \e {settings.json}:
@@ -34,4 +37,6 @@
     \endcode
 
     Otherwise, you might see the \e {SharedArrayBuffer is not defined} error.
+
+    \sa {Debug Qt applications}, {VS Code: Debugging}
 */

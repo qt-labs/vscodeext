@@ -1,0 +1,118 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-debug-apps-qml.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-qml
+
+    \title Debug Qt Quick applications
+
+    You can debug Qt Quick applications that contain both QML and C/C++ code with
+    the QML debugger and the debugger for your operating system. Usually, you use
+    GDB on Linux and \macos or the Visual Studio Windows debugger on Windows.
+
+    \note Debugging requires opening a socket at a TCP port, which presents a
+    security risk. Anyone on the Internet could connect to the application that
+    you are debugging and execute any JavaScript functions. Therefore, you must
+    make sure that the port is properly protected by a firewall.
+
+    \section1 Debug QML code
+
+    To only debug the QML code in an application, it is faster to attach the
+    debugger to a running application using a fixed port number than to have
+    \QVSC first start the application and then attach the QML debugger to it.
+
+    To debug only QML code:
+
+    \list 1
+        \li Create a \e {launch.json} file for the project. For more information,
+            see \l {Debug Qt applications}.
+        \li Select \uicontrol {Add Configuration}, and then select the
+            \uicontrol {Qt: QML: Attach by port} debug configuration.
+        \li In the \uicontrol Terminal, start the application with the following
+            arguments:
+            \badcode
+            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:DebugMessages,QmlDebugger,V8Debugger,QmlInspector
+            \endcode
+            Where \e IP_address is the IP address of the host where the
+            application is running, \e port_number is the debugging port,
+            and block prevents the application from running until the debug
+            client connects to the server. This enables debugging from the start.
+        \li Set the port number as the value of the \c port option in the
+            \e {launch.json} file:
+            \badcode
+            "configurations": [
+                {
+                    "name": "Qt: QML: Attach by port",
+                    "type": "qml",
+                    "request": "attach",
+                    "host": "localhost",
+                    "port": "<port_number>"
+                },
+            \endcode
+    \endlist
+
+    \section1 Debug mixed C/C++ and QML code
+
+    You can create a debug configuration that first starts an application and
+    then attaches both the QML and C/C++ debugger to it using a port number that
+    the \uicontrol {Qt: Acquire Port} pre-launch task acquires.
+
+    To debug a Qt Quick application that contains both C/C++ and QML code:
+
+    \list 1
+        \li Open a \e {launch.json} file. For more information, see
+            \l {Debug Qt applications}.
+        \li Select \uicontrol {Add Configuration}, and then select the
+            \uicontrol {Qt: Debug with cppdbg and QML debugger} or
+            \uicontrol {Qt: Debug with cppvsdbg and QML debugger (Windows)}
+            debug configuration that matches your debugger.
+        \li Add a compound launch and pre-launch task for C++/QML debugging
+            to the \e {launch.json} file:
+
+            \if defined(onlinedocs)
+                \tab {tab-compound-debugging}{linux}{Linux and \macos}{}
+                \tab {tab-compound-debugging}{windows}{Windows}{checked}
+                \tabcontent {linux}
+            \else
+                On Linux and \macos with GDB:
+            \endif
+
+            \badcode
+            "compounds": [
+                    {
+                        "name": "C++/QML",
+                        "configurations": ["Qt: Debug with cppdbg and QML debugger", "Qt: QML: Attach by port"],
+                        "preLaunchTask": "Qt: Acquire Port",
+                    }
+                ]
+            \endcode
+
+            \if defined(onlinedocs)
+                \endtabcontent
+                \tabcontent {windows}
+            \else
+                On Windows with the Visual Studio Windows debugger:
+            \endif
+
+            \badcode
+            "compounds": [
+                    {
+                        "name": "C++/QML",
+                        "configurations": ["Qt: Debug with cppvsdbg and QML debugger (Windows)", "Qt: QML: Attach by port"],
+                        "preLaunchTask": "Qt: Acquire Port",
+                    }
+                ]
+            \endcode
+
+            \if defined(onlinedocs)
+                \endtabcontent
+            \endif
+
+       \endlist
+
+    \sa {Debug Qt applications}, {VS Code: Debugging}
+*/
