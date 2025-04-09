@@ -1,5 +1,37 @@
 # Change Log
 
+## 1.5.0 (Apr 10, 2025)
+
+🎉 **Added**
+
+- Add `cmake.useCMakePresets": "never"`to the recommended settings
+
+### qtcli
+
+🎉 **Added**
+
+- Add third-party licenses
+- Align the usage of default and user presets
+- Support C++ class generation
+- Add server mode with REST API endpoints
+- Show all presets in `preset ls`
+- Include more build information in binary
+
+🐞 **Fixed**
+
+- The broken template for `ui` files
+- Add missing `CMAKE_CXX_STANDARD` setting to qtquick
+
+⚠️ **Changed**
+
+- Removed .ts file template
+- Dropped virtual keyboard support from the qtquick template
+- Remove `MACOSX_BUNDLE_GUI_IDENTIFIER` from qtquick
+- Modernize the console template
+- Allow entering target language without the region specifier
+- Modernize the `qwidget` project template
+- Do not let project wizards create `ts` files
+
 ## 1.3.1 (Mar 5, 2025)
 
 ⏪ **Reverted**

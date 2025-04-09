@@ -1,5 +1,24 @@
 # Change Log
 
+## 1.5.0 (Apr 10, 2025)
+
+🎉 **Added**
+
+- Introduce the `qt-qml.qmlls.useNoCMakeCalls` configuration variable to disable CMake calls for QML Language Server
+- Introduce the `qt-qml.qmlls.customArgs` setting to allow users to pass custom arguments to QML Language Server
+- Add the `-d` argument for QML Language Server to to pass documentation path
+- Gather the documentation path from the either the selected kit or `qtpaths`.
+- Introduce `qt-qml.qmlls.customDocsPath`. It overrides the default in either the selected kit or `qtpaths`
+- Use `QT_INSTALL_DOCS` to find the documentation path from `qtpaths`
+- Add partially QML debugger support
+    Supported features:
+  - Breakpoints
+  - Step over
+  - Step into
+  - Step out
+  - Continue
+- Add `launch.json` configuration snippets for QML debugger
+
 ## 1.3.1 (Mar 5, 2025)
 
 The same as `1.2.0`
