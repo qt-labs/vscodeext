@@ -10,11 +10,6 @@ steps:
       - text: "6.4"
       - text: "6.2"
 
-  - id: useVirtualKeyboard
-    type: confirm
-    question: "Use virtual keyboard"
-    default: false
-
   - id: qqcStyle
     type: picker
     question: "Qt Quick Controls style:"

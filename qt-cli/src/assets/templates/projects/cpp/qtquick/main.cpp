@@ -4,9 +4,6 @@
 
 int main(int argc, char *argv[])
 {
-{{- if .useVirtualKeyboard }}
-    qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
-{{ end }}
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
