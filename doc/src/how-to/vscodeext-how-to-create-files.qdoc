@@ -22,7 +22,7 @@
         \li In \uicontrol {Terminal}, select a preset or
             \uicontrol {Manually select features} to create your own preset.
             \image vscodeext-create-new-file-pick-preset-ui.webp {Pick a preset in Terminal}
-        \li Select a CMake kit for the project.
+        \li Edit the new file's content.
     \endlist
 
     \section1 File presets
