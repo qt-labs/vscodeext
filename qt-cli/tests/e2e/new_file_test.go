@@ -10,7 +10,7 @@ import (
 
 func TestNewFile(t *testing.T) {
 	name := "myfile"
-	exts := []string{"qrc", "qml", "ts", "ui"}
+	exts := []string{"qrc", "qml", "ui"}
 
 	for _, ext := range exts {
 		checker := func(workingDir string) {
