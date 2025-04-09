@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.5.0 (Apr 10, 2025)
+
+🎉 **Added**
+
+- Improve natvis support
+
 ## 1.3.1 (Mar 5, 2025)
 
 🐞 **Fixed**
