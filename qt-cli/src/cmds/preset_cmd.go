@@ -28,13 +28,7 @@ var presetListCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		items := runner.Presets.User.GetAll()
-		if len(items) == 0 {
-			fmt.Println(util.Msg("<no custom preset>"))
-		}
-
-		if lsAllPresets {
-			items = append(items, runner.Presets.Default.GetAll()...)
-		}
+		items = append(items, runner.Presets.Default.GetAll()...)
 
 		for _, item := range items {
 			fmt.Println(item.GetDescription())
@@ -126,8 +120,6 @@ var presetClearCmd = &cobra.Command{
 	},
 }
 
-var lsAllPresets bool
-
 func getConfirm(msg string) bool {
 	r, _ := comps.NewConfirm().
 		Question(msg).
@@ -143,10 +135,6 @@ func userPresets() *formats.UserPresetFile {
 }
 
 func init() {
-	presetListCmd.Flags().BoolVarP(
-		&lsAllPresets, "all", "a", false,
-		util.Msg("Include default presets in the list"))
-
 	presetCmd.AddCommand(presetListCmd)
 	presetCmd.AddCommand(presetCatCmd)
 	presetCmd.AddCommand(presetMoveCmd)
