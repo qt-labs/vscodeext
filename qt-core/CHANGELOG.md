@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.4.0 (Apr 10, 2025)
+
+The same as `1.3.1`
+
 ## 1.3.1 (Mar 5, 2025)
 
 ⏪ **Reverted**
