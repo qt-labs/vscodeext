@@ -105,7 +105,6 @@ For example, if you set the preset name to `my_console_app`:
 $ ./qtcli new myapp
 ✔ Pick a preset [Manually select features]
 ✔ Pick an item to use: [Default] @projects/cpp/console
-✔ Qt version: 5
 ✔ Use translation: Yes
 ✔ Target language (e.g. en_US, ko_KR): en_US
 ✔ Save for later use? Yes
@@ -158,7 +157,6 @@ type: project
 template: projects/cpp/console
 options:
     language: en_US
-    qtMajorVersion: "5"
     useTranslation: true
 ```
 
