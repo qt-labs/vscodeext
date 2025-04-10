@@ -1,16 +1,6 @@
 version: "1"
 
 steps:
-  - id: qtMajorVersion
-    type: picker
-    question: "Qt version:"
-    default: "6"
-    items:
-      - text: Qt6
-        data: "6"
-      - text: Qt5
-        data: "5"
-
   - id: useTranslation
     type: confirm
     question: "Use translation:"
