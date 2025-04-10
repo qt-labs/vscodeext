@@ -20,7 +20,7 @@ func TestNewProject(t *testing.T) {
 		{"cpp/qtquick", []string{"CMakeLists.txt", "main.cpp", "Main.qml"}},
 		{"cpp/qwidget", []string{
 			"CMakeLists.txt", "main.cpp",
-			"widget.cpp", "widget.h", "widget.ui",
+			"mainwindow.cpp", "mainwindow.h", "mainwindow.ui",
 		}},
 	}
 

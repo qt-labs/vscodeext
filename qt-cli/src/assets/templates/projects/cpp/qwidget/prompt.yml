@@ -1,16 +1,6 @@
 version: "1"
 
 steps:
-  - id: qtMajorVersion
-    type: picker
-    question: "Qt version:"
-    default: "6"
-    items:
-      - text: Qt6
-        data: "6"
-      - text: Qt5
-        data: "5"
-
   - id: useForm
     type: confirm
     question: "Use form?"
@@ -35,5 +25,5 @@ consts:
   - className: Widget
   - baseClass: QWidget
   - uiUsage: 'pointer' # "pointer, inherit, member"
-  - uiHeaderFile: ui_widget.h
-  - includeGuard: WIDGET_H
+  - uiHeaderFile: ui_mainwindow.h
+  - includeGuard: MAINWINDOW_H
