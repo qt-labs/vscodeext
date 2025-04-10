@@ -8,9 +8,9 @@ steps:
 
   - id: language
     type: input
-    question: "Target language (e.g. en_US, ko_KR):"
+    question: "Target language (e.g. de, ko_KR):"
     default: en_US
     when: "{{ .useTranslation }}"
     rules:
       - required: true
-      - match: "^[a-z]{2}_[A-Z]{2}$"
+      - match: "^[a-z]{2}(_[A-Z]{2})?$"

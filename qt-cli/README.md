@@ -106,7 +106,7 @@ $ ./qtcli new myapp
 ✔ Pick a preset [Manually select features]
 ✔ Pick an item to use: [Default] @projects/cpp/console
 ✔ Use translation: Yes
-✔ Target language (e.g. en_US, ko_KR): en_US
+✔ Target language (e.g. de, ko_KR): de
 ✔ Save for later use? Yes
 ? Enter the preset name: my_console_app 
 ```
