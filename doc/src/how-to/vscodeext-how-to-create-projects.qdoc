@@ -57,13 +57,6 @@
                 \li \c {[Default] @projects/cpp/qwidget}
             \endlist
     \row
-        \li Qt version
-        \li The Qt version you installed to develop applications with:
-            \list
-                \li Qt 6
-                \li Qt 5
-            \endlist
-    \row
         \li Use form?
         \li Whether to create a UI form for the project: \uicontrol Y (Yes) or
             \uicontrol N (No).
