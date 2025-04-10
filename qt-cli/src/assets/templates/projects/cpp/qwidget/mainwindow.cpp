@@ -1,4 +1,4 @@
-#include "widget.h"
+#include "mainwindow.h"
 {{- if and .useForm (eq .uiUsage "pointer") }}
 #include "{{ .uiHeaderFile }}"
 {{- end }}
