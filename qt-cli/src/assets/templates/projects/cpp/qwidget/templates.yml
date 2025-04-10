@@ -3,10 +3,10 @@ type: project
 files:
   - in: CMakeLists.txt
   - in: main.cpp
-  - in: widget.cpp
-  - in: widget.h
+  - in: mainwindow.cpp
+  - in: mainwindow.h
 
-  - in: widget.ui
+  - in: mainwindow.ui
     when: '{{ .useForm }}'
 
   - in: '@/common/file.ts'
