@@ -1,8 +1,20 @@
 # Change Log
 
-## 1.4.0 (Apr 10, 2025)
+## 1.4.0 (Apr 14, 2025)
 
-The same as `1.3.1`
+### qtcli
+
+🐞 **Fixed**
+
+- Add missing `CMAKE_CXX_STANDARD` setting to qtquick
+
+⚠️ **Changed**
+
+- Remove `MACOSX_BUNDLE_GUI_IDENTIFIER` from qtquick
+- Modernize the console template
+- Allow entering target language without the region specifier
+- Modernize the `qwidget` project template
+- Do not let project wizards create `ts` files
 
 ## 1.3.1 (Mar 5, 2025)
 

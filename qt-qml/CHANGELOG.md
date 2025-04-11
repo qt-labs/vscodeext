@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.4.0 (Apr 10, 2025)
+## 1.4.0 (Apr 14, 2025)
 
 The same as `1.3.1`
 
