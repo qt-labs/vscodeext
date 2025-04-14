@@ -51,6 +51,7 @@ function main() {
   if (isQtcore && !qtcliZipPath) {
     throw new Error('qt-cli.zip path must be provided for qt-core extension');
   }
+  const isQtcpp = targetExtension.includes('qt-cpp');
   const isEven = (num: number) => num % 2 === 0;
   const parsedVersion = semver.parse(version);
   if (parsedVersion === null) {
@@ -68,6 +69,9 @@ function main() {
   }
 
   execSync(`npm run _prepublish`, { stdio: 'inherit' });
+  if (isQtcpp) {
+    execSync(`npm run prepareNatvisFiles`, { stdio: 'inherit' });
+  }
   execSync(`npm run ci:${targetExtension}`, { stdio: 'inherit' });
   execSync(`npm run compile:${targetExtension}`, { stdio: 'inherit' });
   execSync(`npm run ci-lint:${targetExtension}`, { stdio: 'inherit' });
