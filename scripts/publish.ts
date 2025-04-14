@@ -23,6 +23,20 @@ function extractAndPlaceQtCli(qtcorePath: string, zipPath: string) {
     // https://github.com/ZJONSSON/node-unzipper/issues/216
     console.log(`Extracting "${zipPath}" to "${outputDir}"`);
     execSync(`unzip -o ${zipPath} -d ${outputDir}`, { stdio: 'inherit' });
+    // chmod 755 to all files in the outputDir
+    console.log(`Setting permissions for files in "${outputDir}"`);
+    const setPermissions = (dir: string) => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          setPermissions(fullPath);
+        } else {
+          fs.chmodSync(fullPath, 0o755);
+        }
+      }
+    };
+    setPermissions(outputDir);
   } catch (error) {
     console.error(error);
     process.exit(1);
