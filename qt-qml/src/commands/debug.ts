@@ -12,18 +12,32 @@ export function registerDebugPort() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.debugPort`, () => {
     if (compoundPort === undefined) {
       const message =
-        'Use "${command:qt-qml.debugPort}" with a compound launch and "preLaunchTask": "Qt: Acquire Port". ' +
+        'Use "${command:qt-qml.debugPort}" with a compound launch configuration and "preLaunchTask": "Qt: Acquire Port". ' +
         'See the documentation for more details.';
-      const action = 'Open Documentation';
-      void vscode.window.showErrorMessage(message, action).then((value) => {
-        if (value === action) {
-          void vscode.env.openExternal(
-            vscode.Uri.parse(
-              'https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-how-debug-apps-qml.html#debug-mixed-c-c-and-qml-code'
-            )
-          );
+      const openDocumentation = 'Open Documentation';
+      const copyToClipboard = 'Copy to Clipboard';
+      const clipboardText = `
+      "compounds": [
+        {
+            "name": "C++/QML",
+            "configurations": ["<name of c++ debugger>", "<name of qml debugger>"],
+            "preLaunchTask": "Qt: Acquire Port",
         }
-      });
+      ]`;
+      void vscode.window
+        .showErrorMessage(message, copyToClipboard, openDocumentation)
+        .then((value) => {
+          if (value === openDocumentation) {
+            void vscode.env.openExternal(
+              vscode.Uri.parse(
+                'https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-how-debug-apps-qml.html#debug-mixed-c-c-and-qml-code'
+              )
+            );
+          } else if (value === copyToClipboard) {
+            void vscode.env.clipboard.writeText(clipboardText);
+            void vscode.window.showInformationMessage('Copied to clipboard');
+          }
+        });
       return;
     }
     return compoundPort;
