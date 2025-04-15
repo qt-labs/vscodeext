@@ -1,6 +1,12 @@
 # Change Log
 
-## 1.5.0 (Apr 10, 2025)
+## 1.5.1 (Apr 16, 2025)
+
+🐞 **Fixed**
+
+- Fix the `Cannot find qtcli executable.` error due to the missing permissions
+
+## 1.5.0 (Apr 14, 2025)
 
 🎉 **Added**
 
