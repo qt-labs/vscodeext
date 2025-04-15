@@ -15,7 +15,7 @@ function extractAndPlaceQtCli(qtcorePath: string, zipPath: string) {
     // Remove outputDir if it exists to clean up the previous extraction
     if (fs.existsSync(outputDir)) {
       console.log(`Removing existing ${outputDir}`);
-      fs.rmdirSync(outputDir, { recursive: true });
+      fs.rmSync(outputDir, { recursive: true });
     }
     console.log(`Creating "${outputDir}"`);
     fs.mkdirSync(outputDir, { recursive: true });
