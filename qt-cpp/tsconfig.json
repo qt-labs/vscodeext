@@ -4,7 +4,8 @@
     "forceConsistentCasingInFileNames": true,
     "module": "commonjs",
     "target": "ES2020",
-    "types": ["node"],
+    // adding type mocha because of: src/test/suite/extension.test.ts(8,1): error TS2593: Cannot find name 'suite'
+    "types": ["node", "mocha"],
     "outDir": "out",
     "lib": ["ES2020", "DOM"],
     "sourceMap": true,
@@ -27,5 +28,6 @@
       "@util/*": ["src/util/*"]
     }
   },
+  "exclude": ["node_modules", ".vscode-test"],
   "include": ["src/**/*"]
 }
