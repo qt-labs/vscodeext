@@ -32,7 +32,11 @@ const extensionTestConfig = {
   mainFields: ['module', 'main'],
   tsconfig: './tsconfig.json',
   format: 'cjs',
-  entryPoints: ['./src/test/runTest.ts', './src/test/suite/index.ts', './src/test/suite/extension.test.ts'],
+  entryPoints: [
+    './src/test/runTest.ts',
+    './src/test/suite/index.ts',
+    './src/test/suite/extension.test.ts'
+  ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']
 };
@@ -83,7 +87,7 @@ await execCmd('npx tsc --noEmit').then(
     } else {
       if (args.includes('--test')) {
         await build(extensionTestConfig);
-        console.log('tests build complete');
+        console.log('[tests] build complete');
       } else {
         await build(extensionConfig);
         console.log('build complete');
