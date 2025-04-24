@@ -276,7 +276,7 @@
     "compile": "node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
-    "build-test": "tsc -p ./",
+    "build-test": "tsc -p ./tsconfig.test.json",
     "test": "npm run compile && npm run build-test && cd ./out/test/ && node runtest.js",
     "lint": "npm run prettierWrite && eslint . --fix --cache",
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
