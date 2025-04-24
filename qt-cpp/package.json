@@ -274,6 +274,7 @@
   "scripts": {
     "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
     "compile": "node ./esbuild.mjs",
+    "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
     "build-test": "tsc -p ./tsconfig.test.json",

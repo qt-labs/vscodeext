@@ -24,7 +24,7 @@
               "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index"
       ],
       "outFiles": ["${workspaceFolder}/qt-cpp/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-cpp watch"
+      "preLaunchTask": "npm qt-cpp watch and test"
     },
     {
       "name": "Run qt-qml Extension",
