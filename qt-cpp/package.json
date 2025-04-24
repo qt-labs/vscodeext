@@ -290,6 +290,7 @@
     "@types/command-exists": "^1.2.3",
     "@types/license-checker": "^25.0.6",
     "@types/lodash": "^4.17.16",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.17.0",
     "@types/vscode": "^1.94.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
