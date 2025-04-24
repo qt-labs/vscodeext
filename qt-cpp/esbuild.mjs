@@ -19,9 +19,10 @@ const extensionConfig = {
   mainFields: ['module', 'main'],
   tsconfig: './tsconfig.json',
   format: 'cjs',
-  entryPoints: ['./src/extension.ts'],
-  outfile: './out/extension.js',
-  external: ['vscode']
+  entryPoints: ['./src/extension.ts', './src/test/runTest.ts', './src/test/suite/index.ts', './src/test/suite/extension.test.ts'],
+  //outfile: './out/extension.js',
+  outdir: './out/',
+  external: ['vscode', './reporters/parallel-buffered', './worker.js']
 };
 
 async function execCmd(command) {
