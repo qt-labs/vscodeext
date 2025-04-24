@@ -11,8 +11,10 @@ import {
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Mutex } from 'async-mutex';
 import path from 'path';
+import { ChildProcess, execSync, spawn, SpawnOptions } from 'child_process';
+import getPort from 'get-port';
 
-import { createLogger, delay, telemetry } from 'qt-lib';
+import { createLogger, delay, IsLinux, IsWindows, telemetry } from 'qt-lib';
 import {
   QmlDebugConnectionState,
   Server,
@@ -21,13 +23,18 @@ import {
 import { QmlEngine, StepAction } from '@debug/qml-engine';
 import { projectManager } from '@/extension';
 
-const logger = createLogger('project');
+const logger = createLogger('debug-adapter');
 
 export function registerQmlDebugAdapterFactory() {
   return vscode.debug.registerDebugAdapterDescriptorFactory(
     'qml',
     new QmlDebugAdapterFactory()
   );
+}
+
+enum DebugType {
+  Attach,
+  Launch
 }
 
 export enum BreakpointState {
@@ -49,29 +56,49 @@ interface QmlDebugSessionAttachArguments
   buildDirs: string[] | undefined;
 }
 
+interface QmlDebugSessionLaunchArguments
+  extends DebugProtocol.LaunchRequestArguments {
+  program: string;
+  debuggerArgs: string | undefined;
+  args: string[] | undefined;
+  buildDirs: string[] | undefined;
+}
+
 export interface QmlBreakpoint {
   id?: number;
   filename: string;
   line: number;
   state: BreakpointState;
+  hitCount?: number | undefined;
+  condition?: string | undefined;
+  logMessage?: string | undefined;
 }
 
 export class QmlDebugSession extends LoggingDebugSession {
   private readonly _mutex = new Mutex();
   private _qmlEngine: QmlEngine | undefined;
+  private _debugType: DebugType | undefined;
+  private _process: ChildProcess | undefined;
   private readonly _breakpoints = new Map<string, QmlBreakpoint[]>();
   public constructor(session: vscode.DebugSession) {
     super();
 
     logger.info('Creating debug session for session:', session.id);
   }
-  findBreakpoint(filename: string, line: number): QmlBreakpoint | undefined {
+  findBreakpoint(
+    filename: string,
+    sourceBreakpoint: DebugProtocol.SourceBreakpoint,
+    predicate: (
+      sourceBreakpoint: DebugProtocol.SourceBreakpoint,
+      breakpoint: QmlBreakpoint
+    ) => boolean
+  ): QmlBreakpoint | undefined {
     const breakpoints = this._breakpoints.get(filename);
     if (!breakpoints) {
       return undefined;
     }
     for (const breakpoint of breakpoints) {
-      if (breakpoint.line === line) {
+      if (predicate(sourceBreakpoint, breakpoint)) {
         return breakpoint;
       }
     }
@@ -89,9 +116,28 @@ export class QmlDebugSession extends LoggingDebugSession {
       if (!this._qmlEngine) {
         throw new Error('QML engine not initialized');
       }
-      logger.info('Disconnect request:');
-      this._qmlEngine.closeConnection();
-      this._qmlEngine.notifyInferiorExited();
+      if (this._debugType === undefined) {
+        throw new Error('Debug type not initialized');
+      }
+      await this._qmlEngine.shutdownInferior();
+      if (this._debugType === DebugType.Launch) {
+        // If we are in launch mode, we need to kill the process.
+        if (this._process?.pid) {
+          logger.info('Killing process:', this._process.pid.toString());
+          if (IsWindows) {
+            // On Windows, we need to kill the process with taskkill
+            // because ChildProcess.kill() does not work.
+            execSync(`taskkill /pid ${this._process.pid} /T /F`, {
+              stdio: 'ignore'
+            });
+          } else if (IsLinux) {
+            process.kill(-this._process.pid);
+          } else {
+            this._process.kill();
+          }
+          this._process = undefined;
+        }
+      }
       this.sendResponse(response);
     } catch (err) {
       this.sendError(response, 1, err as string);
@@ -117,17 +163,43 @@ export class QmlDebugSession extends LoggingDebugSession {
       const breakpointstoRemove: QmlBreakpoint[] = [];
       const breakpointsToAdd: QmlBreakpoint[] = [];
       const sourceBreakpoints = args.breakpoints ?? [];
+      const isSameBreakpoint = (
+        sourceBreakpoint: DebugProtocol.SourceBreakpoint,
+        breakpoint: QmlBreakpoint
+      ) => {
+        let sourceBreakpointHitCount: number | undefined = undefined;
+        if (sourceBreakpoint.hitCondition !== undefined) {
+          sourceBreakpointHitCount = parseInt(
+            sourceBreakpoint.hitCondition,
+            10
+          );
+        }
+        return (
+          sourceBreakpoint.line === breakpoint.line &&
+          sourceBreakpoint.condition === breakpoint.condition &&
+          sourceBreakpoint.logMessage === breakpoint.logMessage &&
+          sourceBreakpointHitCount === breakpoint.hitCount
+        );
+      };
       // check if current breakpoints are the same as the new ones
       for (const sourceBreakpoint of sourceBreakpoints) {
         const found = this.findBreakpoint(
           args.source.path,
-          sourceBreakpoint.line
+          sourceBreakpoint,
+          isSameBreakpoint
         );
         if (!found) {
+          let hitCount: number | undefined = undefined;
+          if (sourceBreakpoint.hitCondition) {
+            hitCount = parseInt(sourceBreakpoint.hitCondition, 10);
+          }
           const newBreakpoint: QmlBreakpoint = {
             filename: path.basename(args.source.path),
             line: sourceBreakpoint.line,
-            state: BreakpointState.BreakpointNew
+            state: BreakpointState.BreakpointNew,
+            condition: sourceBreakpoint.condition,
+            logMessage: sourceBreakpoint.logMessage,
+            hitCount: hitCount
           };
           const currentSourceBreakpoints = this._breakpoints.get(
             args.source.path
@@ -141,8 +213,8 @@ export class QmlDebugSession extends LoggingDebugSession {
         }
       }
       for (const breakpoint of this._breakpoints.get(args.source.path) ?? []) {
-        const found = sourceBreakpoints.find(
-          (sourceBreakpoint) => sourceBreakpoint.line === breakpoint.line
+        const found = sourceBreakpoints.find((sourceBreakpoint) =>
+          isSameBreakpoint(sourceBreakpoint, breakpoint)
         );
         if (!found) {
           breakpointstoRemove.push(breakpoint);
@@ -212,12 +284,23 @@ export class QmlDebugSession extends LoggingDebugSession {
       await delay(1000);
     }
   }
+  async waitUntilDebuggerStopped() {
+    if (!this._qmlEngine) {
+      throw new Error('QML engine not initialized');
+    }
+    while (this._qmlEngine.isRunning()) {
+      await delay(500);
+    }
+  }
   protected override initializeRequest(
     response: DebugProtocol.InitializeResponse,
     args: DebugProtocol.InitializeRequestArguments
   ) {
     logger.info('Initialize request:', JSON.stringify(args));
     response.body = {};
+    response.body.supportsSetVariable = true;
+    response.body.supportsConditionalBreakpoints = true;
+    response.body.supportsHitConditionalBreakpoints = false;
     this.sendResponse(response);
   }
   protected override threadsRequest(
@@ -234,6 +317,159 @@ export class QmlDebugSession extends LoggingDebugSession {
     };
     this.sendResponse(response);
   }
+  protected override async scopesRequest(
+    response: DebugProtocol.ScopesResponse,
+    args: DebugProtocol.ScopesArguments,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _request?: DebugProtocol.Request
+  ) {
+    try {
+      if (!this._qmlEngine) {
+        throw new Error('QML engine not initialized');
+      }
+      logger.info('Scopes request:', JSON.stringify(args));
+      await this.waitUntilDebuggerStopped();
+      const scopes = await this._qmlEngine.frame(args.frameId);
+      if (scopes === undefined) {
+        throw new Error('Scopes are undefined');
+      }
+      response.body = {
+        scopes: scopes
+      };
+      this.sendResponse(response);
+    } catch (err) {
+      this.sendError(response, 1, err as string);
+    }
+  }
+  protected override async evaluateRequest(
+    response: DebugProtocol.EvaluateResponse,
+    args: DebugProtocol.EvaluateArguments,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _request?: DebugProtocol.Request
+  ) {
+    try {
+      if (!this._qmlEngine) {
+        throw new Error('QML engine not initialized');
+      }
+      logger.info('Evaluate request:', JSON.stringify(args));
+      const result = await this._qmlEngine.evaluate(
+        args.expression,
+        args.frameId
+      );
+      if (result === undefined) {
+        const message = 'Cannot evaluate expression "' + args.expression + '"';
+        response.success = false;
+        response.message = message;
+        logger.warn(message);
+        return;
+      }
+      const value = QmlEngine.convertQmlTypeToValue(result.body);
+      if (value === undefined) {
+        throw new Error('Value is undefined');
+      }
+
+      response.body = {
+        result: value,
+        type: result.body.type,
+        variablesReference: 0,
+        presentationHint: {
+          kind: 'property'
+        }
+      };
+      if (result.body.type === 'object') {
+        response.body.namedVariables = (result.body.value as number) + 1;
+      } else if (result.body.type === 'function') {
+        response.body.presentationHint = response.body.presentationHint ?? {};
+        response.body.presentationHint.kind = 'method';
+      }
+      this.sendResponse(response);
+    } catch (err) {
+      this.sendError(response, 1, err as string);
+    }
+  }
+  protected override async setVariableRequest(
+    response: DebugProtocol.SetVariableResponse,
+    args: DebugProtocol.SetVariableArguments,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _request?: DebugProtocol.Request
+  ) {
+    try {
+      if (!this._qmlEngine) {
+        throw new Error('QML engine not initialized');
+      }
+      logger.info('Set variable request:', JSON.stringify(args));
+      const result = await this._qmlEngine.setVariable(args);
+      if (result === undefined) {
+        response.success = false;
+        response.message = 'Cannot set variable';
+        this.sendResponse(response);
+        return;
+      }
+      response.body = {
+        value: args.value
+      };
+      this.sendResponse(response);
+    } catch (err) {
+      this.sendError(response, 1, err as string);
+    }
+  }
+  protected override async variablesRequest(
+    response: DebugProtocol.VariablesResponse,
+    args: DebugProtocol.VariablesArguments,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _request?: DebugProtocol.Request
+  ) {
+    try {
+      if (!this._qmlEngine) {
+        throw new Error('QML engine not initialized');
+      }
+      logger.info('Variables request:', JSON.stringify(args));
+      const firstTime = this._qmlEngine.thisReference === -1;
+      const expandingThis =
+        !firstTime && args.variablesReference === this._qmlEngine.thisReference;
+      const includeThis = (engine: QmlEngine) => {
+        const refs = engine.refs;
+        if (firstTime) {
+          return true;
+        }
+        if (refs.has(args.variablesReference - 1)) {
+          return false;
+        }
+        return args.variablesReference !== engine.thisReference;
+      };
+
+      let variablesReference = args.variablesReference;
+      if (!expandingThis) {
+        variablesReference = variablesReference - 1;
+      }
+      const variables: DebugProtocol.Variable[] = [];
+      // Always add "this" as the first variable
+      if (includeThis(this._qmlEngine)) {
+        const thisVariable = await this._qmlEngine.getThisVariable();
+        if (thisVariable) {
+          this._qmlEngine.thisReference = thisVariable.variablesReference;
+          variables.push(thisVariable);
+        }
+      }
+      const lookUpvariables = await this._qmlEngine.lookup(variablesReference);
+      // Sort the variables by name
+      if (lookUpvariables) {
+        lookUpvariables.sort((a, b) => a.name.localeCompare(b.name));
+        variables.push(...lookUpvariables);
+      }
+
+      if (variables.length === 0) {
+        throw new Error('Variables are undefined');
+      }
+
+      response.body = {
+        variables: variables
+      };
+      this.sendResponse(response);
+    } catch (err) {
+      this.sendError(response, 1, err as string);
+    }
+  }
   protected override async stackTraceRequest(
     response: DebugProtocol.StackTraceResponse,
     args: DebugProtocol.StackTraceArguments,
@@ -244,6 +480,7 @@ export class QmlDebugSession extends LoggingDebugSession {
       if (!this._qmlEngine) {
         throw new Error('QML engine not initialized');
       }
+      await this.waitUntilDebuggerStopped();
       logger.info('Stack trace request:', JSON.stringify(args));
       const { stackFrames, length } = await this._qmlEngine.backtrace(args);
       response.body = {
@@ -354,6 +591,135 @@ export class QmlDebugSession extends LoggingDebugSession {
     });
     this.sendEvent(new TerminatedEvent());
   }
+  protected override async launchRequest(
+    response: DebugProtocol.LaunchResponse,
+    args: QmlDebugSessionLaunchArguments,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _request?: DebugProtocol.Request
+  ) {
+    try {
+      telemetry.sendAction('QMLDebugLaunch');
+      logger.info(
+        `Launch request: ${args.program}, ${args.debuggerArgs ?? ''}, ${args.args?.join(',') ?? ''}`
+      );
+      this._debugType = DebugType.Launch;
+      let debuggerArgs = args.debuggerArgs;
+      let port: number | undefined;
+      let host: string | undefined;
+      if (args.debuggerArgs === undefined) {
+        host = 'localhost';
+        port = await getPort();
+        debuggerArgs = `-qmljsdebugger=host:${host},port:${port.toString()},block,services:DebugMessages,QmlDebugger,V8Debugger`;
+      } else {
+        const getParam = (regex: RegExp, userArgs: string) => {
+          const match = userArgs.match(regex);
+          if (match?.[1] === undefined) {
+            throw new Error('Port not found in args');
+          }
+          return match[1];
+        };
+        const hostRegex = /host:([^,]+)/;
+        const portRegex = /port:(\d+)/;
+        const portStr = getParam(portRegex, args.debuggerArgs);
+        host = getParam(hostRegex, args.debuggerArgs);
+
+        const hostMatch = args.debuggerArgs.match(hostRegex);
+        if (hostMatch?.[1] === undefined) {
+          throw new Error('Host not found in debuggerArgs');
+        }
+
+        port = parseInt(portStr, 10);
+        if (isNaN(port)) {
+          throw new Error('Invalid port number');
+        }
+      }
+
+      const server: Server = {
+        host: host,
+        port: port,
+        scheme: ServerScheme.Tcp
+      };
+      // Start the program with the debugger args
+      const program = args.program;
+      const additionalArgs = args.args ?? [];
+      const quoteArg = (arg: string): string => {
+        // Escape double quotes and wrap the argument in quotes
+        const escaped = arg.replace(/(["\\])/g, '\\$1');
+        return `"${escaped}"`;
+      };
+
+      let command = `${program} ${debuggerArgs}`;
+      if (additionalArgs.length > 0) {
+        command += ` ${additionalArgs.map(quoteArg).join(' ')}`;
+      }
+      logger.info('Starting program:', command);
+      let options: SpawnOptions = {
+        shell: true
+      };
+      if (IsLinux) {
+        options = {
+          ...options,
+          detached: true
+        };
+      }
+      if (IsWindows) {
+        const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
+        if (dllDirs !== undefined) {
+          const env = { ...process.env };
+          env.PATH = `${dllDirs as string};${env.PATH}`;
+          options = {
+            ...options,
+            env: env
+          };
+        }
+      }
+      this._process = spawn(command, options);
+      if (!this._process.stdout || !this._process.stderr) {
+        throw new Error('Process stdout or stderr is undefined');
+      }
+
+      this._process.stdout.on('data', (data: Buffer) => {
+        vscode.debug.activeDebugConsole.append(data.toString());
+      });
+      this._process.stderr.on('data', (data: Buffer) => {
+        vscode.debug.activeDebugConsole.append(data.toString());
+      });
+      this._process.on('error', (err: Error) => {
+        logger.error('Process error:', err.message);
+        this.sendError(response, 1, err.message);
+      });
+
+      this.initAndStartEngine(server, args.buildDirs);
+
+      this.sendResponse(response);
+      this.sendEvent(new InitializedEvent());
+    } catch (err) {
+      this.sendError(response, 1, err as string);
+    }
+  }
+  private initializeEngine(server: Server, buildDirs?: string[]) {
+    this._qmlEngine = new QmlEngine(this);
+    this._qmlEngine.server = server;
+    this._qmlEngine.buildDirs = buildDirs ?? [];
+    this._qmlEngine.onShutdownEngine = () => {
+      this.sendEvent(new TerminatedEvent());
+    };
+
+    // If there is multi-workspace usage, we skip this step because we don't
+    // know which build dir to use.
+    // TODO: We can get the selected workspace from the CMake extension.
+    const projectBuildDirs = projectManager.getBuildDirs();
+    if (projectBuildDirs.length === 1 && projectBuildDirs[0] !== undefined) {
+      this._qmlEngine.buildDirs.push(projectBuildDirs[0]);
+    }
+  }
+  private initAndStartEngine(server: Server, buildDirs?: string[]) {
+    this.initializeEngine(server, buildDirs);
+    if (this._qmlEngine === undefined) {
+      throw new Error('QML engine not initialized');
+    }
+    this._qmlEngine.start();
+  }
 
   protected override attachRequest(
     response: DebugProtocol.AttachResponse,
@@ -364,29 +730,20 @@ export class QmlDebugSession extends LoggingDebugSession {
     try {
       telemetry.sendAction('QMLDebugAttach');
       logger.info('Attach request:', args.host, args.port.toString());
+      this._debugType = DebugType.Attach;
+      let port: number | undefined;
       if (typeof args.port === 'string') {
-        args.port = parseInt(args.port, 10);
+        port = parseInt(args.port, 10);
+      }
+      if (port === undefined || isNaN(port)) {
+        throw new Error(`Invalid port number: ${args.port}`);
       }
       const server: Server = {
         host: args.host,
-        port: args.port,
+        port: port,
         scheme: ServerScheme.Tcp
       };
-      this._qmlEngine = new QmlEngine(this);
-      this._qmlEngine.server = server;
-      this._qmlEngine.buildDirs = args.buildDirs ?? [];
-      this._qmlEngine.onShutdownEngine = () => {
-        this.sendEvent(new TerminatedEvent());
-      };
-
-      // If there is multi-workspace usage, we skip this step because we don't
-      // know which build dir to use.
-      // TODO: We can get the selected workspace from the CMake extension.
-      const buildDirs = projectManager.getBuildDirs();
-      if (buildDirs.length === 1 && buildDirs[0] !== undefined) {
-        this._qmlEngine.buildDirs.push(buildDirs[0]);
-      }
-      this._qmlEngine.start();
+      this.initAndStartEngine(server, args.buildDirs);
 
       this.sendResponse(response);
       this.sendEvent(new InitializedEvent());
