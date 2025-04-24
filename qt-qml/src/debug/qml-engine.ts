@@ -3,7 +3,7 @@
 
 import path from 'path';
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { Source, StackFrame, StoppedEvent } from '@vscode/debugadapter';
+import { Scope, Source, StackFrame, StoppedEvent } from '@vscode/debugadapter';
 
 import {
   QmlDebugClient,
@@ -29,16 +29,24 @@ import {
   COLUMN,
   CONDITION,
   CONNECT,
+  CONTEXT,
   CONTINEDEBUGGING,
   DISCONNECT,
   ENABLED,
+  EVALUATE,
   EVENT,
+  EXPRESSION,
+  FRAME,
+  HANDLES,
   IGNORECOUNT,
   IN,
   INTERRUPT,
   LINE,
+  LOOKUP,
   NEXT,
+  NUMBER,
   OUT,
+  SCOPE,
   SCRIPTREGEXP,
   SETBREAKPOINT,
   STEPACTION,
@@ -55,6 +63,8 @@ import { FileFinder } from '@debug/file-finder';
 import { QmlEngineUI } from '@debug/ui';
 
 const logger = createLogger('qml-engine');
+
+type LookUpItems = Set<number>;
 
 export enum DebuggerState {
   DebuggerNotReady, // Debugger not started
@@ -152,7 +162,7 @@ interface QmlSetBreakpointResponse
 }
 
 interface QmlVariable {
-  handle: number;
+  handle?: number;
   name?: string;
   type: string;
   value: unknown;
@@ -182,6 +192,12 @@ interface QmlBacktrace {
   frames: QmlFrame[];
 }
 
+type QmlLookupBody = Record<string, QmlVariable>;
+type QmlLookupResponse = QmlResponse<QmlLookupBody>;
+type QmlFrameResponse = QmlResponse<QmlFrame>;
+type QmlScopeResponse = QmlResponse<QmlScope>;
+type QmlEvaluateResponse = QmlResponse<QmlVariable>;
+
 export interface QmlContinueResponse extends QmlResponse<undefined> {
   command: 'continue';
 }
@@ -191,7 +207,7 @@ interface QmlBacktraceResponse extends QmlResponse<QmlBacktrace> {
 }
 
 export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
-  private readonly _ui: QmlEngineUI | undefined;
+  private readonly _ui = new QmlEngineUI();
   private _buildDirs: string[] = [];
   private _connectionState = QmlDebugConnectionState.Unavailable;
   private readonly _callbackForToken = new Map<
@@ -199,11 +215,14 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     // TODO: Get rid of unknown
     unknown
   >();
+  private readonly _currentlyLookingUp: LookUpItems = new Set<number>();
+  private readonly _refs = new Set<number>();
   private readonly _breakpointsSync = new Map<number, QmlBreakpoint>();
   private readonly _breakpointsTemp = new Array<string>();
   readonly mainQmlThreadId = 1;
   private _sendBuffer: Packet[] = [];
   private _sequence = -1;
+  private _thisReference = -1;
   private readonly _msgClient: DebugMessageClient | undefined;
   private readonly _startMode: DebuggerStartMode =
     DebuggerStartMode.AttachToQmlServer;
@@ -249,14 +268,17 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       QmlEngine.appendDebugOutput(message);
     });
   }
+  get thisReference() {
+    return this._thisReference;
+  }
+  set thisReference(ref: number) {
+    this._thisReference = ref;
+  }
   set onShutdownEngine(cb: () => void) {
     this._onShutdownEngine = cb;
   }
 
   get ui() {
-    if (!this._ui) {
-      throw new Error('UI is not set');
-    }
     return this._ui;
   }
 
@@ -321,8 +343,8 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       true,
       bp.line,
       0,
-      '',
-      0
+      bp.condition ?? undefined,
+      bp.hitCount ?? 0
     );
     const breakpointId = response.body.breakpoint;
     if (breakpointId) {
@@ -356,7 +378,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     enabled: boolean,
     line: number,
     column: number,
-    condition: string,
+    condition: string | undefined,
     ignoreCount: number
   ) {
     //    { "seq"       : <number>,
@@ -480,6 +502,292 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       this.analyzeV8Message(packet);
     }
   }
+  async lookup(item: number) {
+    //    { "seq"       : <number>,
+    //      "type"      : "request",
+    //      "command"   : "lookup",
+    //      "arguments" : { "handles"       : <array of handles>,
+    //                      "includeSource" : <boolean indicating whether
+    //                                          the source will be included when
+    //                                          script objects are returned>,
+    //                    }
+    //    }
+
+    if (!this._currentlyLookingUp.has(item)) {
+      this._currentlyLookingUp.add(item);
+    }
+
+    const cmd = new DebuggerCommand(LOOKUP);
+    cmd.arg(HANDLES, [item]);
+    const task = new Promise<QmlLookupResponse>((resolve) => {
+      this.runCommand(cmd, (debuggerResponse: QmlLookupResponse) => {
+        QmlEngine.handleResponse(debuggerResponse, resolve);
+      });
+    });
+    const result = await task;
+    if (!result.success) {
+      logger.error('Lookup failed');
+      return undefined;
+    }
+    return this.handleLookup(result);
+  }
+  private static convertScopeName(type: number) {
+    switch (type) {
+      case -1:
+        return 'Qml Context';
+      case 0:
+        return 'Global';
+      case 1:
+        return 'Local';
+      case 2:
+        return 'With';
+      case 3:
+        return 'Closure';
+      case 4:
+        return 'Catch';
+      default:
+        throw new Error('Invalid scope type');
+    }
+  }
+  private static convertScopeType(type: number) {
+    switch (type) {
+      case 0:
+        return 'globals';
+      case 1:
+      case 2:
+      case 4:
+        return 'locals';
+      default:
+        throw new Error('Invalid scope type');
+    }
+  }
+  async frame(framerNumber: number) {
+    //    { "seq"       : <number>,
+    //      "type"      : "request",
+    //      "command"   : "frame",
+    //      "arguments" : { "number" : <frame number> }
+    //    }
+    const cmd = new DebuggerCommand(FRAME);
+    cmd.arg(NUMBER, framerNumber);
+    const task = new Promise<QmlFrameResponse>((resolve) => {
+      this.runCommand(cmd, (debuggerResponse: QmlFrameResponse) => {
+        QmlEngine.handleResponse(debuggerResponse, resolve);
+      });
+    });
+    const result = await task;
+    if (!result.success) {
+      logger.error('Frame request failed');
+      return undefined;
+    }
+    return this.handleFrame(framerNumber, result);
+  }
+  async setVariable(args: DebugProtocol.SetVariableArguments) {
+    const expr = `${args.name} = ${args.value};`;
+    return this.evaluate(expr, -1);
+  }
+  async evaluate(expr: string, frameID = 0, context = 0) {
+    //    { "seq"       : <number>,
+    //      "type"      : "request",
+    //      "command"   : "evaluate",
+    //      "arguments" : { "expression"    : <expression to evaluate>,
+    //                      "frame"         : <number>,
+    //                      "global"        : <boolean>,
+    //                      "disable_break" : <boolean>,
+    //                      "context"       : <object id>
+    //                    }
+    //    }
+
+    const cmd = new DebuggerCommand(EVALUATE);
+    cmd.arg(EXPRESSION, expr);
+    cmd.arg(FRAME, frameID);
+    if (context >= 0) {
+      cmd.arg(CONTEXT, context);
+    }
+    const task = new Promise<QmlEvaluateResponse>((resolve) => {
+      this.runCommand(cmd, (debuggerResponse: QmlEvaluateResponse) => {
+        QmlEngine.handleResponse(debuggerResponse, resolve);
+      });
+    });
+    const result = await task;
+    if (!result.success) {
+      logger.error('Evaluate request failed');
+      return undefined;
+    }
+    return result;
+  }
+  async handleFrame(framerNumber: number, response: QmlFrameResponse) {
+    //    { "seq"         : <number>,
+    //      "type"        : "response",
+    //      "request_seq" : <number>,
+    //      "command"     : "frame",
+    //      "body"        : { "index"          : <frame number>,
+    //                        "receiver"       : <frame receiver>,
+    //                        "func"           : <function invoked>,
+    //                        "script"         : <script for the function>,
+    //                        "constructCall"  : <boolean indicating whether the function was called as constructor>,
+    //                        "debuggerFrame"  : <boolean indicating whether this is an internal debugger frame>,
+    //                        "arguments"      : [ { name: <name of the argument - missing of anonymous argument>,
+    //                                               value: <value of the argument>
+    //                                             },
+    //                                             ... <the array contains all the arguments>
+    //                                           ],
+    //                        "locals"         : [ { name: <name of the local variable>,
+    //                                               value: <value of the local variable>
+    //                                             },
+    //                                             ... <the array contains all the locals>
+    //                                           ],
+    //                        "position"       : <source position>,
+    //                        "line"           : <source line>,
+    //                        "column"         : <source column within the line>,
+    //                        "sourceLineText" : <text for current source line>,
+    //                        "scopes"         : [ <array of scopes, see scope request below for format> ],
+
+    //                      }
+    //      "running"     : <is the VM running after sending this response>
+    //      "success"     : true
+    //    }
+    const frame = response.body;
+    const scopes: DebugProtocol.Scope[] = [];
+    for (const scopeRef of frame.scopes) {
+      const dapScope = await this.scope(scopeRef.index, framerNumber);
+      if (dapScope) {
+        scopes.push(dapScope);
+      }
+    }
+    return scopes;
+  }
+
+  async shutdownInferior() {
+    if (this.state != DebuggerState.EngineRunRequested) {
+      await this.disconnect();
+    }
+    this.closeConnection();
+    this.ui.dispose();
+    this.notifyInferiorShutdownFinished();
+  }
+  async disconnect() {
+    // End session.
+    //    { "seq"     : <number>,
+    //      "type"    : "request",
+    //      "command" : "disconnect",
+    //    }
+    const cmd = new DebuggerCommand(DISCONNECT);
+    const task = new Promise<QmlBacktraceResponse>((resolve) => {
+      this.runCommand(cmd, (debuggerResponse: QmlBacktraceResponse) => {
+        QmlEngine.handleResponse(debuggerResponse, resolve);
+      });
+    });
+
+    return task;
+  }
+  notifyInferiorShutdownFinished() {
+    logger.info('INFERIOR FINISHED SHUT DOWN');
+    this._state = DebuggerState.InferiorShutdownFinished;
+    this.doShutdownEngine();
+  }
+
+  async scope(number: number, frameNumber: number) {
+    //    { "seq"       : <number>,
+    //      "type"      : "request",
+    //      "command"   : "scope",
+    //      "arguments" : { "number" : <scope number>
+    //                      "frameNumber" : <frame number, optional uses selected
+    //                                      frame if missing>
+    //                    }
+    //    }
+
+    const cmd = new DebuggerCommand(SCOPE);
+    cmd.arg(NUMBER, number);
+    if (frameNumber !== -1) {
+      cmd.arg(FRAME, frameNumber);
+    }
+    const task = new Promise<QmlScopeResponse>((resolve) => {
+      this.runCommand(cmd, (debuggerResponse: QmlScopeResponse) => {
+        QmlEngine.handleResponse(debuggerResponse, resolve);
+      });
+    });
+    const result = await task;
+    if (!result.success) {
+      logger.error('Scope request failed');
+      return undefined;
+    }
+    const scope = QmlEngine.handleScope(result);
+    return scope;
+  }
+  static handleScope(response: QmlScopeResponse) {
+    //    { "seq"         : <number>,
+    //      "type"        : "response",
+    //      "request_seq" : <number>,
+    //      "command"     : "scope",
+    //      "body"        : { "index"      : <index of this scope in the scope chain. Index 0 is the top scope
+    //                                        and the global scope will always have the highest index for a
+    //                                        frame>,
+    //                        "frameIndex" : <index of the frame>,
+    //                        "type"       : <type of the scope:
+    //                                         0: Global
+    //                                         1: Local
+    //                                         2: With
+    //                                         3: Closure
+    //                                         4: Catch >,
+    //                        "object"     : <the scope object defining the content of the scope.
+    //                                        For local and closure scopes this is transient objects,
+    //                                        which has a negative handle value>
+    //                      }
+    //      "running"     : <is the VM running after sending this response>
+    //      "success"     : true
+    //    }
+    const scope = response.body;
+    if (scope.object === undefined) {
+      logger.error('Scope object is undefined');
+      return undefined;
+    }
+    // check type of scope.object.value is unknown
+    if (typeof scope.object.value !== 'number') {
+      logger.error('Scope object value is not a number');
+      return undefined;
+    }
+    if (scope.object.value === 0) {
+      logger.error('Scope object value is 0');
+      return undefined;
+    }
+
+    const dapScope: DebugProtocol.Scope = new Scope(
+      QmlEngine.convertScopeName(scope.type),
+      scope.index,
+      false
+    );
+
+    dapScope.presentationHint = QmlEngine.convertScopeType(scope.type);
+    if (scope.object.handle !== undefined) {
+      dapScope.variablesReference = scope.object.handle + 1;
+    } else if (scope.object.ref !== undefined) {
+      dapScope.variablesReference = scope.object.ref + 1;
+    }
+    dapScope.namedVariables = scope.object.value;
+    return dapScope;
+  }
+  async getThisVariable() {
+    const exp = 'this';
+    const response = await this.evaluate(exp);
+    if (!response || !response.success) {
+      return undefined;
+    }
+    const rawThisVariable = response.body;
+    rawThisVariable.name = 'this';
+    const thisVariable = QmlEngine.generateDapVariable(rawThisVariable);
+    if (!thisVariable) {
+      return undefined;
+    }
+    return thisVariable;
+  }
+  isRunning() {
+    return this._state === DebuggerState.InferiorRunOk;
+  }
+
+  private clearRefs() {
+    this._refs.clear();
+    this._thisReference = -1;
+  }
   async continueDebugging(action: StepAction) {
     //    { "seq"       : <number>,
     //      "type"      : "request",
@@ -497,6 +805,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     } else if (action === StepAction.Next) {
       cmd.arg(STEPACTION, NEXT);
     }
+    this.clearRefs();
 
     const task = new Promise<QmlContinueResponse>((resolve) => {
       this.runCommand(cmd, (debuggerResponse: QmlContinueResponse) => {
@@ -505,6 +814,97 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       });
     });
     return task;
+  }
+  get refs() {
+    return this._refs;
+  }
+  static convertQmlTypeToValue(variable: QmlVariable) {
+    if (variable.type === 'object') {
+      if (variable.value !== null) {
+        return 'object';
+      } else {
+        return 'null';
+      }
+    } else if (variable.type === 'function') {
+      return 'function';
+    } else if (variable.type === 'number') {
+      return (variable.value as number).toString();
+    } else if (variable.type === 'boolean') {
+      return (variable.value as boolean) ? 'true' : 'false';
+    } else if (variable.type === 'undefined') {
+      return undefined;
+    } else if (variable.type === 'string') {
+      const stringValue = variable.value as string;
+      return '"' + stringValue + '"';
+    }
+    return undefined; // Ensure a return value for unsupported types
+  }
+  private static generateDapVariable(variable: QmlVariable) {
+    const dapVariable: DebugProtocol.Variable = {
+      name: variable.name ?? '',
+      type: variable.type,
+      value: '',
+      variablesReference: 0,
+      namedVariables: 0,
+      indexedVariables: 0,
+      presentationHint: {
+        kind: 'property'
+      }
+    };
+    const value = QmlEngine.convertQmlTypeToValue(variable);
+    if (value === undefined) {
+      return undefined;
+    }
+    dapVariable.value = value;
+    if (variable.type === 'object') {
+      if (variable.handle !== undefined) {
+        dapVariable.variablesReference = variable.handle;
+      }
+      dapVariable.namedVariables = variable.value as number;
+      if (dapVariable.namedVariables !== 0 && variable.ref !== undefined) {
+        dapVariable.variablesReference = variable.ref + 1;
+      }
+    } else if (variable.type === 'function' && dapVariable.presentationHint) {
+      dapVariable.presentationHint.kind = 'method';
+    }
+    return dapVariable;
+  }
+  handleLookup(response: QmlLookupResponse) {
+    //    { "seq"         : <number>,
+    //      "type"        : "response",
+    //      "request_seq" : <number>,
+    //      "command"     : "lookup",
+    //      "body"        : <array of serialized objects indexed using their handle>
+    //      "running"     : <is the VM running after sending this response>
+    //      "success"     : true
+    //    }
+
+    const body = response.body;
+    const retVariables: DebugProtocol.Variable[] = [];
+    const variables = Object.values(body);
+    for (const variable of variables) {
+      const subVariables = variable.properties;
+      if (!subVariables) {
+        continue;
+      }
+      for (const subVar of subVariables) {
+        let handle = -1;
+        if (subVar.handle !== undefined) {
+          handle = subVar.handle;
+        } else if (subVar.ref !== undefined) {
+          handle = subVar.ref;
+        }
+        if (handle !== -1) {
+          this._currentlyLookingUp.delete(handle);
+          this._refs.add(handle);
+        }
+        const dapVar = QmlEngine.generateDapVariable(subVar);
+        if (dapVar) {
+          retVariables.push(dapVar);
+        }
+      }
+    }
+    return retVariables;
   }
   analyzeV8Message(packet: Packet) {
     const message = packet.readJsonUTF8() as QmlMessage;
@@ -591,7 +991,6 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
 
   notifyInferiorSpontaneousStop(breakData: IResponseBodyBreak) {
     logger.info('NOTE: INFERIOR SPONTANEOUS STOP');
-    this.setState(DebuggerState.InferiorStopOk);
     const stoppedEvent: DebugProtocol.StoppedEvent = new StoppedEvent(
       'breakpoint',
       this.mainQmlThreadId
@@ -607,6 +1006,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
 
     logger.info('Stopped event: breakpointIds: ', breakpointIds.join(','));
     this._session.sendEvent(stoppedEvent);
+    this.setState(DebuggerState.InferiorStopOk);
   }
   runDirectCommand(type: string, msg: Buffer) {
     const packet = new Packet();
@@ -732,8 +1132,8 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       return;
     }
     if (this._retryOnConnectFail) {
-      // retry after 3 seconds ...
-      Timer.singleShot(3000, () => {
+      // retry after 500 milliseconds ...
+      Timer.singleShot(500, () => {
         logger.info('Retrying connection ...');
         this.beginConnection();
       });
