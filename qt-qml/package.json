@@ -214,6 +214,35 @@
                 }
               }
             }
+          },
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to the program to be debugged"
+              },
+              "debuggerArgs": {
+                "type": "string",
+                "description": "Command line arguments passed to the program"
+              },
+              "args": {
+                "type": "array",
+                "description": "Additional command line arguments passed to the program",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "buildDirs": {
+                "type": "array",
+                "description": "List of build directories to include in the debugger. This variable is useful when the build directory is not in the workspace.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "initialConfigurations": [
@@ -227,10 +256,20 @@
         ],
         "configurationSnippets": [
           {
-            "label": "%qt-qml.debug.qmlDebugging.label%",
-            "description": "%qt-qml.debug.qmlDebugging.description%",
+            "label": "%qt-qml.debug.qmlDebuggingLaunch.label%",
+            "description": "%qt-qml.debug.qmlDebuggingLaunch.description%",
             "body": {
-              "name": "%qt-qml.debug.qmlDebugging.label%",
+              "name": "%qt-qml.debug.qmlDebuggingLaunch.label%",
+              "type": "qml",
+              "request": "launch",
+              "program": "^\"\\${command:cmake.launchTargetPath}\""
+            }
+          },
+          {
+            "label": "%qt-qml.debug.qmlDebuggingAttach.label%",
+            "description": "%qt-qml.debug.qmlDebuggingAttach.description%",
+            "body": {
+              "name": "%qt-qml.debug.qmlDebuggingAttach.label%",
               "type": "qml",
               "request": "attach",
               "host": "localhost",
