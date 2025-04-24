@@ -28,7 +28,6 @@
       "@util/*": ["src/util/*"]
     }
   },
-  //"exclude": ["node_modules", ".vscode-test", "src/test/**/*"],
   "exclude": ["node_modules", ".vscode-test"],
   "include": ["src/**/*"]
 }
