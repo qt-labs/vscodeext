@@ -1,3 +1,4 @@
 dist/
 tests/qtcli
 tests/qtcli.exe
+tests/_*
