@@ -1,14 +1,41 @@
 version: "1"
-type: project
+
+meta:
+  type: project
+  title: Qt Widgets application
+  description: >-
+    Creates a widget-based Qt application that contains
+    a Qt Widgets Designer-based main window and C++ source and header files
+    to implement the application logic.
+
 files:
   - in: CMakeLists.txt
   - in: main.cpp
+
   - in: mainwindow.cpp
+    out: '{{ .fileNameBase }}.cpp'
+
   - in: mainwindow.h
+    out: '{{ .fileNameBase }}.h'
 
   - in: mainwindow.ui
+    out: '{{ .fileNameBase }}.ui'
     when: '{{ .useForm }}'
 
   - in: '@/common/git.ignore'
     out: .gitignore
     bypass: true
+
+fields:
+  - className: |
+      {{ if eq .baseClass "QMainWindow" }}MainWindow
+      {{ else if eq .baseClass "QDialog"}}Dialog
+      {{ else }}Widget
+      {{ end }}
+
+  - fileNameBase: |
+      {{ if eq .baseClass "QMainWindow" }}mainwindow
+      {{ else if eq .baseClass "QDialog"}}dialog
+      {{ else }}widget
+      {{ end }}
+

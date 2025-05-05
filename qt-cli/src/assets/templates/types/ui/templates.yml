@@ -1,5 +1,14 @@
 version: "1"
 
+meta: 
+  type: file
+  title: Qt Widgets Designer UI form
+  description: >-
+    Creates a Qt Widgets Designer form 
+    that you can add to a Qt Widgets application project.
+    This is useful if you already have an existing class
+    for the UI business logic.
+
 files:
   - in: file.ui
     out: '{{ .name }}.ui'

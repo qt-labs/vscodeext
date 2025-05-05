@@ -1,5 +1,12 @@
 version: "1"
 
+meta:
+  type: file
+  title: C++ class
+  description: >-
+    Creates a C++ header and source file 
+    for a new class that you can add to a C++ project.
+
 files:
   - in: cpp-class.h
     out: '{{ .headerFileName }}'
@@ -8,26 +15,9 @@ files:
     out: '{{ .sourceFileName }}'
 
 fields:
-  - className: '{{ .name | QtCpp.ExtractClassName }}'
-  - headerFileName: '{{ .className }}.h'
-  - sourceFileName: '{{ .className }}.cpp'
-  - sharedDataClass: '{{ .className }}Data'
-  - baseClass: |
-      {{ if .customBaseClass }}{{ .customBaseClass }}
-      {{ else }}{{ .qtBaseClass }}
-      {{ end }}
+  - headerFileName: '{{ .name }}.h'
+  - sourceFileName: '{{ .name }}.cpp'
   - parentClass: |
-      {{ if eq .baseClass "QObject" }}QObject
-      {{ else if or (eq .baseClass "QWidget") (eq .baseClass "QMainWindow") }}QWidget
-      {{ else if eq .baseClass "QQuickItem"}}QQuickItem
-      {{ else if .isQObject }}QObject
+      {{ if (eq .baseClass "QMainWindow") }}QWidget
+      {{ else }}{{ .baseClass }}
       {{ end }}
-  - includeGuardName: '{{ .name | QtCpp.MakeIncludeGuard }}'
-  - namespaceOpening: |
-      {{ range .name | QtCpp.ExtractNamespaces }}
-      namespace {{ . }} {
-      {{- end }}
-  - namespaceClosing: |
-      {{ range .name | QtCpp.ExtractNamespaces | Qt.Reverse }}
-      } // namespace {{ . }}
-      {{- end }}

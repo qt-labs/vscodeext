@@ -9,8 +9,3 @@ steps:
       - text: "QMainWindow"
       - text: "QWidget"
       - text: "QDialog"
-
-  - id: title
-    type: input
-    question: "Enter a window title:"
-    default: "Form"
