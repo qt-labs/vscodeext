@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>{{ .title }}</string>
+   <string>Form</string>
   </property>
 {{- if eq .baseClass "QMainWindow" }}
   <widget class="QWidget" name="centralwidget"/>

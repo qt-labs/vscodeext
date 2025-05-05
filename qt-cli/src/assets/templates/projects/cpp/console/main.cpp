@@ -1,23 +1,9 @@
 #include <QCoreApplication>
-{{- if .useTranslation }}
-#include <QLocale>
-#include <QTranslator>
-{{- end }}
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-{{ if .useTranslation }}
-    QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "{{ .name }}_" + QLocale(locale).name();
-        if (translator.load(":/i18n/" + baseName)) {
-            app.installTranslator(&translator);
-            break;
-        }
-    }
-{{- end }}
+    
     // Set up code that uses the Qt event loop here.
     // Call app.quit() or app.exit() to quit the application.
     // A not very useful example would be including

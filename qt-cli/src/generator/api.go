@@ -7,16 +7,11 @@ import (
 	"text/template"
 )
 
-var cpp = CppApi{}
 var global = GlobalApi{}
 
 var all = template.FuncMap{
 	"Qt": func() GlobalApi {
 		return global
-	},
-
-	"QtCpp": func() CppApi {
-		return cpp
 	},
 }
 

@@ -1,5 +1,13 @@
 version: "1"
-type: project
+
+meta:
+  type: project
+  title: Qt Quick application
+  description: >-
+    Creates a Qt Quick application that can have both QML and C++ code.
+    You can build the application and deploy it to desktop, embedded, 
+    and mobile target platforms.
+
 files:
   - in: CMakeLists.txt
   - in: Main.qml

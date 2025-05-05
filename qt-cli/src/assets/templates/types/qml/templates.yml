@@ -1,5 +1,12 @@
 version: "1"
 
+meta: 
+  type: file
+  title: QML file
+  description: >-
+    Creates a QML file with boilerplate code, 
+    starting with "import QtQuick".
+
 files:
   - in: file.qml
     out: '{{ .name }}.qml'

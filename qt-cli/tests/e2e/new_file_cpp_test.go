@@ -24,11 +24,6 @@ func TestNewFileCppClass(t *testing.T) {
 			"@cpp/class",
 			[]string{"MyObject.cpp", "MyObject.h"},
 		},
-		{
-			"A::B::MyObject",
-			"@cpp/class",
-			[]string{"MyObject.cpp", "MyObject.h"},
-		},
 	}
 
 	for _, preset := range presets {
