@@ -6,7 +6,7 @@ package cmds
 import (
 	"errors"
 	"fmt"
-	"qtcli/formats"
+	"qtcli/common"
 	"qtcli/prompt/comps"
 	"qtcli/runner"
 	"qtcli/util"
@@ -130,7 +130,7 @@ func getConfirm(msg string) bool {
 	return r.ValueAsBool(false)
 }
 
-func userPresets() *formats.UserPresetFile {
+func userPresets() *common.UserPresetFile {
 	return runner.Presets.User.GetFile()
 }
 

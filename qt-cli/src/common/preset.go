@@ -22,9 +22,29 @@ type Preset interface {
 
 type PresetData struct {
 	Name        string            `yaml:"name"`
-	TypeName    string            `yaml:"type"`
 	TemplateDir string            `yaml:"template"`
 	Options     util.StringAnyMap `yaml:"options"`
+
+	// private field
+	targetTypeId TargetType
+}
+
+func NewPresetData(
+	name, templateDir string, options util.StringAnyMap) PresetData {
+
+	// read type from a template file
+	targetTypeId := TargetTypeFile
+	templateFile, err := OpenTemplateFileIn(TemplatesFS, templateDir)
+	if err == nil {
+		targetTypeId = templateFile.GetTargetType()
+	}
+
+	return PresetData{
+		Name:         name,
+		TemplateDir:  templateDir,
+		Options:      options,
+		targetTypeId: targetTypeId,
+	}
 }
 
 func (p PresetData) GetName() string {
@@ -32,7 +52,7 @@ func (p PresetData) GetName() string {
 }
 
 func (p PresetData) GetTypeId() TargetType {
-	return TargetTypeFromString(p.TypeName)
+	return p.targetTypeId
 }
 
 func (p PresetData) GetTypeName() string {
@@ -62,4 +82,8 @@ func (item PresetData) ToYaml() string {
 	}
 
 	return string(output)
+}
+
+func (p *PresetData) MergeOptions(data util.StringAnyMap) {
+	p.Options = util.Merge(p.Options, data)
 }

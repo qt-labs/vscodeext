@@ -1,12 +1,13 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-package formats
+package common
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
-	"qtcli/common"
+	"path"
 	"qtcli/util"
 
 	"github.com/sirupsen/logrus"
@@ -39,14 +40,50 @@ type TemplateItem struct {
 	Bypass bool   `yaml:"bypass"`
 }
 
-func NewTemplateFileFS(fs fs.FS, filePath string) *TemplateFile {
-	return &TemplateFile{
+func OpenTemplateFile(fs fs.FS, filePath string) (*TemplateFile, error) {
+	if len(filePath) == 0 {
+		return nil, errors.New(util.Msg("cannot determine a file path"))
+	}
+
+	if !util.EntryExistsFS(fs, filePath) {
+		return nil, fmt.Errorf(
+			util.Msg("template definition does not exist, path = '%v'"), filePath)
+	}
+
+	template := TemplateFile{
 		fs:       fs,
 		filePath: filePath,
 	}
+
+	err := template.open()
+	if err != nil {
+		return nil, err
+	}
+
+	return &template, nil
 }
 
-func (f *TemplateFile) Open() error {
+func OpenTemplateFileIn(fs fs.FS, dir string) (*TemplateFile, error) {
+	return OpenTemplateFile(fs, path.Join(dir, TemplateFileName))
+}
+
+func (f *TemplateFile) GetTypeName() string {
+	return f.contents.Meta.Type
+}
+
+func (f *TemplateFile) GetTargetType() TargetType {
+	return TargetTypeFromString(f.contents.Meta.Type)
+}
+
+func (f *TemplateFile) GetFileItems() []TemplateItem {
+	return f.contents.Files
+}
+
+func (f *TemplateFile) GetFields() []util.StringAnyMap {
+	return f.contents.Fields
+}
+
+func (f *TemplateFile) open() error {
 	logrus.Debug(fmt.Sprintf(
 		"reading template definition, file = '%v'", f.filePath))
 
@@ -61,20 +98,4 @@ func (f *TemplateFile) Open() error {
 	}
 
 	return nil
-}
-
-func (f *TemplateFile) GetTypeName() string {
-	return f.contents.Meta.Type
-}
-
-func (f *TemplateFile) GetTargetType() common.TargetType {
-	return common.TargetTypeFromString(f.contents.Meta.Type)
-}
-
-func (f *TemplateFile) GetFileItems() []TemplateItem {
-	return f.contents.Files
-}
-
-func (f *TemplateFile) GetFields() []util.StringAnyMap {
-	return f.contents.Fields
 }
