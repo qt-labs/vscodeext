@@ -53,7 +53,7 @@ func CreateNewFileOrProject(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, ResNew{
 		Message: "File created successfully",
-		Files:   output.GetOutputFilePaths(),
+		Files:   output.GetOutputFilesRel(),
 		Input:   req,
 	})
 }
