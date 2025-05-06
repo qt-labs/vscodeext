@@ -30,6 +30,10 @@ func (m UserPresetManager) FindByTypeAndName(
 	return FindByTypeAndName(m, t, name)
 }
 
+func (m UserPresetManager) FindByUniqueId(id string) (PresetData, error) {
+	return m.file.FindByUniqueId(id)
+}
+
 func (m UserPresetManager) GetFile() *UserPresetFile {
 	return m.file
 }

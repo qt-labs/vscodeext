@@ -13,6 +13,7 @@ type PresetManager interface {
 	FindByType(t TargetType) []PresetData
 	FindByName(name string) (PresetData, error)
 	FindByTypeAndName(t TargetType, name string) (PresetData, error)
+	FindByUniqueId(id string) (PresetData, error)
 }
 
 type CompositePresetManager struct {
@@ -66,6 +67,17 @@ func (m CompositePresetManager) FindByTypeAndName(
 	}
 
 	return notFoundError(name)
+}
+
+func (m CompositePresetManager) FindByUniqueId(id string) (PresetData, error) {
+	for _, c := range m.comps {
+		preset, err := c.FindByUniqueId(id)
+		if err == nil {
+			return preset, nil
+		}
+	}
+
+	return notFoundError(id)
 }
 
 // helpers

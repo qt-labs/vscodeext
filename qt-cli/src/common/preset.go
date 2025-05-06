@@ -5,6 +5,7 @@ package common
 
 import (
 	"fmt"
+	"hash/crc32"
 	"qtcli/util"
 	"strings"
 
@@ -18,6 +19,7 @@ type Preset interface {
 	GetDescription() string
 	GetTemplateDir() string
 	GetOptions() util.StringAnyMap
+	GetUniqueId() string
 }
 
 type PresetData struct {
@@ -25,7 +27,8 @@ type PresetData struct {
 	TemplateDir string            `yaml:"template"`
 	Options     util.StringAnyMap `yaml:"options"`
 
-	// private field
+	// private fields
+	uniqueId     string
 	targetTypeId TargetType
 }
 
@@ -39,10 +42,14 @@ func NewPresetData(
 		targetTypeId = templateFile.GetTargetType()
 	}
 
+	// make unique id for rest call
+	uniqueId := fmt.Sprintf("%010d", crc32.ChecksumIEEE([]byte(name)))
+
 	return PresetData{
 		Name:         name,
 		TemplateDir:  templateDir,
 		Options:      options,
+		uniqueId:     uniqueId,
 		targetTypeId: targetTypeId,
 	}
 }
@@ -73,6 +80,10 @@ func (p PresetData) GetTemplateDir() string {
 
 func (p PresetData) GetOptions() util.StringAnyMap {
 	return p.Options
+}
+
+func (p PresetData) GetUniqueId() string {
+	return p.uniqueId
 }
 
 func (item PresetData) ToYaml() string {
