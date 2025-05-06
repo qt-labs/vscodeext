@@ -65,6 +65,16 @@ func (m DefaultPresetManager) FindByTypeAndName(
 	return common.FindByTypeAndName(m, t, name)
 }
 
+func (m DefaultPresetManager) FindByUniqueId(id string) (common.PresetData, error) {
+	for _, preset := range m.GetAll() {
+		if preset.GetUniqueId() == id {
+			return preset, nil
+		}
+	}
+
+	return common.PresetData{}, errors.New("not found")
+}
+
 // helpers
 func loadPresets(baseFS fs.FS, t common.TargetType) []common.PresetData {
 	all := []common.PresetData{}

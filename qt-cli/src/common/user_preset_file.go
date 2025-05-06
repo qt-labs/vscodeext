@@ -59,6 +59,17 @@ func (f *UserPresetFile) Open() error {
 	return nil
 }
 
+func (f *UserPresetFile) FindByUniqueId(id string) (PresetData, error) {
+	for _, item := range f.contents.Items {
+		if item.GetUniqueId() == id {
+			return item, nil
+		}
+	}
+
+	return PresetData{},
+		fmt.Errorf(util.Msg("not found, given = '%v'"), id)
+}
+
 func (f *UserPresetFile) FindByName(name string) (PresetData, error) {
 	for _, item := range f.contents.Items {
 		if item.Name == name {
