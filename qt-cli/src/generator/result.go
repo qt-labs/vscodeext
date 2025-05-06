@@ -10,30 +10,39 @@ import (
 	"text/tabwriter"
 )
 
-type Result []ResultItem
+type Result struct {
+	items        []ResultItem
+	workingDir   string
+	outputDirAbs string
+}
 
 type ResultItem struct {
-	TemplateItem   common.TemplateItem
-	InputFilePath  string
-	OutputFilePath string
+	templateItem  common.TemplateItem
+	inputFileRel  string // relative to env.FS
+	outputFileRel string // relative to outputDirAbs
+	outputFileAbs string
 }
 
 func (r *Result) Print(output io.Writer) {
 	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 
-	for _, item := range *r {
+	for _, item := range r.items {
 		fmt.Fprintf(
-			w, "%s\t->\t%s\n", item.TemplateItem.In, item.OutputFilePath)
+			w, "%s\t->\t%s\n", item.templateItem.In, item.outputFileRel)
 	}
 
 	w.Flush()
 }
 
-func (r *Result) GetOutputFilePaths() []string {
+func (r *Result) GetOutputDirAbs() string {
+	return r.outputDirAbs
+}
+
+func (r *Result) GetOutputFilesRel() []string {
 	all := []string{}
 
-	for _, item := range *r {
-		all = append(all, item.OutputFilePath)
+	for _, item := range r.items {
+		all = append(all, item.outputFileRel)
 	}
 
 	return all
