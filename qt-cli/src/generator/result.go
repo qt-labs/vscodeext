@@ -6,14 +6,14 @@ package generator
 import (
 	"fmt"
 	"io"
-	"qtcli/formats"
+	"qtcli/common"
 	"text/tabwriter"
 )
 
 type Result []ResultItem
 
 type ResultItem struct {
-	TemplateItem   formats.TemplateItem
+	TemplateItem   common.TemplateItem
 	InputFilePath  string
 	OutputFilePath string
 }

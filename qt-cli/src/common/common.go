@@ -4,27 +4,23 @@
 package common
 
 import (
-	"fmt"
+	"io/fs"
+	"qtcli/assets"
 
-	"github.com/charmbracelet/lipgloss"
+	"github.com/sirupsen/logrus"
 )
-
-const QtCliName = "Qt CLI"
-const QtCliExec = "qtcli"
-const QtCliVersion = "0.1"
-
-var QtCliInfoString string
-var QtCliInfoDecorated string
 
 const PromptFileName = "prompt.yml"
 const TemplateFileName = "templates.yml"
 const UserPresetFileName = ".qtcli.preset"
 
-func init() {
-	QtCliInfoString = fmt.Sprintf("%s v%s", QtCliName, QtCliVersion)
-	QtCliInfoDecorated = lipgloss.
-		NewStyle().
-		Foreground(lipgloss.Color("#5a33f7")).
-		Render(QtCliInfoString)
+var TemplatesFS fs.FS
 
+func init() {
+	fs_, err := fs.Sub(assets.Assets, "templates")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	TemplatesFS = fs_
 }

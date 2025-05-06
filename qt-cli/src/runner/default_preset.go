@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"path"
 	"qtcli/common"
-	"qtcli/formats"
 	"qtcli/util"
 )
 
@@ -47,33 +46,11 @@ func (m DefaultPresetManager) FindByType(
 	return []common.PresetData{}
 }
 
-func loadPresets(baseFS fs.FS, t common.TargetType) []common.PresetData {
-	all := []common.PresetData{}
-	dirs, err := findAllTemplateDirNames(baseFS, t)
-
-	if err == nil {
-		for _, dir := range dirs {
-			p := common.PresetData{
-				Name:        "@" + dir,
-				TypeName:    common.TargetTypeToString(t),
-				TemplateDir: dir,
-				Options:     readDefaultOptions(baseFS, dir),
-			}
-
-			all = append(all, p)
-		}
-	}
-
-	return all
-}
-
-func (m DefaultPresetManager) FindByName(
-	name string,
-) (common.PresetData, error) {
+func (m DefaultPresetManager) FindByName(n string) (common.PresetData, error) {
 	all := m.GetAll()
 
 	for _, preset := range all {
-		if preset.GetName() == name {
+		if preset.GetName() == n {
 			return preset, nil
 		}
 	}
@@ -89,6 +66,20 @@ func (m DefaultPresetManager) FindByTypeAndName(
 }
 
 // helpers
+func loadPresets(baseFS fs.FS, t common.TargetType) []common.PresetData {
+	all := []common.PresetData{}
+	dirs, err := findAllTemplateDirNames(baseFS, t)
+
+	if err == nil {
+		for _, dir := range dirs {
+			p := common.NewPresetData("@"+dir, dir, readDefaultOptions(baseFS, dir))
+			all = append(all, p)
+		}
+	}
+
+	return all
+}
+
 func findAllTemplateDirNames(
 	baseFS fs.FS,
 	t common.TargetType,
@@ -103,9 +94,7 @@ func findAllTemplateDirNames(
 
 			if d.IsDir() && walkingPath != "." {
 				fullPath := path.Join(walkingPath, common.TemplateFileName)
-				templateFile := formats.NewTemplateFileFS(baseFS, fullPath)
-				err := templateFile.Open()
-
+				templateFile, err := common.OpenTemplateFile(baseFS, fullPath)
 				if err == nil && templateFile.GetTargetType() == t {
 					found = append(found, walkingPath)
 				}
@@ -120,7 +109,7 @@ func findAllTemplateDirNames(
 func readDefaultOptions(baseFS fs.FS, templateDir string) util.StringAnyMap {
 	fullPath := path.Join(templateDir, common.PromptFileName)
 
-	f := formats.NewPromptFileFS(baseFS, fullPath)
+	f := common.NewPromptFileFS(baseFS, fullPath)
 	if err := f.Open(); err != nil {
 		return util.StringAnyMap{}
 	}

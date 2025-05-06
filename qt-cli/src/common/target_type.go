@@ -13,7 +13,7 @@ const (
 )
 
 func TargetTypeFromString(s string) TargetType {
-	if strings.ToLower(s) == "project" {
+	if strings.TrimSpace(strings.ToLower(s)) == "project" {
 		return TargetTypeProject
 	}
 

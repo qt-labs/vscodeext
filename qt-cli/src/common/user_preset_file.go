@@ -1,12 +1,11 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-package formats
+package common
 
 import (
 	"fmt"
 	"os"
-	"qtcli/common"
 	"qtcli/util"
 
 	"github.com/sirupsen/logrus"
@@ -19,8 +18,8 @@ type UserPresetFile struct {
 }
 
 type UserPresetFileContents struct {
-	Version string              `yaml:"version"`
-	Items   []common.PresetData `yaml:"items"`
+	Version string       `yaml:"version"`
+	Items   []PresetData `yaml:"items"`
 }
 
 func NewUserPresetFile(filePath string) *UserPresetFile {
@@ -40,7 +39,7 @@ func (f *UserPresetFile) Open() error {
 
 	if !util.EntryExists(f.filePath) {
 		f.contents.Version = "1"
-		f.contents.Items = []common.PresetData{}
+		f.contents.Items = []PresetData{}
 		err := f.Save()
 		if err != nil {
 			return err
@@ -60,14 +59,14 @@ func (f *UserPresetFile) Open() error {
 	return nil
 }
 
-func (f *UserPresetFile) FindByName(name string) (common.PresetData, error) {
+func (f *UserPresetFile) FindByName(name string) (PresetData, error) {
 	for _, item := range f.contents.Items {
 		if item.Name == name {
 			return item, nil
 		}
 	}
 
-	return common.PresetData{},
+	return PresetData{},
 		fmt.Errorf(util.Msg("not found, given = '%v'"), name)
 }
 
@@ -99,13 +98,13 @@ func (f *UserPresetFile) GetAllNames() []string {
 	return all
 }
 
-func (f *UserPresetFile) GetAll() []common.PresetData {
+func (f *UserPresetFile) GetAll() []PresetData {
 	return f.contents.Items
 }
 
 func (f *UserPresetFile) GetItemsOfTargetType(
-	t common.TargetType) []common.PresetData {
-	found := []common.PresetData{}
+	t TargetType) []PresetData {
+	found := []PresetData{}
 
 	for _, item := range f.contents.Items {
 		if t == item.GetTypeId() {
@@ -116,7 +115,7 @@ func (f *UserPresetFile) GetItemsOfTargetType(
 	return found
 }
 
-func (f *UserPresetFile) Add(data common.PresetData) error {
+func (f *UserPresetFile) Add(data PresetData) error {
 	f.contents.Items = append(f.contents.Items, data)
 	return nil
 }
@@ -158,18 +157,18 @@ func (f *UserPresetFile) Remove(name string) error {
 }
 
 func (f *UserPresetFile) RemoveAll() {
-	f.contents.Items = []common.PresetData{}
+	f.contents.Items = []PresetData{}
 }
 
 func (f *UserPresetFile) Find(
-	t common.TargetType, name string) (common.PresetData, error) {
+	t TargetType, name string) (PresetData, error) {
 	for _, item := range f.contents.Items {
 		if item.Name == name && t == item.GetTypeId() {
 			return item, nil
 		}
 	}
 
-	return common.PresetData{},
+	return PresetData{},
 		fmt.Errorf(util.Msg("not found, given = '%v'"), name)
 }
 
@@ -185,49 +184,10 @@ func (f *UserPresetFile) Rename(from string, to string) error {
 			util.Msg("cannot rename, already exist, given = '%v'"), to)
 	}
 
-	err = f.Add(common.PresetData{
-		Name:        to,
-		TypeName:    src.TypeName,
-		TemplateDir: src.TemplateDir,
-		Options:     src.Options,
-	})
+	err = f.Add(NewPresetData(to, src.TemplateDir, src.Options))
 	if err != nil {
 		return err
 	}
 
 	return f.Remove(from)
-}
-
-// manager
-type UserPresetManager struct {
-	file *UserPresetFile
-}
-
-func NewUserPresetManager(f *UserPresetFile) UserPresetManager {
-	return UserPresetManager{file: f}
-}
-
-func (m UserPresetManager) GetAll() []common.PresetData {
-	return m.file.GetAll()
-}
-
-func (m UserPresetManager) FindByType(
-	t common.TargetType,
-) []common.PresetData {
-	return m.file.GetItemsOfTargetType(t)
-}
-
-func (m UserPresetManager) FindByName(name string) (common.PresetData, error) {
-	return m.file.FindByName(name)
-}
-
-func (m UserPresetManager) FindByTypeAndName(
-	t common.TargetType,
-	name string,
-) (common.PresetData, error) {
-	return common.FindByTypeAndName(m, t, name)
-}
-
-func (m UserPresetManager) GetFile() *UserPresetFile {
-	return m.file
 }
