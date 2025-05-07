@@ -5,6 +5,8 @@ package cmds
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"qtcli/common"
 	"qtcli/generator"
 	"qtcli/runner"
@@ -22,13 +24,17 @@ var newCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
-		if util.EntryExists(name) {
-			return fmt.Errorf(util.Msg("'%s' already exists"), name)
-		}
+		cwd, _ := os.Getwd()
+		out := generator.Validate(generator.ValidatorIn{
+			Name:       name,
+			WorkingDir: filepath.ToSlash(cwd),
+			TypeId:     common.TargetTypeProject,
+		})
 
-		if !util.IsValidDirName(name) {
+		if out.HasError() {
 			return fmt.Errorf(
-				util.Msg("'%s' is not a valid directory name"), name)
+				util.Msg("failed to generate a project\n%s"),
+				out.Error.ToSingleLine(", "))
 		}
 
 		const targetType = common.TargetTypeProject
@@ -38,18 +44,19 @@ var newCmd = &cobra.Command{
 				util.Msg("failed to select a preset: '%w'"), err)
 		}
 
-		output, err := generator.NewGenerator(name).
+		result := generator.NewGenerator(name).
 			Env(runner.GeneratorEnv).
 			Preset(preset).
 			Render()
 
-		if err != nil {
+		if !result.Success {
 			return fmt.Errorf(
-				util.Msg("failed to generate a project: '%w'"), err)
+				util.Msg("failed to generate a project\n%s"),
+				result.Error.ToSingleLine(", "))
 		}
 
 		if verbose {
-			output.Print(logrus.New().Writer())
+			result.Data.Print(logrus.New().Writer())
 		}
 
 		return nil

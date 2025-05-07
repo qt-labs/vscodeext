@@ -57,13 +57,15 @@ var newFileCmd = &cobra.Command{
 			}
 		}
 
-		_, err := generator.NewGenerator(name).
+		result := generator.NewGenerator(name).
 			Env(runner.GeneratorEnv).
 			Preset(selected).
 			Render()
 
-		if err != nil {
-			return fmt.Errorf(util.Msg("failed to generate a file: '%w'"), err)
+		if !result.Success {
+			return fmt.Errorf(
+				util.Msg("failed to generate a file: '%w'"),
+				result.Error.Message)
 
 		}
 
