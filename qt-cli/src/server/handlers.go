@@ -41,19 +41,19 @@ func CreateNewFileOrProject(c *gin.Context) {
 		return
 	}
 
-	output, err := generator.NewGenerator(req.Name).
+	result := generator.NewGenerator(req.Name).
 		Env(runner.GeneratorEnv).
 		Preset(preset).
 		Render()
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if !result.Success {
+		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Message})
 		return
 	}
 
 	c.JSON(http.StatusCreated, ResNew{
 		Message: "File created successfully",
-		Files:   output.GetOutputFilesRel(),
+		Files:   result.Data.GetOutputFilesRel(),
 		Input:   req,
 	})
 }

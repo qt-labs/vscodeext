@@ -11,6 +11,35 @@ import (
 )
 
 type Result struct {
+	Success bool
+	Data    ResultData
+	Error   common.ErrorWithDetails
+}
+
+func NewResult(data ResultData) *Result {
+	return &Result{
+		Success: true,
+		Data:    data,
+	}
+}
+
+func NewErrorResult(details common.ErrorWithDetails) *Result {
+	return &Result{
+		Success: false,
+		Error:   details,
+	}
+}
+
+func NewErrorResultFrom(err error) *Result {
+	return &Result{
+		Success: false,
+		Error: common.ErrorWithDetails{
+			Message: err.Error(),
+		},
+	}
+}
+
+type ResultData struct {
 	items        []ResultItem
 	workingDir   string
 	outputDirAbs string
@@ -23,7 +52,7 @@ type ResultItem struct {
 	outputFileAbs string
 }
 
-func (r *Result) Print(output io.Writer) {
+func (r *ResultData) Print(output io.Writer) {
 	w := tabwriter.NewWriter(output, 0, 0, 2, ' ', 0)
 
 	for _, item := range r.items {
@@ -34,11 +63,11 @@ func (r *Result) Print(output io.Writer) {
 	w.Flush()
 }
 
-func (r *Result) GetOutputDirAbs() string {
+func (r *ResultData) GetOutputDirAbs() string {
 	return r.outputDirAbs
 }
 
-func (r *Result) GetOutputFilesRel() []string {
+func (r *ResultData) GetOutputFilesRel() []string {
 	all := []string{}
 
 	for _, item := range r.items {
