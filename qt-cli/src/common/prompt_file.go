@@ -4,6 +4,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"qtcli/util"
@@ -19,28 +20,28 @@ type PromptFile struct {
 }
 
 type PromptFileContents struct {
-	Version string              `yaml:"version"`
-	Steps   []PromptStep        `yaml:"steps"`
-	Consts  []util.StringAnyMap `yaml:"consts"`
+	Version string              `yaml:"version" json:"version"`
+	Steps   []PromptStep        `yaml:"steps" json:"steps"`
+	Consts  []util.StringAnyMap `yaml:"consts" json:"consts"`
 }
 
 type PromptStep struct {
-	Id           string             `yaml:"id"`
-	CompType     string             `yaml:"type"`
-	Question     string             `yaml:"question"`
-	Description  string             `yaml:"description"`
-	Value        string             `yaml:"value"`
-	DefaultValue interface{}        `yaml:"default"`
-	When         string             `yaml:"when"`
-	Items        []PromptListItem   `yaml:"items"`
-	Rules        []PromptInputRules `yaml:"rules"`
+	Id           string             `yaml:"id" json:"id"`
+	CompType     string             `yaml:"type" json:"type"`
+	Question     string             `yaml:"question" json:"question"`
+	Description  string             `yaml:"description" json:"description"`
+	Value        string             `yaml:"value" json:"value"`
+	DefaultValue interface{}        `yaml:"default" json:"default"`
+	When         string             `yaml:"when" json:"when"`
+	Items        []PromptListItem   `yaml:"items" json:"items"`
+	Rules        []PromptInputRules `yaml:"rules" json:"rules"`
 }
 
 type PromptListItem struct {
-	Text        string      `yaml:"text"`
-	Data        interface{} `yaml:"data"`
-	Description string      `yaml:"description"`
-	Checked     string      `yaml:"checked"`
+	Text        string      `yaml:"text" json:"text"`
+	Data        interface{} `yaml:"data" json:"data"`
+	Description string      `yaml:"description" json:"description"`
+	Checked     string      `yaml:"checked" json:"checked"`
 }
 
 type PromptInputRules map[string]interface{}
@@ -85,4 +86,28 @@ func (f *PromptFile) ExtractDefaults() util.StringAnyMap {
 
 func (f *PromptFile) GetContents() *PromptFileContents {
 	return &f.contents
+}
+
+func (f *PromptFile) GetContentsAsJson() ([]byte, error) {
+	// TODO: simplify implementation
+	// Marshal the struct into a YAML string
+	// yamlData, err := yaml.Marshal(f.contents)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	// // Unmarshal YAML into an interface{} (can also be a map or struct)
+	// var yamlMap interface{}
+	// err = yaml.Unmarshal(yamlData, &yamlMap)
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	// Marshal the interface{} (which now holds the YAML data) into a JSON string
+	return json.MarshalIndent(&f.contents, "", "  ")
+	// if err != nil {
+	// 	return "", err
+	// }
+
+	// return string(jsonData), nil
 }

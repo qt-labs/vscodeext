@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"qtcli/server/handlers"
 	"qtcli/util"
 	"runtime"
 	"strconv"
@@ -21,8 +22,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var addr = ":8080"
+var port = "8080"
+var addr = ":" + port
 var pidFile = getPidFilePath()
+
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
 
 func Start() {
 	handler := createApiHandler()
@@ -78,12 +84,10 @@ func createApiHandler() *gin.Engine {
 
 	v1 := r.Group("/v1")
 
-	v1.GET("/presets", GetPresets)
-	v1.GET("/presets/files", GetFilePresets)
-	v1.GET("/presets/projects", GetProjectPresets)
-	v1.POST("/files", CreateNewFileOrProject)
-	v1.POST("/projects", CreateNewFileOrProject)
-	v1.DELETE("/server", Shutdown)
+	v1.GET("/presets", handlers.GetPresets)
+	v1.GET("/presets/:id", handlers.GetPresetById)
+	v1.POST("/items", handlers.PostNewItem)
+	v1.DELETE("/server", handlers.DeleteServer)
 
 	return r
 }

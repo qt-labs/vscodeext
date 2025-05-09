@@ -1,0 +1,75 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+// This file contains HTTP requests and variables
+// recognized by the REST Client extension for VSCode.
+//
+// How to use:
+// - Install the "REST Client" extension in VSCode.
+// - Start qtcli in server mode, for example:
+//     $ qtcli server start
+//     $ cd <srcdir, e.g. qt-cli/src/> && go run . server start (for local dev)
+// - Click "Send Request" above any request to execute it.
+
+@baseUrl = http://localhost:8080/v1
+
+@presetCppClass = 2239089261
+@presetConsoleApp = 3972419898
+@presetInvalid = 1111111111
+
+@workingDir = C:/ws_temp
+
+###
+### Get presets
+###
+
+### Get a list of all available presets
+GET {{baseUrl}}/presets HTTP/1.1
+
+### Get details of a specific preset - cpp class
+GET {{baseUrl}}/presets/{{presetCppClass}} HTTP/1.1
+
+### Get details of a specific preset - console app
+GET {{baseUrl}}/presets/{{presetConsoleApp}} HTTP/1.1
+
+### Get details of a specific preset - non existing
+GET {{baseUrl}}/presets/{{presetInvalid}} HTTP/1.1
+
+###
+### Create a new item
+###
+
+### Create c++ class
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "myclass",
+    "workingDir": "{{workingDir}}",
+    "presetId": "{{presetCppClass}}"
+}
+
+### Create console application
+POST {{baseUrl}}/items HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "myapp",
+    "workingDir": "{{workingDir}}",
+    "presetId": "{{presetConsoleApp}}"
+}
+
+### Create console application (dry run)
+POST {{baseUrl}}/items?dry_run=true HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "myapp2",
+    "workingDir": "{{workingDir}}",
+    "presetId": "{{presetConsoleApp}}"
+}
+
+###
+### Delete server
+###
+DELETE {{baseUrl}}/server HTTP/1.1
