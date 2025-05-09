@@ -5,6 +5,7 @@ package util
 
 import (
 	"fmt"
+	"hash/crc32"
 	"io"
 	"io/fs"
 	"os"
@@ -171,4 +172,8 @@ func SendSigTermOrKill(pid int) error {
 	} else {
 		return process.Signal(syscall.SIGTERM)
 	}
+}
+
+func CreatePresetUniqueId(name string) string {
+	return fmt.Sprintf("%010d", crc32.ChecksumIEEE([]byte(name)))
 }

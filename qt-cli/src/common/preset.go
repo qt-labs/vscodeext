@@ -5,7 +5,6 @@ package common
 
 import (
 	"fmt"
-	"hash/crc32"
 	"qtcli/util"
 	"strings"
 
@@ -43,7 +42,7 @@ func NewPresetData(
 	}
 
 	// make unique id for rest call
-	uniqueId := fmt.Sprintf("%010d", crc32.ChecksumIEEE([]byte(name)))
+	uniqueId := util.CreatePresetUniqueId(name)
 
 	return PresetData{
 		Name:         name,

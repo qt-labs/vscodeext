@@ -83,6 +83,10 @@ func (f *TemplateFile) GetFields() []util.StringAnyMap {
 	return f.contents.Fields
 }
 
+func (f *TemplateFile) GetMeta() TemplateMeta {
+	return f.contents.Meta
+}
+
 func (f *TemplateFile) open() error {
 	logrus.Debug(fmt.Sprintf(
 		"reading template definition, file = '%v'", f.filePath))
