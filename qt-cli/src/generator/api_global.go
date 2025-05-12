@@ -9,11 +9,11 @@ import (
 
 type GlobalApi struct{}
 
-func (GlobalApi) ParseFloat(name interface{}) float64 {
+func (GlobalApi) ParseFloat(name any) float64 {
 	return util.ToFloat64(name, 0)
 }
 
-func (GlobalApi) NewArray(values ...interface{}) []interface{} {
+func (GlobalApi) NewArray(values ...any) []any {
 	return values
 }
 
@@ -24,11 +24,11 @@ func (GlobalApi) Reverse(slice []string) []string {
 	return slice
 }
 
-func (GlobalApi) Append(s []interface{}, values interface{}) []interface{} {
+func (GlobalApi) Append(s []any, values any) []any {
 	return append(s, values)
 }
 
-func (GlobalApi) AppendIf(s []interface{}, values interface{}, condition bool) []interface{} {
+func (GlobalApi) AppendIf(s []any, values any, condition bool) []any {
 	if condition {
 		return append(s, values)
 	} else {

@@ -13,7 +13,7 @@ type Result struct {
 	Done  bool
 }
 
-func (r Result) ValueNormalized() interface{} {
+func (r Result) ValueNormalized() any {
 	switch s := r.Value.(type) {
 	case SelectionItem:
 		return s.DataOrText()
@@ -37,4 +37,4 @@ func (r Result) ValueAsSelectionItem() (SelectionItem, bool) {
 
 type ResultList []Result
 type ResultMap map[string]Result
-type ResultValue interface{}
+type ResultValue any

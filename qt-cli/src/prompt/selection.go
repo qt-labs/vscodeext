@@ -8,7 +8,7 @@ import "strings"
 type SelectionItem struct {
 	Index int
 	Text  string
-	Data  interface{}
+	Data  any
 }
 
 type Selection []SelectionItem
@@ -22,7 +22,7 @@ func (item SelectionItem) String() string {
 	return item.Text
 }
 
-func (item SelectionItem) DataOrText() interface{} {
+func (item SelectionItem) DataOrText() any {
 	if item.Data != nil {
 		return item.Data
 	}

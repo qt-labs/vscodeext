@@ -8,6 +8,7 @@ import (
 	"hash/crc32"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path"
 	"runtime"
@@ -16,19 +17,11 @@ import (
 	"syscall"
 )
 
-type StringAnyMap map[string]interface{}
+type StringAnyMap map[string]any
 
 func Merge(base StringAnyMap, other StringAnyMap) StringAnyMap {
-	all := StringAnyMap{}
-
-	for k, v := range base {
-		all[k] = v
-	}
-
-	for k, v := range other {
-		all[k] = v
-	}
-
+	all := maps.Clone(base)
+	maps.Copy(all, other)
 	return all
 }
 
@@ -78,7 +71,7 @@ func EntryExistsFS(targetFS fs.FS, path string) bool {
 	return !os.IsNotExist(err)
 }
 
-func ToBool(value interface{}, defaultValue bool) bool {
+func ToBool(value any, defaultValue bool) bool {
 	switch c := value.(type) {
 	case bool:
 		return c
@@ -100,7 +93,7 @@ func ToBool(value interface{}, defaultValue bool) bool {
 	}
 }
 
-func ToFloat64(value interface{}, defaultValue float64) float64 {
+func ToFloat64(value any, defaultValue float64) float64 {
 	switch c := value.(type) {
 	case string:
 		v, err := strconv.ParseFloat(c, 64)
