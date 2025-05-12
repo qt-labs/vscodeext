@@ -28,6 +28,7 @@ import { resetCommand } from '@/reset';
 import { registerQtByQtpaths } from '@/qtpaths';
 import { newFileCommand, newProjectCommand } from '@/qtcli/commands';
 import { checkVcpkg } from '@/vcpkg';
+import { NewItemPanel } from '@/webview/new-item-panel';
 
 const logger = createLogger('extension');
 
@@ -68,6 +69,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerColorProvider('qss', createColorProvider())
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(`${EXTENSION_ID}.createNewItem`, () => {
+      NewItemPanel.render(context.extensionUri);
+    })
   );
 
   telemetry.sendEvent(`activated`);

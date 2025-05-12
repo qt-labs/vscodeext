@@ -25,5 +25,6 @@
       "@cmd/*": ["src/commands/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["webview-ui/**/*"]
 }

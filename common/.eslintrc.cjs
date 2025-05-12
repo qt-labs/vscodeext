@@ -24,5 +24,5 @@ module.exports = {
     curly: 'error'
   },
   root: true,
-  ignorePatterns: ['out', 'src/test']
+  ignorePatterns: ['out', 'src/test', 'webview-ui/']
 };

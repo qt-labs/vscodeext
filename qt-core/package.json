@@ -82,6 +82,11 @@
         "command": "qt-core.createNewProject",
         "title": "%qt-core.command.createNewProject.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.createNewItem",
+        "title": "%qt-core.command.createNewItem.title%",
+        "category": "Qt"
       }
     ],
     "languages": [
@@ -195,15 +200,21 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
-    "compile": "node ./esbuild.mjs",
+    "vscode:prepublish": "cross-env NODE_ENV=production npm run compile && git rev-parse HEAD > commit",
+    "compile": "npm run build:webview && node ./esbuild.mjs",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "npm run prettierWrite && eslint . --fix --cache",
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata",
-    "package": "vsce package --out out"
+    "package": "vsce package --out out",
+    "ci:all": "npm run ci:webview && npm ci",
+    "install:all": "npm run install:webview && npm install",
+    "ci:webview": "cd webview-ui && npm ci",
+    "dev:webview": "cd webview-ui && npm run dev",
+    "build:webview": "cd webview-ui && npm run build",
+    "install:webview": "cd webview-ui && npm install"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",
