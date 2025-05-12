@@ -18,7 +18,7 @@ type ListItem struct {
 	description string
 	checked     bool
 	checkable   bool
-	data        interface{}
+	data        any
 }
 
 func NewItem(text string) ListItem {
@@ -43,7 +43,7 @@ func (i ListItem) Checked(c bool) ListItem {
 	return i
 }
 
-func (i ListItem) Data(data interface{}) ListItem {
+func (i ListItem) Data(data any) ListItem {
 	i.data = data
 	return i
 }

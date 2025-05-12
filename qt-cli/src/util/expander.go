@@ -33,8 +33,7 @@ func (e *TemplateExpander) Data(data StringAnyMap) *TemplateExpander {
 	return e
 }
 
-func (e *TemplateExpander) AddData(
-	name string, value interface{}) *TemplateExpander {
+func (e *TemplateExpander) AddData(name string, value any) *TemplateExpander {
 	e.data[name] = value
 	return e
 }
