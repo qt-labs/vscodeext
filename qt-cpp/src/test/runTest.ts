@@ -1,3 +1,6 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
 import * as cp from 'child_process';
 import * as path from 'path';
 const packageJson = require('../../package.json');

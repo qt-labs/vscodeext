@@ -1,20 +1,14 @@
-import * as assert from 'assert';
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
 import { expect } from 'chai';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-// Ideally should not be hard coded but infered from the depedencies
-// listed in qt-cpp package.json extensionDependencies
-//const corePackageJson = require('../../../../qt-core/package.json');
 const packageJson = require('../../../package.json');
 
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
-
-  test('Sample test', () => {
-    assert.strictEqual([1, 2, 3].indexOf(5), -1);
-    assert.strictEqual([1, 2, 3].indexOf(0), -1);
-  });
 
   suiteSetup(async function (this: Mocha.Context) {
     // activation of qt-cpp activates the extension depedencies (qt-core and cmake)
