@@ -33,4 +33,15 @@ suite('Extension Test Suite', () => {
     }
   });
 
+  test('Qt-cpp commands are visible', async () => {
+    const vscodeCommands = vscode.commands.getCommands(true);
+    if (packageJson.contributes.commands) {
+      // Listing qt-core commands
+      for (const command of packageJson.contributes.commands) {
+        let string_com: string = command.command;
+        console.log(string_com);
+        expect((await vscodeCommands).includes(string_com)).to.be.eq(true);
+      }
+    }
+  });
 });
