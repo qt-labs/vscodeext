@@ -12,6 +12,7 @@
     "all_dev:qt-core": "ts-node ./scripts/all_dev.ts --extension=\"qt-core\"",
     "all_dev:qt-qml": "ts-node ./scripts/all_dev.ts --extension=\"qt-qml\"",
     "all_dev:qt-cpp": "ts-node ./scripts/all_dev.ts --extension=\"qt-cpp\"",
+    "all_dev_test": "npm run all_dev:qt-cpp && npm run compile-test",
     "all_dev:qt-ui": "ts-node ./scripts/all_dev.ts --extension=\"qt-ui\"",
     "lint": "npm run prettierWrite && eslint scripts --fix --cache",
     "lint:qt-core": "cd qt-core && npm run lint",
