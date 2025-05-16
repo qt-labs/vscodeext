@@ -30,7 +30,7 @@ function main() {
     cwd: extensionRoot,
     stdio: 'inherit'
   });
-  execSync(`npm run pretest:${targetExtension}`, {
+  execSync(`npm run lint:${targetExtension}`, {
     cwd: extensionRoot,
     stdio: 'inherit'
   });
