@@ -8,7 +8,10 @@ import * as glob from 'glob';
 export function run(): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({
-    ui: 'tdd',
+    // suite, test
+    //ui: 'tdd',
+    // decribe, it
+    ui: 'bdd',
     color: true
   });
   const testsRoot = path.resolve(__dirname);

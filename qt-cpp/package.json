@@ -91,6 +91,11 @@
         "command": "qt-cpp.scanForQtKits",
         "title": "%qt-cpp.command.scanForQtKits.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-cpp.dummyregisterQt",
+        "title": "%qt-cpp.command.dummyregisterQt.title%",
+        "category": "Qt"
       }
     ],
     "debuggers": [

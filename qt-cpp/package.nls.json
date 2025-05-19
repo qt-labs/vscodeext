@@ -1,5 +1,6 @@
 {
   "qt-cpp.command.scanForQtKits.title": "Scan for Qt Kits",
+  "qt-cpp.command.dummyregisterQt.title": "Dummy register Qt",
   "qt-cpp.debugger.cppdbg.snippet.label": "Qt: Debug with cppdbg",
   "qt-cpp.debugger.cppdbg.snippet.description": "Launch a Qt application with the cppdb debugger",
   "qt-cpp.debugger.lldb.snippet.label": "Qt: Debug with lldb",
