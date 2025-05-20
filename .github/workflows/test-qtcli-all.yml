@@ -30,5 +30,6 @@ jobs:
         shell: bash
         run: |
           cd ./qt-cli
-          go build -C ./src -o ../tests && \
-          go test -C ./tests/e2e -v
+          chmod a+x ./run.sh && \
+          ./run.sh test unit && \
+          ./run.sh test e2e
