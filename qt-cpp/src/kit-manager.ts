@@ -141,7 +141,8 @@ export class KitManager {
     win32: '32',
     x86: '32',
     x86_64: '64',
-    i386: '32'
+    i386: '32',
+    arm64: '64'
   };
   static readonly MsvcInfoRegexp = /msvc(\d\d\d\d)_(.+)/; // msvcYEAR_ARCH
   static readonly MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
@@ -428,7 +429,7 @@ export class KitManager {
     if (mscver >= 1920 && mscver <= 1929) {
       return '2019';
     }
-    if (mscver >= 1930 && mscver <= 1939) {
+    if (mscver >= 1930 && mscver <= 1944) {
       return '2022';
     }
     return undefined;
@@ -774,7 +775,7 @@ export class KitManager {
         return false;
       }
       logger.info('version: ' + version);
-      const msvcTargetArch = kit.visualStudioArchitecture ?? '';
+      const msvcTargetArch = kit.visualStudioArchitecture?.toLowerCase() ?? '';
       const msvcTargetPlatformArch = kit.preferredGenerator?.platform ?? '';
       logger.info('msvcTargetArch: ' + msvcTargetArch);
       const targetArchitecture = KitManager.MapMsvcPlatformToQt[msvcTargetArch];
