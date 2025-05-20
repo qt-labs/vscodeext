@@ -5,17 +5,13 @@ package common
 
 import "strings"
 
-type ErrorWithDetails struct {
-	Message string        `json:"message"`
-	Details []ErrorDetail `json:"details,omitempty"`
+type Error struct {
+	Message string `json:"message"`
+	Details Issues `json:"details,omitempty"`
 }
 
-func (e ErrorWithDetails) Error() string {
-	return e.Message
-}
-
-func (e *ErrorWithDetails) ToSingleLine(sep string) string {
-	msg := e.JoinDetailMessages(sep)
+func (e Error) String() string {
+	msg := e.Details.String()
 	if len(msg) != 0 {
 		return msg
 	}
@@ -23,21 +19,53 @@ func (e *ErrorWithDetails) ToSingleLine(sep string) string {
 	return e.Message
 }
 
-func (e *ErrorWithDetails) JoinDetailMessages(sep string) string {
+type IssueLevel string
+
+const (
+	IssueLevelError   IssueLevel = "error"
+	IssueLevelWarning IssueLevel = "warning"
+)
+
+type Issue struct {
+	Level   IssueLevel `json:"level"`
+	Field   string     `json:"field"`
+	Message string     `json:"message"`
+}
+
+func NewErrorIssue(field, message string) *Issue {
+	return &Issue{
+		Level:   IssueLevelError,
+		Field:   field,
+		Message: message,
+	}
+}
+
+func NewWarningIssue(field, message string) *Issue {
+	return &Issue{
+		Level:   IssueLevelWarning,
+		Field:   field,
+		Message: message,
+	}
+}
+
+type Issues []Issue
+
+func (issues Issues) String() string {
 	all := []string{}
 
-	for _, detail := range e.Details {
-		all = append(all, detail.Message)
+	for _, issue := range issues {
+		all = append(all, issue.Message)
 	}
 
-	return strings.Join(all, sep)
+	return strings.Join(all, ", ")
 }
 
-type ErrorDetail struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
+func (issues *Issues) HasError() bool {
+	for _, issue := range *issues {
+		if issue.Level == IssueLevelError {
+			return true
+		}
+	}
 
-func (e ErrorDetail) Error() string {
-	return e.Message
+	return false
 }

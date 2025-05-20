@@ -323,9 +323,9 @@ func createInputValidator(
 	tag := strings.Join(tags, ",")
 
 	return func(data string) error {
-		err := v.Run(fieldName, data, tag)
-		if len(err) != 0 {
-			return err[0]
+		issue := v.Run(fieldName, data, tag)
+		if issue != nil {
+			return errors.New(issue.Message)
 		}
 
 		return nil

@@ -56,6 +56,10 @@ func (f *UserPresetFile) Open() error {
 		return err
 	}
 
+	for i := range f.contents.Items {
+		f.contents.Items[i].ComputeDerivedFields()
+	}
+
 	return nil
 }
 

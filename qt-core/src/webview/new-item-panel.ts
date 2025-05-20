@@ -3,16 +3,22 @@
 
 import * as vscode from 'vscode';
 
+import { QtcliRunner } from '@/qtcli/runner';
+import { QtcliAction } from '@/qtcli/common';
+import { findQtcliExePath, findWorkingDir } from '@/qtcli/commands';
 import { getUri, getNonce } from './utils';
-import { PushMessageId, PushMessage, isPushMessage } from './shared/message';
+import { CommandId } from '@/webview/shared/message';
+import { NewItemCommandHandler } from './new-item-handlers';
+import * as texts from '@/texts';
+
+let qtcliRunner: QtcliRunner | undefined = undefined;
 
 // definitions for webview-panel
-const PanelTitle = 'New Item';
 const PanelColumn = vscode.ViewColumn.One;
 const PanelViewType = 'ViewTypeWizard';
 
 // defintions for webview-ui
-const UiRootDir = 'webview-ui/dist/';
+const UiRootDir = `webview-ui/dist/`;
 const UiJsFile = 'index.js';
 const UiCssFile = 'index.css';
 
@@ -20,29 +26,24 @@ export class NewItemPanel {
   public static instance: NewItemPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _cmdHandler = new NewItemCommandHandler();
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-    panel.onDidDispose(
-      () => {
-        this.dispose();
-      },
-      null,
-      this._disposables
-    );
-
     panel.webview.html = createWebviewContent(panel.webview, extensionUri);
-    panel.webview.onDidReceiveMessage((m: unknown) => {
-      if (isPushMessage(m)) {
-        this._onDidReceivePushMessage(m);
-      }
-    });
+    this._disposables = [
+      panel.onDidDispose(this.dispose.bind(this)),
+      panel.webview.onDidReceiveMessage((m) => {
+        this._cmdHandler.dispatch(m);
+      })
+    ];
 
     this._panel = panel;
+    this._cmdHandler.setPanel(this);
   }
 
   public dispose() {
     NewItemPanel.instance = undefined;
-    this._panel.dispose();
+    this._cmdHandler.dispose();
 
     while (this._disposables.length) {
       const item = this._disposables.pop();
@@ -52,30 +53,39 @@ export class NewItemPanel {
     }
   }
 
+  public close() {
+    this._panel.dispose();
+  }
+
   public static render(extensionUri: vscode.Uri) {
     if (!NewItemPanel.instance) {
       const p = createWebviewPanel(extensionUri);
       NewItemPanel.instance = new NewItemPanel(p, extensionUri);
     }
 
+    void startQtcliServer(extensionUri);
+
     NewItemPanel.instance._panel.reveal(PanelColumn);
-    NewItemPanel.instance._push(PushMessageId.PanelInit, {});
+    NewItemPanel.instance.post(CommandId.PanelRevealed, createInitData());
   }
 
-  private _push(id: PushMessageId, data: unknown) {
-    const p: PushMessage = { id, data };
-    void this._panel.webview.postMessage(p);
-  }
-
-  private _onDidReceivePushMessage(p: PushMessage) {
-    if (p.id === PushMessageId.UiClosed) {
-      this.dispose();
-      return;
-    }
+  public post(
+    id: CommandId,
+    payload: unknown,
+    tag: string | undefined = undefined
+  ) {
+    void this._panel.webview.postMessage({ id, payload, tag });
   }
 }
 
 // helpers
+function createInitData() {
+  return {
+    newFileBaseDir: findWorkingDir(QtcliAction.NewFile),
+    newProjectBaseDir: findWorkingDir(QtcliAction.NewProject)
+  };
+}
+
 function createWebviewPanel(extensionUri: vscode.Uri): vscode.WebviewPanel {
   const option = {
     enableScripts: true,
@@ -84,7 +94,7 @@ function createWebviewPanel(extensionUri: vscode.Uri): vscode.WebviewPanel {
 
   return vscode.window.createWebviewPanel(
     PanelViewType,
-    PanelTitle,
+    texts.newItem.tabText,
     PanelColumn,
     option
   );
@@ -111,4 +121,21 @@ function createWebviewContent(webview: vscode.Webview, baseUri: vscode.Uri) {
       </body>
     </html>
   `;
+}
+
+async function startQtcliServer(extensionUri: vscode.Uri) {
+  if (!qtcliRunner) {
+    const exePath = await findQtcliExePath(extensionUri);
+    if (exePath) {
+      qtcliRunner = new QtcliRunner();
+      qtcliRunner.setQtcliExePath(exePath);
+    }
+  }
+
+  if (qtcliRunner) {
+    await qtcliRunner.run(QtcliAction.ServerControl, 'start');
+    return;
+  }
+
+  console.log('cannot run qtcli');
 }

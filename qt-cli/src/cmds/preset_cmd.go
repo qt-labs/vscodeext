@@ -47,6 +47,7 @@ var presetCatCmd = &cobra.Command{
 			return err
 		}
 
+		fmt.Println("id:", item.GetUniqueId())
 		fmt.Println(item.ToYaml())
 		return nil
 	},

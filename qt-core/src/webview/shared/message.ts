@@ -1,22 +1,42 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-export enum PushMessageId {
-  PanelInit,
-  UiClosed
+export enum CommandId {
+  // one-way
+  PanelRevealed,
+  UiClosed,
+  UiItemCreationRequested,
+  EndOfNotification,
+
+  // request-response type
+  UiCheckIfQtcliReady,
+  UiGetAllPresets,
+  UiGetPresetById,
+  UiValidateInputs,
+  UiSelectWorkingDir
 }
 
-export interface PushMessage<T = unknown> {
-  id: PushMessageId;
-  data?: T;
+export interface Command<T = unknown> {
+  id: CommandId;
+  tag?: string;
+  payload?: T;
 }
 
-export function isPushMessage(x: unknown): x is PushMessage {
+export interface CommandReply<T = unknown> {
+  id: CommandId;
+  tag: string;
+  payload: {
+    data?: T;
+    error?: unknown;
+  };
+}
+
+// type guard functions
+export function IsCommand(x: unknown): x is Command {
   return (
     typeof x === 'object' &&
     x !== null &&
     'id' in x &&
-    (x as PushMessage).id in PushMessageId &&
-    !('tag' in x)
+    (x as Command).id in CommandId
   );
 }

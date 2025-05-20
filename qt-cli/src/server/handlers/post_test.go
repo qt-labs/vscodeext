@@ -23,7 +23,7 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func TestHandler_PostItem(t *testing.T) {
+func TestHandler_PostItems(t *testing.T) {
 	cases := []struct {
 		presetName   string
 		name         string
@@ -60,7 +60,7 @@ func TestHandler_PostItem(t *testing.T) {
 	}
 }
 
-func TestHandler_Error_On_ExistingItem(t *testing.T) {
+func TestHandler_PostItems_Error_On_ExistingItem(t *testing.T) {
 	cases := []struct {
 		presetName        string
 		name              string
@@ -93,6 +93,7 @@ func TestHandler_Error_On_ExistingItem(t *testing.T) {
 	}
 }
 
+// helpers
 func testNewItem(t *testing.T, req NewItemRequest, expectedCode int) {
 	bodyBytes, err := json.Marshal(req)
 	if err != nil {
@@ -104,7 +105,7 @@ func testNewItem(t *testing.T, req NewItemRequest, expectedCode int) {
 	ctx, _ := gin.CreateTestContext(w)
 	ctx.Request = httptest.NewRequest("POST", "/dont-care", body)
 
-	PostNewItem(ctx)
+	PostItems(ctx)
 
 	ensureHttpCode(t, w, expectedCode)
 	if expectedCode >= 200 && expectedCode < 300 {

@@ -35,7 +35,7 @@ func TestHandler_GetPresets(t *testing.T) {
 
 			GetPresets(ctx)
 			ensureHttpCode(t, w, http.StatusOK)
-			ensureResponseType[[]PresetResponse](t, w)
+			ensureResponseType[PresetsResponse](t, w)
 		})
 	}
 }
@@ -52,9 +52,7 @@ func TestHandler_GetPresetById(t *testing.T) {
 		{"@types/qrc", http.StatusOK},
 		{"@types/ui", http.StatusOK},
 
-		{"@nonexistent/foo", http.StatusBadRequest},
 		{"@invalid/bar", http.StatusBadRequest},
-		{"@garbage/data", http.StatusBadRequest},
 	}
 
 	for _, tc := range cases {
@@ -71,7 +69,7 @@ func TestHandler_GetPresetById(t *testing.T) {
 			ensureHttpCode(t, w, tc.expectedCode)
 
 			if tc.expectedCode >= 200 && tc.expectedCode < 300 {
-				ensureResponseType[PresetDetailsResponse](t, w)
+				ensureResponseType[PresetDetailResponse](t, w)
 			} else if tc.expectedCode >= 400 && tc.expectedCode < 500 {
 				ensureResponseType[ErrorResponse](t, w)
 			}

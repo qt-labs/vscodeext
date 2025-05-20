@@ -1,0 +1,265 @@
+/*
+Copyright (C) 2025 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+*/
+
+/* common */
+body {
+  --qt-border-radius: 2px;
+  --qt-font-family: var(--vscode-font-family);
+  --qt-font-weight: var(--vscode-font-weight, normal);
+}
+
+@utility qt-focusRing {
+  @apply focus:ring-1 focus:ring-[var(--qt-widget-borderFocus)];
+}
+
+.qt-roundness {
+  border-radius: var(--qt-border-radius);
+}
+
+/* basic tags */
+body {
+  font-family: var(--qt-font-family);
+  font-weight: var(--qt-font-weight);
+}
+
+/* label */
+.qt-label {
+  color: var(--qt-text-normal);
+  margin: 2px;
+  font-weight: var(--qt-font-weight);
+  font-size: 0.9rem;
+}
+
+.qt-label.info {
+  color: var(--qt-alert-text);
+  background-color: var(--qt-alert-fill);
+  border: 1px solid var(--qt-alert-border);
+  border-radius: var(--qt-border-radius);
+}
+
+.qt-label.highlight {
+  color: var(--qt-text-highlight);
+  font-size: 1.02rem;
+}
+
+/* modal */
+.qt-modal {
+  color: var(--qt-widget-separator);
+  background: var(--qt-widget-fill);
+  border-color: var(--qt-widget-separator);
+  border-width: 1px;
+  border-radius: var(--qt-border-radius);
+}
+
+.qt-modal-title {
+  color: var(--qt-text-highlight);
+  font-size: 1.3rem;
+  @apply font-semibold;
+}
+
+/* button */
+.qt-button {
+  color: var(--qt-button-text);
+  background: var(--qt-button-fill);
+  border: 1px solid var(--qt-widget-border);
+  border-radius: var(--qt-border-radius);
+  font-weight: var(--qt-font-weight);
+  line-height: normal;
+  cursor: pointer;
+  @apply ring-offset-0;
+  @apply qt-focusRing;
+}
+
+.qt-button:hover {
+  background: var(--qt-button-fillHover);
+}
+
+.qt-button.flat {
+  color: var(--qt-text-normal);
+  background: transparent;
+}
+
+.qt-button.flat:hover {
+  color: var(--qt-button-text);
+  background: var(--qt-button-fillHover);
+}
+
+.qt-button:disabled {
+  cursor: not-allowed;
+  color: var(--qt-text-normal);
+  background: transparent;
+}
+
+/* checkbox */
+.qt-checkbox {
+  color: var(--qt-text-normal);
+  background: transparent;
+  font-weight: var(--qt-font-weight);
+}
+
+.qt-checkbox > input[type='checkbox'] {
+  background-color: transparent;
+  border-color: var(--qt-checkbox-border);
+  border-radius: var(--qt-border-radius);
+  padding: 2px;
+  background-clip: padding-box;
+  @apply ring-offset-0;
+  @apply qt-focusRing;
+}
+
+.qt-checkbox > input[type='checkbox']:checked {
+  position: relative;
+  color: var(--qt-checkbox-fill);
+}
+
+.qt-checkbox > input[type='checkbox']:checked::before {
+  position: absolute;
+  content: '';
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--qt-checkbox-border);
+  border-radius: var(--qt-border-radius);
+  @apply flex items-center justify-center;
+}
+
+.qt-checkbox > input[type='checkbox']:hover {
+  color: var(--qt-checkbox-fillHover);
+}
+
+/* input (text-field) */
+.qt-input {
+  color: var(--qt-input-text);
+  background-color: var(--qt-input-fill);
+  border-color: var(--qt-widget-border);
+  border-width: 1px;
+  border-radius: var(--qt-border-radius);
+  padding: 5px 0px 5px 10px;
+  box-shadow: none;
+}
+
+.qt-input:focus {
+  border-color: var(--qt-widget-borderFocus);
+  outline: none;
+}
+
+.qt-input::selection {
+  color: var(--qt-inputSelection-text);
+  background-color: var(--qt-inputSelection-fill);
+}
+
+.qt-input.error {
+  border-color: var(--qt-input-textError);
+}
+
+.qt-input-icon {
+  color: var(--qt-input-borderError);
+  background-color: transparent;
+  padding: 0px 5px;
+  cursor: pointer;
+  @apply ring-offset-0;
+  @apply qt-focusRing;
+}
+
+/* list and list-item */
+.qt-list {
+  background-color: var(--qt-list-fill);
+  border-color: var(--qt-widget-border);
+  border-width: 1px;
+  border-radius: var(--qt-border-radius);
+}
+
+.qt-list:focus-within {
+  border-color: var(--qt-widget-borderFocus);
+  outline: none;
+}
+
+.qt-list-item {
+  color: var(--qt-item-text);
+  background-color: var(--qt-item-fill);
+  border-radius: 0px;
+  border-width: 1px 0px 1px 0px;
+  border-color: transparent;
+  padding: 5px 10px 5px 10px;
+  font-weight: var(--qt-font-weight);
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.qt-list-item:hover {
+  color: var(--qt-item-textHover);
+  background-color: var(--qt-item-fillHover);
+}
+
+.qt-list-item:focus {
+  border-color: var(--qt-widget-borderFocus);
+  outline: none;
+}
+
+.qt-list-item.selected {
+  color: var(--qt-itemSelection-text);
+  background-color: var(--qt-itemSelection-fill);
+  border-color: var(--qt-widget-border);
+}
+
+.qt-list-item.selected:focus {
+  border-color: var(--qt-widget-borderFocus);
+}
+
+.qt-list-item:first-child {
+  border-top-width: 0px;
+}
+
+/* vertical tab */
+.qt-vtab-item {
+  color: var(--qt-text-normal);
+  background: transparent;
+  border-radius: var(--qt-border-radius);
+  border-bottom: 1px solid var(--qt-widget-separator);
+  border: 1px solid transparent;
+  font-weight: var(--qt-font-weight);
+  line-height: normal;
+  cursor: pointer;
+  @apply ring-offset-0;
+  @apply qt-focusRing;
+}
+
+.qt-vtab-item:last-of-type,
+.qt-vtab-item:has(+ .qt-vtab-item.selected) {
+  border-bottom: none;
+}
+
+.qt-vtab-item.selected {
+  color: var(--qt-itemSelection-text);
+  background-color: var(--qt-itemSelection-fill);
+  border: 1px solid var(--qt-widget-border);
+}
+
+.qt-vtab-item:hover {
+  color: var(--qt-itemSelection-text);
+  background: var(--qt-itemSelection-fill);
+}
+
+/* alert - for bad inputs, etc. */
+.qt-alert {
+  opacity: 90%;
+  color: var(--qt-alert-text);
+  background-color: var(--qt-alert-fill);
+  border: 1px solid var(--qt-alert-border);
+  border-radius: var(--qt-border-radius);
+  padding: 10px;
+}
+
+.qt-alert:hover {
+  opacity: 100%;
+}
+
+/* others */
+.qt-simple-table {
+  @apply bg-transparent;
+  color: var(--qt-widget-separator);
+}

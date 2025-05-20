@@ -4,8 +4,8 @@
 package handlers
 
 import (
-	"net/http"
 	"os"
+	"qtcli/common"
 	"qtcli/util"
 	"time"
 
@@ -13,7 +13,7 @@ import (
 )
 
 func DeleteServer(c *gin.Context) {
-	c.JSON(http.StatusOK, message("Server shutting down..."))
+	ReplyStatus(c, common.ServerClosing)
 
 	go func() {
 		time.Sleep(1 * time.Second)

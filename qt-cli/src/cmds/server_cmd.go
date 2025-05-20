@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var useTcp bool
+var tcpPort string
+
 var serverCmd = &cobra.Command{
 	Use:   "server <start|stop>",
 	Short: util.Msg("Start or stop a rest server"),
@@ -19,7 +22,10 @@ var serverCmd = &cobra.Command{
 		control := strings.ToLower(strings.TrimSpace(args[0]))
 
 		if control == "start" {
-			server.Start()
+			server.Start(server.Options{
+				UseTcp:  useTcp,
+				TcpPort: tcpPort,
+			})
 		} else if control == "stop" {
 			server.Stop()
 		} else {
@@ -29,5 +35,13 @@ var serverCmd = &cobra.Command{
 }
 
 func init() {
+	serverCmd.Flags().BoolVar(
+		&useTcp, "tcp", false,
+		util.Msg("Use TCP instead of local IPC"))
+
+	serverCmd.Flags().StringVar(
+		&tcpPort, "port", "8080",
+		util.Msg("Specify TCP port (effective only when --tcp is set)"))
+
 	rootCmd.AddCommand(serverCmd)
 }

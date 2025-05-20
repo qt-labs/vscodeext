@@ -4,7 +4,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { QtcliExeName, isValidQtcliPath, logger, errorString } from './common';
+import { qtcliExeName, isValidQtcliPath, logger, errorString } from './common';
 
 export class QtcliExeFinder {
   private readonly _dirCandidates: string[] = [];
@@ -64,7 +64,7 @@ async function findQtcliIn(dir: string) {
     const files = await fs.readdir(dir, { withFileTypes: true });
 
     for (const file of files) {
-      if (file.isFile() && file.name === QtcliExeName) {
+      if (file.isFile() && file.name === qtcliExeName) {
         const fullPath = path.join(dir, file.name);
         if (isValidQtcliPath(fullPath)) {
           return fullPath;
@@ -84,7 +84,7 @@ async function findQtcliInDist(distDir: string, prefix: string) {
 
     for (const entry of entries) {
       if (entry.isDirectory() && entry.name.startsWith(prefix)) {
-        const fullPath = path.join(distDir, entry.name, QtcliExeName);
+        const fullPath = path.join(distDir, entry.name, qtcliExeName);
         if (isValidQtcliPath(fullPath)) {
           return fullPath;
         }

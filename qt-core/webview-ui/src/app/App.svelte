@@ -4,16 +4,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   import './app.css';
-  import { Button } from 'flowbite-svelte';
-  import * as viewlogic from './viewlogic.svelte';
+  import { onAppMount } from './viewlogic.svelte';
+  import Wizard from './Wizard.svelte';
+
+  onMount(onAppMount);
 </script>
 
-<div class="h-screen w-screen flex items-center justify-center">
-  <Button
-    size="lg"
-    color="green"
-    onclick={viewlogic.onCloseClicked}>
-    Close
-  </Button>
+<div class="w-screen h-screen flex items-center justify-center">
+  <Wizard />
 </div>

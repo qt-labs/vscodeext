@@ -67,14 +67,17 @@ func (g *Generator) DryRun(on bool) *Generator {
 
 func (g *Generator) Render() *Result {
 	// input validation
-	out := Validate(ValidatorIn{
+	issues := Validate(ValidatorIn{
 		Name:       g.name,
 		WorkingDir: g.workingDir,
 		TypeId:     g.preset.GetTypeId(),
 	})
 
-	if out.HasError() {
-		return NewErrorResult(*out.Error)
+	if issues.HasError() {
+		return NewErrorResult(common.Error{
+			Message: common.InputHasIssues,
+			Details: issues,
+		})
 	}
 
 	// prep.
@@ -108,7 +111,7 @@ func (g *Generator) Render() *Result {
 		}
 	}
 
-	return NewResult(result)
+	return NewOkayResult(result)
 }
 
 func (g *Generator) prepContext() error {

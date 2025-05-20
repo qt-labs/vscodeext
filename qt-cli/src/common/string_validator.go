@@ -4,31 +4,36 @@
 package common
 
 import (
-	"fmt"
 	"path/filepath"
 	"qtcli/util"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
 
 const (
-	TagRequired    = "required"
-	TagMatch       = "match"
-	TagDirName     = "dirname"
-	TagFileName    = "filename"
-	TagAbsPath     = "abspath"
-	TagProjectName = "projectname"
+	TagRequired  = "required"
+	TagMinLength = "min" // "min=5"
+	TagMaxLength = "max" // "max=255"
+
+	// custom tags
+	TagMatch        = "match" // "match=^[a-z]{5,10}$"
+	TagDirName      = "dirname"
+	TagFileName     = "filename"
+	TagAbsPath      = "abspath"
+	TagProjectName  = "projectname"
+	TagWindowsDrive = "windowsdrive"
 )
 
 type StringValidator struct {
-	delegate     *validator.Validate
-	errorBuilder ErrorBuilder
+	delegate           *validator.Validate
+	customIssueBuilder IssueBuilder
 }
 
-type ErrorBuilder func(
-	ve validator.ValidationErrors, fieldName string) []ErrorDetail
+type IssueBuilder func(
+	fieldName string, allErrors validator.ValidationErrors) *Issue
 
 func NewStringValidator() *StringValidator {
 	v := validator.New()
@@ -37,30 +42,41 @@ func NewStringValidator() *StringValidator {
 	v.RegisterValidation(TagFileName, validateFileName)
 	v.RegisterValidation(TagAbsPath, validateAbsPath)
 	v.RegisterValidation(TagProjectName, validateProjectName)
+	v.RegisterValidation(TagWindowsDrive, validateWindowsDrive)
 
 	return &StringValidator{
-		delegate:     v,
-		errorBuilder: defaultErrorBuilder,
+		delegate:           v,
+		customIssueBuilder: nil,
 	}
 }
 
-func (h *StringValidator) Run(name, value, tag string) []ErrorDetail {
-	if e := h.delegate.Var(value, tag); e != nil {
-		if ve, ok := e.(validator.ValidationErrors); ok {
-			if h.errorBuilder != nil {
-				return h.errorBuilder(ve, name)
-			} else {
-				return defaultErrorBuilder(ve, name)
-			}
+func (sv *StringValidator) CustomIssueBuilder(b IssueBuilder) *StringValidator {
+	sv.customIssueBuilder = b
+	return sv
+}
+
+func (sv *StringValidator) Run(name, value, tag string) *Issue {
+	if e := sv.delegate.Var(value, tag); e != nil {
+		if errors, ok := e.(validator.ValidationErrors); ok {
+			return sv.buildIssue(name, errors)
 		}
 
-		return []ErrorDetail{{
-			Field:   name,
-			Message: e.Error(),
-		}}
+		return NewErrorIssue(name, e.Error())
 	}
 
 	return nil
+}
+
+func (sv *StringValidator) buildIssue(
+	fieldName string, allErrors validator.ValidationErrors) *Issue {
+	if sv.customIssueBuilder != nil {
+		issue := sv.customIssueBuilder(fieldName, allErrors)
+		if issue != nil {
+			return issue
+		}
+	}
+
+	return defaultIssueBuilder(fieldName, allErrors)
 }
 
 // convenients for tag creation
@@ -91,13 +107,31 @@ func validateDirName(fl validator.FieldLevel) bool {
 	return util.IsValidDirName(s)
 }
 
+func validateWindowsDrive(fl validator.FieldLevel) bool {
+	s := fl.Field().String()
+
+	if runtime.GOOS == "windows" {
+		return util.HasValidWindowsDrive(s)
+	}
+
+	return true
+}
+
 func validateAbsPath(fl validator.FieldLevel) bool {
 	s := fl.Field().String()
 	return filepath.IsAbs(s)
 }
 
 func validateProjectName(fl validator.FieldLevel) bool {
-	return runRegex(fl, "^[a-zA-Z_][a-zA-Z0-9_-]*$")
+	if !runRegex(fl, "^[a-zA-Z_][a-zA-Z0-9_-]*$") {
+		return false
+	}
+
+	if runtime.GOOS == "windows" {
+		return !util.IsWindowsReservedName(fl.Field().String())
+	}
+
+	return true
 }
 
 func runRegex(fl validator.FieldLevel, pattern string) bool {
@@ -110,35 +144,29 @@ func runRegex(fl validator.FieldLevel, pattern string) bool {
 	return re.MatchString(name)
 }
 
-func defaultErrorBuilder(
-	ve validator.ValidationErrors, fieldName string) []ErrorDetail {
-	var all []ErrorDetail
+var TagToValidatorMessage = map[string]string{
+	TagRequired:     ValidatorTagRequired,
+	TagMinLength:    ValidatorTagMinLength,
+	TagMaxLength:    ValidatorTagMaxLength,
+	TagMatch:        ValidatorTagPattern,
+	TagDirName:      ValidatorTagDirName,
+	TagFileName:     ValidatorTagFileName,
+	TagAbsPath:      ValidatorTagAbsPath,
+	TagProjectName:  ValidatorTagProjectName,
+	TagWindowsDrive: ValidatorTagWindowsDrive,
+}
 
-	for _, ve := range ve {
-		msg := ""
-
-		switch ve.Tag() {
-		case TagRequired:
-			msg = fmt.Sprintf("%s is required", fieldName)
-		case TagMatch:
-			msg = fmt.Sprintf("%s doesn't match the required pattern", fieldName)
-		case TagDirName:
-			msg = fmt.Sprintf("%s must be a valid directory name", fieldName)
-		case TagFileName:
-			msg = fmt.Sprintf("%s must be a valid file name", fieldName)
-		case TagAbsPath:
-			msg = fmt.Sprintf("%s must be an absolute path", fieldName)
-		case TagProjectName:
-			msg = fmt.Sprintf("%s must be a valid project name", fieldName)
-		default:
-			msg = fmt.Sprintf("%s is invalid (%s)", fieldName, ve.Tag())
-		}
-
-		all = append(all, ErrorDetail{
-			Field:   fieldName,
-			Message: msg + fmt.Sprintf(": %s", ve.Value()),
-		})
+func defaultIssueBuilder(
+	fieldName string, allErrors validator.ValidationErrors) *Issue {
+	if len(allErrors) == 0 {
+		return nil
 	}
 
-	return all
+	firstError := allErrors[0]
+	msg, ok := TagToValidatorMessage[firstError.Tag()]
+	if !ok {
+		msg = ValidatorInvalid
+	}
+
+	return NewErrorIssue(fieldName, msg)
 }
