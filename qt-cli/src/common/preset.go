@@ -33,24 +33,25 @@ type PresetData struct {
 
 func NewPresetData(
 	name, templateDir string, options util.StringAnyMap) PresetData {
+	p := PresetData{
+		Name:        name,
+		TemplateDir: templateDir,
+		Options:     options,
+	}
 
-	// read type from a template file
+	p.ComputeDerivedFields()
+	return p
+}
+
+func (p *PresetData) ComputeDerivedFields() {
 	targetTypeId := TargetTypeFile
-	templateFile, err := OpenTemplateFileIn(TemplatesFS, templateDir)
+	templateFile, err := OpenTemplateFileIn(TemplatesFS, p.TemplateDir)
 	if err == nil {
 		targetTypeId = templateFile.GetTargetType()
 	}
 
-	// make unique id for rest call
-	uniqueId := util.CreatePresetUniqueId(name)
-
-	return PresetData{
-		Name:         name,
-		TemplateDir:  templateDir,
-		Options:      options,
-		uniqueId:     uniqueId,
-		targetTypeId: targetTypeId,
-	}
+	p.targetTypeId = targetTypeId
+	p.uniqueId = util.CreatePresetUniqueId(p.Name)
 }
 
 func (p PresetData) GetName() string {

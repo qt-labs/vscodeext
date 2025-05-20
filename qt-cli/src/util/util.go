@@ -11,6 +11,7 @@ import (
 	"maps"
 	"os"
 	"path"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -152,6 +153,26 @@ func DirExists(path string) bool {
 	}
 
 	return info.IsDir()
+}
+
+func HasValidWindowsDrive(path string) bool {
+	if len(path) < 2 || path[1] != ':' {
+		return false
+	}
+
+	driveRoot := path[:2] + `\`
+	info, err := os.Stat(driveRoot)
+	return err == nil && info.IsDir()
+}
+
+func IsWindowsReservedName(name string) bool {
+	pattern := "(?i)^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$"
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return false
+	}
+
+	return re.MatchString(name)
 }
 
 func SendSigTermOrKill(pid int) error {

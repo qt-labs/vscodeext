@@ -1,0 +1,51 @@
+{
+  "id": "2239089261",
+  "name": "@cpp/class",
+  "meta": {
+    "type": "file",
+    "title": "C++ class",
+    "description": "Creates a C++ header and source file  for a new class that you can add to a C++ project."
+  },
+  "prompt": {
+    "version": "1",
+    "steps": [
+      {
+        "id": "baseClass",
+        "type": "picker",
+        "question": "Base class:",
+        "description": "",
+        "value": "",
+        "default": "QObject",
+        "when": "",
+        "items": [
+          {
+            "text": "QObject",
+            "data": null,
+            "description": "",
+            "checked": ""
+          },
+          {
+            "text": "QWidget",
+            "data": null,
+            "description": "",
+            "checked": ""
+          },
+          {
+            "text": "QMainWindow",
+            "data": null,
+            "description": "",
+            "checked": ""
+          },
+          {
+            "text": "QQuickItem",
+            "data": null,
+            "description": "",
+            "checked": ""
+          }
+        ],
+        "rules": null
+      }
+    ],
+    "consts": null
+  }
+}

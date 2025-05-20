@@ -13,17 +13,17 @@ import (
 type Result struct {
 	Success bool
 	Data    ResultData
-	Error   common.ErrorWithDetails
+	Error   common.Error
 }
 
-func NewResult(data ResultData) *Result {
+func NewOkayResult(data ResultData) *Result {
 	return &Result{
 		Success: true,
 		Data:    data,
 	}
 }
 
-func NewErrorResult(details common.ErrorWithDetails) *Result {
+func NewErrorResult(details common.Error) *Result {
 	return &Result{
 		Success: false,
 		Error:   details,
@@ -31,12 +31,9 @@ func NewErrorResult(details common.ErrorWithDetails) *Result {
 }
 
 func NewErrorResultFrom(err error) *Result {
-	return &Result{
-		Success: false,
-		Error: common.ErrorWithDetails{
-			Message: err.Error(),
-		},
-	}
+	return NewErrorResult(common.Error{
+		Message: err.Error(),
+	})
 }
 
 type ResultData struct {

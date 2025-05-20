@@ -195,6 +195,12 @@
           "default": false,
           "description": "Open online documentation in external browser",
           "scope": "machine-overridable"
+        },
+        "qt-core.defaultProjectDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the default project directory when creating new projects",
+          "scope": "machine-overridable"
         }
       }
     }
@@ -234,6 +240,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "axios": "^1.9.0",
     "command-exists": "^1.2.9",
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",

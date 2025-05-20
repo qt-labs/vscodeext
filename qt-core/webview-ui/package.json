@@ -1,28 +1,43 @@
 {
   "name": "qt-core-webview",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "pretest": "npm run build && npm run lint",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{css,svelte,svelte.ts,ts,json}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{css,svelte,svelte.ts,ts,json}\"",
+    "prettierBase": "prettier --cache --cache-strategy metadata",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/vite": "^4.0.0",
     "@tsconfig/svelte": "^5.0.4",
-    "@types/vscode-webview": "^1.57.5",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "axios": "^1.7.9",
+    "eslint": "^9.27.0",
+    "eslint-plugin-svelte": "^3.8.1",
     "flowbite": "^3.1.2",
     "flowbite-svelte": "^0.47.4",
     "flowbite-svelte-icons": "^2.0.2",
-    "license-checker": "^25.0.1",
+    "prettier": "^3.5.3",
+    "prettier-plugin-svelte": "^3.4.0",
     "sass": "^1.85.1",
     "svelte": "^5.19.6",
     "svelte-check": "^4.1.4",
+    "svelte-eslint-parser": "^1.2.0",
     "tailwindcss": "^4.0.0",
     "typescript": "~5.7.2",
     "vite": "^6.1.0"
+  },
+  "dependencies": {
+    "@types/vscode-webview": "^1.57.5",
+    "marked": "^15.0.7"
   }
 }

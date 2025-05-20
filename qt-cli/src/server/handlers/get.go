@@ -4,7 +4,6 @@
 package handlers
 
 import (
-	"net/http"
 	"path"
 	"qtcli/common"
 	"qtcli/runner"
@@ -12,17 +11,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type PresetResponse struct {
+type PresetsResponseItem struct {
 	Id   string              `json:"id"`
 	Name string              `json:"name"`
 	Meta common.TemplateMeta `json:"meta"`
 }
 
-type PresetDetailsResponse struct {
+type PresetsResponse []PresetsResponseItem
+
+type PresetDetailResponse struct {
 	Id     string                     `json:"id"`
 	Name   string                     `json:"name"`
 	Meta   common.TemplateMeta        `json:"meta"`
 	Prompt *common.PromptFileContents `json:"prompt,omitempty"`
+}
+
+func GetReady(c *gin.Context) {
+	ReplyStatus(c, "ready")
 }
 
 func GetPresets(c *gin.Context) {
@@ -37,48 +42,46 @@ func GetPresets(c *gin.Context) {
 	}
 
 	if len(presets) == 0 {
-		c.JSON(http.StatusBadRequest, errorMessage("could not find any preset"))
+		ReplyErrorMsg(c, common.ServerNoPresets)
 		return
 	}
 
-	res := []PresetResponse{}
+	res := PresetsResponse{}
 	for _, p := range presets {
 		template, err := common.OpenTemplateFileIn(
 			runner.GeneratorEnv.FS, p.GetTemplateDir())
 
 		if err != nil {
-			c.JSON(http.StatusBadRequest,
-				errorMessage("could not open template file"))
+			ReplyErrorMsg(c, common.ServerNoTemplateFile)
 			return
 		}
 
-		res = append(res, PresetResponse{
+		res = append(res, PresetsResponseItem{
 			Id:   p.GetUniqueId(),
 			Name: p.GetName(),
 			Meta: template.GetMeta(),
 		})
 	}
 
-	c.JSON(http.StatusOK, res)
+	ReplyGet(c, res)
 }
 
 func GetPresetById(c *gin.Context) {
 	id := c.Param("id")
 	p, err := runner.Presets.Any.FindByUniqueId(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errorMessage("could not find any preset"))
+		ReplyErrorMsg(c, common.ServerNoPreset)
 		return
 	}
 
 	template, err := common.OpenTemplateFileIn(
 		runner.GeneratorEnv.FS, p.GetTemplateDir())
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			errorMessage("could not open template file"))
+		ReplyErrorMsg(c, common.ServerNoTemplateFile)
 		return
 	}
 
-	c.JSON(http.StatusOK, PresetDetailsResponse{
+	ReplyGet(c, PresetDetailResponse{
 		Id:     p.GetUniqueId(),
 		Name:   p.GetName(),
 		Meta:   template.GetMeta(),

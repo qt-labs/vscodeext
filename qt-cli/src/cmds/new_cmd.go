@@ -33,8 +33,7 @@ var newCmd = &cobra.Command{
 
 		if out.HasError() {
 			return fmt.Errorf(
-				util.Msg("failed to generate a project\n%s"),
-				out.Error.ToSingleLine(", "))
+				util.Msg("Cannot generate the project\n%s"), out)
 		}
 
 		const targetType = common.TargetTypeProject
@@ -52,7 +51,7 @@ var newCmd = &cobra.Command{
 		if !result.Success {
 			return fmt.Errorf(
 				util.Msg("failed to generate a project\n%s"),
-				result.Error.ToSingleLine(", "))
+				result.Error)
 		}
 
 		if verbose {

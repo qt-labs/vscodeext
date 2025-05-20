@@ -5,7 +5,13 @@ import * as os from 'os';
 import * as fs from 'fs/promises';
 import * as vscode from 'vscode';
 
-import { QtcliAction, openUri, logger, errorString } from '@/qtcli/common';
+import {
+  QtcliAction,
+  openUri,
+  logger,
+  errorString,
+  qtcliSubCommands
+} from '@/qtcli/common';
 
 export class QtcliRunner {
   private _workingDir = os.homedir();
@@ -13,6 +19,7 @@ export class QtcliRunner {
   private _terminal: vscode.Terminal | undefined = undefined;
   private _fsDisposables: vscode.Disposable[] = [];
   private _terminalDisposables: vscode.Disposable[] = [];
+  private _showTerminal = false;
 
   dispose() {
     if (this._terminal) {
@@ -52,12 +59,15 @@ export class QtcliRunner {
       await fs.mkdir(this._workingDir, { recursive: true });
       this._disposeFsWatcher();
       this._setupFsWatcher(action, arg);
+      this._showTerminal = action !== QtcliAction.ServerControl;
 
-      if (action === QtcliAction.NewProject) {
-        this._runQtcli(['new', arg]);
-      } else {
-        this._runQtcli(['new-file', arg]);
+      const subCommand = qtcliSubCommands[action];
+      if (subCommand) {
+        this._runQtcli([subCommand, arg]);
+        return;
       }
+
+      throw new Error('action is invalid');
     } catch (e) {
       logger.error('cannot run qtcli:', errorString(e));
     }
@@ -84,8 +94,12 @@ export class QtcliRunner {
     this._ensureTerminalIsValid();
 
     if (this._terminal) {
-      this._terminal.show();
-      this._terminal.sendText(`${this._qtcliExecPath} ${args.join(' ')}`);
+      if (this._showTerminal) {
+        this._terminal.show();
+      }
+
+      const safePath = this._qtcliExecPath.replace(/\\/g, '/');
+      this._terminal.sendText(`${safePath} ${args.join(' ')}`);
     }
   }
 

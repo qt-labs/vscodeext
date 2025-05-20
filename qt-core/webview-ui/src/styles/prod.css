@@ -1,0 +1,49 @@
+/*
+Copyright (C) 2025 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+*/
+
+@import 'tailwindcss';
+
+body.prod {
+  --qt-widget-fill: var(--vscode-sideBar-background);
+  --qt-widget-border: var(--vscode-widget-border, transparent);
+  --qt-widget-borderFocus: var(--vscode-focusBorder);
+  --qt-widget-separator: var(--vscode-settings-headerBorder);
+
+  --qt-text-info: var(--vscode-inputValidation-warningBorder);
+  --qt-text-normal: var(--vscode-foreground);
+  --qt-text-highlight: var(--vscode-settings-headerForeground);
+
+  --qt-button-text: var(--vscode-button-foreground);
+  --qt-button-fill: var(--vscode-button-background);
+  --qt-button-fillHover: var(--vscode-button-hoverBackground);
+
+  --qt-checkbox-fill: var(--qt-button-fill, transparent);
+  --qt-checkbox-fillHover: var(--qt-button-fillHover, transparent);
+  --qt-checkbox-border: var(--qt-widget-separator);
+
+  --qt-input-text: var(--vscode-input-foreground);
+  --qt-input-textError: var(--vscode-inputValidation-warningBorder);
+  --qt-input-fill: var(--vscode-input-background);
+  --qt-input-borderError: var(--vscode-inputValidation-warningBorder);
+
+  --qt-inputSelection-text: var(--vscode-editor-selectionForeground);
+  --qt-inputSelection-fill: var(--vscode-editor-selectionBackground);
+  --qt-inputSelection-fillHover: var(
+    --vscode-editor-selectionHighlightBackground
+  );
+
+  --qt-list-fill: var(--vscode-input-background);
+  --qt-item-text: var(--vscode-foreground);
+  --qt-item-textHover: var(--vscode-list-hoverForeground, var(--qt-item-text));
+  --qt-item-fill: transparent;
+  --qt-item-fillHover: var(--vscode-list-hoverBackground, var(--qt-items-fill));
+
+  --qt-itemSelection-text: var(--vscode-button-foreground);
+  --qt-itemSelection-fill: var(--vscode-button-background);
+
+  --qt-alert-text: var(--vscode-foreground);
+  --qt-alert-fill: var(--vscode-inputValidation-warningBackground);
+  --qt-alert-border: var(--vscode-inputValidation-warningBorder);
+}

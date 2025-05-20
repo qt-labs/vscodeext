@@ -21,5 +21,5 @@ func TestHandler_DeleteServer(t *testing.T) {
 
 	DeleteServer(ctx)
 	ensureHttpCode(t, w, http.StatusOK)
-	ensureResponseType[SimpleMsgResponse](t, w)
+	ensureResponseType[StatusResponse](t, w)
 }

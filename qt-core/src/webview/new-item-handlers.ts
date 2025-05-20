@@ -1,0 +1,173 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+import _ from 'lodash';
+import * as path from 'path';
+import * as vscode from 'vscode';
+
+import * as texts from '@/texts';
+import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
+import { openFilesUnder, openUri } from '@/qtcli/common';
+import {
+  setDefaultProjectDir,
+  getDefaultProjectDirSafe
+} from '@/qtcli/commands';
+import { ErrorResponse } from '@/webview/shared/types';
+import { Command, CommandId, IsCommand } from '@/webview/shared/message';
+import type { NewItemPanel } from './new-item-panel';
+
+type CommandHandler = (command: Command) => void | Promise<void>;
+
+export class NewItemCommandHandler {
+  private readonly _qtcliRest = new QtcliRestClient();
+  private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
+  private _panel: NewItemPanel | undefined = undefined;
+
+  public constructor() {
+    this._handlers = new Map<CommandId, CommandHandler>([
+      [CommandId.UiClosed, this.onUiClosed],
+      [CommandId.UiItemCreationRequested, this.onUiItemCreationRequested],
+      [CommandId.UiCheckIfQtcliReady, this.onUiCheckIfQtcliReady],
+      [CommandId.UiGetAllPresets, this.onUiGetAllPresets],
+      [CommandId.UiGetPresetById, this.onUiGetPresetById],
+      [CommandId.UiValidateInputs, this.onUiValidateInputs],
+      [CommandId.UiSelectWorkingDir, this.onUiSelectWorkingDir]
+    ]);
+  }
+
+  public dispose() {
+    void this._qtcliRest.delete('/server');
+  }
+
+  public setPanel(p: NewItemPanel) {
+    this._panel = p;
+  }
+
+  public dispatch(cmd: unknown) {
+    if (!this._panel || !IsCommand(cmd)) {
+      return;
+    }
+
+    const handler = this._handlers?.get(cmd.id);
+    if (!handler) {
+      console.log('unhandled message:', cmd);
+      return;
+    }
+
+    try {
+      void handler(cmd);
+    } catch (e) {
+      console.log('unhandled exception:', e);
+    }
+  }
+
+  private readonly onUiClosed = () => {
+    this._panel?.close();
+  };
+
+  private readonly onUiItemCreationRequested = async (cmd: Command) => {
+    try {
+      const data = await this._qtcliRest.call({
+        method: 'post',
+        url: '/items',
+        data: cmd.payload
+      });
+
+      openItemsFromQtcliResponseData(data);
+
+      const type = _.get(cmd.payload, 'type', '') as string;
+      const save = _.get(cmd.payload, 'saveProjectDir', false) as boolean;
+      const workingDir = _.get(data, 'workingDir', '') as string;
+
+      if (type === 'project' && save && workingDir.length !== 0) {
+        await setDefaultProjectDir(workingDir);
+      }
+
+      this._panel?.close();
+    } catch (e) {
+      if (e instanceof QtcliRestError) {
+        await vscode.window.showErrorMessage(e.toString());
+      }
+    }
+  };
+
+  private readonly onUiCheckIfQtcliReady = async (cmd: Command) => {
+    try {
+      const data = await this._qtcliRest.retryCall({
+        method: 'get',
+        url: '/ready'
+      });
+      this._panel?.post(cmd.id, { data }, cmd.tag);
+    } catch {
+      await vscode.window.showErrorMessage(texts.newItem.errorQtCliNotReady);
+    }
+  };
+
+  private readonly onUiGetAllPresets = async (cmd: Command) => {
+    const data = await this._qtcliRest.get('/presets', { type: cmd.payload });
+    this._panel?.post(cmd.id, { data }, cmd.tag);
+  };
+
+  private readonly onUiGetPresetById = async (cmd: Command) => {
+    const id = _.toString(cmd.payload);
+    const data = await this._qtcliRest.get(`/presets/${id}`);
+    this._panel?.post(cmd.id, { data }, cmd.tag);
+  };
+
+  private readonly onUiValidateInputs = async (cmd: Command) => {
+    try {
+      const data = await this._qtcliRest.post('/items/validate', cmd.payload);
+      this._panel?.post(cmd.id, { data }, cmd.tag);
+    } catch (e) {
+      if (e instanceof QtcliRestError) {
+        this._panel?.post(
+          cmd.id,
+          {
+            error: {
+              error: e.message,
+              details: e.details
+            } as ErrorResponse
+          },
+          cmd.tag
+        );
+      }
+    }
+  };
+
+  private readonly onUiSelectWorkingDir = async (cmd: Command) => {
+    const dir = cmd.payload?.toString() ?? getDefaultProjectDirSafe();
+    const options: vscode.OpenDialogOptions = {
+      canSelectMany: false,
+      canSelectFolders: true,
+      canSelectFiles: false,
+      openLabel: texts.newItem.workingDirDialogTitle,
+      defaultUri: vscode.Uri.file(dir)
+    };
+
+    const folderUri = await vscode.window.showOpenDialog(options);
+    if (folderUri && folderUri.length > 0) {
+      let folder = folderUri[0]?.fsPath ?? '';
+      if (process.platform === 'win32' && /^[a-z]:/.test(folder)) {
+        folder = folder.charAt(0).toUpperCase() + folder.slice(1);
+      }
+
+      this._panel?.post(cmd.id, { data: folder }, cmd.tag);
+    }
+  };
+}
+
+// helpers
+function openItemsFromQtcliResponseData(data: unknown) {
+  const type = _.get(data, 'type', '') as string;
+  const files = _.get(data, 'files', []) as string[];
+  const filesDir = _.get(data, 'filesDir', '') as string;
+  if (type.length === 0 || filesDir.length === 0) {
+    return;
+  }
+
+  if (type === 'project') {
+    void openUri(vscode.Uri.file(path.normalize(filesDir)));
+  } else {
+    void openFilesUnder(path.normalize(filesDir), files);
+  }
+}

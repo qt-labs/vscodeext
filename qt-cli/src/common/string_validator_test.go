@@ -102,8 +102,8 @@ func runValidationTest(t *testing.T, dataSet []DataRecord) {
 		name := fmt.Sprintf("|%s|%s|%t|", data.value, data.tag, data.pass)
 		t.Run(name, func(t *testing.T) {
 			v := NewStringValidator()
-			err := v.Run("", data.value, data.tag)
-			assert.Equal(t, data.pass, err == nil, err)
+			issue := v.Run("", data.value, data.tag)
+			assert.Equal(t, data.pass, issue == nil, issue)
 		})
 	}
 }
