@@ -3,7 +3,7 @@
 
 import * as cp from 'child_process';
 import * as path from 'path';
-const packageJson = require('../../package.json');
+//const packageJson = require('../../package.json');
 
 import {
   downloadAndUnzipVSCode,
@@ -25,18 +25,40 @@ async function main() {
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
-    if (packageJson.extensionDependencies) {
-      for (const extensionId of packageJson.extensionDependencies) {
-        cp.spawnSync(
-          <string>cli,
-          [...args, '--install-extension', extensionId],
-          {
-            encoding: 'utf-8',
-            stdio: 'inherit'
-          }
-        );
+    // if (packageJson.extensionDependencies) {
+    //   for (const extensionId of packageJson.extensionDependencies) {
+    //     cp.spawnSync(
+    //       <string>cli,
+    //       [...args, '--install-extension', extensionId],
+    //       {
+    //         encoding: 'utf-8',
+    //         stdio: 'inherit'
+    //       }
+    //     );
+    //   }
+    // }
+    cp.spawnSync(
+      <string>cli,
+      [...args, '--install-extension', 'ms-vscode.cmake-tools'],
+      {
+        encoding: 'utf-8',
+        stdio: 'inherit'
       }
-    }
+    );
+    cp.spawnSync(
+      <string>cli,
+      [
+        ...args,
+        '--install-extension',
+        '../../../qt-core/out/qt-core-1.7.0.vsix'
+      ],
+      {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+      }
+    );
+
+    //qt-core/out/qt-core-1.7.0.vsix
 
     // Download VS Code, unzip it and run the integration test
     await runTests({ extensionDevelopmentPath, extensionTestsPath });

@@ -7,6 +7,7 @@ import {
   // getExtensionSourceRoot,
   delay
 } from '../util/utils';
+import { CoreAPI, getCoreApi } from 'qt-lib';
 //import * as path from 'path';
 //import { registerQt } from '../../../../qt-core/src/installation-root';
 // You can import and use all API from the 'vscode' module
@@ -39,14 +40,14 @@ describe('Test suit', async () => {
   //     return Promise.resolve([vscode.Uri.file('')]);
   //   });
   // });
-   before('activate', () =>
+  before('activate', () =>
     vscode.extensions.getExtension('theqtcompany.qt-cpp')?.activate()
   );
 
-  // beforeEach('clearExtensionContext', () => (sb = sinon.createSandbox()));
-  // afterEach('clearExtensionContext', () => sb.verifyAndRestore());
-  after('clearExtensionContext', () => sb.verifyAndRestore());
+  beforeEach('clearExtensionContext', () => (sb = sinon.createSandbox()));
+  afterEach('clearExtensionContext', () => sb.verifyAndRestore());
 
+  // To test the following the do not call activate before!!!!
   it('Testing stub reach in qt-core functions via activate', async () => {
     vscode.extensions.getExtension('theqtcompany.qt-cpp')?.activate();
     const fake_showInformationMessage = sb.stub(
@@ -89,6 +90,58 @@ describe('Test suit', async () => {
     // The stub is not used when called from qt-core
     expect(catchRegister.called).to.be.false;
     expect(catchRegister.callCount).to.be.equals(0);
+  });
+
+  it('Testing setting  qt installation root', async () => {
+    let coreAPI: CoreAPI | undefined;
+    coreAPI = await getCoreApi();
+
+    console.log(
+      'qtInstallation: ',
+      vscode.workspace.getConfiguration('qt-core').get('qtInstallationRoot')
+    );
+    await vscode.commands.executeCommand('qt-core.registerQt');
+    delay(20000);
+
+    // await vscode.commands.executeCommand(
+    //   'qt-core.registerQtByPath',
+    //   '/Users/lucie/Qt'
+    // );
+    // (
+    //   (await vscode.extensions
+    //     .getExtension('theqtcompany.qt-core')
+    //     ?.activate()) as CoreAPI
+    // ).setMyStuff();
+    // coreAPI?.setMyStuff();
+
+    // CodeExpectedError: Unable to write to User Settings because qt-core.qtInstallation is not a registered configuration.
+    // await vscode.workspace
+    //   .getConfiguration('qt-core')
+    //   .update(
+    //     'qtInstallation',
+    //     '/Users/lucie/Qt',
+    //     vscode.ConfigurationTarget.Global
+    //   );
+
+    console.log(
+      'qtInstallation: ',
+      vscode.workspace.getConfiguration('qt-core').get('qtInstallationRoot')
+    );
+
+    console.log('coreAPI get QtInfo: ', coreAPI?.getQtInfo);
+
+    // const catchRegister = sb.stub(vscode.window, 'showOpenDialog');
+    // catchRegister.callsFake((options) => {
+    //   console.log('fakeShowOpenDialog');
+    //   console.log('options: ', options);
+    //   return Promise.resolve([vscode.Uri.file('')]);
+    // });
+
+    // await vscode.commands.executeCommand('qt-core.registerQt');
+    // delay(10000);
+    // // The stub is not used when called from qt-core
+    // expect(catchRegister.called).to.be.false;
+    // expect(catchRegister.callCount).to.be.equals(0);
   });
 
   // it('Testing extension is active', async () => {
