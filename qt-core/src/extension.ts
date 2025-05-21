@@ -20,7 +20,8 @@ import {
   checkDefaultQtInsRootPath,
   getCurrentGlobalAdditionalQtPaths,
   getCurrentGlobalQtInstallationRoot,
-  registerQt
+  registerQt,
+  setGlobalQtInstallationRoot
 } from '@/installation-root';
 import { EXTENSION_ID } from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
@@ -66,6 +67,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(`${EXTENSION_ID}.registerQt`, registerQt)
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(`${EXTENSION_ID}.registerQtByPath`, setGlobalQtInstallationRoot)
+  );
+
   context.subscriptions.push(
     vscode.languages.registerColorProvider('qss', createColorProvider())
   );
