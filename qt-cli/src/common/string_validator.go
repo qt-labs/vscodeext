@@ -19,12 +19,13 @@ const (
 	TagMaxLength = "max" // "max=255"
 
 	// custom tags
-	TagMatch        = "match" // "match=^[a-z]{5,10}$"
-	TagDirName      = "dirname"
-	TagFileName     = "filename"
-	TagAbsPath      = "abspath"
-	TagProjectName  = "projectname"
-	TagWindowsDrive = "windowsdrive"
+	TagMatch           = "match" // "match=^[a-z]{5,10}$"
+	TagDirName         = "dirname"
+	TagFileName        = "filename"
+	TagAbsPath         = "abspath"
+	TagSafeFileName    = "safefilename"
+	TagSafeProjectName = "safeprojectname"
+	TagWindowsDrive    = "windowsdrive"
 )
 
 type StringValidator struct {
@@ -41,7 +42,8 @@ func NewStringValidator() *StringValidator {
 	v.RegisterValidation(TagDirName, validateDirName)
 	v.RegisterValidation(TagFileName, validateFileName)
 	v.RegisterValidation(TagAbsPath, validateAbsPath)
-	v.RegisterValidation(TagProjectName, validateProjectName)
+	v.RegisterValidation(TagSafeFileName, validateSafeFileName)
+	v.RegisterValidation(TagSafeProjectName, validateSafeProjectName)
 	v.RegisterValidation(TagWindowsDrive, validateWindowsDrive)
 
 	return &StringValidator{
@@ -122,8 +124,20 @@ func validateAbsPath(fl validator.FieldLevel) bool {
 	return filepath.IsAbs(s)
 }
 
-func validateProjectName(fl validator.FieldLevel) bool {
+func validateSafeProjectName(fl validator.FieldLevel) bool {
 	if !runRegex(fl, "^[a-zA-Z_][a-zA-Z0-9_-]*$") {
+		return false
+	}
+
+	if runtime.GOOS == "windows" {
+		return !util.IsWindowsReservedName(fl.Field().String())
+	}
+
+	return true
+}
+
+func validateSafeFileName(fl validator.FieldLevel) bool {
+	if !runRegex(fl, "^[a-zA-Z_][a-zA-Z0-9_-]*(\\.[a-zA-Z0-9]+)?$") {
 		return false
 	}
 
@@ -145,15 +159,16 @@ func runRegex(fl validator.FieldLevel, pattern string) bool {
 }
 
 var TagToValidatorMessage = map[string]string{
-	TagRequired:     ValidatorTagRequired,
-	TagMinLength:    ValidatorTagMinLength,
-	TagMaxLength:    ValidatorTagMaxLength,
-	TagMatch:        ValidatorTagPattern,
-	TagDirName:      ValidatorTagDirName,
-	TagFileName:     ValidatorTagFileName,
-	TagAbsPath:      ValidatorTagAbsPath,
-	TagProjectName:  ValidatorTagProjectName,
-	TagWindowsDrive: ValidatorTagWindowsDrive,
+	TagRequired:        ValidatorTagRequired,
+	TagMinLength:       ValidatorTagMinLength,
+	TagMaxLength:       ValidatorTagMaxLength,
+	TagMatch:           ValidatorTagPattern,
+	TagDirName:         ValidatorTagDirName,
+	TagFileName:        ValidatorTagFileName,
+	TagAbsPath:         ValidatorTagAbsPath,
+	TagSafeFileName:    ValidatorTagSafeFileName,
+	TagSafeProjectName: ValidatorTagSafeProjectName,
+	TagWindowsDrive:    ValidatorTagWindowsDrive,
 }
 
 func defaultIssueBuilder(

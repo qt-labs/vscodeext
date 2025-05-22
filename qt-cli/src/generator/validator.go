@@ -14,13 +14,14 @@ import (
 
 var NameTagsOnProject = strings.Join([]string{
 	common.TagRequired,
-	common.TagProjectName,
+	common.TagSafeProjectName,
 	common.TagDirName,
 	common.NewTagWithParam(common.TagMaxLength, "255"),
 }, ",")
 
 var NameTagsOnFile = strings.Join([]string{
 	common.TagRequired,
+	common.TagSafeFileName,
 	common.TagFileName,
 	common.NewTagWithParam(common.TagMaxLength, "255"),
 }, ",")
