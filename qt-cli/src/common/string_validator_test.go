@@ -29,17 +29,12 @@ func TestValidationHelper_SingleTag(t *testing.T) {
 
 		// dir name
 		{"", TagDirName, false},
-		{" ", TagDirName, false},
-		{"abc*", TagDirName, false},
 		{"abc/de", TagDirName, false},
-
 		{"abc", TagDirName, true},
 		{"abc de", TagDirName, true},
 
 		// file name
 		{"", TagFileName, false},
-		{" ", TagFileName, false},
-		{"abc*", TagFileName, false},
 		{"abc/de", TagFileName, false},
 
 		{"abc", TagFileName, true},
@@ -52,24 +47,34 @@ func TestValidationHelper_SingleTag(t *testing.T) {
 		{"abc/def", TagAbsPath, false},
 
 		// project name
-		{"", TagProjectName, false},
-		{" ", TagProjectName, false},
-		{"abc*", TagProjectName, false},
-		{"abc#", TagProjectName, false},
-		{"abc de", TagProjectName, false},
+		{"", TagSafeProjectName, false},
+		{" ", TagSafeProjectName, false},
+		{"abc*", TagSafeProjectName, false},
+		{"abc#", TagSafeProjectName, false},
+		{"abc de", TagSafeProjectName, false},
 
-		{"abc", TagProjectName, true},
+		{"abc", TagSafeProjectName, true},
 	}
 
 	// additionl os-specific test data
 	if runtime.GOOS == "windows" {
 		dataSet = append(dataSet, []DataRecord{
+			{" ", TagDirName, false},
+			{"abc*", TagDirName, false},
+			{" ", TagFileName, false},
+			{"abc*", TagFileName, false},
+
 			{"C:/abc", TagAbsPath, true},
 			{"C:/abc/def", TagAbsPath, true},
 			{"C:\\abc\\def", TagAbsPath, true},
 		}...)
 	} else {
 		dataSet = append(dataSet, []DataRecord{
+			{" ", TagDirName, true},
+			{"abc*", TagDirName, true},
+			{" ", TagFileName, true},
+			{"abc*", TagFileName, true},
+
 			{"/abc", TagAbsPath, true},
 			{"/abc/def", TagAbsPath, true},
 		}...)
@@ -79,10 +84,10 @@ func TestValidationHelper_SingleTag(t *testing.T) {
 }
 
 func TestValidationHelper_MultipleTag(t *testing.T) {
-	tag1 := NewCombinedTags([]string{TagRequired, TagDirName, TagProjectName})
+	tag1 := NewCombinedTags([]string{TagRequired, TagDirName, TagSafeProjectName})
 	tag2 := NewCombinedTags([]string{
 		TagRequired, TagDirName,
-		NewRegexTag("^[A-Z]"), TagProjectName})
+		NewRegexTag("^[A-Z]"), TagSafeProjectName})
 
 	dataSet := []DataRecord{
 		{"", tag1, false},

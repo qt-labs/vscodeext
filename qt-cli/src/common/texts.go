@@ -4,15 +4,16 @@
 package common
 
 const (
-	ValidatorTagRequired     = "This field is required"
-	ValidatorTagMinLength    = "The input is too short"
-	ValidatorTagMaxLength    = "The input is too long"
-	ValidatorTagPattern      = "The input doesn't match the required pattern"
-	ValidatorTagDirName      = "Enter a valid directory name"
-	ValidatorTagFileName     = "Enter a valid file name"
-	ValidatorTagAbsPath      = "The path must be absolute"
-	ValidatorTagProjectName  = "Enter a valid project name"
-	ValidatorTagWindowsDrive = "The drive name is invalid"
+	ValidatorTagRequired        = "This field is required"
+	ValidatorTagMinLength       = "The input is too short"
+	ValidatorTagMaxLength       = "The input is too long"
+	ValidatorTagPattern         = "The input doesn't match the required pattern"
+	ValidatorTagDirName         = "Enter a valid directory name"
+	ValidatorTagFileName        = "Enter a valid file name"
+	ValidatorTagAbsPath         = "The path must be absolute"
+	ValidatorTagSafeFileName    = "Enter a valid file name"
+	ValidatorTagSafeProjectName = "Enter a valid project name"
+	ValidatorTagWindowsDrive    = "The drive name is invalid"
 
 	ValidatorInvalid            = "The input is invalid"
 	ValidatorSameFileExists     = "A file with the same name already exists"
