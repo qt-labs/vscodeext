@@ -7,8 +7,8 @@
   ],
   "scripts": {
     "all_dev": "ts-node ./scripts/all_dev.ts --extension=\"all\"",
-    "all": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all && npm run ci-lint:all && npm run package:all && npm run install-ext:all_sync",
-    "all_sync": "npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all_sync && npm run ci-lint:all_sync && npm run package:all_sync && npm run install-ext:all_sync",
+    "all": "npm ci && concurrently \"npm run build:qt-cli\" \"npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all && npm run ci-lint:all && npm run package:all && npm run install-ext:all_sync\"",
+    "all_sync": "npm run build:qt-cli && npm run ci:qt-lib && npm run compile:qt-lib && npm run ci:all_sync && npm run ci-lint:all_sync && npm run package:all_sync && npm run install-ext:all_sync",
     "all_dev:qt-core": "ts-node ./scripts/all_dev.ts --extension=\"qt-core\"",
     "all_dev:qt-qml": "ts-node ./scripts/all_dev.ts --extension=\"qt-qml\"",
     "all_dev:qt-cpp": "ts-node ./scripts/all_dev.ts --extension=\"qt-cpp\"",
@@ -92,7 +92,8 @@
     "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common\/.eslintrc.cjs\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common\/.eslintrc.cjs\"",
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\"",
-    "auditFix": "npm audit fix --force && cd qt-lib && npm audit fix --force && cd ../qt-core && npm audit fix --force && cd ../qt-cpp && npm audit fix --force && cd ../qt-ui && npm audit fix --force && cd ../qt-qml && npm audit fix --force"
+    "auditFix": "npm audit fix --force && cd qt-lib && npm audit fix --force && cd ../qt-core && npm audit fix --force && cd ../qt-cpp && npm audit fix --force && cd ../qt-ui && npm audit fix --force && cd ../qt-qml && npm audit fix --force",
+    "build:qt-cli": "cd qt-cli && bash run.sh build"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

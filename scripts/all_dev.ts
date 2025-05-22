@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { program } from 'commander';
 
 function main() {
@@ -16,6 +16,7 @@ function main() {
   const targetExtensionRoot = path.join(extensionRoot, targetExtension);
 
   if (targetExtension === 'all') {
+    void exec('npm run build:qt-cli');
     execSync(`npm run ci:qt-lib`, {
       cwd: extensionRoot,
       stdio: 'inherit'
