@@ -13,7 +13,12 @@ import (
 )
 
 func getPidFilePath() string {
-	return os.Getenv("LOCALAPPDATA") + `\qtcli\qtcli-server.pid`
+	dir := os.Getenv("LOCALAPPDATA") + `\qtcli`
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return ""
+	}
+
+	return dir + `\qtcli-server.pid`
 }
 
 func getLocalIpcListener() (net.Listener, error) {
