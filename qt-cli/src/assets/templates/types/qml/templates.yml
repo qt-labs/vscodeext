@@ -9,4 +9,4 @@ meta:
 
 files:
   - in: file.qml
-    out: '{{ .name }}.qml'
+    out: '{{ .name }}'

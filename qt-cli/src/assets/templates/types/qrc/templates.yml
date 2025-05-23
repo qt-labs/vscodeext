@@ -7,4 +7,4 @@ meta:
 
 files:
   - in: file.qrc
-    out: '{{ .name }}.qrc'
+    out: '{{ .name }}'
