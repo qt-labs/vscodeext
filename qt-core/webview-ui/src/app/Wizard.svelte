@@ -18,9 +18,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   open
   size="lg"
   color="none"
-  class="qt-modal w-[80vw] h-[80vh] min-w-[500px] min-h-[500px]"
-  classBody="p-2.5"
-  classHeader="py-2.5 px-5"
+  class="qt-modal w-[80vw] h-[90vh] min-w-[500px] min-h-[500px]"
   backdropClass="hidden"
   on:close={onModalClosed}
 >
@@ -30,7 +28,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     </div>
   </svelte:fragment>
 
-  <div class="w-full h-full flex flex-col gap-3.5">
+  <div class="w-full h-full flex flex-col gap-4">
     <WizardSectionPresets />
     <WizardSectionInput />
     <LoadingMask

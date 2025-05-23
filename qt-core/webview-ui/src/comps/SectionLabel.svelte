@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Label } from 'flowbite-svelte';
+  import { P } from 'flowbite-svelte';
   import { AngleRightOutline } from 'flowbite-svelte-icons';
 
   let { text, icon = true, class: className = '' } = $props();
@@ -14,5 +14,5 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   {#if icon}
     <AngleRightOutline class="qt-label highlight" size="sm" />
   {/if}
-  <Label class="qt-label highlight text-md">{text}</Label>
+  <P class="qt-label highlight">{text}</P>
 </div>

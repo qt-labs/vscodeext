@@ -5,7 +5,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import {
-    Label,
+    P,
     Table,
     TableBody,
     TableBodyRow,
@@ -32,10 +32,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       {#each steps as step (step.id)}
         <TableBodyRow class="last:border-0">
           <TableBodyCell class="p-0.5">
-            <Label class="qt-label">{step.question}</Label>
+            <P class="qt-label">{step.question}</P>
           </TableBodyCell>
           <TableBodyCell class="p-0.5">
-            <Label class="qt-label">{toDisplayValue(step.default)}</Label>
+            <P class="qt-label">{toDisplayValue(step.default)}</P>
           </TableBodyCell>
         </TableBodyRow>
       {/each}

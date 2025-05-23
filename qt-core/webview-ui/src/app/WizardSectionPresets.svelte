@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Label } from 'flowbite-svelte';
+  import { P } from 'flowbite-svelte';
 
   import SectionLabel from '@/comps/SectionLabel.svelte';
   import * as texts from './texts';
@@ -16,7 +16,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <div
   class={`
-      grow grid gap-x-2.5 gap-y-1.5
+      grow grid gap-2
       grid-rows-[min-content_1fr] 
       grid-cols-[min-content_minmax(300px,1fr)_1fr]
       `}
@@ -27,12 +27,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   <div class="flex flex-col">
     <SectionLabel text={texts.wizard.description} />
     <div>
-      <Label class="qt-label whitespace-pre-wrap leading-relaxed"
+      <P class="qt-label whitespace-pre-wrap leading-relaxed"
         >{(data.selected.preset?.meta?.description ?? '').replaceAll(
           '\n',
           '\n\n'
         )}
-      </Label>
+      </P>
     </div>
     <div class="flex-grow"></div>
 
