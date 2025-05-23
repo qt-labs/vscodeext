@@ -5,12 +5,25 @@
 
 package server
 
-import "net"
+import (
+	"net"
+	"os"
+)
+
+const TempDir = "/tmp/qtcli"
 
 func getPidFilePath() string {
-	return "/tmp/qtcli/qtcli-server.pid"
+	if err := os.MkdirAll(TempDir, 0755); err != nil {
+		return ""
+	}
+
+	return TempDir + "/qtcli-server.pid"
 }
 
 func getLocalIpcListener() (net.Listener, error) {
-	return net.Listen("unix", "/tmp/qtcli/qtcli-server.sock")
+	if err := os.MkdirAll(TempDir, 0755); err != nil {
+		return nil, err
+	}
+
+	return net.Listen("unix", TempDir+"/qtcli-server.sock")
 }
