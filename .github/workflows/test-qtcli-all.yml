@@ -26,9 +26,9 @@ jobs:
           cache-dependency-path: ./qt-cli/src/go.sum
           cache: true
 
-      - name: Build and test
+      - name: Run tests
         shell: bash
         run: |
           cd ./qt-cli
-          go build -C ./src -o ../tests && \
-          go test -C ./tests/e2e -v
+          bash ./run.sh test unit && \
+          bash ./run.sh test e2e

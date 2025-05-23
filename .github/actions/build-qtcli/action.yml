@@ -35,12 +35,12 @@ runs:
         echo "- $(go version)"
         echo "- qtcli version $V ($H)"
 
-    - name: Run e2e test (on ${{ runner.os }})
+    - name: Run tests (on ${{ runner.os }})
       shell: bash
       run: |
         cd ${{ inputs.working-directory }}
-        go build -C ./src -o ../tests && \
-        go test -C ./tests/e2e -v
+        bash ./run.sh test unit && \
+        bash ./run.sh test e2e
 
     - name: Run goreleaser
       uses: goreleaser/goreleaser-action@v6
