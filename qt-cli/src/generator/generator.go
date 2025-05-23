@@ -276,11 +276,17 @@ func (g *Generator) createOutputFileRel(
 		return path.Base(file.In), nil
 	}
 
-	return util.NewTemplateExpander().
+	out, err := util.NewTemplateExpander().
 		Name(file.In).
 		Data(g.context.data).
 		Funcs(g.context.funcs).
 		RunString(file.Out)
+
+	if err != nil {
+		return out, err
+	}
+
+	return util.NormalizeFileExt(out, path.Ext(file.In)), nil
 }
 
 func (g *Generator) evalWhenCondition(file common.TemplateItem) (bool, error) {

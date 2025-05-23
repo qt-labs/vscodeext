@@ -13,13 +13,13 @@ files:
   - in: main.cpp
 
   - in: mainwindow.cpp
-    out: '{{ .fileNameBase }}.cpp'
+    out: '{{ .fileNameBase }}'
 
   - in: mainwindow.h
-    out: '{{ .fileNameBase }}.h'
+    out: '{{ .fileNameBase }}'
 
   - in: mainwindow.ui
-    out: '{{ .fileNameBase }}.ui'
+    out: '{{ .fileNameBase }}'
     when: '{{ .useForm }}'
 
   - in: '@/common/git.ignore'

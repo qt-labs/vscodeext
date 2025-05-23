@@ -11,4 +11,4 @@ meta:
 
 files:
   - in: file.ui
-    out: '{{ .name }}.ui'
+    out: '{{ .name }}'

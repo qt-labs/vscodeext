@@ -11,6 +11,7 @@ import (
 	"maps"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -190,4 +191,26 @@ func SendSigTermOrKill(pid int) error {
 
 func CreatePresetUniqueId(name string) string {
 	return fmt.Sprintf("%010d", crc32.ChecksumIEEE([]byte(name)))
+}
+
+var multiDotRegex = regexp.MustCompile(`\.{2,}`)
+
+func NormalizeFileExt(fileName, fallbackExt string) string {
+	fileName = multiDotRegex.ReplaceAllString(fileName, ".")
+	ext := filepath.Ext(fileName)
+	base := strings.TrimSuffix(fileName, ext)
+	if ext == "." {
+		ext = ""
+	}
+
+	effectiveName := base + ext
+	if fallbackExt == "" || fallbackExt == "." || ext != "" {
+		return effectiveName
+	}
+
+	if !strings.HasPrefix(fallbackExt, ".") {
+		fallbackExt = "." + fallbackExt
+	}
+
+	return effectiveName + fallbackExt
 }
