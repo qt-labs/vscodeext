@@ -4,12 +4,6 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 */
 
 /* common */
-body {
-  --qt-border-radius: 2px;
-  --qt-font-family: var(--vscode-font-family);
-  --qt-font-weight: var(--vscode-font-weight, normal);
-}
-
 @utility qt-focusRing {
   @apply focus:ring-1 focus:ring-[var(--qt-widget-borderFocus)];
 }
@@ -19,17 +13,14 @@ body {
 }
 
 /* basic tags */
-body {
-  font-family: var(--qt-font-family);
-  font-weight: var(--qt-font-weight);
+html {
+  font-size: var(--qt-font-size);
 }
 
 /* label */
 .qt-label {
   color: var(--qt-text-normal);
   margin: 2px;
-  font-weight: var(--qt-font-weight);
-  font-size: 0.9rem;
 }
 
 .qt-label.info {
@@ -41,7 +32,8 @@ body {
 
 .qt-label.highlight {
   color: var(--qt-text-highlight);
-  font-size: 1.02rem;
+  font-size: 1.1rem;
+  @apply font-semibold
 }
 
 /* modal */
@@ -65,11 +57,11 @@ body {
   background: var(--qt-button-fill);
   border: 1px solid var(--qt-widget-border);
   border-radius: var(--qt-border-radius);
-  font-weight: var(--qt-font-weight);
   line-height: normal;
   cursor: pointer;
   @apply ring-offset-0;
   @apply qt-focusRing;
+  @apply text-base font-normal;
 }
 
 .qt-button:hover {
@@ -96,7 +88,7 @@ body {
 .qt-checkbox {
   color: var(--qt-text-normal);
   background: transparent;
-  font-weight: var(--qt-font-weight);
+  @apply text-base font-normal;
 }
 
 .qt-checkbox > input[type='checkbox'] {
@@ -140,6 +132,7 @@ body {
   border-radius: var(--qt-border-radius);
   padding: 5px 0px 5px 10px;
   box-shadow: none;
+  @apply text-base;
 }
 
 .qt-input:focus {
@@ -185,9 +178,9 @@ body {
   border-width: 1px 0px 1px 0px;
   border-color: transparent;
   padding: 5px 10px 5px 10px;
-  font-weight: var(--qt-font-weight);
   cursor: pointer;
   box-shadow: none;
+  @apply text-base font-normal;
 }
 
 .qt-list-item:hover {
@@ -214,6 +207,11 @@ body {
   border-top-width: 0px;
 }
 
+.qt-list-item .qt-badge {
+  background-color: transparent;
+  font-size: 0.8rem;
+}
+
 /* vertical tab */
 .qt-vtab-item {
   color: var(--qt-text-normal);
@@ -221,11 +219,11 @@ body {
   border-radius: var(--qt-border-radius);
   border-bottom: 1px solid var(--qt-widget-separator);
   border: 1px solid transparent;
-  font-weight: var(--qt-font-weight);
   line-height: normal;
   cursor: pointer;
   @apply ring-offset-0;
   @apply qt-focusRing;
+  @apply text-base font-normal;
 }
 
 .qt-vtab-item:last-of-type,
@@ -252,6 +250,7 @@ body {
   border: 1px solid var(--qt-alert-border);
   border-radius: var(--qt-border-radius);
   padding: 10px;
+  @apply text-base;
 }
 
 .qt-alert:hover {
@@ -260,6 +259,7 @@ body {
 
 /* others */
 .qt-simple-table {
-  @apply bg-transparent;
   color: var(--qt-widget-separator);
+  @apply bg-transparent;
+  @apply text-base;
 }

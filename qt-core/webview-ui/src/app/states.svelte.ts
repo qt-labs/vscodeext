@@ -36,5 +36,5 @@ export const ui = $state({
     delayedTimerId: null as NodeJS.Timeout | null
   },
 
-  canCreate: false
+  canCreate: true
 });

@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Checkbox, Label } from 'flowbite-svelte';
+  import { Checkbox, P } from 'flowbite-svelte';
   import { CheckOutline } from 'flowbite-svelte-icons';
 
   import IconButton from '@/comps/IconButton.svelte';
@@ -17,25 +17,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     createItemFromSelectedPreset,
     validateInput
   } from './viewlogic.svelte';
-
-  // let nameInputUi = $state<InputWithIssue | null>();
-
-  // export function onEntered() {
-  //   if (!import.meta.env.DEV) {
-  //     input.workingDir =
-  //       data.selected.type === 'file'
-  //         ? data.configs.newFileBaseDir
-  //         : data.configs.newProjectBaseDir;
-  //   } else {
-  //     input.workingDir = '/dev';
-  //   }
-
-  //   validateInput();
-  // }
 </script>
 
 <div
-  class={`grid gap-1.5
+  class={`grid gap-2
     grid-cols-[max-content_1fr] 
     grid-rows-[1fr_repeat(3,min-content)]`}
 >
@@ -43,7 +28,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <SectionLabel text={texts.wizard.nameAndLocation} />
   </div>
 
-  <Label class="qt-label pl-4">{texts.wizard.name}</Label>
+  <P class="qt-label pl-4">{texts.wizard.name}</P>
   <InputWithIssue
     bind:value={input.name}
     onInput={validateInput}
@@ -51,7 +36,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     message={input.issues.name.message}
   />
 
-  <Label class="qt-label pl-4">{texts.wizard.workingDir}</Label>
+  <P class="qt-label pl-4">{texts.wizard.workingDir}</P>
   <WorkingDirInput />
 
   <div></div>

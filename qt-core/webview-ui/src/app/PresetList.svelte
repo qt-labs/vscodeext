@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Listgroup, ListgroupItem, P } from 'flowbite-svelte';
+  import { Listgroup, ListgroupItem } from 'flowbite-svelte';
 
   import { data } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
@@ -46,7 +46,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <div class="flex flex-col">
   <Listgroup
     active
-    class="flex-grow overflow-y-auto qt-list"
+    class="flex-grow overflow-y-auto qt-list items-center"
     onkeydown={onKeyPressed}
     tabindex={0}
   >
@@ -64,7 +64,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         </div>
 
         {#if !preset.name.startsWith('@')}
-          <P size="xs" class="qt-label">{preset.meta.title}</P>
+          <div class="ml-auto mr-0.5 qt-badge">{preset.meta.title}</div>
         {:else}
           <div></div>
         {/if}

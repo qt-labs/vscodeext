@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Label, Button, Spinner } from 'flowbite-svelte';
+  import { P, Button, Spinner } from 'flowbite-svelte';
 
   let {
     busy = false,
@@ -25,11 +25,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   {#if busy}
     <div class="flex w-full justify-center items-center">
       <Spinner class="me-3" size="8" color="green" />
-      <Label>{busyText}</Label>
+      <P>{busyText}</P>
     </div>
   {:else if error}
     <div class="flex flex-col gap-4">
-      <Label>{error}</Label>
+      <P>{error}</P>
       <Button
         class="qt-button mx-auto"
         on:click={() => {

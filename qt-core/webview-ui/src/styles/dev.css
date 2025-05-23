@@ -5,7 +5,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 @import 'tailwindcss';
 
-body.dev {
+html.dev {
+  --qt-border-radius: 2px;
+
+  --qt-font-size: 13px;
+  --qt-font-family: sans-serif;
+
   --qt-widget-fill: var(--color-gray-500);
   --qt-widget-border: var(--color-gray-700);
   --qt-widget-borderFocus: var(--color-green-400);

@@ -5,7 +5,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 @import 'tailwindcss';
 
-body.prod {
+html.prod {
+  --qt-border-radius: 2px;
+
+  --qt-font-size: var(--vscode-font-size);
+  --qt-font-family: var(--vscode-font-family);
+
   --qt-widget-fill: var(--vscode-sideBar-background);
   --qt-widget-border: var(--vscode-widget-border, transparent);
   --qt-widget-borderFocus: var(--vscode-focusBorder);
