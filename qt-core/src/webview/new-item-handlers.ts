@@ -29,6 +29,7 @@ export class NewItemCommandHandler {
     this._handlers = new Map<CommandId, CommandHandler>([
       [CommandId.UiClosed, this.onUiClosed],
       [CommandId.UiItemCreationRequested, this.onUiItemCreationRequested],
+      [CommandId.UiHasError, this.onUiHasError],
       [CommandId.UiCheckIfQtcliReady, this.onUiCheckIfQtcliReady],
       [CommandId.UiGetAllPresets, this.onUiGetAllPresets],
       [CommandId.UiGetPresetById, this.onUiGetPresetById],
@@ -91,6 +92,12 @@ export class NewItemCommandHandler {
         await vscode.window.showErrorMessage(e.toString());
       }
     }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  private readonly onUiHasError = (cmd: Command) => {
+    const msg = _.toString(cmd.payload);
+    logger.error(`UI Error: ${msg}`);
   };
 
   private readonly onUiCheckIfQtcliReady = async (cmd: Command) => {
