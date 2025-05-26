@@ -66,6 +66,9 @@ func (g *Generator) DryRun(on bool) *Generator {
 }
 
 func (g *Generator) Render() *Result {
+	g.name = strings.TrimSpace(g.name)
+	g.workingDir = strings.TrimSpace(g.workingDir)
+
 	// input validation
 	issues := Validate(ValidatorIn{
 		Name:       g.name,
