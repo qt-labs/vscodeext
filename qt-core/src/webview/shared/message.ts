@@ -6,6 +6,7 @@ export enum CommandId {
   PanelRevealed,
   UiClosed,
   UiItemCreationRequested,
+  UiHasError,
   EndOfNotification,
 
   // request-response type

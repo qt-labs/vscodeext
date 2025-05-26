@@ -7,121 +7,114 @@ import { type CommandReply, CommandId } from '@shared/message';
 import { type Preset, isPreset, isPresetArray } from './types.svelte';
 import { data, input, ui } from './states.svelte';
 
-export function onAppMount() {
-  loadDefaultWorkingDirAndValidate();
-
-  vscode.onDidReceiveNotification(function (r: CommandReply) {
+export async function onAppMount() {
+  vscode.onDidReceiveNotification(async (r: CommandReply) => {
     if (r.id === CommandId.PanelRevealed && r.payload) {
       data.configs = {
         ...data.configs,
         ...r.payload
       };
 
-      loadDefaultWorkingDirAndValidate();
+      try {
+        void loadDefaultWorkingDir();
+        await validateInput();
+      } catch (e) {
+        reportUiError('Error in PanelRevealed handler:', e);
+      }
     }
   });
 
-  startLoading();
+  try {
+    startLoading();
 
-  void vscode.post(CommandId.UiCheckIfQtcliReady).then(() => {
+    await vscode.post(CommandId.UiCheckIfQtcliReady);
     data.serverReady = true;
+
+    await loadPresets();
+    await selectAnyPresetAndValidate();
+  } catch (e) {
+    reportUiError('Error during onAppMount', e);
+  } finally {
     endLoading();
-    loadPresets();
-  });
+  }
 }
 
 export function onModalClosed() {
-  vscode.post(CommandId.UiClosed);
+  void vscode.post(CommandId.UiClosed);
 }
 
 export function onWorkingDirBrowseClicked() {
-  vscode
+  void vscode
     .post(CommandId.UiSelectWorkingDir, input.workingDir)
-    .then(function (data) {
+    .then((data) => {
       if (typeof data === 'string' && input.workingDir != data) {
         input.workingDir = data;
-        validateInput();
+        void validateInput();
       }
+    })
+    .catch((e) => {
+      reportUiError('Error selecting working dir', e);
     });
 }
 
-export function setPresetType(type: string) {
+export async function setPresetType(type: string) {
   if (data.selected.type !== type) {
     data.selected.type = type;
-    loadPresets();
-    loadDefaultWorkingDirAndValidate();
+    loadDefaultWorkingDir();
+
+    try {
+      startLoading(1000);
+      await loadPresets();
+      await selectAnyPresetAndValidate();
+    } catch (e) {
+      reportUiError('Error while setting preset type', e);
+    } finally {
+      endLoading();
+    }
   }
 }
 
-export function setSelectedPreset(preset: Preset, index: number) {
-  if (!data.serverReady) {
-    return;
-  }
+export async function setSelectedPreset(preset: Preset, index: number) {
+  if (!data.serverReady) return;
 
   data.selected.preset = preset;
   data.selected.presetIndex = index;
 
   if (preset.id.length > 0) {
-    vscode
-      .post(CommandId.UiGetPresetById, preset.id)
-      .then(function (r) {
-        if (isPreset(r)) {
-          data.selected.preset = r;
-        }
-      })
-      .finally(function () {
-        endLoading();
-      });
-  }
-}
-
-export function loadPresets() {
-  if (!data.serverReady) {
-    return;
-  }
-
-  startLoading(1000);
-
-  vscode.post(CommandId.UiGetAllPresets, data.selected.type).then(function (r) {
-    if (isPresetArray(r)) {
-      data.presets = r;
-      if (data.presets.length !== 0) {
-        setSelectedPreset(data.presets[0], 0);
+    try {
+      const r = await vscode.post(CommandId.UiGetPresetById, preset.id);
+      if (isPreset(r)) {
+        data.selected.preset = r;
       }
+    } catch (e) {
+      reportUiError('Error getting preset by id', e);
     }
-  });
+  }
 }
 
 export function createPresetDisplayText(preset: Preset | undefined): string {
-  if (!preset) {
-    return '';
-  }
-
-  if (preset.name.startsWith('@')) {
-    return preset.meta.title;
-  } else {
-    return preset.name;
-  }
+  if (!preset) return '';
+  return preset.name.startsWith('@') ? preset.meta.title : preset.name;
 }
 
 export async function createItemFromSelectedPreset() {
-  if (!data.selected.preset) {
-    return;
-  }
+  if (!data.selected.preset) return;
 
-  vscode.post(CommandId.UiItemCreationRequested, {
-    type: data.selected.type,
-    name: input.name,
-    workingDir: input.workingDir,
-    presetId: data.selected.preset?.id,
-    saveProjectDir: input.saveProjectDir
-  });
+  try {
+    await vscode.post(CommandId.UiItemCreationRequested, {
+      type: data.selected.type,
+      name: input.name,
+      workingDir: input.workingDir,
+      presetId: data.selected.preset?.id,
+      saveProjectDir: input.saveProjectDir
+    });
+  } catch (e) {
+    reportUiError('Error creating item', e);
+  }
 }
 
 export async function validateInput() {
-  if (!data.serverReady) {
-    return;
-  }
+  if (!data.serverReady) return;
 
   const payload = {
     name: input.name,
@@ -129,33 +122,40 @@ export async function validateInput() {
     presetId: data.selected.preset?.id
   };
 
-  vscode
-    .post(CommandId.UiValidateInputs, payload)
-    .then(function () {
-      input.issues.name.clear();
-      input.issues.workingDir.clear();
-      ui.canCreate = true;
-    })
-    .catch(function (e) {
-      input.issues.name.clear();
-      input.issues.workingDir.clear();
-      ui.canCreate = true;
+  try {
+    await vscode.post(CommandId.UiValidateInputs, payload);
+    clearInputErrors();
+  } catch (e) {
+    clearInputErrors();
 
-      if (isErrorResponse(e)) {
-        e.details?.forEach(function (item) {
-          const field = item.field.toLocaleLowerCase();
-          if (field === 'name') input.issues.name.loadFrom(item);
-          if (field === 'workingdir') input.issues.workingDir.loadFrom(item);
-        });
+    if (isErrorResponse(e)) {
+      e.details?.forEach(function (item) {
+        const field = item.field.toLowerCase();
+        if (field === 'name') input.issues.name.loadFrom(item);
+        if (field === 'workingdir') input.issues.workingDir.loadFrom(item);
+      });
 
-        ui.canCreate = !(
-          input.issues.name.isError() || input.issues.workingDir.isError()
-        );
-      }
-    });
+      ui.canCreate = !(
+        input.issues.name.isError() || input.issues.workingDir.isError()
+      );
+    }
+  }
 }
 
-function loadDefaultWorkingDirAndValidate() {
+async function loadPresets() {
+  if (!data.serverReady) return;
+
+  try {
+    const r = await vscode.post(CommandId.UiGetAllPresets, data.selected.type);
+    if (isPresetArray(r)) {
+      data.presets = r;
+    }
+  } catch (e) {
+    reportUiError('Error loading presets', e);
+  }
+}
+
+function loadDefaultWorkingDir() {
   let candidate = input.workingDir;
 
   if (import.meta.env.DEV) {
@@ -169,8 +169,25 @@ function loadDefaultWorkingDirAndValidate() {
 
   if (input.workingDir !== candidate) {
     input.workingDir = candidate;
-    validateInput();
   }
+}
+
+async function selectAnyPresetAndValidate() {
+  if (data.presets.length > 0) {
+    await setSelectedPreset(data.presets[0], 0);
+    await validateInput();
+  }
+}
+
+function reportUiError(msg: string, e?: unknown) {
+  const detail = e instanceof Error ? e.message : String(e);
+  void vscode.post(CommandId.UiHasError, `${msg}: ${detail}`);
+}
+
+function clearInputErrors() {
+  input.issues.name.clear();
+  input.issues.workingDir.clear();
+  ui.canCreate = true;
 }
 
 // loading mask
