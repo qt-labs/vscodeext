@@ -11,14 +11,10 @@ import { spawnSync } from 'child_process';
 import { createLogger, isError, OSExeSuffix } from 'qt-lib';
 
 export enum QtcliAction {
-  NewFile,
-  NewProject,
   ServerControl
 }
 
 export const qtcliSubCommands: Record<QtcliAction, string> = {
-  [QtcliAction.NewFile]: 'new-file',
-  [QtcliAction.NewProject]: 'new',
   [QtcliAction.ServerControl]: 'server'
 };
 

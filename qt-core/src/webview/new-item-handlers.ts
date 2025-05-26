@@ -9,10 +9,7 @@ import { createLogger } from 'qt-lib';
 import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
-import {
-  setDefaultProjectDir,
-  getDefaultProjectDirSafe
-} from '@/qtcli/commands';
+import { setDefaultProjectDir, getNewProjectBaseDir } from '@/qtcli/commands';
 import { ErrorResponse } from '@/webview/shared/types';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
 import type { NewItemPanel } from './new-item-panel';
@@ -137,7 +134,7 @@ export class NewItemCommandHandler {
   };
 
   private readonly onUiSelectWorkingDir = async (cmd: Command) => {
-    const dir = cmd.payload?.toString() ?? getDefaultProjectDirSafe();
+    const dir = cmd.payload?.toString() ?? getNewProjectBaseDir();
     const options: vscode.OpenDialogOptions = {
       canSelectMany: false,
       canSelectFolders: true,
