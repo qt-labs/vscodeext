@@ -44,6 +44,9 @@ type ValidatorIn struct {
 }
 
 func Validate(in ValidatorIn) common.Issues {
+	in.Name = strings.TrimSpace(in.Name)
+	in.WorkingDir = strings.TrimSpace(in.WorkingDir)
+
 	all := common.Issues{}
 	v := common.NewStringValidator().
 		CustomIssueBuilder(buildIssue)
