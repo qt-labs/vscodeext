@@ -5,6 +5,7 @@ import _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+import { createLogger } from 'qt-lib';
 import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
@@ -16,6 +17,7 @@ import { ErrorResponse } from '@/webview/shared/types';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
 import type { NewItemPanel } from './new-item-panel';
 
+const logger = createLogger('new-item-handler');
 type CommandHandler = (command: Command) => void | Promise<void>;
 
 export class NewItemCommandHandler {
@@ -50,14 +52,14 @@ export class NewItemCommandHandler {
 
     const handler = this._handlers?.get(cmd.id);
     if (!handler) {
-      console.log('unhandled message:', cmd);
+      logger.warn(`unhandled command: id = ${cmd.id}`);
       return;
     }
 
     try {
       void handler(cmd);
     } catch (e) {
-      console.log('unhandled exception:', e);
+      logger.error(`Error while handling command '${cmd.id}': ${String(e)}`);
     }
   }
 

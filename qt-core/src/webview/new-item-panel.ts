@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 
+import { createLogger } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
 import { QtcliAction } from '@/qtcli/common';
 import { findQtcliExePath, findWorkingDir } from '@/qtcli/commands';
@@ -11,6 +12,7 @@ import { CommandId } from '@/webview/shared/message';
 import { NewItemCommandHandler } from './new-item-handlers';
 import * as texts from '@/texts';
 
+const logger = createLogger('new-item-panel');
 let qtcliRunner: QtcliRunner | undefined = undefined;
 
 // definitions for webview-panel
@@ -129,13 +131,11 @@ async function startQtcliServer(extensionUri: vscode.Uri) {
     if (exePath) {
       qtcliRunner = new QtcliRunner();
       qtcliRunner.setQtcliExePath(exePath);
+    } else {
+      logger.error('cannot find qtcli executable');
+      return;
     }
   }
 
-  if (qtcliRunner) {
-    await qtcliRunner.run(QtcliAction.ServerControl, 'start');
-    return;
-  }
-
-  console.log('cannot run qtcli');
+  await qtcliRunner.run(QtcliAction.ServerControl, 'start');
 }
