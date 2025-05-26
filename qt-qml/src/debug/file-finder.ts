@@ -53,8 +53,10 @@ export class FileFinder {
     const parsedQrcFiles = await Promise.all(parsePromises);
     this._cache.clear();
     for (const parsedQrcFile of parsedQrcFiles) {
-      for (const [alias, path] of parsedQrcFile) {
-        this._cache.set(alias, path);
+      if (parsedQrcFile) {
+        for (const [alias, path] of parsedQrcFile) {
+          this._cache.set(alias, path);
+        }
       }
     }
     return this._cache.get(fileUrlPath);
