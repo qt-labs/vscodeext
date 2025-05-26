@@ -2,24 +2,19 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as os from 'os';
-import * as fs from 'fs/promises';
 import * as vscode from 'vscode';
 
 import {
   QtcliAction,
-  openUri,
   logger,
   errorString,
   qtcliSubCommands
 } from '@/qtcli/common';
 
 export class QtcliRunner {
-  private _workingDir = os.homedir();
   private _qtcliExecPath = '';
   private _terminal: vscode.Terminal | undefined = undefined;
-  private _fsDisposables: vscode.Disposable[] = [];
   private _terminalDisposables: vscode.Disposable[] = [];
-  private _showTerminal = false;
 
   dispose() {
     if (this._terminal) {
@@ -31,22 +26,6 @@ export class QtcliRunner {
       }
 
       this._terminalDisposables = [];
-      this._disposeFsWatcher();
-    }
-  }
-
-  private _disposeFsWatcher() {
-    for (const d of this._fsDisposables) {
-      d.dispose();
-    }
-
-    this._fsDisposables = [];
-  }
-
-  public setWorkingDir(dir: string) {
-    if (this._workingDir !== dir) {
-      this._workingDir = dir;
-      this.dispose();
     }
   }
 
@@ -54,13 +33,8 @@ export class QtcliRunner {
     this._qtcliExecPath = fullPath;
   }
 
-  public async run(action: QtcliAction, arg: string) {
+  public run(action: QtcliAction, arg: string) {
     try {
-      await fs.mkdir(this._workingDir, { recursive: true });
-      this._disposeFsWatcher();
-      this._setupFsWatcher(action, arg);
-      this._showTerminal = action !== QtcliAction.ServerControl;
-
       const subCommand = qtcliSubCommands[action];
       if (subCommand) {
         this._runQtcli([subCommand, arg]);
@@ -73,31 +47,10 @@ export class QtcliRunner {
     }
   }
 
-  private _setupFsWatcher(action: QtcliAction, arg: string) {
-    const watcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(
-        this._workingDir,
-        action === QtcliAction.NewFile ? `${arg}.*` : `${arg}/`
-      )
-    );
-
-    this._fsDisposables.push(watcher);
-    this._fsDisposables.push(
-      watcher.onDidCreate((uri) => {
-        void openUri(uri);
-        this._disposeFsWatcher();
-      })
-    );
-  }
-
   private _runQtcli(args: string[]) {
     this._ensureTerminalIsValid();
 
     if (this._terminal) {
-      if (this._showTerminal) {
-        this._terminal.show();
-      }
-
       const safePath = this._qtcliExecPath.replace(/\\/g, '/');
       this._terminal.sendText(`${safePath} ${args.join(' ')}`);
     }
@@ -110,7 +63,7 @@ export class QtcliRunner {
 
     this._terminal = vscode.window.createTerminal({
       name: 'qtcli',
-      cwd: this._workingDir
+      cwd: os.homedir()
     });
 
     this._terminalDisposables.push(

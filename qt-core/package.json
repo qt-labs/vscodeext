@@ -74,16 +74,6 @@
         "category": "Qt"
       },
       {
-        "command": "qt-core.createNewFile",
-        "title": "%qt-core.command.createNewFile.title%",
-        "category": "Qt"
-      },
-      {
-        "command": "qt-core.createNewProject",
-        "title": "%qt-core.command.createNewProject.title%",
-        "category": "Qt"
-      },
-      {
         "command": "qt-core.createNewItem",
         "title": "%qt-core.command.createNewItem.title%",
         "category": "Qt"

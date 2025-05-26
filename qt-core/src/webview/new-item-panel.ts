@@ -6,7 +6,11 @@ import * as vscode from 'vscode';
 import { createLogger } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
 import { QtcliAction } from '@/qtcli/common';
-import { findQtcliExePath, findWorkingDir } from '@/qtcli/commands';
+import {
+  findQtcliExePath,
+  getNewFileBaseDir,
+  getNewProjectBaseDir
+} from '@/qtcli/commands';
 import { getUri, getNonce } from './utils';
 import { CommandId } from '@/webview/shared/message';
 import { NewItemCommandHandler } from './new-item-handlers';
@@ -20,7 +24,7 @@ const PanelColumn = vscode.ViewColumn.One;
 const PanelViewType = 'ViewTypeWizard';
 
 // defintions for webview-ui
-const UiRootDir = `webview-ui/dist/`;
+const UiRootDir = 'webview-ui/dist/';
 const UiJsFile = 'index.js';
 const UiCssFile = 'index.css';
 
@@ -83,8 +87,8 @@ export class NewItemPanel {
 // helpers
 function createInitData() {
   return {
-    newFileBaseDir: findWorkingDir(QtcliAction.NewFile),
-    newProjectBaseDir: findWorkingDir(QtcliAction.NewProject)
+    newFileBaseDir: getNewFileBaseDir(),
+    newProjectBaseDir: getNewProjectBaseDir()
   };
 }
 
@@ -137,5 +141,5 @@ async function startQtcliServer(extensionUri: vscode.Uri) {
     }
   }
 
-  await qtcliRunner.run(QtcliAction.ServerControl, 'start');
+  qtcliRunner.run(QtcliAction.ServerControl, 'start');
 }
