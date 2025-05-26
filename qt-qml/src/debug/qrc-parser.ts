@@ -32,7 +32,7 @@ export class QRCParser {
     });
   }
 
-  parseQRCFile(filePath: string): Map<string, string> {
+  parseQRCFile(filePath: string) {
     if (!fs.existsSync(filePath)) {
       throw new Error(`Cannot find file: ${filePath}`);
     }
@@ -42,11 +42,14 @@ export class QRCParser {
     }
     const xmlContent = fs.readFileSync(filePath, 'utf8');
     const fileMapping = this.parseQRC(xmlContent);
+    if (!fileMapping) {
+      return undefined;
+    }
     this._cache.set(filePath, fileMapping);
     return fileMapping;
   }
 
-  parseQRC(xmlContent: string): Map<string, string> {
+  parseQRC(xmlContent: string) {
     try {
       // Parse the XML content into the defined structure
       const jsonObj = this.parser.parse(xmlContent) as QRCParsed; // Type assertion to QRCParsed
@@ -55,7 +58,7 @@ export class QRCParser {
       const resources = jsonObj.RCC.qresource;
 
       if (!resources) {
-        throw new Error('Cannot find "qresource" in the QRC file');
+        return undefined;
       }
 
       // Ensure resources is always an array
