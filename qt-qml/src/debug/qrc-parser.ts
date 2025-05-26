@@ -77,21 +77,15 @@ export class QRCParser {
           if (!fileAlias || !filePath) {
             return;
           }
-          const alias = prefix + fileAlias; // Combine the prefix and alias
-          resourceMap.set(alias, filePath); // Store alias as key, file path as value
+          // Only keep .qml and .js files
+          if (filePath.endsWith('.qml') || filePath.endsWith('.js')) {
+            const alias = prefix + fileAlias; // Combine the prefix and alias
+            resourceMap.set(alias, filePath); // Store alias as key, file path as value
+          }
         });
       });
 
-      // Filter the Map to include only .qml and .js files
-      const filteredMap = new Map<string, string>();
-      resourceMap.forEach((filePath, alias) => {
-        // Only keep .qml and .js files
-        if (filePath.endsWith('.qml') || filePath.endsWith('.js')) {
-          filteredMap.set(alias, filePath);
-        }
-      });
-
-      return filteredMap;
+      return resourceMap;
     } catch (error) {
       throw new Error(`Cannot parse QRC file: ${error as string}`);
     }
