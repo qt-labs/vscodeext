@@ -465,7 +465,10 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
         .map(async (frame) => {
           const physicalPath = await fileFinder.findFile(frame.script);
           if (!physicalPath) {
-            throw new Error('Cannot find physical path for:' + frame.script);
+            const err =
+              `Cannot find physical path for: "${frame.script}".` +
+              ' Use "buildDirs" to set the build directories in "launch.json".';
+            throw new Error(err);
           }
           const parsedPath = path.parse(physicalPath);
           return new StackFrame(
