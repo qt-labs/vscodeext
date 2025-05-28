@@ -36,10 +36,6 @@ export class CoreAPIImpl implements CoreAPI {
     return this._onValueChanged.event;
   }
 
-  public setMyStuff() {
-    throw new Error('I m setting my stuff');
-  }
-
   private static obtainArch(content: string) {
     const keysToCheck = ['QT_ARCHS', 'QT_TARGET_ARCH', 'QT_ARCH'];
     for (const k of keysToCheck) {

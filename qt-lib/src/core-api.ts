@@ -92,7 +92,6 @@ export interface CoreAPI {
     key: string,
     value: ConfigType
   ): void;
-  setMyStuff(): void;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
   getQtInfo(qtPathsExecutable: QtAdditionalPath): QtInfo | undefined;
   getQtInfoFromPath(qtPathsExe: string): QtInfo | undefined;
