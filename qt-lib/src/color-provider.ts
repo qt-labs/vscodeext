@@ -6,33 +6,79 @@ import * as vscode from 'vscode';
 export function createColorProvider() {
   return {
     provideDocumentColors(document: vscode.TextDocument) {
-      const regex = /#[0-9a-f]{3,8}\b/gi;
-      const matches = document.getText().matchAll(regex);
-      const info: vscode.ColorInformation[] = [];
-
-      Array.from(matches).forEach((m) => {
-        const color = hexToColor(m.toString());
-        const r = new vscode.Range(
-          document.positionAt(m.index),
-          document.positionAt(m.index + m[0].length)
-        );
-
-        if (color) {
-          info.push(new vscode.ColorInformation(r, color));
-        }
-      });
-
-      return info;
+      return [...parseHexCodes(document), ...parseQtRgba(document)];
     },
 
-    provideColorPresentations(color: vscode.Color) {
-      return [new vscode.ColorPresentation(colorToHex(color))];
+    provideColorPresentations(
+      color: vscode.Color,
+      context: { document: vscode.TextDocument; range: vscode.Range }
+    ) {
+      const texts = [colorToHex(color), colorToQtRgba(color)];
+
+      return texts.map((text) => {
+        const p = new vscode.ColorPresentation(text);
+        p.label = text;
+        p.textEdit = new vscode.TextEdit(context.range, text);
+        return p;
+      });
     }
   };
 }
 
-function hexToColor(hex: string): vscode.Color | undefined {
-  if (!hex.startsWith('#')) {
+function parseHexCodes(document: vscode.TextDocument) {
+  const regex = /(["'])(#[0-9a-f]{3,8})\1/gi;
+  const matches = document.getText().matchAll(regex);
+  const info: vscode.ColorInformation[] = [];
+
+  Array.from(matches).forEach((m) => {
+    const hex = m[2];
+    const color = hexToColor(hex);
+    const r = new vscode.Range(
+      document.positionAt(m.index),
+      document.positionAt(m.index + m[0].length)
+    );
+
+    if (color) {
+      info.push(new vscode.ColorInformation(r, color));
+    }
+  });
+
+  return info;
+}
+
+function parseQtRgba(document: vscode.TextDocument) {
+  const n = String.raw`\d(?:\.\d+)?`;
+  const ws = String.raw`\s*`;
+  const arg = `${ws}(${n})${ws}`;
+
+  const regex = new RegExp(
+    `Qt\\.rgba${ws}\\(${arg},${arg},${arg}(?:,${arg})?\\)`,
+    'g'
+  );
+
+  const matches = document.getText().matchAll(regex);
+  const info: vscode.ColorInformation[] = [];
+
+  Array.from(matches).forEach((m) => {
+    const r = parseFloat(m[1] ?? '0');
+    const g = parseFloat(m[2] ?? '0');
+    const b = parseFloat(m[3] ?? '0');
+    const a = m[4] !== undefined ? parseFloat(m[4]) : 1.0;
+
+    const color = new vscode.Color(r, g, b, a);
+    const range = new vscode.Range(
+      document.positionAt(m.index),
+      document.positionAt(m.index + m[0].length)
+    );
+
+    info.push(new vscode.ColorInformation(range, color));
+  });
+
+  return info;
+}
+
+function hexToColor(hex: string | undefined): vscode.Color | undefined {
+  if (!hex || !hex.startsWith('#')) {
     return undefined;
   }
 
@@ -71,5 +117,20 @@ function colorToHex(color: vscode.Color) {
   const g = fractionToHexDigits(color.green);
   const b = fractionToHexDigits(color.blue);
 
-  return color.alpha === 1 ? `#${r}${g}${b}` : `#${a}${r}${g}${b}`;
+  return color.alpha === 1 ? `'#${r}${g}${b}'` : `'#${a}${r}${g}${b}'`;
+}
+
+function colorToQtRgba(color: vscode.Color) {
+  function formatFraction(f: number): string {
+    return f.toFixed(2).replace(/\.?0+$/, '');
+  }
+
+  const a = formatFraction(color.alpha);
+  const r = formatFraction(color.red);
+  const g = formatFraction(color.green);
+  const b = formatFraction(color.blue);
+
+  return color.alpha === 1
+    ? `Qt.rgba(${r}, ${g}, ${b})`
+    : `Qt.rgba(${r}, ${g}, ${b}, ${a})`;
 }
