@@ -76,6 +76,19 @@
       "outFiles": ["${workspaceFolder}/qt-ui/out/**/*.js"],
       "cwd": "${workspaceFolder}/qt-ui",
       "preLaunchTask": "npm qt-ui watch"
+    },
+    {
+      "name": "Run Extension Tests qt-ui",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+              //"--disable-extensions",
+              "--extensionDevelopmentPath=${workspaceFolder}/qt-ui",
+              "--extensionTestsPath=${workspaceFolder}/qt-ui/out/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-ui/out/test/**/*.js"],
+      "preLaunchTask": "npm qt-ui watch and test"
     }
   ]
 }
