@@ -71,13 +71,6 @@ export async function activate(context: vscode.ExtensionContext) {
     registerbuildDirectoryName(),
     registerSourceDirectoryCommand()
   );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      `${EXTENSION_ID}.dummyregisterQt`,
-      dummyregisterQt
-    )
-  );
-
   telemetry.sendEvent(`activated`);
 
   taskProvider = vscode.tasks.registerTaskProvider(
