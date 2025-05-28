@@ -35,6 +35,19 @@
       "preLaunchTask": "npm qt-qml watch"
     },
     {
+      "name": "Run Extension Tests qt-qml",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+              //"--disable-extensions",
+              "--extensionDevelopmentPath=${workspaceFolder}/qt-qml",
+              "--extensionTestsPath=${workspaceFolder}/qt-qml/out/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-qml/out/test/**/*.js"],
+      "preLaunchTask": "npm qt-qml watch and test"
+    },
+    {
       "name": "Run qt-core Extension",
       "type": "extensionHost",
       "request": "launch",

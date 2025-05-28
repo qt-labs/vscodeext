@@ -56,6 +56,23 @@
     },
     {
       "type": "shell",
+      "label": "npm qt-qml watch and test",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch && npm run compile-test",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-qml"
+      }
+    },
+    {
+      "type": "shell",
       "label": "npm qt-core watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",
