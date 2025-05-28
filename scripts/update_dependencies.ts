@@ -24,6 +24,10 @@ function main() {
       stdio: 'inherit'
     });
   });
+  execSync(`npm run install:all`, {
+    cwd: extensionRoot,
+    stdio: 'inherit'
+  });
   execSync(`npm run generateLicenses:all`, {
     cwd: extensionRoot,
     stdio: 'inherit'
