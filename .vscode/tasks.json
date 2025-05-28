@@ -81,6 +81,23 @@
     },
     {
       "type": "shell",
+      "label": "npm qt-core watch and test",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch && npm run compile-test",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-core"
+      }
+    },
+    {
+      "type": "shell",
       "label": "npm qt-ui watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",

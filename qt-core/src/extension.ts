@@ -68,7 +68,10 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(`${EXTENSION_ID}.registerQt`, registerQt)
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand(`${EXTENSION_ID}.registerQtByPath`, setGlobalQtInstallationRoot)
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.registerQtByPath`,
+      setGlobalQtInstallationRoot
+    )
   );
 
   context.subscriptions.push(
