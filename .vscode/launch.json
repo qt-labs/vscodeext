@@ -43,6 +43,19 @@
       "preLaunchTask": "npm qt-core watch + vite:start"
     },
     {
+      "name": "Run Extension Tests qt-core",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+              //"--disable-extensions",
+              "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
+              "--extensionTestsPath=${workspaceFolder}/qt-core/out/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-core/out/test/**/*.js"],
+      "preLaunchTask": "npm qt-core watch and test"
+    },
+    {
       "name": "Run qt-ui Extension",
       "type": "extensionHost",
       "request": "launch",
