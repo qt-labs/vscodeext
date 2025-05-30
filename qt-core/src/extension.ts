@@ -25,7 +25,7 @@ import {
 import { EXTENSION_ID } from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
 import { resetCommand } from '@/reset';
-import { registerQtByQtpaths } from '@/qtpaths';
+import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
 import { NewItemPanel } from '@/webview/new-item-panel';
 
@@ -79,6 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   checkDefaultQtInsRootPath();
   checkVcpkg();
+  checkQtpathsInEnvPath();
   initCoreValues();
   return coreAPI;
 }
