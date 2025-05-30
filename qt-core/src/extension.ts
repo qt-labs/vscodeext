@@ -75,9 +75,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   telemetry.sendEvent(`activated`);
 
+  coreAPI = new CoreAPIImpl();
+
   checkDefaultQtInsRootPath();
   checkVcpkg();
-  coreAPI = new CoreAPIImpl();
   initCoreValues();
   return coreAPI;
 }
