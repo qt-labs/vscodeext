@@ -53,8 +53,10 @@ export function addQtPathToSettings(qtPath: QtAdditionalPath) {
   if (!info) {
     throw new Error(`Failed to get Qt info for ${qtPath.path}`);
   }
-  const name = generateDefaultQtPathsName(info);
-  const valueToAdd = { name: name, path: qtPath.path };
+  if (!qtPath.name) {
+    qtPath.name = generateDefaultQtPathsName(info);
+  }
+  const valueToAdd = { name: qtPath.name, path: qtPath.path };
   if (additionalQtPaths?.globalValue) {
     additionalQtPaths.globalValue.push(valueToAdd);
     valueToSet = additionalQtPaths.globalValue;
