@@ -5,30 +5,43 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 
 /**
+ * Interface representing the structure of `package.json` relevant to extension tests.
+ */
+interface PackageJson {
+  extensionDependencies?: string[];
+  contributes?: {
+    commands?: { command: string }[];
+  };
+}
+
+/**
  * Returns true if the given extension is active.
  */
 export function isExtensionActive(extensionId: string): boolean {
-    return vscode.extensions.getExtension(extensionId)?.isActive === true;
-  }
+  return vscode.extensions.getExtension(extensionId)?.isActive === true;
+}
 /**
  * Asserts that all declared extension dependencies in package.json are active.
  */
-export function assertAllDependenciesAreActive(packageJson: any): void {
-    const dependencies: string[] = packageJson.extensionDependencies ?? [];
-  
-    for (const extensionId of dependencies) {
-      const isActive = vscode.extensions.getExtension(extensionId)?.isActive;
-      expect(isActive, `Dependency not active: ${extensionId}`).to.be.true;
-    }
+export function assertAllDependenciesAreActive(packageJson: PackageJson): void {
+  const dependencies: string[] = packageJson.extensionDependencies ?? [];
+
+  for (const extensionId of dependencies) {
+    const isActive = vscode.extensions.getExtension(extensionId)?.isActive;
+    expect(isActive, `Dependency not active: ${extensionId}`).to.be.true;
   }
+}
 /**
  * Asserts that all contributed commands in package.json are registered with VS Code.
  */
-export async function assertAllCommandsAreRegistered(packageJson: any): Promise<void> {
-    const vscodeCommands = await vscode.commands.getCommands(true);
-    const contributedCommands: { command: string }[] = packageJson.contributes?.commands ?? [];
-  
-    for (const { command } of contributedCommands) {
-      expect(vscodeCommands, `Missing command: ${command}`).to.include(command);
-    }
+export async function assertAllCommandsAreRegistered(
+  packageJson: PackageJson
+): Promise<void> {
+  const vscodeCommands = await vscode.commands.getCommands(true);
+  const contributedCommands: { command: string }[] =
+    packageJson.contributes?.commands ?? [];
+
+  for (const { command } of contributedCommands) {
+    expect(vscodeCommands, `Missing command: ${command}`).to.include(command);
   }
+}

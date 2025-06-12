@@ -38,8 +38,14 @@ async function main() {
       }
     }
 
+    const launchArgs = ['--disable-workspace-trust'];
+
     // Download VS Code, unzip it and run the integration test
-    await runTests({ extensionDevelopmentPath, extensionTestsPath });
+    await runTests({
+      launchArgs,
+      extensionDevelopmentPath,
+      extensionTestsPath
+    });
   } catch {
     console.error('Failed to run tests');
     process.exit(1);
