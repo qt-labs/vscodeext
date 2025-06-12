@@ -37,7 +37,9 @@ const logger = createLogger('extension');
 export let coreAPI: CoreAPIImpl | undefined;
 export let projectManager: CoreProjectManager;
 
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(
+  context: vscode.ExtensionContext
+): Promise<{ coreAPI: CoreAPIImpl; projectManager: CoreProjectManager }> {
   initLogger(EXTENSION_ID);
   telemetry.activate(context);
   logger.info(`Activating ${context.extension.id}`);
@@ -100,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
   checkVcpkg();
   checkQtpathsInEnvPath();
   initCoreValues();
-  return coreAPI;
+  return { coreAPI, projectManager };
 }
 
 export function deactivate() {

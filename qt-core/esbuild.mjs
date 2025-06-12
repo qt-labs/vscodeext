@@ -35,7 +35,9 @@ const extensionTestConfig = {
   entryPoints: [
     './src/test/runTest.ts',
     './src/test/suite/index.ts',
-    './src/test/suite/extension.test.ts'
+    './src/test/helper.ts',
+    './src/test/suite/extension.test.ts',
+    './src/test/suite/commands.test.ts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']
