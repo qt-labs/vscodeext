@@ -15,8 +15,7 @@ steps:
     question: "Qt Quick Controls style:"
     default: ""
     items:
-      - text: <None>
-        data: ""
+      - text: ""
       - text: Material
       - text: Universal
 
