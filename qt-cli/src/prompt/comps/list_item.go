@@ -49,7 +49,7 @@ func (i ListItem) Data(data any) ListItem {
 }
 
 func (i *ListItem) IsSeparator() bool {
-	return len(i.text) == 0
+	return i.text == "-"
 }
 
 func (i ListItem) FilterValue() string {
@@ -87,10 +87,14 @@ func (d ListItemDelegate) Render(
 	text := item.text
 	desc := ""
 
-	if len(text) == 0 {
+	if item.IsSeparator() {
 		fmt.Fprint(w, sty.ListItem.Separator.Render(
 			strings.Repeat(string(prompt.MarkingSeparatorChar), 30)))
 		return
+	}
+
+	if len(text) == 0 {
+		text = "<None>"
 	}
 
 	if item.checkable {
