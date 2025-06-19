@@ -5,6 +5,7 @@ show-help() {
   echo "Commands:"
   echo "  build               build binaries, copy to qt-core/res/qtcli"
   echo "  test <unit|e2e|all> run test (default: all)"
+  echo "  qtcli [args...]     run qtcli with given arguments after rebuilding the binary"
   echo "  gen-all             generate items from all presets for manual check"
   echo "  print-version       print current version"
   echo "  install-tools       install tools for build, license update, etc."
@@ -41,6 +42,20 @@ test-e2e() {
   go build -C ./src -o ../tests && \
   echo ">>> Running end-to-end tests ..." && \
   go test -C ./tests/e2e -v
+}
+
+qtcli() {
+  echo ">>> Building binaries..." && \
+  rm -rf ./tests/qtcli ./tests/qtcli.* && \
+  go build -C ./src -o ../tests && \
+  cd ./tests
+
+  ext=""
+  if [[ "$(uname -s)" =~ MINGW|MSYS|CYGWIN ]]; then
+    ext=".exe"
+  fi
+
+  ./qtcli${ext} $@
 }
 
 gen-all() {
@@ -133,6 +148,10 @@ case "$1" in
         exit 1
         ;;
     esac
+    ;;
+  qtcli)
+    shift 1
+    qtcli $@
     ;;
   gen-all)
     gen-all
