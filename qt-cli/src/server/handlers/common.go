@@ -11,12 +11,17 @@ import (
 )
 
 type ErrorResponse struct {
-	Error   string         `json:"error"`
+	Error   string         `json:"error" binding:"required"`
 	Details *common.Issues `json:"details,omitempty"`
 }
 
 type StatusResponse struct {
-	Status string `json:"status"`
+	Status string `json:"status" binding:"required"`
+}
+
+type StatusAndIdResponse struct {
+	Status string `json:"status" binding:"required"`
+	Id     any    `json:"id" binding:"required"`
 }
 
 // convenients
@@ -26,6 +31,10 @@ func ReplyGet[T any](c *gin.Context, data T) {
 
 func ReplyPost[T any](c *gin.Context, data T) {
 	c.JSON(http.StatusCreated, data)
+}
+
+func ReplyDelete[T any](c *gin.Context, data T) {
+	c.JSON(http.StatusOK, data)
 }
 
 func ReplyStatus(c *gin.Context, msg string) {

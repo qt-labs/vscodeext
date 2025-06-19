@@ -30,7 +30,13 @@ func GetReady(c *gin.Context) {
 	ReplyStatus(c, "ready")
 }
 
-func GetPresets(c *gin.Context) {
+func GetPresetsByNameOrType(c *gin.Context) {
+	name := c.Query("name")
+	if len(name) != 0 {
+		getPresetBy(c, name, "name")
+		return
+	}
+
 	var presets []common.PresetData
 	type_s := c.DefaultQuery("type", "")
 
@@ -67,8 +73,20 @@ func GetPresets(c *gin.Context) {
 }
 
 func GetPresetById(c *gin.Context) {
-	id := c.Param("id")
-	p, err := runner.Presets.Any.FindByUniqueId(id)
+	getPresetBy(c, c.Param("id"), "id")
+}
+
+// helpers
+func getPresetBy(c *gin.Context, value, by string) {
+	var p common.PresetData
+	var err error
+
+	if by == "id" {
+		p, err = runner.Presets.Any.FindByUniqueId(value)
+	} else {
+		p, err = runner.Presets.Any.FindByName(value)
+	}
+
 	if err != nil {
 		ReplyErrorMsg(c, common.ServerNoPreset)
 		return
@@ -81,11 +99,16 @@ func GetPresetById(c *gin.Context) {
 		return
 	}
 
+	prompt := getPromptFileContents(p.GetTemplateDir())
+	if prompt != nil {
+		prompt.UpdateDefaultValues(p.GetOptions())
+	}
+
 	ReplyGet(c, PresetDetailResponse{
 		Id:     p.GetUniqueId(),
 		Name:   p.GetName(),
 		Meta:   template.GetMeta(),
-		Prompt: getPromptFileContents(p.GetTemplateDir()),
+		Prompt: prompt,
 	})
 }
 

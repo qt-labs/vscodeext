@@ -7,37 +7,89 @@
 // How to use:
 // - Install the "REST Client" extension in VSCode.
 // - Start qtcli in server mode, for example:
-//     $ qtcli server start
+//     $ qtcli server start --tcp --port 8080
 //     $ cd <srcdir, e.g. qt-cli/src/> && go run . server start (for local dev)
 // - Click "Send Request" above any request to execute it.
 
 @baseUrl = http://localhost:8080/v1
-
-@presetCppClass = 2239089261
-@presetConsoleApp = 3972419898
-@presetInvalid = 1111111111
-
-@workingDir = C:/ws_temp
+@presetIdCppClass = 2239089261
+@presetIdQtQuickApp = 3605019760
 
 ###
-### Get presets
+### Retrieve preset information
 ###
 
-### Get a list of all available presets
+###
 GET {{baseUrl}}/presets HTTP/1.1
 
-### Get details of a specific preset - cpp class
-GET {{baseUrl}}/presets/{{presetCppClass}} HTTP/1.1
+###
+GET {{baseUrl}}/presets?type=project HTTP/1.1
 
-### Get details of a specific preset - console app
-GET {{baseUrl}}/presets/{{presetConsoleApp}} HTTP/1.1
+###
+GET {{baseUrl}}/presets?type=file HTTP/1.1
 
-### Get details of a specific preset - non existing
-GET {{baseUrl}}/presets/{{presetInvalid}} HTTP/1.1
+###
+GET {{baseUrl}}/presets?name=@projects/cpp/console HTTP/1.1
+
+###
+GET {{baseUrl}}/presets?name=non-existing-preset-name HTTP/1.1
+
+###
+GET {{baseUrl}}/presets/{{presetIdCppClass}} HTTP/1.1
+
+###
+GET {{baseUrl}}/presets/{{presetIdQtQuickApp}} HTTP/1.1
+
+###
+GET {{baseUrl}}/presets/0000000000 HTTP/1.1
+
+
+###
+### Managing custom presets
+###
+
+@newPresetId = 3399596650
+@newPresetName = mypreset
+
+### Create
+POST {{baseUrl}}/presets HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "{{newPresetName}}",
+    "presetId": "{{presetIdQtQuickApp}}",
+    "options": {
+        "qqcStyle": "Material",
+        "qqcTheme": "Dark"
+    }
+}
+
+### Read (by id)
+GET {{baseUrl}}/presets/{{newPresetId}} HTTP/1.1
+
+### Read (by name)
+GET {{baseUrl}}/presets?name={{newPresetName}} HTTP/1.1
+
+### Update
+PATCH {{baseUrl}}/presets/{{newPresetId}} HTTP/1.1
+Content-Type: application/json
+
+{
+    "options": {
+        "minimumQtVersion": "6.4",
+        "qqcStyle": "Universal"
+    }
+}
+
+### Delete
+DELETE {{baseUrl}}/presets/{{newPresetId}} HTTP/1.1
+
 
 ###
 ### Create a new item
 ###
+
+@workingDir = C:/ws_temp
 
 ### Create c++ class
 POST {{baseUrl}}/items HTTP/1.1
@@ -46,30 +98,55 @@ Content-Type: application/json
 {
     "name": "myclass",
     "workingDir": "{{workingDir}}",
-    "presetId": "{{presetCppClass}}"
+    "presetId": "{{presetIdCppClass}}"
 }
 
-### Create console application
+### Create qtquick application
 POST {{baseUrl}}/items HTTP/1.1
 Content-Type: application/json
 
 {
     "name": "myapp",
     "workingDir": "{{workingDir}}",
-    "presetId": "{{presetConsoleApp}}"
+    "presetId": "{{presetIdQtQuickApp}}"
 }
 
-### Create console application (dry run)
+### Create qtquick application (dry run)
 POST {{baseUrl}}/items?dry_run=true HTTP/1.1
 Content-Type: application/json
 
 {
     "name": "myapp2",
     "workingDir": "{{workingDir}}",
-    "presetId": "{{presetConsoleApp}}"
+    "presetId": "{{presetIdQtQuickApp}}"
 }
 
+### Validate
+POST {{baseUrl}}/items/validate HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "myapp",
+    "workingDir": "{{workingDir}}",
+    "presetId": "{{presetIdQtQuickApp}}"
+}
+
+### Validate - error case
+POST {{baseUrl}}/items/validate HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "myapp*",
+    "workingDir": "{{workingDir}}",
+    "presetId": "{{presetIdQtQuickApp}}"
+}
+
+
 ###
-### Delete server
+### Others
+###
+
+GET {{baseUrl}}/ready HTTP/1.1
+
 ###
 DELETE {{baseUrl}}/server HTTP/1.1

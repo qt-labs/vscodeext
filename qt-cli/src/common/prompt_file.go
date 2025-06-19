@@ -86,3 +86,11 @@ func (f *PromptFile) ExtractDefaults() util.StringAnyMap {
 func (f *PromptFile) GetContents() *PromptFileContents {
 	return &f.contents
 }
+
+func (fc *PromptFileContents) UpdateDefaultValues(options util.StringAnyMap) {
+	for i, step := range fc.Steps {
+		if value, ok := options[step.Id]; ok {
+			fc.Steps[i].DefaultValue = value
+		}
+	}
+}

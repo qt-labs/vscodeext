@@ -8,6 +8,7 @@ import (
 	"qtcli/common"
 	"qtcli/generator"
 	"qtcli/runner"
+	"qtcli/util"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,16 @@ type NewItemResponse struct {
 	FilesDir   string   `json:"filesDir" binding:"required"`
 	WorkingDir string   `json:"workingDir" binding:"required"`
 	DryRun     bool     `json:"dryRun" binding:"required"`
+}
+
+type NewCustomPresetRequest struct {
+	Name     string         `json:"name" binding:"required"`
+	PresetId string         `json:"presetId" binding:"required"`
+	Options  map[string]any `json:"options"`
+}
+type NewCustomPresetResponse struct {
+	Status   string `json:"status" binding:"required"`
+	PresetId string `json:"presetId" binding:"required"`
 }
 
 type PostNewItemContext struct {
@@ -105,4 +116,40 @@ func PostItemsValidate(c *gin.Context) {
 	}
 
 	ReplyStatus(c, common.InputOkay)
+}
+
+func PostCustomPreset(c *gin.Context) {
+	var req NewCustomPresetRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ReplyErrorMsg(c, err.Error())
+		return
+	}
+
+	src, err := runner.Presets.Any.FindByUniqueId(req.PresetId)
+	if err != nil {
+		ReplyErrorMsg(c, err.Error())
+		return
+	}
+
+	_, err = runner.Presets.User.FindByName(req.Name)
+	if err == nil {
+		ReplyErrorMsg(c, common.ServerPresetAlreadyExists)
+		return
+	}
+
+	// TODO: validate name - ensure not starting with '@', not special chars...
+	newPreset := common.NewPresetData(
+		req.Name,
+		src.GetTemplateDir(),
+		util.Merge(src.GetOptions(), req.Options),
+	)
+
+	f := runner.Presets.User.GetFile()
+	f.Add(newPreset)
+	f.Save()
+
+	ReplyPost(c, StatusAndIdResponse{
+		Status: common.ServerStatusCreated,
+		Id:     newPreset.GetUniqueId(),
+	})
 }
