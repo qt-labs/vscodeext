@@ -33,7 +33,7 @@ func TestHandler_GetPresets(t *testing.T) {
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Request = httptest.NewRequest("GET", "/dont-care"+query, nil)
 
-			GetPresets(ctx)
+			GetPresetsByNameOrType(ctx)
 			ensureHttpCode(t, w, http.StatusOK)
 			ensureResponseType[PresetsResponse](t, w)
 		})
