@@ -208,7 +208,6 @@
     "ci:all": "npm run ci:webview && npm ci",
     "install:all": "npm run install:webview && npm install",
     "ci:webview": "cd webview-ui && npm ci",
-    "dev:webview": "cd webview-ui && npm run dev",
     "build:webview": "cd webview-ui && npm run build",
     "install:webview": "cd webview-ui && npm install"
   },
@@ -232,6 +231,7 @@
   "dependencies": {
     "axios": "^1.9.0",
     "command-exists": "^1.2.9",
+    "dotenv": "^16.5.0",
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",

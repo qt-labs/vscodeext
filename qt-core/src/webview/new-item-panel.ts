@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 import { createLogger } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
@@ -24,9 +26,16 @@ const PanelColumn = vscode.ViewColumn.One;
 const PanelViewType = 'ViewTypeWizard';
 
 // defintions for webview-ui
-const UiRootDir = 'webview-ui/dist/';
+const UiDir = 'webview-ui';
+const UiDistDir = `${UiDir}/dist/`;
 const UiJsFile = 'index.js';
 const UiCssFile = 'index.css';
+
+// dev
+dotenv.config({ path: path.resolve(__dirname, `../${UiDir}/.env`) });
+const DevPort = process.env.VITE_DEV_PORT ?? '5173';
+const DevHost = `localhost:${DevPort}`;
+const DevEntryPoint = 'src/app/main.ts';
 
 export class NewItemPanel {
   public static instance: NewItemPanel | undefined;
@@ -34,8 +43,11 @@ export class NewItemPanel {
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _cmdHandler = new NewItemCommandHandler();
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-    panel.webview.html = createWebviewContent(panel.webview, extensionUri);
+  private constructor(
+    panel: vscode.WebviewPanel,
+    context: vscode.ExtensionContext
+  ) {
+    panel.webview.html = createWebviewContent(panel.webview, context);
     this._disposables = [
       panel.onDidDispose(this.dispose.bind(this)),
       panel.webview.onDidReceiveMessage((m) => {
@@ -63,14 +75,16 @@ export class NewItemPanel {
     this._panel.dispose();
   }
 
-  public static render(extensionUri: vscode.Uri) {
+  public static render(context: vscode.ExtensionContext) {
+    const uri = context.extensionUri;
+
     if (!NewItemPanel.instance) {
-      const p = createWebviewPanel(extensionUri);
-      NewItemPanel.instance = new NewItemPanel(p, extensionUri);
+      const root = vscode.Uri.joinPath(uri, UiDistDir);
+      const panel = createWebviewPanel(root);
+      NewItemPanel.instance = new NewItemPanel(panel, context);
     }
 
-    void startQtcliServer(extensionUri);
-
+    void startQtcliServer(uri);
     NewItemPanel.instance._panel.reveal(PanelColumn);
     NewItemPanel.instance.post(CommandId.PanelRevealed, createInitData());
   }
@@ -92,10 +106,10 @@ function createInitData() {
   };
 }
 
-function createWebviewPanel(extensionUri: vscode.Uri): vscode.WebviewPanel {
+function createWebviewPanel(rootDir: vscode.Uri): vscode.WebviewPanel {
   const option = {
     enableScripts: true,
-    localResourceRoots: [vscode.Uri.joinPath(extensionUri, UiRootDir)]
+    localResourceRoots: [rootDir]
   };
 
   return vscode.window.createWebviewPanel(
@@ -106,11 +120,31 @@ function createWebviewPanel(extensionUri: vscode.Uri): vscode.WebviewPanel {
   );
 }
 
-function createWebviewContent(webview: vscode.Webview, baseUri: vscode.Uri) {
-  const root = UiRootDir.split('/');
+function createWebviewContent(
+  webview: vscode.Webview,
+  context: vscode.ExtensionContext
+) {
+  const root = UiDistDir.split('/');
+  const baseUri = context.extensionUri;
   const js = getUri(webview, baseUri, [...root, UiJsFile]);
   const css = getUri(webview, baseUri, [...root, UiCssFile]);
-  const nonce = getNonce();
+
+  const dev = context.extensionMode === vscode.ExtensionMode.Development;
+  const devTags = `
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'none';
+        img-src https: data:;
+        style-src 'unsafe-inline' http://${DevHost};
+        script-src http://${DevHost} 'unsafe-eval';
+        connect-src ws://${DevHost} http://${DevHost};
+      ">
+    <script type="module" src="http://${DevHost}/${DevEntryPoint}"></script>
+    `;
+
+  const prodTags = `
+    <link rel="stylesheet" type="text/css" href="${css.toString()}">
+    <script defer nonce="${getNonce()}" src="${js.toString()}"></script>
+    `;
 
   return /*html*/ `
     <!DOCTYPE html>
@@ -119,8 +153,7 @@ function createWebviewContent(webview: vscode.Webview, baseUri: vscode.Uri) {
         <title>Wizard</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" type="text/css" href="${css.toString()}">
-        <script defer nonce="${nonce}" src="${js.toString()}"></script>
+        ${dev ? devTags : prodTags}
       </head>
       <body>
         <div id="app"></div>

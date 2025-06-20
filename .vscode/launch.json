@@ -27,7 +27,7 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-core"],
       "outFiles": ["${workspaceFolder}/qt-core/out/**/*.js"],
-      "preLaunchTask": "npm qt-core watch"
+      "preLaunchTask": "npm qt-core watch + vite:start"
     },
     {
       "name": "Run qt-ui Extension",

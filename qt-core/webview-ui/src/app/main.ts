@@ -8,6 +8,4 @@ const app = mount(App, {
   target: document.getElementById('app')!
 });
 
-document.documentElement.classList.add(import.meta.env.DEV ? 'dev' : 'prod');
-
 export default app;

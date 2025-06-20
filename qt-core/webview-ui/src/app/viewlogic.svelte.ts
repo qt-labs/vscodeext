@@ -156,16 +156,9 @@ async function loadPresets() {
 }
 
 function loadDefaultWorkingDir() {
-  let candidate = input.workingDir;
-
-  if (import.meta.env.DEV) {
-    candidate = '/dev';
-  } else {
-    candidate =
-      data.selected.type === 'file'
-        ? data.configs.newFileBaseDir
-        : data.configs.newProjectBaseDir;
-  }
+  let candidate = data.selected.type === 'file'
+    ? data.configs.newFileBaseDir
+    : data.configs.newProjectBaseDir;
 
   if (input.workingDir !== candidate) {
     input.workingDir = candidate;
