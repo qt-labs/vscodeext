@@ -4,24 +4,28 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Button } from 'flowbite-svelte';
+  import type { Placement } from '@floating-ui/dom';
+  import { Button, Tooltip } from 'flowbite-svelte';
   import { CheckOutline } from 'flowbite-svelte-icons';
 
   let {
     id = '',
     text = '',
+    tooltip = '',
+    tooltipPlacement = 'top' as Placement,
     icon = CheckOutline,
     flat = false,
     visible = true,
     disabled = false,
-    onClicked
+    class: className = '',
+    onClicked = () => {}
   } = $props();
 </script>
 
 {#if visible}
   <Button
     {disabled}
-    class={`qt-button ${flat ? 'flat' : ''}`}
+    class={`qt-button ${flat ? 'flat' : ''} ${className}`}
     on:click={() => {
       onClicked(id);
     }}
@@ -32,4 +36,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     {/if}
     {text}
   </Button>
+
+  {#if tooltip.length !== 0}
+    <Tooltip
+      placement={tooltipPlacement}
+      data-placement={tooltipPlacement}
+      class="qt-tooltip"
+      offset={10}
+    >
+      {tooltip}
+    </Tooltip>
+  {/if}
 {/if}

@@ -14,8 +14,15 @@ export enum CommandId {
   UiGetAllPresets,
   UiGetPresetById,
   UiValidateInputs,
+  UiManageCustomPreset,
   UiSelectWorkingDir
 }
+
+export type ManageCustomPresetArgs =
+  | { action: 'create'; name: string }
+  | { action: 'rename'; name: string }
+  | { action: 'update' }
+  | { action: 'delete' };
 
 export interface Command<T = unknown> {
   id: CommandId;

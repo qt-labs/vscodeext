@@ -12,6 +12,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import PresetList from './PresetList.svelte';
   import PresetTypeSelector from './PresetTypeSelector.svelte';
   import PresetOptionsTable from './PresetOptionsTable.svelte';
+  import PresetOptionsHeader from './PresetOptionsHeader.svelte';
 </script>
 
 <div
@@ -28,16 +29,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <SectionLabel text={texts.wizard.description} />
     <div>
       <P class="qt-label whitespace-pre-wrap leading-relaxed"
-        >{(data.selected.preset?.meta?.description ?? '').replaceAll(
-          '\n',
-          '\n\n'
-        )}
+        >{(data.selected.preset?.description ?? '').replaceAll('\n', '\n\n')}
       </P>
     </div>
     <div class="flex-grow"></div>
 
-    {#if data.selected.preset?.prompt?.steps}
-      <SectionLabel text={texts.wizard.options} />
+    {#if data.selected.preset?.steps}
+      <PresetOptionsHeader />
       <PresetOptionsTable />
     {/if}
   </div>

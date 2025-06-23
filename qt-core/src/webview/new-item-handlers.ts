@@ -31,6 +31,7 @@ export class NewItemCommandHandler {
       [CommandId.UiGetAllPresets, this.onUiGetAllPresets],
       [CommandId.UiGetPresetById, this.onUiGetPresetById],
       [CommandId.UiValidateInputs, this.onUiValidateInputs],
+      [CommandId.UiManageCustomPreset, this.onUiManageCustomPreset],
       [CommandId.UiSelectWorkingDir, this.onUiSelectWorkingDir]
     ]);
   }
@@ -118,6 +119,48 @@ export class NewItemCommandHandler {
     const id = _.toString(cmd.payload);
     const data = await this._qtcliRest.get(`/presets/${id}`);
     this._panel?.post(cmd.id, { data }, cmd.tag);
+  };
+
+  private readonly onUiManageCustomPreset = async (cmd: Command) => {
+    const action = _.get(cmd.payload, 'action', '') as string;
+    const presetId = _.get(cmd.payload, 'presetId', '') as string;
+    if (presetId.length === 0) {
+      return;
+    }
+
+    try {
+      switch (action) {
+        case 'create': {
+          const data = await this._qtcliRest.post('/presets', cmd.payload);
+          this._panel?.postDataReply(cmd, data);
+          break;
+        }
+
+        case 'rename': {
+          await this._qtcliRest.post('/presets', cmd.payload);
+          await this._qtcliRest.delete(`/presets/${presetId}`);
+          this._panel?.postDataReply(cmd, cmd.payload);
+          break;
+        }
+
+        case 'update': {
+          await this._qtcliRest.patch(`/presets/${presetId}`, cmd.payload);
+          this._panel?.postDataReply(cmd, cmd.payload);
+          break;
+        }
+
+        case 'delete': {
+          const data = await this._qtcliRest.delete(`/presets/${presetId}`);
+          this._panel?.postDataReply(cmd, data);
+          break;
+        }
+      }
+    } catch (e) {
+      if (e instanceof QtcliRestError) {
+        await vscode.window.showErrorMessage(e.toString());
+        this._panel?.postErrorReplyFrom(cmd, e.message, e.details);
+      }
+    }
   };
 
   private readonly onUiValidateInputs = async (cmd: Command) => {

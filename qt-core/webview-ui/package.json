@@ -38,6 +38,8 @@
   },
   "dependencies": {
     "@types/vscode-webview": "^1.57.5",
-    "marked": "^15.0.7"
+    "marked": "^15.0.7",
+    "nanoid": "^5.1.5",
+    "zod": "^3.25.67"
   }
 }

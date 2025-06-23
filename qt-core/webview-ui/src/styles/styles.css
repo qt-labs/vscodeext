@@ -33,7 +33,7 @@ html {
 .qt-label.highlight {
   color: var(--qt-text-highlight);
   font-size: 1.1rem;
-  @apply font-semibold
+  @apply font-semibold;
 }
 
 /* modal */
@@ -76,6 +76,12 @@ html {
 .qt-button.flat:hover {
   color: var(--qt-button-text);
   background: var(--qt-button-fillHover);
+}
+
+.qt-button.flat-borderless {
+  color: var(--qt-text-normal);
+  background: transparent;
+  border: 1px solid transparent;
 }
 
 .qt-button:disabled {
@@ -242,6 +248,31 @@ html {
   background: var(--qt-itemSelection-fill);
 }
 
+/* picker (combobox, menu, etc) */
+.qt-picker-trigger {
+  color: var(--vscode-dropdown-foreground);
+  background-color: var(--vscode-dropdown-background);
+  border-color: var(--vscode-settings-dropdownBorder);
+  border-width: 1px;
+  border-radius: var(--qt-border-radius);
+  cursor: pointer;
+  line-height: 2;
+  font-weight: normal;
+  box-shadow: none;
+  @apply px-2;
+}
+
+.qt-picker-trigger.active,
+.qt-picker-trigger:hover {
+  color: var(--vscode-button-foreground);
+  background-color: var(--vscode-button-background);
+  border: 1px solid var(--vscode-widget-border, transparent);
+}
+
+.qt-picker-trigger:focus-visible {
+  @apply qt-focusRing;
+}
+
 /* alert - for bad inputs, etc. */
 .qt-alert {
   opacity: 90%;
@@ -258,8 +289,15 @@ html {
 }
 
 /* others */
-.qt-simple-table {
-  color: var(--qt-widget-separator);
-  @apply bg-transparent;
-  @apply text-base;
+.qt-popup {
+  background: var(--vscode-sideBar-background);
+  border: 1px solid var(--vscode-focusBorder);
+  border-radius: var(--qt-border-radius);
+  @apply translate-y-[100px];
+  @apply md:-translate-y-[100px];
+  @apply shadow-lg;
+}
+
+.qt-popup-backdrop {
+  @apply bg-white/5;
 }

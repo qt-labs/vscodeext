@@ -1,11 +1,18 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import { z } from 'zod';
+
 import { vscode } from '@/app/vscode';
 import { isErrorResponse } from '@shared/types';
-import { type CommandReply, CommandId } from '@shared/message';
+import {
+  CommandId,
+  type CommandReply,
+  type ManageCustomPresetArgs
+} from '@shared/message';
 import { type Preset, isPreset, isPresetArray } from './types.svelte';
 import { data, input, ui } from './states.svelte';
+import * as texts from './texts';
 
 export async function onAppMount() {
   vscode.onDidReceiveNotification(async (r: CommandReply) => {
@@ -74,21 +81,44 @@ export async function setPresetType(type: string) {
   }
 }
 
-export async function setSelectedPreset(preset: Preset, index: number) {
+export async function setSelectedPresetByName(name: string) {
+  const index = data.presets.findIndex((p) => p.name === name);
+  if (index !== -1) {
+    setSelectedPresetAt(index);
+  }
+}
+
+export async function setSelectedPresetAt(index: number) {
   if (!data.serverReady) return;
+  if (index < 0 || index >= data.presets.length) return;
 
-  data.selected.preset = preset;
-  data.selected.presetIndex = index;
+  const p = data.presets[index];
+  if (p) {
+    data.selected.presetIndex = index;
+    data.selected.preset.setData(p);
+    ui.unsavedOptionChanges = {};
 
-  if (preset.id.length > 0) {
-    try {
-      const r = await vscode.post(CommandId.UiGetPresetById, preset.id);
-      if (isPreset(r)) {
-        data.selected.preset = r;
-      }
-    } catch (e) {
-      reportUiError('Error getting preset by id', e);
+    await refreshPresetDetails();
+  }
+}
+
+async function refreshPresetDetails() {
+  if (!data.selected.preset.isValid()) {
+    return;
+  }
+
+  try {
+    const id = data.selected.preset.id;
+    if (id.length === 0) {
+      return;
     }
+
+    const r = await vscode.post(CommandId.UiGetPresetById, id);
+    if (isPreset(r)) {
+      data.selected.preset.setData(r);
+    }
+  } catch (e) {
+    reportUiError('Error getting preset by id', e);
   }
 }
 
@@ -142,6 +172,85 @@ export async function validateInput() {
   }
 }
 
+export async function manageCustomPreset(args: ManageCustomPresetArgs) {
+  const presetId = data.selected.preset?.id;
+  if (!presetId) {
+    return;
+  }
+
+  const action = args.action;
+  const options = $state.snapshot(ui.unsavedOptionChanges);
+  const isCustom = data.selected.preset.isCustomPreset();
+  const isDefault = data.selected.preset.isDefaultPreset();
+
+  switch (args.action) {
+    case 'create': {
+      const name = args.name.trim();
+      if (isDefault && name.length !== 0) {
+        const payload = { action, presetId, name, options };
+        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await loadPresets();
+        await setSelectedPresetByName(name);
+      }
+      break;
+    }
+
+    case 'rename': {
+      const name = args.name.trim();
+      if (isCustom && name.length !== 0 && name !== data.selected.preset.name) {
+        const payload = { action, presetId, name };
+        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await loadPresets();
+        await setSelectedPresetByName(name);
+      }
+      break;
+    }
+
+    case 'update':
+      if (isCustom && Object.keys(options).length !== 0) {
+        const payload = { action, presetId, options };
+        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await setSelectedPresetAt(data.selected.presetIndex);
+      }
+      break;
+
+    case 'delete':
+      if (isCustom) {
+        const payload = { action, presetId };
+        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await loadPresets();
+        await setSelectedPresetAt(Math.max(0, data.selected.presetIndex - 1));
+      }
+      break;
+  }
+}
+
+export function validatePresetName(name: string): string | undefined {
+  const current = data.selected.preset?.name;
+  if (name.trim() === current) {
+    return undefined;
+  }
+
+  const m = texts.wizard.presetNameErrors;
+  const taken = data.presets.map((p) => {
+    return p.name;
+  });
+  const schema = z
+    .string()
+    .trim()
+    .nonempty({ message: m.empty })
+    .max(30, { message: m.tooLong })
+    .regex(/^[a-zA-Z0-9_-]+$/i, { message: m.invalid })
+    .refine((v) => !taken.includes(v), { message: m.alreadyTaken });
+
+  const result = schema.safeParse(name);
+  if (!result.success) {
+    return result.error.errors[0].message;
+  }
+
+  return undefined;
+}
+
 async function loadPresets() {
   if (!data.serverReady) return;
 
@@ -174,7 +283,7 @@ function loadDefaultWorkingDir() {
 
 async function selectAnyPresetAndValidate() {
   if (data.presets.length > 0) {
-    await setSelectedPreset(data.presets[0], 0);
+    await setSelectedPresetAt(0);
     await validateInput();
   }
 }

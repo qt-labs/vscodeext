@@ -4,41 +4,45 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import {
-    P,
-    Table,
-    TableBody,
-    TableBodyRow,
-    TableBodyCell
-  } from 'flowbite-svelte';
+  import type { Component } from 'svelte';
+  import { P } from 'flowbite-svelte';
 
-  import { data } from './states.svelte';
+  import { data, ui } from './states.svelte';
+  import type { PresetPromptStep } from './types.svelte';
+  import PromptStepInput from './PromptStepInput.svelte';
+  import PromptStepPicker from './PromptStepPicker.svelte';
+  import PromptStepConfirm from './PromptStepConfirm.svelte';
 
-  const steps = $derived(data.selected.preset?.prompt?.steps);
-  const toDisplayValue = (value: unknown) => {
-    if (typeof value === 'string' && value.length === 0) {
-      return '-';
-    } else if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No';
-    }
+  const steps = $derived(data.selected.preset?.steps);
 
-    return value;
+  type Props = {
+    step: PresetPromptStep | undefined;
+    onValueChanged: (_step: PresetPromptStep, _value: unknown) => void;
   };
+
+  const stepComponents: Record<string, Component<Props, object, ''>> = {
+    input: PromptStepInput,
+    picker: PromptStepPicker,
+    confirm: PromptStepConfirm
+  };
+
+  function onValueChanged(step: PresetPromptStep, value: unknown) {
+    ui.unsavedOptionChanges[step.id] = value;
+  }
 </script>
 
 {#if steps}
-  <Table color="custom" class="qt-simple-table">
-    <TableBody>
-      {#each steps as step (step.id)}
-        <TableBodyRow class="last:border-0">
-          <TableBodyCell class="p-0.5">
-            <P class="qt-label">{step.question}</P>
-          </TableBodyCell>
-          <TableBodyCell class="p-0.5">
-            <P class="qt-label">{toDisplayValue(step.default)}</P>
-          </TableBodyCell>
-        </TableBodyRow>
-      {/each}
-    </TableBody>
-  </Table>
+  <div class="grid grid-cols-[1fr_max-content] gap-1">
+    {#each steps as step (step.id)}
+      <P class="qt-label">{step.question}</P>
+      {#if step.type in stepComponents}
+        {@const Comp = stepComponents[step.type]}
+        <div class="flex item-center min-w-[120px]">
+          <Comp {step} {onValueChanged} />
+        </div>
+      {:else}
+        <P class="qt-label">{step.default}</P>
+      {/if}
+    {/each}
+  </div>
 {/if}

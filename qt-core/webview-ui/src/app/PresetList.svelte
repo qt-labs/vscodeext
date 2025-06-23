@@ -4,10 +4,16 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Listgroup, ListgroupItem } from 'flowbite-svelte';
+  import { Listgroup } from 'flowbite-svelte';
 
-  import { data } from './states.svelte';
+  import { data, ui } from './states.svelte';
+  import { PresetWrapper } from './types.svelte';
   import * as viewlogic from './viewlogic.svelte';
+  import PresetListItem from './PresetListItem.svelte';
+
+  let wrappedPresets = $derived.by(() => {
+    return data.presets.map((p) => new PresetWrapper(p));
+  });
 
   const adjustSelectedIndex = (offset: number) => {
     if (!data.selected.preset || data.selected.presetIndex < 0) {
@@ -19,7 +25,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     candidate = Math.min(candidate, data.presets.length - 1);
 
     if (candidate != data.selected.presetIndex) {
-      viewlogic.setSelectedPreset(data.presets[candidate], candidate);
+      viewlogic.setSelectedPresetAt(candidate);
     }
   };
 
@@ -28,6 +34,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       adjustSelectedIndex(-1);
     } else if (e.key === 'ArrowDown') {
       adjustSelectedIndex(+1);
+    } else if (e.key === 'Delete') {
+      if (data.selected.preset.isCustomPreset()) {
+        ui.activeDialog = 'delete';
+      }
     } else {
       return;
     }
@@ -40,6 +50,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         item.focus();
       }
     }
+
+    e.preventDefault();
   };
 </script>
 
@@ -50,25 +62,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     onkeydown={onKeyPressed}
     tabindex={0}
   >
-    {#each data.presets as preset, index (index)}
-      <ListgroupItem
-        class="qt-list-item flex flex-row"
-        currentClass="selected"
-        current={data.selected.presetIndex === index}
-        on:click={() => {
-          viewlogic.setSelectedPreset(preset, index);
-        }}
-      >
-        <div class="flex-1">
-          {viewlogic.createPresetDisplayText(preset)}
-        </div>
-
-        {#if !preset.name.startsWith('@')}
-          <div class="ml-auto mr-0.5 qt-badge">{preset.meta.title}</div>
-        {:else}
-          <div></div>
-        {/if}
-      </ListgroupItem>
+    {#each wrappedPresets as preset, index (preset.id)}
+      <PresetListItem {preset} {index} />
     {/each}
   </Listgroup>
 </div>
