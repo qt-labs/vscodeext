@@ -42,10 +42,12 @@ func ReplyStatus(c *gin.Context, msg string) {
 }
 
 func ReplyError(c *gin.Context, msg string, details *common.Issues) {
-	c.JSON(http.StatusBadRequest, ErrorResponse{
-		Error:   msg,
-		Details: details,
-	})
+	e := ErrorResponse{Error: msg}
+	if details != nil && len(*details) != 0 {
+		e.Details = details
+	}
+
+	c.JSON(http.StatusBadRequest, e)
 }
 
 func ReplyErrorMsg(c *gin.Context, msg string) {

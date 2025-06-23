@@ -10,12 +10,14 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { ui } from './states.svelte';
   import { onModalClosed } from './viewlogic.svelte';
   import LoadingMask from '@/comps/LoadingMask.svelte';
+  import WizardAllDialogs from './WizardAllDialogs.svelte';
   import WizardSectionInput from './WizardSectionInput.svelte';
   import WizardSectionPresets from './WizardSectionPresets.svelte';
 </script>
 
 <Modal
   open
+  dismissable={false}
   size="lg"
   color="none"
   class="qt-modal w-[80vw] h-[90vh] min-w-[500px] min-h-[500px]"
@@ -36,5 +38,6 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       busyText={texts.loading.busy}
       closeText={texts.loading.close}
     />
+    <WizardAllDialogs />
   </div>
 </Modal>

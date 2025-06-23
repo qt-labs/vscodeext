@@ -2,31 +2,93 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import _ from 'lodash';
+import { FileCloneOutline } from 'flowbite-svelte-icons';
 
 export interface Preset {
   id: string;
   name: string;
-  meta: {
-    title: string;
-    description: string;
-  };
+  meta: PresetMeta;
   prompt?: PresetPrompt;
 }
 
-export interface PresetPromptStep {
-  id: string;
+export interface PresetMeta {
   type: string;
-  question: string;
-  default: unknown;
-  items: unknown[];
-  when: string;
-  rules: object[];
+  title: string;
+  description: string;
 }
 
 export interface PresetPrompt {
   version: string;
   steps: PresetPromptStep[];
   consts: object[];
+}
+
+export interface PresetPromptStep {
+  id: string;
+  type: string;
+  question: string;
+  default: string;
+  items: PresetPromptStepItem[];
+  when: string;
+  rules: object[];
+}
+
+export interface PresetPromptStepItem {
+  text: string;
+  data: unknown;
+  description: string;
+  checked: string;
+}
+
+export class PresetWrapper {
+  private _raw = $state(undefined as Preset | undefined);
+
+  constructor(data?: Preset) {
+    this.setData(data);
+  }
+
+  get id() {
+    return this._raw?.id ?? '';
+  }
+  get name() {
+    return this._raw?.name ?? '';
+  }
+  get title() {
+    return this._raw?.meta.title;
+  }
+  get description() {
+    return this._raw?.meta.description ?? '';
+  }
+  get steps() {
+    return this._raw?.prompt?.steps;
+  }
+  get itemText() {
+    if (this.isValid() && this.isDefaultPreset() && this._raw?.meta.title) {
+      return this._raw?.meta.title;
+    }
+
+    return this.name;
+  }
+
+  public isValid() {
+    return this._raw !== undefined;
+  }
+
+  public isCustomPreset() {
+    return this.name.length > 0 && !this.name.startsWith('@');
+  }
+
+  public isDefaultPreset() {
+    return this.name.length > 0 && this.name.startsWith('@');
+  }
+
+  public hasSteps() {
+    return this.steps !== undefined && this.steps.length > 0;
+  }
+
+  public setData(data: Preset | undefined) {
+    this._raw = data;
+  }
 }
 
 export class InputIssue {
@@ -46,6 +108,11 @@ export class InputIssue {
   public isError(): boolean {
     return this.level.toLocaleLowerCase() === 'error';
   }
+}
+
+export interface PickerItem {
+  text: string;
+  icon?: typeof FileCloneOutline | undefined;
 }
 
 // type guard functions

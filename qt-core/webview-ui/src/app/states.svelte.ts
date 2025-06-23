@@ -1,7 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { type Preset, InputIssue } from './types.svelte';
+import { type Preset, InputIssue, PresetWrapper } from './types.svelte';
 
 export const data = $state({
   serverReady: false,
@@ -12,7 +12,7 @@ export const data = $state({
   presets: [] as Preset[],
   selected: {
     type: 'project',
-    preset: undefined as Preset | undefined,
+    preset: new PresetWrapper(),
     presetIndex: -1
   }
 });
@@ -36,5 +36,8 @@ export const ui = $state({
     delayedTimerId: null as NodeJS.Timeout | null
   },
 
-  canCreate: true
+  activeDialog: undefined as 'create' | 'rename' | 'delete' | undefined,
+
+  canCreate: true,
+  unsavedOptionChanges: {} as Record<string, unknown>
 });

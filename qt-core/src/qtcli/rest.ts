@@ -4,7 +4,7 @@
 import os from 'os';
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 
-import { ErrorResponse, Issue } from '@/webview/shared/types';
+import { isErrorResponse, Issue } from '@/webview/shared/types';
 
 // axios wrapper
 export class QtcliRestClient {
@@ -29,8 +29,12 @@ export class QtcliRestClient {
     return this.call({ method: 'post', url, data, params });
   }
 
-  public async delete(url: string) {
-    return this.call({ method: 'delete', url });
+  public async patch(url: string, data?: unknown) {
+    return this.call({ method: 'patch', url, data });
+  }
+
+  public async delete(url: string, data?: unknown) {
+    return this.call({ method: 'delete', url, data });
   }
 
   public async call<T = unknown>(req: AxiosRequestConfig): Promise<T> {
@@ -65,31 +69,49 @@ export class QtcliRestClient {
 }
 
 export class QtcliRestError extends Error {
-  public details = [] as Issue[];
-
-  constructor(message: string, details?: Issue[]) {
+  constructor(
+    message: string,
+    public details: Issue[] = []
+  ) {
     super(message);
     this.name = 'QtcliRestError';
-
-    if (details) {
-      this.details = details;
-    }
+    Object.setPrototypeOf(this, QtcliRestError.prototype);
   }
 
   public static from(e: unknown) {
-    if (isAxiosError<ErrorResponse>(e)) {
-      const data = e.response?.data;
-      if (data) {
-        return new QtcliRestError(data.error, data.details);
+    let message = '';
+    let details: Issue[] = [];
+
+    if (isAxiosError(e)) {
+      const data = e.response?.data as unknown;
+      if (isErrorResponse(data)) {
+        message = data.error;
+        details = data.details ?? [];
+      } else {
+        message = e.message;
+        details = [
+          {
+            level: 'error',
+            field: 'method',
+            message: (e.config?.method ?? '').toUpperCase()
+          },
+          {
+            level: 'error',
+            field: 'url',
+            message: e.config?.url ?? ''
+          }
+        ];
       }
+    } else {
+      message = e instanceof Error ? e.message : String(e);
     }
 
-    return new QtcliRestError(e instanceof Error ? e.message : String(e));
+    return new QtcliRestError(message, details);
   }
 
   public override toString(): string {
-    const details = this.details.map((d) => d.message).join(', ');
-    return details ? `${this.message} - ${details}` : this.message;
+    const all = this.details.map((d) => d.message).join(', ');
+    return all.length > 0 ? `${this.message} - ${all}` : this.message;
   }
 }
 

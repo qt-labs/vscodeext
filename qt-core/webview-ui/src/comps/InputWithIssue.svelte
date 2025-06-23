@@ -1,27 +1,37 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
+  import { nanoid } from 'nanoid';
   import { Input, Button, Alert } from 'flowbite-svelte';
   import { CircleMinusSolid, InfoCircleOutline } from 'flowbite-svelte-icons';
 
   let {
     value = $bindable(''),
-    onInput,
     level = '',
-    message = undefined,
+    message = undefined as string | undefined,
+    alertPosition = 'top' as 'top' | 'bottom',
+    class: className = '',
+    onInput,
+    onEnter = () => {},
     ...restProps
   } = $props();
 
-  const id = 'input_name';
+  const id = `input_${nanoid()}`;
   let hovered = $state(false);
   let focused = $state(false);
-  let hasIssue = $derived(message && message.length > 0);
+  let hasIssue = $derived(message !== undefined && message.length > 0);
 
   export function focus() {
     document.getElementById(id)?.focus();
+  }
+
+  function onKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      onEnter();
+    }
   }
 </script>
 
@@ -30,7 +40,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <Alert
       border
       color="none"
-      class="absolute w-full bottom-full -mb-0.5 qt-alert"
+      class={`qt-alert absolute w-full z-1
+        ${alertPosition === 'top' ? 'bottom-full -mb-0.5' : 'top-full -mt-0.5'}
+      `}
     >
       {message}
     </Alert>
@@ -39,8 +51,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   <Input
     {id}
     type="text"
-    required
-    class={`qt-input ${hasIssue ? 'error' : ''}`}
+    class={`qt-input ${hasIssue ? 'error' : ''} ${className}`}
     bind:value
     onblur={() => {
       focused = false;
@@ -50,6 +61,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       (e.target as HTMLInputElement).select();
       focused = true;
     }}
+    on:keydown={onKeyDown}
     {...restProps}
   >
     <Button

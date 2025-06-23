@@ -12,9 +12,10 @@ import {
   getNewProjectBaseDir
 } from '@/qtcli/commands';
 import { getUri, getNonce } from './utils';
-import { CommandId } from '@/webview/shared/message';
+import { Command, CommandId } from '@/webview/shared/message';
 import { NewItemCommandHandler } from './new-item-handlers';
 import * as texts from '@/texts';
+import { ErrorResponse, Issue } from './shared/types';
 
 const logger = createLogger('new-item-panel');
 let qtcliRunner: QtcliRunner | undefined = undefined;
@@ -81,6 +82,21 @@ export class NewItemPanel {
     tag: string | undefined = undefined
   ) {
     void this._panel.webview.postMessage({ id, payload, tag });
+  }
+
+  public postDataReply(cmd: Command, data: unknown) {
+    this.post(cmd.id, { data }, cmd.tag);
+  }
+
+  public postErrorReply(cmd: Command, error: unknown) {
+    this.post(cmd.id, { error }, cmd.tag);
+  }
+
+  public postErrorReplyFrom(cmd: Command, msg: string, details: Issue[]) {
+    this.postErrorReply(cmd, {
+      error: msg,
+      details
+    } as ErrorResponse);
   }
 }
 
