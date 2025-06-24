@@ -1,6 +1,6 @@
 version: "1"
 
-meta: 
+meta:
   type: file
   title: Qt resource file
   description: Creates a Qt resource file (.qrc).

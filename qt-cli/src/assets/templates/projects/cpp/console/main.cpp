@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    
+
     // Set up code that uses the Qt event loop here.
     // Call app.quit() or app.exit() to quit the application.
     // A not very useful example would be including
