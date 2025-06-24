@@ -1,10 +1,10 @@
 version: "1"
 
-meta: 
+meta:
   type: file
   title: QML file
   description: >-
-    Creates a QML file with boilerplate code, 
+    Creates a QML file with boilerplate code,
     starting with "import QtQuick".
 
 files:
