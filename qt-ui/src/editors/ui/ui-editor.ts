@@ -72,6 +72,9 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           designerServer.sendFile(document.uri.fsPath);
           logger.info('File sent to designer server: ' + document.uri.fsPath);
           break;
+        case 'openWithTextEditor':
+          void UIEditorProvider.openWithTextEditor(document);
+          break;
         default:
           logger.error('Unknown message type');
           throw new Error('Unknown message type');
@@ -79,7 +82,27 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     });
     return Promise.resolve();
   }
-
+  private static async openWithTextEditor(
+    document: vscode.TextDocument
+  ): Promise<void> {
+    // Reveal the file in the current editor tab instead of opening a new one
+    await vscode.commands.executeCommand(
+      'workbench.action.revertAndCloseActiveEditor'
+    );
+    await vscode.commands.executeCommand(
+      'vscode.openWith',
+      document.uri,
+      'default',
+      {
+        preview: false,
+        preserveFocus: false
+      }
+    );
+    telemetry.sendAction('openWithTextEditor');
+    logger.info(
+      'File opened with text editor in current tab: ' + document.uri.fsPath
+    );
+  }
   private getHtmlForWebview(webview: vscode.Webview): string {
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
@@ -113,6 +136,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     <body>
       <div>
         <vscode-button id="openWithDesignerButton" tabindex="0">Open this file with Qt Widgets Designer</vscode-button>
+        <vscode-button id="openWithTextEditorButton" tabindex="0" style="margin-left: 12px;">Open this file with Text Editor</vscode-button>
       </div>
       <script type="module" nonce="${nonce}" src="${scriptUri.toString()}"></script>
     </body>
