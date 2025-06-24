@@ -5,7 +5,9 @@
 
 {{ .className }}::{{ .className }}(QWidget *parent)
     : {{ .baseClass }}(parent)
+{{- if .useForm }}
     , ui(new Ui::{{ .className }})
+{{- end }}
 {
 {{- if .useForm }}
     ui->setupUi(this);
