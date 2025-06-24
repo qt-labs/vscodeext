@@ -41,8 +41,9 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
       const project = projectManager.findProjectContainingFile(document.uri);
       if (project === undefined) {
-        logger.error('Project not found');
-        throw new Error('Project not found');
+        const err = `Project not found for file: ${document.uri.toString()}`;
+        logger.error(err);
+        throw new Error(err);
       }
       const designerServer = project.designerServer;
       const designerClient = project.designerClient;
