@@ -18,6 +18,9 @@ function main() {
   const openWithDesignerButton = document.getElementById(
     'openWithDesignerButton'
   );
+  const openWithTextEditorButton = document.getElementById(
+    'openWithTextEditorButton'
+  );
   if (openWithDesignerButton) {
     openWithDesignerButton.focus();
   }
@@ -26,27 +29,45 @@ function main() {
       type: 'run'
     });
   }
+  function onOpenWithTextEditorButtonClick() {
+    vscode.postMessage({
+      type: 'openWithTextEditor'
+    });
+  }
   openWithDesignerButton?.addEventListener(
     'click',
     onOpenWithDesignerButtonClick
   );
-
   openWithDesignerButton?.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
       event.preventDefault();
       onOpenWithDesignerButtonClick();
     }
   });
+  openWithTextEditorButton?.addEventListener(
+    'click',
+    onOpenWithTextEditorButtonClick
+  );
+  openWithTextEditorButton?.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      onOpenWithTextEditorButtonClick();
+    }
+  });
   document.addEventListener('keydown', function (event) {
-    // if any arrow key is pressed, focus the this button
+    // Toggle focus between the two buttons with arrow keys
     if (
-      event.key === 'ArrowUp' ||
-      event.key === 'ArrowDown' ||
       event.key === 'ArrowLeft' ||
-      event.key === 'ArrowRight'
+      event.key === 'ArrowUp'
     ) {
       event.preventDefault();
       openWithDesignerButton?.focus();
+    } else if (
+      event.key === 'ArrowRight' ||
+      event.key === 'ArrowDown'
+    ) {
+      event.preventDefault();
+      openWithTextEditorButton?.focus();
     }
   });
 }
