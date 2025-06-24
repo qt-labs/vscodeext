@@ -3,7 +3,7 @@
 #include <QLocale>
 #include <QTranslator>
 {{- end }}
-#include "mainwindow.h"
+#include "{{ .fileNameBase }}.h"
 
 int main(int argc, char *argv[])
 {
