@@ -78,6 +78,7 @@ func (p *ListPrompt) Run() (prompt.Result, error) {
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowPagination(false)
+	l.InfiniteScrolling = true
 
 	if p.initIndex >= 0 && p.initIndex < count {
 		l.Select(p.initIndex)
