@@ -39,17 +39,18 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
     };
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
     webviewPanel.webview.onDidReceiveMessage(async (e: { type: string }) => {
-      const project = projectManager.findProjectContainingFile(document.uri);
-      if (project === undefined) {
-        const err = `Project not found for file: ${document.uri.toString()}`;
-        logger.error(err);
-        return;
-      }
-      const designerServer = project.designerServer;
-      const designerClient = project.designerClient;
-
       switch (e.type) {
-        case 'run':
+        case 'run': {
+          const project = projectManager.findProjectContainingFile(
+            document.uri
+          );
+          if (project === undefined) {
+            const err = `Project not found for file: ${document.uri.toString()}`;
+            logger.error(err);
+            return;
+          }
+          const designerServer = project.designerServer;
+          const designerClient = project.designerClient;
           if (designerClient === undefined) {
             // User may not have selected the kit.
             // We can check and ask for kit selection.
@@ -72,9 +73,11 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           designerServer.sendFile(document.uri.fsPath);
           logger.info('File sent to designer server: ' + document.uri.fsPath);
           break;
-        case 'openWithTextEditor':
+        }
+        case 'openWithTextEditor': {
           void UIEditorProvider.openWithTextEditor(document);
           break;
+        }
         default:
           logger.error('Unknown message type');
           return;
