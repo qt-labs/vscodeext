@@ -8,11 +8,7 @@ import * as path from 'path';
 import { createLogger } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
 import { QtcliAction } from '@/qtcli/common';
-import {
-  findQtcliExePath,
-  getNewFileBaseDir,
-  getNewProjectBaseDir
-} from '@/qtcli/commands';
+import { findQtcliExePath } from '@/qtcli/commands';
 import { getUri, getNonce } from './utils';
 import { Command, CommandId } from '@/webview/shared/message';
 import { NewItemCommandHandler } from './new-item-handlers';
@@ -87,7 +83,6 @@ export class NewItemPanel {
 
     void startQtcliServer(uri);
     NewItemPanel.instance._panel.reveal(PanelColumn);
-    NewItemPanel.instance.post(CommandId.PanelRevealed, createInitData());
   }
 
   public post(
@@ -115,13 +110,6 @@ export class NewItemPanel {
 }
 
 // helpers
-function createInitData() {
-  return {
-    newFileBaseDir: getNewFileBaseDir(),
-    newProjectBaseDir: getNewProjectBaseDir()
-  };
-}
-
 function createWebviewPanel(rootDir: vscode.Uri): vscode.WebviewPanel {
   const option = {
     enableScripts: true,

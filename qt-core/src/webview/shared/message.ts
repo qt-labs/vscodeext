@@ -3,7 +3,6 @@
 
 export enum CommandId {
   // one-way
-  PanelRevealed,
   UiClosed,
   UiItemCreationRequested,
   UiHasError,
@@ -11,6 +10,7 @@ export enum CommandId {
 
   // request-response type
   UiCheckIfQtcliReady,
+  UiGetConfigs,
   UiGetAllPresets,
   UiGetPresetById,
   UiValidateInputs,
