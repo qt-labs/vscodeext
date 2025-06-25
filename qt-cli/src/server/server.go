@@ -46,6 +46,8 @@ func getNetListener(o Options) (net.Listener, error) {
 }
 
 func Start(o Options) {
+	ensurePrevRunStopped(pidFile)
+
 	listener, err := getNetListener(o)
 	if err != nil {
 		logrus.Fatalf("Cannot open listener: %v", err)
@@ -57,9 +59,7 @@ func Start(o Options) {
 	}
 
 	go func() {
-		ensurePrevRunStopped(pidFile)
 		savePidToFile(os.Getpid(), pidFile)
-
 		logrus.Infof("Starting server at %s", listener.Addr().String())
 		if err := server.Serve(listener); err != nil {
 			logrus.Fatalf("Server error: %v", err)
@@ -71,12 +71,13 @@ func Start(o Options) {
 	<-quit
 
 	logrus.Info("Shutting down server...")
+	os.Remove(pidFile)
+
 	if err := server.Close(); err != nil {
 		logrus.Fatalf("Server close error: %v", err)
 	}
 
 	logrus.Info("Server stopped")
-	os.Remove(pidFile)
 }
 
 func Stop() {
