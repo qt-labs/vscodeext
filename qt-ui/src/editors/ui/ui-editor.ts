@@ -43,7 +43,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
       if (project === undefined) {
         const err = `Project not found for file: ${document.uri.toString()}`;
         logger.error(err);
-        throw new Error(err);
+        return;
       }
       const designerServer = project.designerServer;
       const designerClient = project.designerClient;
@@ -57,7 +57,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
               askForKitSelection();
             }
             logger.error('Designer client not found');
-            throw new Error('Designer client not found');
+            return;
           }
           if (!designerClient.isRunning()) {
             logger.info(`Starting designer client:${designerClient.exe}`);
@@ -77,7 +77,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           break;
         default:
           logger.error('Unknown message type');
-          throw new Error('Unknown message type');
+          return;
       }
     });
     return Promise.resolve();
