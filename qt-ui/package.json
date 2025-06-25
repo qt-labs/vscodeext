@@ -34,7 +34,7 @@
   "contributes": {
     "configurationDefaults": {
       "workbench.editorAssociations": {
-        "{git,gitlens}:/**/*.ui": "default"
+        "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.ui": "default"
       }
     },
     "commands": [
