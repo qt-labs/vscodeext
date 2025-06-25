@@ -42,7 +42,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <IconButton
       icon={PlusOutline}
       tooltip={texts.wizard.buttonTooltips.create}
-      tooltipPlacement="top-end"
+      tooltipPlacement="left"
       visible={createEnabled}
       text={texts.wizard.buttons.create}
       onClicked={() => {
@@ -53,7 +53,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <IconButton
       icon={FloppyDiskOutline}
       tooltip={texts.wizard.buttonTooltips.save}
-      tooltipPlacement="top-end"
+      tooltipPlacement="left"
       visible={saveEnabled}
       text={texts.wizard.buttons.save}
       class="px-4 py-2"

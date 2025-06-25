@@ -9,10 +9,20 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import './app.css';
   import { onAppMount } from './viewlogic.svelte';
   import Wizard from './Wizard.svelte';
+  import { focusAnyChild } from '@/utils/utils';
 
-  onMount(onAppMount);
+  let container: HTMLDivElement;
+
+  onMount(() => {
+    requestAnimationFrame(() => {
+      void onAppMount();
+      focusAnyChild(container);
+    });
+  });
 </script>
 
-<div class="w-screen h-screen flex items-center justify-center">
+<div
+  bind:this={container}
+  class="w-screen h-screen flex items-center justify-center">
   <Wizard />
 </div>

@@ -13,3 +13,9 @@ export function toBool(value: unknown): boolean {
   const s = String(value).toLowerCase();
   return ['true', '1', 'yes', 'on'].includes(s);
 }
+
+export function focusAnyChild(el: HTMLElement) {
+  const selector = '[tabindex]:not([tabindex="-1"])';
+  const fallback = el?.querySelector(selector) as HTMLElement;
+  fallback?.focus();
+}

@@ -64,7 +64,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <Dropdown
   {id}
   open={active}
-  classContainer="qt-list"
+  classContainer="qt-picker-list"
   style={`width: ${width - 1}px`}
   {offset}
   tabindex={0}
@@ -78,7 +78,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       role="option"
       class={`
         flex flex-row gap-2 items-center
-        qt-list-item ${i === currentIndex ? 'selected' : ''}`}
+        qt-item ${i === currentIndex ? 'selected' : ''}`}
       onclick={() => onItemClicked(i)}
     >
       {#if showIcon}

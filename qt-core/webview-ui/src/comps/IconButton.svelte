@@ -25,7 +25,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 {#if visible}
   <Button
     {disabled}
-    class={`qt-button ${flat ? 'flat' : ''} ${className}`}
+    class={`qt-button${flat ? '-flat' : ''} ${className}`}
     on:click={() => {
       onClicked(id);
     }}

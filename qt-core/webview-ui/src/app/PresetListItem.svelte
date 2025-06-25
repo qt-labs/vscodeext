@@ -17,12 +17,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   let truncated = $state(false);
   let menuOpened = $state(false);
+  let selected = $derived(data.selected.presetIndex === index)
 </script>
 
 <ListgroupItem
-  class="qt-list-item flex flex-row gap-1"
-  currentClass="selected"
-  current={data.selected.presetIndex === index}
+  class="qt-item flex flex-row gap-1"
+  currentClass="qt-item-selected"
+  current={selected}
   on:click={() => {
     setSelectedPresetAt(index);
   }}
@@ -30,10 +31,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   <TruncatableLabel text={preset.itemText} class="flex-1" bind:truncated />
 
   {#if preset.isCustomPreset()}
-    <div class="ml-auto mr-0.5 qt-badge flex flex-row gap-1">
-      {preset.title}
+    <div class="ml-auto mr-0.5 flex flex-row gap-1">
+      <div class="qt-badge">{preset.title}</div>
       <DotsHorizontalOutline
-        class="qt-button flat-borderless"
+        class='qt-button-contentOnly'
+        style={selected ? 'color: var(--qt-primary-foreground);' : '' }
         onclick={() => {
           menuOpened = true;
         }}

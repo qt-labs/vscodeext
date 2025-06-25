@@ -20,12 +20,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   dismissable={false}
   size="lg"
   color="none"
-  class="qt-modal w-[80vw] h-[90vh] min-w-[500px] min-h-[500px]"
+  class="qt-panel w-[80vw] h-[90vh] min-w-[500px] min-h-[500px]"
   backdropClass="hidden"
   on:close={onModalClosed}
 >
   <svelte:fragment slot="header">
-    <div class="qt-modal-title">
+    <div class="qt-panel-header">
       {texts.wizard.title}
     </div>
   </svelte:fragment>

@@ -9,8 +9,11 @@ import { createLogger } from 'qt-lib';
 import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
-import { setDefaultProjectDir, getNewProjectBaseDir } from '@/qtcli/commands';
-import { ErrorResponse } from '@/webview/shared/types';
+import {
+  getNewFileBaseDir,
+  getNewProjectBaseDir,
+  setDefaultProjectDir
+} from '@/qtcli/commands';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
 import type { NewItemPanel } from './new-item-panel';
 
@@ -28,6 +31,7 @@ export class NewItemCommandHandler {
       [CommandId.UiItemCreationRequested, this.onUiItemCreationRequested],
       [CommandId.UiHasError, this.onUiHasError],
       [CommandId.UiCheckIfQtcliReady, this.onUiCheckIfQtcliReady],
+      [CommandId.UiGetConfigs, this.onUiGetConfigs],
       [CommandId.UiGetAllPresets, this.onUiGetAllPresets],
       [CommandId.UiGetPresetById, this.onUiGetPresetById],
       [CommandId.UiValidateInputs, this.onUiValidateInputs],
@@ -104,21 +108,28 @@ export class NewItemCommandHandler {
         method: 'get',
         url: '/ready'
       });
-      this._panel?.post(cmd.id, { data }, cmd.tag);
+      this._panel?.postDataReply(cmd, data);
     } catch {
       await vscode.window.showErrorMessage(texts.newItem.errorQtCliNotReady);
     }
   };
 
+  private readonly onUiGetConfigs = (cmd: Command) => {
+    this._panel?.postDataReply(cmd, {
+      newFileBaseDir: getNewFileBaseDir(),
+      newProjectBaseDir: getNewProjectBaseDir()
+    });
+  };
+
   private readonly onUiGetAllPresets = async (cmd: Command) => {
     const data = await this._qtcliRest.get('/presets', { type: cmd.payload });
-    this._panel?.post(cmd.id, { data }, cmd.tag);
+    this._panel?.postDataReply(cmd, data);
   };
 
   private readonly onUiGetPresetById = async (cmd: Command) => {
     const id = _.toString(cmd.payload);
     const data = await this._qtcliRest.get(`/presets/${id}`);
-    this._panel?.post(cmd.id, { data }, cmd.tag);
+    this._panel?.postDataReply(cmd, data);
   };
 
   private readonly onUiManageCustomPreset = async (cmd: Command) => {
@@ -166,19 +177,10 @@ export class NewItemCommandHandler {
   private readonly onUiValidateInputs = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.post('/items/validate', cmd.payload);
-      this._panel?.post(cmd.id, { data }, cmd.tag);
+      this._panel?.postDataReply(cmd, data);
     } catch (e) {
       if (e instanceof QtcliRestError) {
-        this._panel?.post(
-          cmd.id,
-          {
-            error: {
-              error: e.message,
-              details: e.details
-            } as ErrorResponse
-          },
-          cmd.tag
-        );
+        this._panel?.postErrorReplyFrom(cmd, e.message, e.details);
       }
     }
   };
@@ -200,7 +202,7 @@ export class NewItemCommandHandler {
         folder = folder.charAt(0).toUpperCase() + folder.slice(1);
       }
 
-      this._panel?.post(cmd.id, { data: folder }, cmd.tag);
+      this._panel?.postDataReply(cmd, folder);
     }
   };
 }

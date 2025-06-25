@@ -40,7 +40,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <Alert
       border
       color="none"
-      class={`qt-alert absolute w-full z-1
+      class={`qt-alert-${level} absolute w-full z-1
         ${alertPosition === 'top' ? 'bottom-full -mb-0.5' : 'top-full -mt-0.5'}
       `}
     >
@@ -51,7 +51,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   <Input
     {id}
     type="text"
-    class={`qt-input ${hasIssue ? 'error' : ''} ${className}`}
+    class={`qt-input${hasIssue ? `-${level}` : ''} ${className}`}
     bind:value
     onblur={() => {
       focused = false;
@@ -67,7 +67,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <Button
       slot="right"
       tabindex={-1}
-      class={`qt-input-icon ${!hasIssue ? 'hidden' : ''}`}
+      class={`qt-inputInset-${level}`}
+      hidden={!hasIssue}
       on:mouseenter={() => {
         hovered = true;
       }}
