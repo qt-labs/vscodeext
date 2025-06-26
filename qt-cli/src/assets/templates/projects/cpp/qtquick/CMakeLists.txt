@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project({{ .name }} VERSION 0.1 LANGUAGES CXX)
-{{ if lt $mininumQtVersionFloat 6.4 }}
+{{ if lt $mininumQtVersionFloat 6.5 }}
 set(CMAKE_AUTOMOC ON)
 {{- end }}
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,8 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 {{ .minimumQtVersion }} REQUIRED COMPONENTS Quick)
 {{ if ge $mininumQtVersionFloat 6.5 }}
 qt_standard_project_setup(REQUIRES {{ .minimumQtVersion }})
-{{ else if ge $mininumQtVersionFloat 6.4 }}
-qt_standard_project_setup()
 {{ end }}
 qt_add_executable({{ $target }}
     main.cpp
