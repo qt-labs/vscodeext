@@ -19,13 +19,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   class:hidden={forceHidden || (!busy && error === undefined)}
   class={`
     flex w-full h-full absolute inset-0
-    bg-white/10 justify-center items-center`}
-  style="border-radius: var(--qt-border-radius)"
+    bg-white/10 justify-center items-center qt-border-radius`}
 >
   {#if busy}
-    <div class="flex w-full justify-center items-center">
-      <Spinner class="me-3" size="8" color="green" />
-      <P>{busyText}</P>
+    <div class="flex w-full justify-center items-center gap-6">
+      <Spinner class="qt-spinner" size="20" color="custom" />
+      <P class="qt-spinner-text">{busyText}</P>
     </div>
   {:else if error}
     <div class="flex flex-col gap-4">
