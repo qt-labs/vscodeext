@@ -426,3 +426,14 @@ body.vscode-high-contrast .qt-item:hover {
   background-color: transparent;
   font-size: 0.8rem;
 }
+
+.qt-spinner {
+  color: transparent;
+  fill: var(--qt-focus-border);
+}
+
+.qt-spinner-text {
+  color: var(--qt-surface-foreground);
+  background: none;
+  font-size: 1.2rem;
+}
