@@ -31,7 +31,7 @@
     \section1 Create a Qt Widgets application project
 
     To develop Qt applications, you need a project folder that has the code and
-    a project configuration file (\e CMakeLists.txt) that has instructions for
+    a project configuration file (\c CMakeLists.txt) that has instructions for
     building the project.
 
     The \e AddressBook project has two classes, each with a header, source, and
@@ -46,18 +46,23 @@
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Create New Project}.
-        \li In \uicontrol {New Project}, enter \e AddressBook.
-            \image vscodeext-create-new-project.webp {New Project dialog}
-        \li In \uicontrol {Terminal}, select the
-            \uicontrol {[Default] @projects/cpp/qwidget} preset.
-            \image vscodeext-create-new-project-pick-preset-widgets.webp {Pick a preset in Terminal}
+            \uicontrol {Qt: Create a new project or file}.
+        \li In \uicontrol {Project}, select \uicontrol {Qt Widgets project}.
+            \image {vscodeext-create-new-project.webp} {New item view}
+        \li In \uicontrol {Base class}, select \uicontrol {QWidget} as the base
+            class type.
+        \li Select \uicontrol {UI form} to generate a UI form.
+        \li In \uicontrol {Name}, enter \e AddressBook.
+        \li In \uicontrol {Create in}, enter the path for the project files.
+            For example, \c {C:\Qt\Examples}.
+        \li Select \uicontrol {Create} to create the project files.
         \li Select a CMake kit for the project.
     \endlist
 
-    Project files are generated in an \e AddressBook folder at the default path
-    with default settings. In this tutorial, the project files are called
-    \e {addressbook.cpp}, \e {addressbook.h}, and \e {addressbook.ui}.
+    The wizard generates the necessary project files in an \c {AddressBook}
+    folder at the path you specify. You can rename the files. In this tutorial,
+    they are called \c {addressbook.cpp}, \c {addressbook.h}, and
+    \c {addressbook.ui}.
 
     Next, create the main view of the application.
 
@@ -145,10 +150,10 @@
         \li In the \uicontrol {Property Editor}, set the \c ObjectName property
             to \e AddDialog.
         \li Go to \uicontrol File > \uicontrol Save, and save the file as
-            \e {adddialog.ui}.
+            \c {adddialog.ui}.
     \endlist
 
-    Add the UI file to the project sources in the \e {CMakeLists.txt} file:
+    Add the UI file to the project sources in the \c {CMakeLists.txt} file:
 
     \badcode
     set(PROJECT_SOURCES
