@@ -11,71 +11,28 @@
 
     \title Create Qt projects
 
-    To create a project, select or create a preset for a particular project type:
+    To create a project, select a preset for a particular project type:
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Create New Project}.
-        \li In \uicontrol {New Project}, enter a name for the project.
-            \image vscodeext-create-new-project.webp {New Project dialog}
-        \li In \uicontrol {Terminal}, select a preset or
-            \uicontrol {Manually select features} to create your own preset.
-            \image vscodeext-create-new-project-pick-preset-widgets.webp {Pick a preset in Terminal}
+            \uicontrol {Qt: Create a new project or file}.
+        \li In \uicontrol {Project}, select the project type.
+            \image {vscodeext-create-new-project.webp} {New item view}
+        \li In \uicontrol {Name}, enter a name for the project.
+        \li In \uicontrol {Create in}, enter the path for the project files.
+            For example, \c {C:\Qt\examples}.
+        \li In \uicontrol {Options}, set options depending on the project type.
+        \li Select \uicontrol {Create} to create the project files.
         \li Select a CMake kit for the project.
     \endlist
 
-    \section1 Project presets
+    \section1 Create custom presets
 
-    Select one of the following project presets:
+    When you change the \uicontrol {Options} for a project or file type, you can
+    select \uicontrol {Create} to create a custom preset. Custom presets appear
+    on the preset list and you can select them to create new projects or files.
 
-    \list
-        \li \c {[Default] @projects/cpp/console} creates a basic console
-            application without a GUI.
-        \li \c {[Default] @projects/cpp/qtquick} creates a simple \l {Qt Quick}
-            application with one QML file (.qml).
-        \li \c {[Default] @projects/cpp/qwidget} creates a simple \l {Qt Widgets}
-            application with one form (.ui).
-        \li \c {[Manually select features]} creates a new preset with the
-            default values you select.
-    \endlist
-
-    \section1 Create a project preset
-
-    Select \uicontrol {Manually select features} to create a project preset with
-    the following settings.
-
-    \table
-    \header
-        \li Setting
-        \li Possible values
-    \row
-        \li Project type
-        \li The type of the project to create:
-            \list
-                \li \c {[Default] @projects/cpp/console}
-                \li \c {[Default] @projects/cpp/qtquick}
-                \li \c {[Default] @projects/cpp/qwidget}
-            \endlist
-    \row
-        \li Use form?
-        \li Whether to create a UI form for the project: \uicontrol Y (Yes) or
-            \uicontrol N (No).
-    \row
-        \li Use translation?
-        \li Whether to add Qt translation source files (TS) to the project:
-            \uicontrol Y (Yes) or \uicontrol N (No).
-    \row
-        \li Target language
-        \li A language and territory (locale).
-    \row
-        \li Save for later use?
-        \li Whether to save the settings as a preset: \uicontrol Y (Yes) or
-            \uicontrol N (No).
-    \row
-        \li Enter the preset name
-        \li Enter a name for the preset. The preset list shows it at the top
-            the next time you create a new project.
-    \endtable
+    To save changes to custom presets, select \uicontrol {Save}.
 
     \sa {Tutorial: Qt Widgets application}, {Add files to projects}
 */
