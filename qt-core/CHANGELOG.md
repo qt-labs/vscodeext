@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.6.0 (Jul 1, 2025)
+
+The same as `1.5.1`
+
 ## 1.5.1 (Apr 16, 2025)
 
 🐞 **Fixed**
