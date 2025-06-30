@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.7.0 (Jul 1, 2025)
+
+🎉 **Added**
+
+- Generate a kit from `qtpaths` in the environment variable PATH
+- Support Qt.rgba() in color provider
+
+🐞 **Fixed**
+
+- Don't change `qtpaths` name if it is already set
+
 ## 1.6.0 (Jul 1, 2025)
 
 The same as `1.5.1`
