@@ -1,5 +1,29 @@
 # Change Log
 
+## 1.6.0 (Jul 1, 2025)
+
+🎉 **Added**
+
+- Add the following QML Debugger features:
+  - Show variables and the `This` variable
+  - Manipulate values of variables
+  - Add watch expressions
+  - Add conditional breakpoints
+  - Add expression evaluation
+  - Add launch mode to the QML Debugger
+  - Disconnect the QML Debugger when the debuggee is terminated
+  - Disconnect the QML Debugger properly in the attach mode
+  - Explain how to include missing .qml files
+
+⚠️ **Changed**
+
+- Decrease retry time for the QML Debug Adapter to 500ms from 3s
+
+🐞 **Fixed**
+
+- Fix the synchronization problem when multiple breakpoints step through quickly
+- Discard QRC files which don't have `qresource`
+
 ## 1.5.1 (Apr 16, 2025)
 
 The same as `1.5.0`
