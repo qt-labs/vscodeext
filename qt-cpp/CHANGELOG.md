@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.7.0 (Jul 1, 2025)
+
+🎉 **Added**
+
+- Track Qt modules used in user projects
+- Add ARM64 support and update MSVC handling
+- Improve natvis support
+- Generate a kit from `qtpaths` in the environment variable PATH
+
+🐞 **Fixed**
+
+- Don't change `qtpaths` name if it is already set
+
 ## 1.6.0 (Jul 1, 2025)
 
 The same as `1.5.1`

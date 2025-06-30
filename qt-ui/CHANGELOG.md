@@ -1,5 +1,20 @@
 # Change Log
 
+## 1.7.0 (Jul 1, 2025)
+
+🎉 **Added**
+
+- Improve error messages for missing UI editor
+- Add `Open with Text Editor` button
+- Use the built-in text editor with the following extensions for `.ui` files:
+  - [copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+  - [git-graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)
+  - [git-graph-3](https://marketplace.visualstudio.com/items?itemName=Gxl.git-graph-3)
+
+⚠️ **Changed**
+
+- Rename `Qt: Open Widget Designer` to `Qt: Open Qt Widgets Designer`
+
 ## 1.6.0 (Jul 1, 2025)
 
 The same as `1.5.1`

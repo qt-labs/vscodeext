@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.0 (Jul 1, 2025)
+
+🎉 **Added**
+
+- Support Qt.rgba() in color provider
+
 ## 1.6.0 (Jul 1, 2025)
 
 🎉 **Added**
