@@ -65,5 +65,7 @@ runs:
       run: |
         mkdir -p ${{ inputs.deploy-target }}
         cp -r ${{ inputs.working-directory }}/dist/bin/qtcli-* ${{ inputs.deploy-target }}
+        cp ${{ inputs.working-directory }}/LICENSE ${{ inputs.deploy-target }}
+        cp ${{ inputs.working-directory }}/ThirdPartyNotices.txt ${{ inputs.deploy-target }}
         echo "---------------------------------"
         cd ${{ inputs.deploy-target }} && find . && du -h
