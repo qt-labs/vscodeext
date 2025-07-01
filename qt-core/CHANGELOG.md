@@ -6,10 +6,27 @@
 
 - Generate a kit from `qtpaths` in the environment variable PATH
 - Support Qt.rgba() in color provider
+- Add a `New item` dialog for creating a new project or file
 
 🐞 **Fixed**
 
 - Don't change `qtpaths` name if it is already set
+
+---
+### qtcli
+
+🎉 **Added**
+- Add endpoints for managing custom presets
+- Enable wrapping in prompt list navigation
+
+🐞 **Fixed**
+- Resolve errors in Qt Widgets application template
+
+⚠️ **Changed**
+
+- Use UDS or pipe by default in server mode
+- Preserve file extension if already included in filename
+- Provide option to select QML root element - `Window` or `ApplicationWindow` in Qt Quick application template
 
 ## 1.6.0 (Jul 1, 2025)
 
@@ -27,6 +44,7 @@ The same as `1.5.1`
 
 - Add `cmake.useCMakePresets": "never"`to the recommended settings
 
+---
 ### qtcli
 
 🎉 **Added**
