@@ -10,18 +10,28 @@
 
     \title Design widgets-based UIs
 
-    To design a widgets-based UI:
+    To design a widgets-based UI using \QD:
 
     \list 1
         \li Go to \uicontrol {Explorer}, and select a \e {.ui} file.
         \li Select \uicontrol {Open this file with \QD}.
-            \image vscodeext-open-ui-file.webp {Opening an .ui file in the Explorer}
+            \image {vscodeext-open-ui-file.webp} {Opening an .ui file in the Explorer}
         \li Use \l {\QD} to design a UI.
     \endlist
 
     \section1 Set \QD location
 
     If VS Code cannot find \QD, set the path to it in \uicontrol {Settings}.
+
+    \section1 Open UI files in Text Editor
+
+    To open UI files in Text Editor:
+
+    \list 1
+        \li Go to \uicontrol {Explorer}, and select a \e {.ui} file.
+        \li Select \uicontrol {Open this file with Text Editor}.
+        \li Use Text Editor to change the UI file.
+    \endlist
 
     \sa {Tutorial: Qt Widgets application}, {Qt settings}
 */
