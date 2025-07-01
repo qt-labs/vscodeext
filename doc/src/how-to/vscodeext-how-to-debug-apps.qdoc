@@ -53,6 +53,8 @@
             applications with the Visual Studio Windows debugger.
         \li \uicontrol {Qt: QML: Attach by port} for attaching the QML debugger
             to a running application to debug QML code.
+        \li \uicontrol {Qt: QML: Launch} for first starting an application and
+            then attaching the QML debugger to it to debug QML code.
         \li \uicontrol {Qt: Debug with cppdbg and QML debugger} for
             debugging Qt Quick applications that contain C/C++ code with GDB and
             the QML debugger.

@@ -14,12 +14,57 @@
     the QML debugger and the debugger for your operating system. Usually, you use
     GDB on Linux and \macos or the Visual Studio Windows debugger on Windows.
 
+    When using the QML debugger, you can:
+
+    \list
+        \li Show variables including the \e {This} variable
+        \li Manipulate values of variables
+        \li Add watch expressions
+        \li Add conditional breakpoints
+        \li Add expression evaluation
+    \endlist
+
     \note Debugging requires opening a socket at a TCP port, which presents a
-    security risk. Anyone on the Internet could connect to the application that
+    security risk. Anyone on the internet could connect to the application that
     you are debugging and execute any JavaScript functions. Therefore, you must
     make sure that the port is properly protected by a firewall.
 
-    \section1 Debug QML code
+    \section1 Launch and debug applications
+
+    To debug only the QML code in an application, you can first start the
+    application and then attach the QML debugger to it.
+
+    To launch and debug Qt Quick applications:
+
+    \list 1
+        \li Create a \c {launch.json} file for the project. For more information,
+            see \l {Debug Qt applications}.
+        \li Select \uicontrol {QML debugger}.
+        \li Select the \uicontrol {Qt: QML: Launch} debug configuration.
+    \endlist
+
+    The launch debug configuration adds the following lines to the
+    \c {launch.json} file:
+
+    \badcode
+    "configurations": [
+        {
+            "name": "Qt: QML: Launch",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}"
+        },
+        {
+            "name": "Qt: QML: Attach by port",
+            "type": "qml",
+            "request": "attach",
+            "host": "localhost",
+            "port": "^\"Custom port or \\${command:qt-qml.debugPort} for compound usage\""
+        }
+    ]
+    \endcode
+
+    \section1 Attach to running applications
 
     To only debug the QML code in an application, it is faster to attach the
     debugger to a running application using a fixed port number than to have
@@ -54,6 +99,74 @@
                 },
             \endcode
     \endlist
+
+    \section1 Set build folders
+
+    If a build folder is outside the workspace folder, \QVSC needs to know
+    where it is to find QRC files that match virtual and psychical QML files.
+    To set build folders, add them to the \uicontrol {Qt: QML: Launch} or
+    \uicontrol {Qt: QML: Attach by port} debug configuration as values of
+    \c {buildDirs}.
+
+    For example:
+
+    \badcode
+    "configurations": [
+        {
+            "name": "Qt: QML: Launch",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "buildDirs": [
+                 "<my_build_folder_outside_workspace>",
+                 "<my_build_folder_outside_workspace_2>",
+             ]
+        }
+    ]
+    \endcode
+
+    \section1 Override default arguments
+
+    To override default debugger arguments, add arguments to the
+    \uicontrol {Qt: QML: Launch} or \uicontrol {Qt: QML: Attach by port} debug
+    configuration as values of \c {debuggerArgs}.
+
+    For example:
+
+    \badcode
+    "configurations": [
+        {
+            "name": "Qt: QML: Launch",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "debuggerArgs": "-qmljsdebugger=<arguments>",
+        }
+    ]
+    \endcode
+
+    \section1 Pass arguments to the executable
+
+    To pass arguments to the executable, add them to the
+    \uicontrol {Qt: QML: Launch} or \uicontrol {Qt: QML: Attach by port}
+    debug configuration as values of \c {args}.
+
+    For example:
+
+    \badcode
+    "configurations": [
+        {
+            "name": "Qt: QML: Launch",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "<argument>",
+                "<argument>    <argument>",
+            ]
+        }
+    ]
+    \endcode
 
     \section1 Debug mixed C/C++ and QML code
 
