@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.7.0 (Jul 1, 2025)
+## 1.7.0 (Jul 2, 2025)
 
 🎉 **Added**
 
@@ -13,7 +13,7 @@
 
 - Don't change `qtpaths` name if it is already set
 
-## 1.6.0 (Jul 1, 2025)
+## 1.6.0 (Jul 2, 2025)
 
 The same as `1.5.1`
 

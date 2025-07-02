@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.7.0 (Jul 1, 2025)
+## 1.7.0 (Jul 2, 2025)
 
 🎉 **Added**
 
@@ -15,7 +15,7 @@
 
 - Rename `Qt: Open Widget Designer` to `Qt: Open Qt Widgets Designer`
 
-## 1.6.0 (Jul 1, 2025)
+## 1.6.0 (Jul 2, 2025)
 
 The same as `1.5.1`
 

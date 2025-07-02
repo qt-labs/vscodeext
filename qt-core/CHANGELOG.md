@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.7.0 (Jul 1, 2025)
+## 1.7.0 (Jul 2, 2025)
 
 🎉 **Added**
 
@@ -28,7 +28,7 @@
 - Preserve file extension if already included in filename
 - Provide option to select QML root element - `Window` or `ApplicationWindow` in Qt Quick application template
 
-## 1.6.0 (Jul 1, 2025)
+## 1.6.0 (Jul 2, 2025)
 
 The same as `1.5.1`
 
