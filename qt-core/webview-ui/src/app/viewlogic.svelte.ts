@@ -32,8 +32,9 @@ export function onModalClosed() {
 }
 
 export function onWorkingDirBrowseClicked() {
+  const timeout = -1;
   void vscode
-    .post(CommandId.UiSelectWorkingDir, input.workingDir)
+    .post(CommandId.UiSelectWorkingDir, input.workingDir, timeout)
     .then((data) => {
       if (typeof data === 'string' && input.workingDir != data) {
         input.workingDir = data;
