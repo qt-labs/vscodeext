@@ -166,6 +166,10 @@ export async function registerQt() {
     canSelectFiles: false,
     canSelectFolders: true
   };
+  const defaultQtInsRoot = getPossibleDefaultQtInstallationRoot();
+  if (defaultQtInsRoot) {
+    options.defaultUri = vscode.Uri.file(defaultQtInsRoot);
+  }
   const selectedQtInsRootUri = await vscode.window.showOpenDialog(options);
   if (selectedQtInsRootUri?.[0] === undefined) {
     return;
