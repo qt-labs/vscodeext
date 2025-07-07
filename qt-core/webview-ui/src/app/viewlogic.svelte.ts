@@ -112,6 +112,7 @@ export async function createItemFromSelectedPreset() {
       name: input.name,
       workingDir: input.workingDir,
       presetId: data.selected.preset?.id,
+      options: $state.snapshot(ui.unsavedOptionChanges),
       saveProjectDir: input.saveProjectDir
     });
   } catch (e) {
