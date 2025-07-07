@@ -65,16 +65,7 @@ function getConfiguration() {
   return vscode.workspace.getConfiguration(EXTENSION_ID);
 }
 
-export function checkDefaultQtInsRootPath() {
-  if (getDoNotAskForDefaultQtInstallationRoot()) {
-    return;
-  }
-
-  if (getCurrentGlobalQtInstallationRoot()) {
-    // Qt installation root is already set. No need to check for default path
-    return;
-  }
-
+function getPossibleDefaultQtInstallationRoot() {
   if (!IsUnix && !IsWindows) {
     const errorMessage = 'Unsupported OS';
     logger.error(errorMessage);
@@ -131,6 +122,20 @@ export function checkDefaultQtInsRootPath() {
   const foundDefaultPath = defaultPaths.find((defPath) =>
     fs.existsSync(defPath)
   );
+  return foundDefaultPath;
+}
+
+export function checkDefaultQtInsRootPath() {
+  if (getDoNotAskForDefaultQtInstallationRoot()) {
+    return;
+  }
+
+  if (getCurrentGlobalQtInstallationRoot()) {
+    // Qt installation root is already set. No need to check for default path
+    return;
+  }
+
+  const foundDefaultPath = getPossibleDefaultQtInstallationRoot();
   if (!foundDefaultPath) {
     return;
   }
