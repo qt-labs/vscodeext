@@ -17,7 +17,7 @@ export class QtcliRestClient {
         : String.raw`\\.\pipe\qtcli\qtcli-server.pipe`
   });
 
-  private readonly _maxRetries = 20;
+  private readonly _maxRetries = 75;
   private readonly _retryDelay = 200;
 
   // convenients
