@@ -1,0 +1,466 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-tutorials-qt-quick.html
+    \previouspage vscodeext-tutorials.html
+    \nextpage vscodeext-how-tos.html
+
+    \ingroup vscodeext-tutorials
+
+    \title Tutorial: Qt Quick application
+
+    This tutorial illustrates how to use \QVSC to create a
+    \l [QtQuick] {Qt Quick} application. You'll create a project using a
+    project wizard and design a Qt Quick UI. Also, you'll learn how to
+    add QML module definitions and QML files to your projects.
+
+    You can download the completed project from \l{Code: QuickAddressBook}.
+
+    \image {vscodeext-quick-addressbook-popup.webp} {QuickAddressBook application}
+
+    \section1 Before you start
+
+    Before you start, you have to:
+
+    \list
+        \li \l {Installation}{Install \QVSC}
+        \li \l {Register Qt installations}
+    \endlist
+
+    \section1 Create a Qt Quick application project
+
+    To create a Qt Quick project in Visual Studio Code:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and then select
+            \uicontrol {Qt: Create a new project or file}.
+        \li In \uicontrol {Project}, select \uicontrol {Qt Quick project}.
+            \image {vscodeext-create-new-project-quick.webp} {A Qt Quick application in the New item view}
+        \li In \uicontrol {QML root element}, select \uicontrol {Window} as the
+            QML root element.
+        \li In \uicontrol {Name}, enter \c QuickAddressBook.
+        \li In \uicontrol {Create in}, enter the path for the project files.
+        \li Select \uicontrol {Create} to create the project files.
+        \li Select a CMake kit for the project.
+    \endlist
+
+    You now have a small working Qt Quick application. Select
+    \inlineimage {run_project.png} {Launch the selected project in the terminal window}
+    to build and run it. For now, the result is an empty window.
+
+    \section1 Design the main window
+
+    The wizard created a main QML file for you, which declares a root object of
+    the type \l Window. Change the file to design the application's main
+    window.
+
+    Specify values for the Window \c color and \c title properties to set the
+    background color and title of the application main window:
+
+    \code
+    Window {
+        id: mainWindow
+        visible: true
+        width: 480
+        height: 640
+        color: "darkgray"
+        title: qsTr("Address Book")
+    \endcode
+
+    \section2 Add a button
+
+    To create the \uicontrol Add button, declare an object of the \l Button type
+    from the \l {Qt Quick Controls} module. Set the value of the button \c text
+    property to \c Add and the value of the \c font.pointSize property to \c 24:
+
+    \code
+        Button {
+            id: addButton
+            anchors.left: parent.left
+            anchors.right: parent.right
+            text: "Add..."
+            font.pointSize: 24
+    \endcode
+
+    When you run the application, you should now see this:
+
+    \image {vscodeext-quick-addressbook-mainwindow.webp} {QuickAddressBook's main window}
+
+    \section2 Connect the button to an action
+
+    QML has a signal and handler mechanism, where the signal is the event and
+    the signal is responded to through a signal handler. When a signal is
+    emitted, the corresponding signal handler is invoked. Placing logic such
+    as a script or other operations in the handler allows the component to
+    respond to the event.
+
+    To receive a notification when a particular signal is emitted for a
+    particular object, the object definition should declare a signal handler
+    named \c on<Signal>, where \c <Signal> is the name of the signal, with
+    the first letter capitalized. The signal handler should contain the
+    JavaScript code to be executed when the signal handler is invoked.
+
+    The \l Button type has a \c clicked signal, which is emitted when the users
+    click the button. To invoke a popup for adding an address book entry when
+    the users select the \uicontrol Add button in the main window, you must
+    connect the \c onClicked signal handler of the button to the \c open()
+    method of the popup:
+
+    \code
+            onClicked: newAddressPopup.open()
+    \endcode
+
+    You will add the popup as a separate QML type later.
+
+    \section2 Add a list model
+
+    \image {vscodeext-quick-addressbook-entries.webp} {QuickAddressBook entries}
+
+    Within the Window, declare an object of the \l {ListModel} type with the
+    \c id \c addressList for storing the contact data. A list model defines
+    a free-form list data source:
+
+    \code
+    ListModel {
+        id: addressList
+    }
+    \endcode
+
+    \section2 Declare a popup
+
+    Declare an object of the custom \c NewAddressPopup type that
+    defines the popup where the users will add address book entries.
+    Use the \c onAddressAdded signal handler to append address
+    book entries to the \c addressList model:
+
+
+    \code
+    NewAddressPopup {
+        id: newAddressPopup
+        onAddressAdded: addressList.append({name: newName, addr: newAddr})
+    }
+    \endcode
+
+    You will create the \c NewAddressPopup type later.
+
+    \section2 Position the button
+
+    Declare an object of \l ColumnLayout type to position the \l Button object
+    and an instance of the \l Repeater type:
+
+    \code
+    ColumnLayout {
+        id: mainWindowLayout
+        anchors.left: parent.left; anchors.right: parent.right
+        spacing: 0
+        Button {
+            id: addButton
+            anchors.left: parent.left
+            anchors.right: parent.right
+            text: "Add..."
+            font.pointSize: 24
+            onClicked: newAddressPopup.open()
+        }
+    \endcode
+
+    Anchor the column layout to the left and right edges of its parent to make
+    the application scalable on different screen sizes. Set the \c spacing
+    between the rows in the column to \c 0.
+
+    \section2 Add a repeater
+
+    The \l Repeater type creates many similar items. It
+    has a model and a delegate: for each entry in the model, the delegate is
+    instantiated in a context seeded with data from the model. Enclose the
+    repeater in an instance of a positioner type such as a \l ColumnLayout to
+    visually position the delegate items that the repeater creates.
+
+    Specify \c addressList as the \c model to use for the repeater:
+
+    \code
+        Repeater {
+            id: addressListViewer
+            model: addressList
+            anchors.left: parent.left
+            anchors.right: parent.right
+        }
+    \endcode
+
+    Declare an object of the custom \c AddressBookItem type that the
+    repeater will use to instantiate address book entries:
+
+    \code
+            AddressBookItem {
+                id: addressBookItem
+    \endcode
+
+
+    You will create the \c AddressBookItem type later.
+
+    \section2 Connect the Remove button to an action
+
+    Use the \c onRemoved signal handler to remove an address book entry from the
+    list when the user clicks its \uicontrol Remove button.
+
+    \code
+                onRemoved: addressList.remove(index)
+    \endcode
+
+    \section1 Add a popup
+
+    Now that the main window is ready, move on to create the popup
+    where users can add address book entries. The \c AddressBookItem type
+    specifies that the repeater instantiates the data that the users enter
+    in the main window.
+
+    \image {vscodeext-quick-addressbook-popup.webp} {QuickAddressBook's popup}
+
+    Use a Qt file wizard in Visual Studio Code to create a custom type
+    that defines the popup.
+
+    To create custom QML types, you must first add a QML module definition
+    (\c qmldir) file to the project.
+
+    \section2 Add a QML module definition
+
+    A QML module definition (\c qmldir) maps each custom QML type to its
+    corresponding source file.
+
+    To add a QML module definition, create a file called \c qmldir and add QML
+    type definitions for \c AddressBookItem and \c NewAddressPopup:
+
+    \code
+    AddressBookItem    1.0    AddressBookItem.qml
+    NewAddressPopup    1.0    NewAddressPopup.qml
+    \endcode
+
+    Next, you will create the QML types.
+
+    \section2 Create a popup
+
+    To add a custom QML type to the project:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and then select
+            \uicontrol {Qt: Create a new project or file}.
+        \li In \uicontrol {File}, select \uicontrol {QML file}.
+        \li In \uicontrol Name, enter \c NewAddressPopup.
+        \li Select \uicontrol Create to create a custom QML type.
+    \endlist
+
+    \section2 Design the popup
+
+    In \c NewAddressPopup.qml, declare a root object of the type \l Popup to
+    create a popup that opens in a \l Window. A popup does not
+    provide a layout of its own, so you will use a \l ColumnLayout and a
+    \l RowLayout to position the \uicontrol Name and \uicontrol {E-Mail Address}
+    fields.
+
+    \code
+    Popup {
+        id: newAddressPopup
+    \endcode
+
+    Set the \c modal property to \c true to specify that the popup is modal. Set
+    the \c focus property to \c true to specify that the popup requests focus:
+
+    \code
+        modal: true
+        focus: true
+    \endcode
+
+    Specify values for the \c width, \c x, and \c y properties to set the
+    position and size of the popup on top of the main window:
+
+    \code
+        width: parent.width * 0.9
+        x: (parent.width - width) / 2
+        y: 35
+    \endcode
+
+    \section2 Reset popup controls
+
+    When the popup opens, the \uicontrol Name and \uicontrol {E-Mail Address}
+    fields should display placeholder text and any values entered previously
+    should be cleared. You use the \c onOpened signal handler to reset the
+    values of the fields and give focus to the \uicontrol Name field:
+
+    \code
+        onOpened: {
+            nameField.text = "";
+            addrField.text = "";
+            nameField.focus = true;
+        }
+    \endcode
+
+    \section2 Position fields
+
+    Use an instance of the \l ColumnLayout type to position the \l TextField
+    objects that specify the \uicontrol Name and \uicontrol {E-Mail Address}
+    fields of the popup:
+
+    \code
+    ColumnLayout {
+        anchors.fill: parent
+        TextField {
+            id: nameField
+            placeholderText: qsTr("Name")
+            font.pointSize: 24
+            background: Rectangle { color: "lightgray" }
+            Layout.preferredWidth: newAddressPopup / 2
+            Layout.fillWidth: true
+        }
+        TextField {
+            id: addrField
+            placeholderText: qsTr("E-Mail Address")
+            font.pointSize: 24
+            background: Rectangle { color: "lightgray" }
+            Layout.preferredWidth: newAddressPopup / 2
+            Layout.fillWidth: true
+        }
+    \endcode
+
+    \section2 Position buttons
+
+    Use an instance of a \l RowLayout type to position two \l Button objects
+    that specify the \uicontrol Add and \uicontrol Cancel buttons:
+
+    \code
+        RowLayout {
+            anchors.left: parent.left; anchors.right: parent.right
+            Button {
+                text: "Add"
+                enabled: nameField.length > 0 && addrField.length > 0
+                font.pointSize: 24
+                Layout.preferredWidth: newAddressPopup / 2
+                Layout.fillWidth: true
+    \endcode
+
+    \section2 Connect buttons to actions
+
+    When the users click the \uicontrol Add button, the values they entered to
+    the \uicontrol Name and \uicontrol {E-Mail Address} fields are added to the
+    address list in the main window and the popup is closed.
+
+    To enable this, add the \c {addressAdded(string newName, string newAddr)}
+    signal:
+
+    \code
+    signal addressAdded(string newName, string newAddr)
+    \endcode
+
+    Connect the \c onClicked signal handler of the \uicontrol Add button to
+    the \c addressAdded() signal and to the popup's \c close() method:
+
+    \code
+            Button {
+                text: "Add"
+                enabled: nameField.length > 0 && addrField.length > 0
+                font.pointSize: 24
+                Layout.preferredWidth: newAddressPopup / 2
+                Layout.fillWidth: true
+                onClicked: {
+                    newAddressPopup.addressAdded(nameField.text, addrField.text)
+                    newAddressPopup.close()
+                }
+            }
+    \endcode
+
+    For the \uicontrol Cancel button, connect the \c onClicked signal handler to
+    the to the popup's \c close() method to close the popup without saving the
+    data:
+
+    \code
+            Button {
+                text: "Cancel"
+                font.pointSize: 24
+                Layout.preferredWidth: newAddressPopup / 2
+                Layout.fillWidth: true
+                onClicked: newAddressPopup.close()
+            }
+    \endcode
+
+    \section1 Define an address book entry
+
+    The custom \c AddressBookItem type specifies how to present address book
+    entries in the main window.
+
+    Follow the instructions in \l {Create a popup} to create a new QML file
+    called \c  AddressBookItem.qml.
+
+    \section2 Design the entry
+
+    First, you will declare a root object of type \l Rectangle. It is one of the
+    basic building blocks you can use to create an application in QML. Give it
+    an \c id to be able to refer to it later.
+
+    \code
+    Rectangle {
+        id: addressBookItem
+    \endcode
+
+    To use alternating colors for rows, set the value of the \c color property:
+
+    \code
+        color: (index % 2) == 0 ? "dimgray" : "lightgray"
+    \endcode
+
+    Anchor the rectangle to the left and right edges of its parent to make
+    the application scalable on different screen sizes. Bind the rectangle
+    \c height property to the height of the text items it will contain:
+
+    \code
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: itemText.height + 12
+    \endcode
+
+    \section2 Connect the Remove button to an action
+
+    Add the \c removed() signal that you will connect to the \c onClicked
+    signal handler of the remove button. This removes an address book entry
+    from the main window when users click the button:
+
+    \code
+    signal removed()
+    \endcode
+
+    \section2 Position the button and text
+
+    Use instances of the \l RoundButton and \l Text types within an instance of
+    a \l RowLayout type to define an address book entry:
+
+    \code
+    RowLayout {
+        spacing: 12
+        anchors.left: parent.left
+        anchors.leftMargin: spacing
+        RoundButton {
+            id: deleteButton
+            text: "??"
+            font.pointSize: 12
+            palette.buttonText: "red"
+            onClicked: addressBookItem.removed()
+        }
+    \endcode
+
+    \section2 Format the text
+
+    Set the value of the \c text property to combine the values of the \c name
+    and \c addr fields from the popup and to use bold and italic formatting for
+    the values:
+
+    \code
+        Text {
+            id: itemText
+            font.pointSize: 24
+            text: "<b>" + name + "</b><br><i>" + addr + "</i>"
+        }
+    \endcode
+
+    Your application is now complete.
+
+    \sa {Create Qt projects}, {Add files to projects},
+    {Turn on QML Language Server}
+*/
