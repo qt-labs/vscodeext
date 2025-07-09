@@ -40,7 +40,9 @@ indexes  += $QT_INSTALL_DOCS/qtcmake/qtcmake.index \
             $QT_INSTALL_DOCS/qtdoc/qtdoc.index \
             $QT_INSTALL_DOCS/qtgui/qtgui.index \
             $QT_INSTALL_DOCS/qtqml/qtqml.index \
+            $QT_INSTALL_DOCS/qtqmlmodels/qtqmlmodels.index \
             $QT_INSTALL_DOCS/qtquick/qtquick.index \
+            $QT_INSTALL_DOCS/qtquickcontrols/qtquickcontrols.index \
             $QT_INSTALL_DOCS/qtwidgets/qtwidgets.index
 
 # Doxygen compatibility commands

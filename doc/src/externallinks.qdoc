@@ -4,6 +4,16 @@
 ***************************************************************************************************/
 
 /*!
+\externalpage https://code.qt.io/cgit/qt-labs/vscodeext.git/tree/doc/tutorials/AddressBook
+\title Code: AddressBook
+*/
+
+/*!
+\externalpage https://code.qt.io/cgit/qt-labs/vscodeext.git/tree/doc/tutorials/QuickAddressBook
+\title Code: QuickAddressBook
+*/
+
+/*!
 \externalpage https://github.com/twxs/vs.language.cmake
 \title CMake For VisualStudio Code
 */

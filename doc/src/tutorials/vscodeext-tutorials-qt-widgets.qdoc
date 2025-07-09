@@ -10,14 +10,13 @@
 
     \title Tutorial: Qt Widgets application
 
-    This tutorial illustrates how to use \QVSC to create a \l [QtWidgets] {Qt Widgets}
-    application.
+    This tutorial illustrates how to use \QVSC to create a
+    \l [QtWidgets] {Qt Widgets} application. You'll create a project
+    using a project wizard and design a widget-based UI using \QD.
 
-    You can download the completed project from
-    \l{https://code.qt.io/cgit/qt-labs/vscodeext.git/tree/doc/tutorials/AddressBook}
-    {here}.
+    You can download the completed project from \l{Code: AddressBook}.
 
-    \image vscodeext-tutorial-widgets-ready.webp {AddressBook application}
+    \image {vscodeext-tutorial-widgets-ready.webp} {AddressBook application}
 
     \section1 Before you start
 
@@ -34,7 +33,7 @@
     a project configuration file (\c CMakeLists.txt) that has instructions for
     building the project.
 
-    The \e AddressBook project has two classes, each with a header, source, and
+    The \c AddressBook project has two classes, each with a header, source, and
     UI form:
 
     \list
@@ -42,7 +41,7 @@
         \li \c AddDialog (based on QDialog)
     \endlist
 
-    To create a project:
+    To create a Qt Widgets application project in Visual Studio Code:
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and then select
@@ -52,7 +51,7 @@
         \li In \uicontrol {Base class}, select \uicontrol {QWidget} as the base
             class type.
         \li Select \uicontrol {UI form} to generate a UI form.
-        \li In \uicontrol {Name}, enter \e AddressBook.
+        \li In \uicontrol {Name}, enter \c AddressBook.
         \li In \uicontrol {Create in}, enter the path for the project files.
             For example, \c {C:\Qt\Examples}.
         \li Select \uicontrol {Create} to create the project files.
@@ -71,7 +70,7 @@
     Use \QD to design the application's main view, which has
     some widgets placed in layouts:
 
-    \image vscodeext-tutorial-widgets-main-view.webp {AddressBook's main view}
+    \image {vscodeext-tutorial-widgets-main-view.webp} {AddressBook's main view}
 
     For more information about using \QD, see \l{\QD}{\QD Manual}.
 
@@ -82,22 +81,22 @@
     \list 1
         \li In VS Code \uicontrol {Explorer}, select \c addressbook.ui, and then
             select \uicontrol {Open this file with \QD} to open it in \QD.
-            \image vscodeext-open-ui-file.webp {Opening addressbook.ui in the Explorer}
+            \image {vscodeext-open-ui-file.webp} {Opening addressbook.ui in the Explorer}
         \li In \QD's \uicontrol {Widget Box}, select \uicontrol {List Widget} and
             Drag it to the form to add a \l QListWidget.
         \li In the \uicontrol {Property Editor}, set the \c objectName property
-            to \e addressList.
+            to \c addressList.
         \li Drag two \uicontrol {Push Button} widgets to the top-right
             corner of the form to add \l QPushButton objects for the
             \uicontrol Add and \uicontrol Delete buttons.
-        \li Set the \c objectName properties of the buttons to \e addButton and
-            \e deleteButton and \uicontrol text property values to \e Add and
-            \e Delete.
+        \li Set the \c objectName properties of the buttons to \c addButton and
+            \c deleteButton and \uicontrol text property values to \c Add and
+            \c Delete.
         \li Drag two \uicontrol {Label} widgets to the form to add
             \l QLabel objects for displaying the selected item in the list.
-        \li Rename the first label to \e nameLabel and change its
-            \uicontrol text property to \e {<No item selected>}.
-        \li Rename the second label to \e emailLabel and leave its
+        \li Rename the first label to \c nameLabel and change its
+            \uicontrol text property to \c {<No item selected>}.
+        \li Rename the second label to \c emailLabel and leave its
             \uicontrol text property empty.
     \endlist
 
@@ -148,7 +147,7 @@
             \uicontrol {Dialog without Buttons}.
         \li Select \uicontrol Create to create the dialog.
         \li In the \uicontrol {Property Editor}, set the \c ObjectName property
-            to \e AddDialog.
+            to \c AddDialog.
         \li Go to \uicontrol File > \uicontrol Save, and save the file as
             \c {adddialog.ui}.
     \endlist
@@ -169,26 +168,26 @@
 
     \section2 Design the dialog
 
-    \image vscodeext-tutorials-widgets-dialog.webp {Add Address Dialog}
+    \image {vscodeext-tutorials-widgets-dialog.webp} {Add Address Dialog}
 
     To design the dialog:
 
     \list 1
-        \li In \QD, set \e {Add Address} as the \uicontrol windowTitle.
+        \li In \QD, set \c {Add Address} as the \uicontrol windowTitle.
         \li Add a \uicontrol Label to the form and set its \uicontrol objectName
-            property to \e nameText and \uicontrol text property to \e {Name:}.
+            property to \c nameText and \uicontrol text property to \c {Name:}.
         \li Add another \uicontrol Label and set its \uicontrol objectName
-            property to \e emailText and \uicontrol text property to
-            \e {Email:}.
+            property to \c emailText and \uicontrol text property to
+            \c {Email:}.
         \li Add a \uicontrol {Line Edit} (\l QLineEdit) and set its
-            \uicontrol objectName property to \e nameEdit. Leave the
+            \uicontrol objectName property to \c nameEdit. Leave the
             \uicontrol text property empty.
         \li Add another \uicontrol {Line Edit} and set its \uicontrol objectName
-            property to \e emailEdit. Leave the \uicontrol text property empty.
+            property to \c emailEdit. Leave the \uicontrol text property empty.
         \li Select the labels and line edits, and then go to \uicontrol Form >
             \uicontrol {Lay Out in a Grid} to add a grid layout.
         \li Add a \uicontrol {Push Button} and set its \uicontrol objectName
-            property to \e okButton and \uicontrol text property to \e OK.
+            property to \c okButton and \uicontrol text property to \c OK.
         \li Add a horizontal spacer to the left of the button.
         \li Add a horizontal layout for the spacer and the button.
         \li Add a vertical spacer between the labels and the button.
