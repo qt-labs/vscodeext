@@ -293,12 +293,25 @@
               ],
               "linux": {
                 "MIMode": "gdb",
-                "miDebuggerPath": "/usr/bin/gdb"
+                "miDebuggerPath": "/usr/bin/gdb",
+                "sourceFileMap": {
+                  "/home/qt/work/qt": "^\"\\${command:qt-cpp.sourceDirectory}\""
+                }
               },
               "osx": {
-                "MIMode": "lldb"
+                "MIMode": "lldb",
+                "sourceFileMap": {
+                  "/Users/qt/work/qt": "^\"\\${command:qt-cpp.sourceDirectory}\""
+                }
               },
               "windows": {
+                "sourceFileMap": {
+                  "Q:/qt5_workdir/w/s": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "C:/work/build/qt5_workdir/w/s": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "c:/users/qt/work/qt": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "c:/Users/qt/work/install": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "/Users/qt/work/qt": "^\"\\${command:qt-cpp.sourceDirectory}\""
+                },
                 "environment": [
                   {
                     "name": "PATH",
@@ -333,6 +346,13 @@
                 "^\"-qmljsdebugger=host:localhost,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
               ],
               "windows": {
+                "sourceFileMap": {
+                  "Q:/qt5_workdir/w/s": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "C:/work/build/qt5_workdir/w/s": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "c:/users/qt/work/qt": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "c:/Users/qt/work/install": "^\"\\${command:qt-cpp.sourceDirectory}\"",
+                  "/Users/qt/work/qt": "^\"\\${command:qt-cpp.sourceDirectory}\""
+                },
                 "environment": [
                   {
                     "name": "PATH",

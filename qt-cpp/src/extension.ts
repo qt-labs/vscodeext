@@ -19,6 +19,7 @@ import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
 import { registerResetCommand } from '@cmd/reset-qt-ext';
 import { registerNatvisCommand } from '@cmd/natvis';
 import { registerScanForQtKitsCommand } from '@cmd/scan-qt-kits';
+import { registerSourceDirectoryCommand } from '@cmd/source-directory';
 import {
   registerbuildDirectoryName,
   registerlaunchTargetFilenameWithoutExtension,
@@ -67,7 +68,8 @@ export async function activate(context: vscode.ExtensionContext) {
     ...registerNatvisCommand(),
     registerScanForQtKitsCommand(),
     registerlaunchTargetFilenameWithoutExtension(),
-    registerbuildDirectoryName()
+    registerbuildDirectoryName(),
+    registerSourceDirectoryCommand()
   );
   telemetry.sendEvent(`activated`);
 
