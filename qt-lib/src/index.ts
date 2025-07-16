@@ -6,3 +6,4 @@ export * from './constants';
 export * from './state';
 export * from './telemetry';
 export * from './color-provider';
+export * from './configuration-resolver';

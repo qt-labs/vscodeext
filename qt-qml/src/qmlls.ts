@@ -10,7 +10,6 @@ import {
   LanguageClient,
   LanguageClientOptions
 } from 'vscode-languageclient/node';
-import untildify from 'untildify';
 
 import {
   createLogger,
@@ -21,7 +20,8 @@ import {
   QtInsRootConfigName,
   compareVersions,
   GlobalWorkspace,
-  telemetry
+  telemetry,
+  resolveConfiguration
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
@@ -210,7 +210,7 @@ export class Qmlls {
     try {
       if (configs.get<string>('customExePath')) {
         const customPath = configs.get<string>('customExePath') ?? '';
-        const untildifiedCustomPath = untildify(customPath);
+        const untildifiedCustomPath = resolveConfiguration(customPath);
         const res = spawnSync(untildifiedCustomPath, ['--help'], {
           timeout: 1000
         });
@@ -269,7 +269,9 @@ export class Qmlls {
     let args: string[] = [];
     const customArgs = configs.get<string[]>('customArgs', []);
     if (customArgs.length > 0) {
-      args = customArgs;
+      args = customArgs.map((arg) => {
+        return resolveConfiguration(arg);
+      });
     } else {
       if (verboseOutput) {
         args.push('--verbose');
@@ -295,7 +297,7 @@ export class Qmlls {
       let docsPath = configs.get<string>('customDocsPath', '');
       if (docsPath) {
         // If qt-qml.qmlls.customDocsPath is set, use it instead of the path from the kit
-        docsPath = untildify(docsPath);
+        docsPath = resolveConfiguration(docsPath);
       } else {
         docsPath = this.docsPath ?? '';
       }
@@ -308,7 +310,13 @@ export class Qmlls {
         return `-I${p}`;
       };
 
-      additionalImportPaths.forEach((importPath) => {
+      const resolvedAdditionalImportPaths = additionalImportPaths.map(
+        (importPath) => {
+          return resolveConfiguration(importPath);
+        }
+      );
+
+      resolvedAdditionalImportPaths.forEach((importPath) => {
         args.push(toImportParam(importPath));
       });
 

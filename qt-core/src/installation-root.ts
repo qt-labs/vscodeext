@@ -4,7 +4,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import untildify from 'untildify';
 
 import {
   Home,
@@ -17,7 +16,8 @@ import {
   QtWorkspaceConfigMessage,
   QtAdditionalPath,
   IsMacOS,
-  telemetry
+  telemetry,
+  resolveConfiguration
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
@@ -47,7 +47,7 @@ export function getCurrentGlobalQtInstallationRoot(): string {
   const qtInsRootConfig =
     getConfiguration().inspect<string>(QtInsRootConfigName);
   const insRoot = qtInsRootConfig?.globalValue;
-  return insRoot ? untildify(insRoot) : '';
+  return insRoot ? resolveConfiguration(insRoot) : '';
 }
 
 export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {

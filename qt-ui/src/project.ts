@@ -3,11 +3,15 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import untildify from 'untildify';
 
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
-import { createLogger, QtWorkspaceType, Project } from 'qt-lib';
+import {
+  createLogger,
+  QtWorkspaceType,
+  Project,
+  resolveConfiguration
+} from 'qt-lib';
 import {
   getConfig,
   affectsConfig,
@@ -108,7 +112,7 @@ export class UIProject implements Project {
     this._disposables.push(eventHandler);
   }
   getQtCustomDesignerPath() {
-    return untildify(
+    return resolveConfiguration(
       getConfig<string>(CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH, '', this._folder)
     );
   }
