@@ -4,9 +4,8 @@
 import * as vscode from 'vscode';
 import { spawnSync } from 'child_process';
 
-import { QtAdditionalPath, inVCPKGRoot } from 'qt-lib';
+import { QtAdditionalPath, inVCPKGRoot, resolveConfiguration } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import untildify from 'untildify';
 
 export function getConfiguration(scope?: vscode.ConfigurationScope) {
   return vscode.workspace.getConfiguration(EXTENSION_ID, scope);
@@ -17,11 +16,14 @@ export function convertAdditionalQtPaths(
 ): QtAdditionalPath[] {
   return value.map((element) => {
     if (typeof element === 'string') {
-      return { path: untildify(element), isVCPKG: inVCPKGRoot(element) };
+      return {
+        path: resolveConfiguration(element),
+        isVCPKG: inVCPKGRoot(element)
+      };
     }
     const ret = element as QtAdditionalPath;
     ret.isVCPKG = inVCPKGRoot(ret.path);
-    ret.path = untildify(ret.path);
+    ret.path = resolveConfiguration(ret.path);
     return ret;
   });
 }

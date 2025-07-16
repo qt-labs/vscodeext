@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import untildify from 'untildify';
 import { isEmpty, isEqual } from 'lodash';
 
 import {
@@ -12,7 +11,8 @@ import {
   QtInsRootConfigName,
   QtAdditionalPath,
   compareQtAdditionalPath,
-  telemetry
+  telemetry,
+  resolveConfiguration
 } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
@@ -173,7 +173,9 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
     const qtInsRootConfig =
       getConfiguration(folder).inspect<string>(QtInsRootConfigName);
     const workspaceFolderValue = qtInsRootConfig?.workspaceFolderValue;
-    return workspaceFolderValue ? untildify(workspaceFolderValue) : '';
+    return workspaceFolderValue
+      ? resolveConfiguration(workspaceFolderValue)
+      : '';
   }
 
   public static getWorkspaceFolderAdditionalQtPaths(

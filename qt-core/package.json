@@ -237,7 +237,6 @@
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
     "typescript": "^5.6.3",
-    "untildify": "^5.0.0",
     "which": "^5.0.0"
   }
 }
