@@ -160,6 +160,7 @@ export function checkDefaultQtInsRootPath() {
 }
 
 export async function registerQt() {
+  telemetry.sendAction('registerQt');
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
     openLabel: 'Select Qt installation root',
