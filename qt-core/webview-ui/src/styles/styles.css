@@ -437,3 +437,23 @@ body.vscode-high-contrast .qt-item:hover {
   background: none;
   font-size: 1.2rem;
 }
+
+/*
+  styles for lucide icons
+  https://lucide.dev/guide/advanced/global-styling
+*/
+.lucide {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.0;
+}
+
+.lucide * {
+  vector-effect: non-scaling-stroke;
+}
+
+.lucide.large {
+  width: 36px;
+  height: 36px;
+  stroke-width: 2.0;
+}

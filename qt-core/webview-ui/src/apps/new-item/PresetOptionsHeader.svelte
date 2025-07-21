@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { PlusOutline, FloppyDiskOutline } from 'flowbite-svelte-icons';
+  import { Plus, Save } from '@lucide/svelte';
 
   import IconButton from '@/comps/IconButton.svelte';
   import SectionLabel from '@/comps/SectionLabel.svelte';
@@ -40,7 +40,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       `}
   >
     <IconButton
-      icon={PlusOutline}
+      icon={Plus}
       tooltip={texts.wizard.buttonTooltips.create}
       tooltipPlacement="left"
       visible={createEnabled}
@@ -51,7 +51,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     />
 
     <IconButton
-      icon={FloppyDiskOutline}
+      icon={Save}
       tooltip={texts.wizard.buttonTooltips.save}
       tooltipPlacement="left"
       visible={saveEnabled}
