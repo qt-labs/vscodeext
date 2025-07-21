@@ -8,7 +8,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { Checkbox } from 'flowbite-svelte';
 
   import { toBool } from '@/utils/utils';
-  import * as texts from './texts';
+  import * as texts from '@/apps/texts';
   import type { PresetPromptStep } from './types.svelte';
 
   let {

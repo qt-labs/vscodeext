@@ -1,15 +1,15 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
   import { Modal } from 'flowbite-svelte';
 
-  import * as texts from './texts';
+  import * as texts from '@/apps/texts';
+  import LoadingMask from '@/comps/LoadingMask.svelte';
   import { ui } from './states.svelte';
   import { onModalClosed } from './viewlogic.svelte';
-  import LoadingMask from '@/comps/LoadingMask.svelte';
   import WizardAllDialogs from './WizardAllDialogs.svelte';
   import WizardSectionInput from './WizardSectionInput.svelte';
   import WizardSectionPresets from './WizardSectionPresets.svelte';
