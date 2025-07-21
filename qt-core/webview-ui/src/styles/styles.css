@@ -5,6 +5,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 /* variables */
 body {
+  @apply p-0;
+
   /* panel, popup, ... */
   --qt-surface-foreground: var(--vscode-foreground);
   --qt-surface-background: var(--vscode-sideBar-background);
@@ -25,6 +27,11 @@ body {
   --qt-error-background: var(--vscode-inputValidation-errorBackground);
   --qt-error-border: var(--vscode-inputValidation-errorBorder);
 
+  --qt-warning-foreground: var(--vscode-inputValidation-warningForeground,
+                            var(--vscode-input-foreground));
+  --qt-warning-background: var(--vscode-inputValidation-warningBackground);
+  --qt-warning-border: var(--vscode-inputValidation-warningBorder);
+
   --qt-info-foreground: var(--vscode-inputValidation-infoForeground,
                           var(--vscode-input-foreground));
   --qt-info-background: var(--vscode-inputValidation-infoBackground);
@@ -33,6 +40,14 @@ body {
     /* general */
   --qt-focus-border: var(--vscode-focusBorder);
   --qt-outline: var(--vscode-settings-headerBorder);
+  --qt-checker-color1: var(--color-gray-700);
+  --qt-checker-color2: var(--color-gray-800);
+  --qt-disabled-foreground: var(--vscode-disabledForeground);
+}
+
+body[data-vscode-theme-kind*='light'] {
+  --qt-checker-color1: var(--color-gray-200);
+  --qt-checker-color2: var(--color-gray-300);
 }
 
 /* utilities */
@@ -40,7 +55,13 @@ body {
   border-radius: 2px;
 }
 
-@utility qt-list-base {
+@utility qt-surface {
+  @apply qt-border-radius;
+  background-color: var(--qt-surface-background);
+  border: 1px solid var(--qt-surface-border);
+}
+
+@utility qt-surface-bright {
   @apply qt-border-radius;
   background-color: var(--qt-surfaceBright-background);
   border: 1px solid var(--qt-surfaceBright-border);
@@ -64,6 +85,19 @@ body {
   border: 1px solid var(--vscode-input-border, transparent);
   padding: 5px 0px 5px 10px;
   box-shadow: none;
+}
+
+@utility qt-badge-base {
+  @apply qt-border-radius;
+  font-size: 0.8rem;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+@utility qt-alert-base {
+  @apply qt-border-radius;
+  @apply text-base font-normal;
+  padding: 10px;
 }
 
 @utility qt-input-selection {
@@ -131,7 +165,7 @@ html {
 
 .qt-button:disabled {
   @apply cursor-not-allowed;
-  color: var(--qt-surface-foreground);
+  color: var(--qt-disabled-foreground);
   background: transparent;
   border-color: var(--qt-outline);
 }
@@ -147,6 +181,11 @@ html {
 .qt-button-flat:hover {
   color: var(--qt-primary-foreground);
   background: var(--qt-primary-hoverBackground);
+}
+
+.qt-button-flat:disabled {
+  @apply cursor-not-allowed;
+  color: var(--qt-disabled-foreground);
 }
 
 /* button variants - content only */
@@ -232,6 +271,11 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
   @apply qt-input-base;
 }
 
+.qt-input:disabled {
+  @apply cursor-not-allowed;
+  color: var(--qt-disabled-foreground);
+}
+
 .qt-input:focus,
 .qt-input:focus-visible {
   @apply qt-focus-tightRing;
@@ -267,14 +311,14 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
 
 .qt-inputInset-error {
   @apply cursor-pointer;
-  color: var(--qt-error-foreground);
+  color: var(--qt-error-border);
   background-color: transparent;
   padding: 0px 7px;
 }
 
 .qt-inputInset-warning {
   @apply cursor-pointer;
-  color: var(--qt-info-foreground);
+  color: var(--qt-info-border);
   background-color: transparent;
   padding: 0px 7px;
 }
@@ -302,7 +346,7 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
 
 /* picker list - combobox, menu etc. */
 .qt-picker-list {
-  @apply qt-list-base;
+  @apply qt-surface-bright;
 }
 
 .qt-picker-list:focus-within {
@@ -315,7 +359,7 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
 
 /* list */
 .qt-list {
-  @apply qt-list-base;
+  @apply qt-surface-bright;
 }
 
 .qt-list:focus-within {
@@ -324,7 +368,7 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
 
 /* item - for list, picker etc. */
 .qt-item {
-  @apply pl-3 pr-1 py-2;
+  @apply p-2;
   @apply text-base font-normal cursor-pointer border-none;
   color: var(--qt-surfaceBright-foreground);
   background: transparent;
@@ -349,9 +393,18 @@ body.vscode-high-contrast .qt-item:hover {
 }
 
 .qt-item-selected {
+  @apply p-2;
+  @apply text-base font-normal cursor-pointer border-none;
   color: var(--qt-primary-foreground);
   background: var(--qt-primary-background);
   border-color: var(--qt-primary-border);
+  border: 1px solid var(--qt-primary-border);
+}
+
+.qt-item-selected:focus,
+.qt-item-selected:focus-visible {
+  @apply qt-focus-tightRing;
+  border-radius: 0px;
 }
 
 /* label */
@@ -369,6 +422,10 @@ body.vscode-high-contrast .qt-item:hover {
 .qt-label.dialog {
   color: var(--vscode-settings-headerForeground);
   font-size: 1.05rem;
+}
+
+.qt-label.dimmed {
+  color: var(--qt-disabled-foreground);
 }
 
 .qt-tooltip {
@@ -407,26 +464,31 @@ body.vscode-high-contrast .qt-item:hover {
 }
 
 .qt-alert-error {
-  @apply qt-border-radius;
-  @apply text-base font-normal;
+  @apply qt-alert-base;
   color: var(--qt-error-foreground);
   background-color: var(--qt-error-background);
   border: 1px solid var(--qt-error-border);
-  padding: 10px;
 }
 
 .qt-alert-warning {
-  @apply qt-border-radius;
-  @apply text-base font-normal;
+  @apply qt-alert-base;
   color: var(--qt-info-foreground);
   background-color: var(--qt-info-background);
   border: 1px solid var(--qt-info-border);
-  padding: 10px;
 }
 
 .qt-badge {
-  background-color: transparent;
-  font-size: 0.8rem;
+  @apply qt-badge-base;
+  color: var(--qt-primary-foreground);
+  background: transparent;
+  border: 1px solid var(--qt-outline);
+}
+
+.qt-badge-primary {
+  @apply qt-badge-base;
+  color: var(--qt-primary-foreground);
+  background: var(--qt-primary-background);
+  border: 1px solid var(--qt-primary-border);
 }
 
 .qt-spinner {
@@ -438,6 +500,27 @@ body.vscode-high-contrast .qt-item:hover {
   color: var(--qt-surface-foreground);
   background: none;
   font-size: 1.2rem;
+}
+
+.qt-surface-bright {
+  @apply qt-surface-bright
+}
+
+.qt-drop-mask {
+  background-color: var(--qt-primary-background);
+  border: 1px dashed var(--qt-primary-background);
+  opacity: 0.15;
+}
+
+.qt-gray-background {
+  @apply bg-gray-700;
+}
+
+.qt-checker-4px {
+  background: repeating-conic-gradient(
+    var(--qt-checker-color1) 0 25%,
+    var(--qt-checker-color2) 0 50%
+  ) 50% / 4px 4px
 }
 
 /*

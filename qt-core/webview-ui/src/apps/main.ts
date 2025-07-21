@@ -3,8 +3,12 @@
 
 import { mount } from 'svelte';
 import NewItem from './new-item/NewItemApp.svelte';
+import QrcEditor from './qrc-editor/QrcEditorApp.svelte';
 
-const app = mount(NewItem, {
+const appType = document.body.dataset.app;
+const appComp = appType === 'qrc-editor' ? QrcEditor : NewItem
+
+const app = mount(appComp, {
   target: document.getElementById('app')!
 });
 

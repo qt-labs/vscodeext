@@ -30,6 +30,9 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
+  "activationEvents": [
+    "workspaceContains:*.qrc"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -77,6 +80,21 @@
         "command": "qt-core.createNewItem",
         "title": "%qt-core.command.createNewItem.title%",
         "category": "Qt"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "qt-core.qrcEditor",
+        "displayName": "QRC editor",
+        "extensions": [
+          ".qrc"
+        ],
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.qrc"
+          }
+        ]
       }
     ],
     "languages": [
@@ -215,8 +233,10 @@
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.21.0",
     "@types/command-exists": "^1.2.3",
+    "@types/jimp": "^0.2.1",
     "@types/lodash": "^4.17.12",
     "@types/node": "^20.17.0",
+    "@types/pngjs": "^6.0.5",
     "@types/vscode": "^1.94.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -233,6 +253,8 @@
     "axios": "^1.9.0",
     "command-exists": "^1.2.9",
     "dotenv": "^16.5.0",
+    "fast-xml-parser": "^5.2.5",
+    "jimp": "^1.6.0",
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
