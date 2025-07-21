@@ -7,3 +7,5 @@ export * from './state';
 export * from './telemetry';
 export * from './color-provider';
 export * from './configuration-resolver';
+export * from './test-helper';
+export * from './test-constants';
