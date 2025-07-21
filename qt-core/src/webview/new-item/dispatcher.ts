@@ -14,15 +14,17 @@ import {
   getNewProjectBaseDir,
   setDefaultProjectDir
 } from '@/qtcli/commands';
+import { WebviewChannel } from '@/webview/channel';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
-import type { NewItemPanel } from './new-item-panel';
+import type { NewItemPanel } from './panel';
 
 const logger = createLogger('new-item-handler');
 type CommandHandler = (command: Command) => void | Promise<void>;
 
-export class NewItemCommandHandler {
+export class NewItemDispatcher {
   private readonly _qtcliRest = new QtcliRestClient();
   private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
+  private _comm: WebviewChannel | undefined;
   private _panel: NewItemPanel | undefined = undefined;
 
   public constructor() {
@@ -46,6 +48,10 @@ export class NewItemCommandHandler {
 
   public setPanel(p: NewItemPanel) {
     this._panel = p;
+  }
+
+  public setComm(c: WebviewChannel) {
+    this._comm = c;
   }
 
   public dispatch(cmd: unknown) {
@@ -108,14 +114,14 @@ export class NewItemCommandHandler {
         method: 'get',
         url: '/ready'
       });
-      this._panel?.postDataReply(cmd, data);
+      this._comm?.postDataReply(cmd, data);
     } catch {
       await vscode.window.showErrorMessage(texts.newItem.errorQtCliNotReady);
     }
   };
 
   private readonly onUiGetConfigs = (cmd: Command) => {
-    this._panel?.postDataReply(cmd, {
+    this._comm?.postDataReply(cmd, {
       newFileBaseDir: getNewFileBaseDir(),
       newProjectBaseDir: getNewProjectBaseDir()
     });
@@ -123,13 +129,13 @@ export class NewItemCommandHandler {
 
   private readonly onUiGetAllPresets = async (cmd: Command) => {
     const data = await this._qtcliRest.get('/presets', { type: cmd.payload });
-    this._panel?.postDataReply(cmd, data);
+    this._comm?.postDataReply(cmd, data);
   };
 
   private readonly onUiGetPresetById = async (cmd: Command) => {
     const id = _.toString(cmd.payload);
     const data = await this._qtcliRest.get(`/presets/${id}`);
-    this._panel?.postDataReply(cmd, data);
+    this._comm?.postDataReply(cmd, data);
   };
 
   private readonly onUiManageCustomPreset = async (cmd: Command) => {
@@ -143,33 +149,33 @@ export class NewItemCommandHandler {
       switch (action) {
         case 'create': {
           const data = await this._qtcliRest.post('/presets', cmd.payload);
-          this._panel?.postDataReply(cmd, data);
+          this._comm?.postDataReply(cmd, data);
           break;
         }
 
         case 'rename': {
           await this._qtcliRest.post('/presets', cmd.payload);
           await this._qtcliRest.delete(`/presets/${presetId}`);
-          this._panel?.postDataReply(cmd, cmd.payload);
+          this._comm?.postDataReply(cmd, cmd.payload);
           break;
         }
 
         case 'update': {
           await this._qtcliRest.patch(`/presets/${presetId}`, cmd.payload);
-          this._panel?.postDataReply(cmd, cmd.payload);
+          this._comm?.postDataReply(cmd, cmd.payload);
           break;
         }
 
         case 'delete': {
           const data = await this._qtcliRest.delete(`/presets/${presetId}`);
-          this._panel?.postDataReply(cmd, data);
+          this._comm?.postDataReply(cmd, data);
           break;
         }
       }
     } catch (e) {
       if (e instanceof QtcliRestError) {
         await vscode.window.showErrorMessage(e.toString());
-        this._panel?.postErrorReplyFrom(cmd, e.message, e.details);
+        this._comm?.postErrorReplyFrom(cmd, e.message, e.details);
       }
     }
   };
@@ -177,10 +183,10 @@ export class NewItemCommandHandler {
   private readonly onUiValidateInputs = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.post('/items/validate', cmd.payload);
-      this._panel?.postDataReply(cmd, data);
+      this._comm?.postDataReply(cmd, data);
     } catch (e) {
       if (e instanceof QtcliRestError) {
-        this._panel?.postErrorReplyFrom(cmd, e.message, e.details);
+        this._comm?.postErrorReplyFrom(cmd, e.message, e.details);
       }
     }
   };
@@ -202,7 +208,7 @@ export class NewItemCommandHandler {
         folder = folder.charAt(0).toUpperCase() + folder.slice(1);
       }
 
-      this._panel?.postDataReply(cmd, folder);
+      this._comm?.postDataReply(cmd, folder);
     }
   };
 }

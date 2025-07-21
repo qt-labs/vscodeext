@@ -10,7 +10,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import IconButton from '@/comps/IconButton.svelte';
   import SectionLabel from '@/comps/SectionLabel.svelte';
   import InputWithIssue from '@/comps/InputWithIssue.svelte';
-  import * as texts from './texts';
+  import * as texts from '@/apps/texts';
   import { data, input, ui } from './states.svelte';
   import {
     onWorkingDirBrowseClicked,

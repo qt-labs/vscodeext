@@ -1,6 +1,6 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
@@ -15,9 +15,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     tooltipPlacement = 'top' as Placement,
     icon = CheckOutline,
     flat = false,
+    square = false,
     visible = true,
     disabled = false,
     class: className = '',
+    iconClass = '',
+    align = 'row' as 'row' | 'col',
     onClicked = () => {}
   } = $props();
 </script>
@@ -25,16 +28,26 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 {#if visible}
   <Button
     {disabled}
-    class={`qt-button${flat ? '-flat' : ''} ${className}`}
+    class={`
+      qt-button${flat ? '-flat' : ''} ${className}
+      ${square ? 'aspect-square' : ''}
+    `}
     on:click={() => {
       onClicked(id);
     }}
   >
     {@const IconComp = icon}
-    {#if IconComp}
-      <IconComp class="mr-1" />
-    {/if}
-    {text}
+    <div class={`
+      flex flex-${align} items-center
+      ${align === 'col' ? 'gap-1' : ''}
+    `}>
+      {#if IconComp}
+        <IconComp
+          class={`${text.length === 0 ? '-m-1' : 'mr-1'} ${iconClass}`}
+        />
+      {/if}
+      {text}
+    </div>
   </Button>
 
   {#if tooltip.length !== 0}
