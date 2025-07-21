@@ -3,12 +3,17 @@
 
 import { z } from 'zod';
 
-import { vscode } from '@/app/vscode';
-import { isErrorResponse } from '@shared/types';
-import { CommandId, type ManageCustomPresetArgs } from '@shared/message';
+import * as texts from '@/apps/texts';
+import { vscode } from '@/apps/vscode';
+import { CommandId, isErrorResponse } from '@shared/message';
 import { isPreset, isPresetArray } from './types.svelte';
 import { data, input, ui } from './states.svelte';
-import * as texts from './texts';
+
+type ManageCustomPresetArgs =
+  | { action: 'create'; name: string }
+  | { action: 'rename'; name: string }
+  | { action: 'update' }
+  | { action: 'delete' };
 
 export async function onAppMount() {
   try {

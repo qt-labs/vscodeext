@@ -1,13 +1,13 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
   import { P } from 'flowbite-svelte';
 
+  import * as texts from '@/apps/texts';
   import SectionLabel from '@/comps/SectionLabel.svelte';
-  import * as texts from './texts';
   import { data } from './states.svelte';
   import PresetList from './PresetList.svelte';
   import PresetTypeSelector from './PresetTypeSelector.svelte';
@@ -18,7 +18,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <div
   class={`
       grow grid gap-2
-      grid-rows-[min-content_1fr] 
+      grid-rows-[min-content_1fr]
       grid-cols-[min-content_minmax(300px,1fr)_1fr]
       `}
 >

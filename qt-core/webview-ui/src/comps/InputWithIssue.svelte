@@ -14,7 +14,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     message = undefined as string | undefined,
     alertPosition = 'top' as 'top' | 'bottom',
     class: className = '',
-    onInput,
+    disabled = false,
+    onInput = () => {},
     onEnter = () => {},
     ...restProps
   } = $props();
@@ -53,10 +54,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     type="text"
     class={`qt-input${hasIssue ? `-${level}` : ''} ${className}`}
     bind:value
+    disabled={disabled}
     onblur={() => {
       focused = false;
     }}
-    oninput={onInput}
+    oninput={() => { onInput(); }}
     onfocus={(e) => {
       (e.target as HTMLInputElement).select();
       focused = true;

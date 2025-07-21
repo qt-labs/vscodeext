@@ -5,11 +5,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { nanoid } from 'nanoid';
+  import { onMount } from 'svelte';
   import { P, Dropdown } from 'flowbite-svelte';
 
   import { textOrFallback } from '@/utils/utils';
-  import type { PickerItem } from '@/app/types.svelte';
-  import { onMount } from 'svelte';
+  import type { PickerItem } from './types.svelte';
 
   let {
     active = false,

@@ -6,7 +6,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <script lang="ts">
   import { EditOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 
-  import * as texts from './texts';
+  import * as texts from '@/apps/texts';
   import { ui } from './states.svelte';
   import PickerList from '@/comps/PickerList.svelte';
 
