@@ -27,7 +27,7 @@ import { createCoreProject, CoreProjectManager } from '@/project';
 import { resetCommand } from '@/reset';
 import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
-import { NewItemPanel } from '@/webview/new-item-panel';
+import { NewItemPanel } from '@/webview/new-item/panel';
 
 const logger = createLogger('extension');
 

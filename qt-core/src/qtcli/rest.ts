@@ -4,7 +4,7 @@
 import os from 'os';
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 
-import { isErrorResponse, Issue } from '@/webview/shared/types';
+import { isErrorResponse, Issue } from '@/webview/shared/message';
 
 // axios wrapper
 export class QtcliRestClient {

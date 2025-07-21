@@ -3,7 +3,11 @@
 
 import type { WebviewApi } from 'vscode-webview';
 
-import { CommandId, type CommandReply } from '@shared/message';
+import {
+  CommandId,
+  type CommandReply,
+  OneWayCommandIds
+} from '@shared/message';
 
 class VSCodeApiWrapper {
   private readonly _api: WebviewApi<unknown> | undefined;
@@ -41,7 +45,7 @@ class VSCodeApiWrapper {
       return Promise.reject('VSCode API not available');
     }
 
-    if (id < CommandId.EndOfNotification) {
+    if (OneWayCommandIds.includes(id)) {
       this._api.postMessage({ id, payload });
       return undefined as T;
     }
@@ -64,7 +68,7 @@ class VSCodeApiWrapper {
         setTimeout(() => {
           if (this._pendingCommands.has(tag)) {
             this._pendingCommands.delete(tag);
-            reject(new Error(`Call request timed out: ${id}`));
+            reject(new Error(`Call request timed out: cmd = ${CommandId[id]}`));
           }
         }, timeout);
       }
@@ -72,7 +76,7 @@ class VSCodeApiWrapper {
   }
 
   private _onDidReceiveReply(r: CommandReply) {
-    if (r.id < CommandId.EndOfNotification) {
+    if (OneWayCommandIds.includes(r.id)) {
       this._onDidReceiveNotification(r);
       return;
     }

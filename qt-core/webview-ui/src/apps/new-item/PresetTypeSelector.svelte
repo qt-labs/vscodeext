@@ -1,14 +1,14 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
   import { FolderOpenOutline, FileOutline } from 'flowbite-svelte-icons';
 
   import VerticalTabs from '@/comps/VerticalTabs.svelte';
+  import { wizard } from '@/apps/texts';
   import { setPresetType } from './viewlogic.svelte';
-  import { wizard } from './texts';
 
   const items = [
     { label: wizard.types.project, icon: FolderOpenOutline, data: 'project' },

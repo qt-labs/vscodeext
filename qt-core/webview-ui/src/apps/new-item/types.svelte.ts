@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import _ from 'lodash';
-import { FileCloneOutline } from 'flowbite-svelte-icons';
 
 export interface Preset {
   id: string;
@@ -108,11 +107,6 @@ export class InputIssue {
   public isError(): boolean {
     return this.level.toLocaleLowerCase() === 'error';
   }
-}
-
-export interface PickerItem {
-  text: string;
-  icon?: typeof FileCloneOutline | undefined;
 }
 
 // type guard functions
