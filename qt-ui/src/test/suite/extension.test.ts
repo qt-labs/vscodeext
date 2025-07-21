@@ -1,39 +1,30 @@
-// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import { expect } from 'chai';
 import * as vscode from 'vscode';
+import {
+  isExtensionActive,
+  assertAllDependenciesAreActive,
+  assertAllCommandsAreRegistered
+} from 'qt-lib';
 
 const packageJson = require('../../../package.json');
 
 describe('extension', () => {
-  before('activate', () => {
-    return vscode.extensions.getExtension('theqtcompany.qt-ui')?.activate()
-});
-  it('activated', async () => {
-    expect(
-      vscode.extensions.getExtension('theqtcompany.qt-ui')?.isActive
-    ).to.be.eq(true);
-  });
-  it('activated the dependencies', async () => {
-    if (packageJson.extensionDependencies) {
-      for (const extensionId of packageJson.extensionDependencies) {
-        expect(vscode.extensions.getExtension(extensionId)?.isActive).to.be.eq(
-          true
-        );
-      }
-    }
+  before('activate', async function () {
+    const ext = vscode.extensions.getExtension('theqtcompany.qt-ui');
+    if (!ext) throw new Error('qt-qml extension not found');
+    await ext.activate();
   });
 
-  it('has visible commands', async () => {
-    const vscodeCommands = vscode.commands.getCommands(true);
-    if (packageJson.contributes.commands) {
-      // Listing qt-ui commands
-      for (const command of packageJson.contributes.commands) {
-        let string_com: string = command.command;
-        console.log(string_com);
-        expect((await vscodeCommands).includes(string_com)).to.be.eq(true);
-      }
-    }
+  it('activates the qt-ui extension', () => {
+    expect(isExtensionActive('theqtcompany.qt-ui')).to.be.true;
+  });
+  it('activates all declared extension dependencies', () => {
+    assertAllDependenciesAreActive(packageJson);
+  });
+  it('registers all contributed commands', async () => {
+    await assertAllCommandsAreRegistered(packageJson);
   });
 });

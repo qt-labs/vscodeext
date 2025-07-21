@@ -1,4 +1,4 @@
-// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as cp from 'child_process';
@@ -11,6 +11,8 @@ import {
   runTests
 } from '@vscode/test-electron';
 
+import { localQtCore } from '../../../qt-lib/src/test-constants';
+
 async function main() {
   try {
     // The folder containing the Extension Manifest package.json
@@ -21,10 +23,7 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
     // Path to the local qt-core extension to be used during testing
-    const localQtCoreVsix = path.resolve(
-      __dirname,
-      '../../../qt-core/out/qt-core-1.9.0.vsix'
-    );
+    const localQtCoreVsix = path.resolve(__dirname, localQtCore);
     // Check that qt-core .vsix exists
     if (!fs.existsSync(localQtCoreVsix)) {
       console.error(`Required extension not found: ${localQtCoreVsix}`);
