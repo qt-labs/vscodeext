@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 export enum CommandId {
+  Invalid = -1,
+
   // new-item wizard
   UiClosed,
   UiItemCreationRequested,
@@ -12,13 +14,27 @@ export enum CommandId {
   UiGetPresetById,
   UiValidateInputs,
   UiManageCustomPreset,
-  UiSelectWorkingDir
+  UiSelectWorkingDir,
+
+  // qrc editor
+  QrcDocChanged,
+  QrcAddFiles,
+  QrcAddNewGroup,
+  QrcGetRccTag,
+  QrcGetFileInfo,
+  QrcClean,
+  QrcRemove,
+  QrcSetProp,
+  QrcSortAll,
+  QrcRunVscodeUiAction,
+  QrcRunClipboardAction
 }
 
 export const OneWayCommandIds = [
   CommandId.UiClosed,
   CommandId.UiItemCreationRequested,
-  CommandId.UiHasError
+  CommandId.UiHasError,
+  CommandId.QrcDocChanged
 ];
 
 export interface Command<T = unknown> {
