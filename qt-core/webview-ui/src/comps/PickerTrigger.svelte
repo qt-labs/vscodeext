@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { ChevronDownOutline } from 'flowbite-svelte-icons';
+  import { ChevronDown } from '@lucide/svelte';
 
   import { textOrFallback } from '@/utils/utils';
 
@@ -30,5 +30,5 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   onclick={onClicked}
 >
   <div class="truncate">{textOrFallback(text)}</div>
-  <ChevronDownOutline class="w-4 h-4" />
+  <ChevronDown class="w-4 h-4" />
 </button>
