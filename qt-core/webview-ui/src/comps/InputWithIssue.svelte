@@ -6,7 +6,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <script lang="ts">
   import { nanoid } from 'nanoid';
   import { Input, Button, Alert } from 'flowbite-svelte';
-  import { CircleMinusSolid, InfoCircleOutline } from 'flowbite-svelte-icons';
+  import { CircleMinus, Info } from '@lucide/svelte';
 
   let {
     value = $bindable(''),
@@ -79,9 +79,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       }}
     >
       {#if level === 'error'}
-        <CircleMinusSolid />
+        <CircleMinus />
       {:else}
-        <InfoCircleOutline />
+        <Info />
       {/if}
     </Button>
   </Input>

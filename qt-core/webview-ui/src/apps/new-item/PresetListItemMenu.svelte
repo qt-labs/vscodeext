@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { EditOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+  import { SquarePen, Trash2 } from '@lucide/svelte';
 
   import * as texts from '@/apps/texts';
   import { ui } from './states.svelte';
@@ -13,8 +13,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   let { open = false, onClosed = () => {} } = $props();
 
   const items = [
-    { icon: TrashBinOutline, text: texts.wizard.buttons.delete },
-    { icon: EditOutline, text: texts.wizard.buttons.rename }
+    { icon: Trash2, text: texts.wizard.buttons.delete },
+    { icon: SquarePen, text: texts.wizard.buttons.rename }
   ];
 
   function onItemClickedAt(index: number) {
