@@ -5,7 +5,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { ListgroupItem, Tooltip } from 'flowbite-svelte';
-  import { DotsHorizontalOutline } from 'flowbite-svelte-icons';
+  import { Ellipsis } from '@lucide/svelte';
 
   import TruncatableLabel from '@/comps/TruncatableLabel.svelte';
   import PresetListItemMenu from './PresetListItemMenu.svelte';
@@ -33,7 +33,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   {#if preset.isCustomPreset()}
     <div class="ml-auto mr-0.5 flex flex-row gap-1">
       <div class="qt-badge">{preset.title}</div>
-      <DotsHorizontalOutline
+      <Ellipsis
         class='qt-button-contentOnly'
         style={selected ? 'color: var(--qt-primary-foreground);' : '' }
         onclick={() => {

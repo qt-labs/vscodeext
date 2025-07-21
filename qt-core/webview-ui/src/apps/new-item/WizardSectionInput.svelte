@@ -5,7 +5,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { Checkbox, P } from 'flowbite-svelte';
-  import { CheckOutline, FolderOpenOutline } from 'flowbite-svelte-icons';
+  import { Check, FolderOpen } from '@lucide/svelte';
 
   import IconButton from '@/comps/IconButton.svelte';
   import SectionLabel from '@/comps/SectionLabel.svelte';
@@ -41,8 +41,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   <P class="qt-label pl-4">{texts.wizard.workingDir}</P>
   <div class="w-full grid grid-cols-[min-content_1fr] gap-0">
     <IconButton
-      icon={FolderOpenOutline}
-      class="qt-button px-2 py-0 rounded-r-none! -mr-0.5 focus:z-1"
+      icon={FolderOpen}
+      class="qt-button px-2 py-0 rounded-r-none! -mr-0.5 focus:z-1 min-w-[36px]"
       tooltip={texts.wizard.workingDirTooltip}
       onClicked={onWorkingDirBrowseClicked}
       />
@@ -70,7 +70,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
     <IconButton
       text={texts.wizard.buttons.create}
-      icon={CheckOutline}
+      icon={Check}
       disabled={!ui.canCreate}
       onClicked={createItemFromSelectedPreset}
     ></IconButton>
