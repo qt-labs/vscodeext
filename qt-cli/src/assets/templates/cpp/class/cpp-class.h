@@ -21,5 +21,5 @@ class {{ .name }}{{ if .baseClass }}: public {{ .baseClass }}{{ end }}
 public:
     explicit {{ .name }}({{ .parentClass }} *parent = nullptr);
 
-Q_SIGALS:
+signals:
 };
