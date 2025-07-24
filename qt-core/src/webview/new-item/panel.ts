@@ -6,7 +6,11 @@ import * as vscode from 'vscode';
 import { createLogger } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
 import { QtcliAction } from '@/qtcli/common';
-import { findQtcliExePath } from '@/qtcli/commands';
+import {
+  findQtcliExePath,
+  getNewFileBaseDir,
+  getNewProjectBaseDir
+} from '@/qtcli/commands';
 import { WebviewChannel } from '@/webview/channel';
 import { NewItemDispatcher } from './dispatcher';
 import * as texts from '@/texts';
@@ -88,6 +92,11 @@ export class NewItemPanel {
     }
 
     void startQtcliServer(uri);
+
+    NewItemPanel.instance._dispatcher.setUiConfigs({
+      newFileBaseDir: getNewFileBaseDir(),
+      newProjectBaseDir: getNewProjectBaseDir()
+    });
     NewItemPanel.instance._panel.reveal(PanelColumn);
   }
 }
