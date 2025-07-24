@@ -73,30 +73,7 @@ export class CppProject implements Project {
         this._cmakeProject.onSelectedConfigurationChanged(
           async (configurationType: cmakeApi.ConfigurationType) => {
             if (configurationType === cmakeApi.ConfigurationType.Kit) {
-              const kit = await getSelectedKit(this.folder);
-              if (vscode.env.isTelemetryEnabled && kit) {
-                analyzeKit(kit);
-              }
-              const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
-              const message = new QtWorkspaceConfigMessage(this.folder);
-              coreAPI?.setValue(
-                this.folder,
-                'selectedKitPath',
-                selectedKitPath
-              );
-              message.config.add('selectedKitPath');
-
-              const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
-              coreAPI?.setValue(
-                this.folder,
-                'selectedQtPaths',
-                selectedQtPaths
-              );
-              message.config.add('selectedQtPaths');
-              logger.info(
-                `Notifying coreAPI with message: ${message.toString()}`
-              );
-              coreAPI?.notify(message);
+              await this.onKitConfigurationChanged();
             }
           }
         );
@@ -130,6 +107,22 @@ export class CppProject implements Project {
       this._disposables.push(onCodeModelChangedHandler);
       this._disposables.push(onSelectedConfigurationChangedHandler);
     }
+  }
+  private async onKitConfigurationChanged() {
+    const kit = await getSelectedKit(this.folder);
+    if (vscode.env.isTelemetryEnabled && kit) {
+      analyzeKit(kit);
+    }
+    const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
+    const message = new QtWorkspaceConfigMessage(this.folder);
+    coreAPI?.setValue(this.folder, 'selectedKitPath', selectedKitPath);
+    message.config.add('selectedKitPath');
+
+    const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
+    coreAPI?.setValue(this.folder, 'selectedQtPaths', selectedQtPaths);
+    message.config.add('selectedQtPaths');
+    logger.info(`Notifying coreAPI with message: ${message.toString()}`);
+    coreAPI?.notify(message);
   }
   private async obtainUsedQtModules() {
     if (!this._cmakeProject) {
