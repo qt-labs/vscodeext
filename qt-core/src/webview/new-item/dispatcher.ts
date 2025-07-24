@@ -9,11 +9,7 @@ import { createLogger } from 'qt-lib';
 import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
-import {
-  getNewFileBaseDir,
-  getNewProjectBaseDir,
-  setDefaultProjectDir
-} from '@/qtcli/commands';
+import { getNewProjectBaseDir, setDefaultProjectDir } from '@/qtcli/commands';
 import { WebviewChannel } from '@/webview/channel';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
 import type { NewItemPanel } from './panel';
@@ -26,6 +22,7 @@ export class NewItemDispatcher {
   private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
   private _comm: WebviewChannel | undefined;
   private _panel: NewItemPanel | undefined = undefined;
+  private _uiConfigs: unknown = {};
 
   public constructor() {
     this._handlers = new Map<CommandId, CommandHandler>([
@@ -52,6 +49,10 @@ export class NewItemDispatcher {
 
   public setComm(c: WebviewChannel) {
     this._comm = c;
+  }
+
+  public setUiConfigs(c: unknown) {
+    this._uiConfigs = c;
   }
 
   public dispatch(cmd: unknown) {
@@ -121,10 +122,7 @@ export class NewItemDispatcher {
   };
 
   private readonly onUiGetConfigs = (cmd: Command) => {
-    this._comm?.postDataReply(cmd, {
-      newFileBaseDir: getNewFileBaseDir(),
-      newProjectBaseDir: getNewProjectBaseDir()
-    });
+    this._comm?.postDataReply(cmd, this._uiConfigs);
   };
 
   private readonly onUiGetAllPresets = async (cmd: Command) => {
