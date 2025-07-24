@@ -20,11 +20,13 @@ body {
   --qt-primary-border: var(--vscode-button-border, transparent);
   --qt-primary-hoverBackground: var(--vscode-button-hoverBackground);
 
-  --qt-error-foreground: var(--vscode-inputValidation-errorForeground);
+  --qt-error-foreground: var(--vscode-inputValidation-errorForeground,
+                            var(--vscode-input-foreground));
   --qt-error-background: var(--vscode-inputValidation-errorBackground);
   --qt-error-border: var(--vscode-inputValidation-errorBorder);
 
-  --qt-info-foreground: var(--vscode-inputValidation-infoForeground);
+  --qt-info-foreground: var(--vscode-inputValidation-infoForeground,
+                          var(--vscode-input-foreground));
   --qt-info-background: var(--vscode-inputValidation-infoBackground);
   --qt-info-border: var(--vscode-inputValidation-infoBorder);
 
@@ -265,14 +267,14 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
 
 .qt-inputInset-error {
   @apply cursor-pointer;
-  color: var(--qt-error-foreground, var(--qt-error-border));
+  color: var(--qt-error-foreground);
   background-color: transparent;
   padding: 0px 7px;
 }
 
 .qt-inputInset-warning {
   @apply cursor-pointer;
-  color: var(--qt-info-foreground, var(--qt-info-border));
+  color: var(--qt-info-foreground);
   background-color: transparent;
   padding: 0px 7px;
 }
@@ -407,7 +409,7 @@ body.vscode-high-contrast .qt-item:hover {
 .qt-alert-error {
   @apply qt-border-radius;
   @apply text-base font-normal;
-  color: var(--qt-error-foreground, var(--qt-primary-foreground));
+  color: var(--qt-error-foreground);
   background-color: var(--qt-error-background);
   border: 1px solid var(--qt-error-border);
   padding: 10px;
@@ -416,7 +418,7 @@ body.vscode-high-contrast .qt-item:hover {
 .qt-alert-warning {
   @apply qt-border-radius;
   @apply text-base font-normal;
-  color: var(--qt-info-foreground, var(--qt-primary-foreground));
+  color: var(--qt-info-foreground);
   background-color: var(--qt-info-background);
   border: 1px solid var(--qt-info-border);
   padding: 10px;
