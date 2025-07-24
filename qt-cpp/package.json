@@ -78,6 +78,11 @@
           "type": "boolean",
           "default": false,
           "description": "Do not show a warning when the source directory cannot be determined from the selected kit."
+        },
+        "qt-cpp.doNotShowCMakePresetWarning": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not show a warning when the CMake Presets are found in the workspace."
         }
       }
     },

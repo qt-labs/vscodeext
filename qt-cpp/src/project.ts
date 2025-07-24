@@ -28,6 +28,7 @@ import {
 import { analyzeKit } from '@/kit-manager';
 import * as cmakeFileApi from '@/cmake-file-api';
 import { getMajorQtVersion } from '@/util/util';
+import { CONFIG_CMAKE_PRESET_WARNING, EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('project');
 
@@ -72,8 +73,14 @@ export class CppProject implements Project {
       const onSelectedConfigurationChangedHandler =
         this._cmakeProject.onSelectedConfigurationChanged(
           async (configurationType: cmakeApi.ConfigurationType) => {
-            if (configurationType === cmakeApi.ConfigurationType.Kit) {
-              await this.onKitConfigurationChanged();
+            switch (configurationType) {
+              case cmakeApi.ConfigurationType.Kit:
+                await this.onKitConfigurationChanged();
+                break;
+              case cmakeApi.ConfigurationType.ConfigurePreset:
+              case cmakeApi.ConfigurationType.BuildPreset:
+                CppProject.warnUserForPresetUsage();
+                break;
             }
           }
         );
@@ -104,6 +111,7 @@ export class CppProject implements Project {
           }
         }
       );
+      this.checkCMakePresetInWorkspace();
       this._disposables.push(onCodeModelChangedHandler);
       this._disposables.push(onSelectedConfigurationChangedHandler);
     }
@@ -124,6 +132,60 @@ export class CppProject implements Project {
     logger.info(`Notifying coreAPI with message: ${message.toString()}`);
     coreAPI?.notify(message);
   }
+  private static getDoNotShowCMakePresetWarning() {
+    const configKey = `${EXTENSION_ID}.${CONFIG_CMAKE_PRESET_WARNING}`;
+    const config = vscode.workspace.getConfiguration();
+    return config.get<boolean>(configKey);
+  }
+  private static setDoNotShowCMakePresetWarning(value: boolean) {
+    const configKey = `${EXTENSION_ID}.${CONFIG_CMAKE_PRESET_WARNING}`;
+    const config = vscode.workspace.getConfiguration();
+    void config.update(configKey, value, vscode.ConfigurationTarget.Global);
+  }
+  private static warnUserForPresetUsage() {
+    if (CppProject.getDoNotShowCMakePresetWarning()) {
+      return;
+    }
+
+    const doNotShowAgainButtonMessage = 'Do not show again';
+    void vscode.window
+      .showWarningMessage(
+        'Qt C++ extension does not support CMake Presets yet. Use Kits instead.',
+        doNotShowAgainButtonMessage
+      )
+      .then((result) => {
+        if (result === doNotShowAgainButtonMessage) {
+          CppProject.setDoNotShowCMakePresetWarning(true);
+        }
+      });
+  }
+  private checkCMakePresetInWorkspace() {
+    if (!this._cmakeProject) {
+      throw new Error('CMake project is not defined');
+    }
+    if (CppProject.getDoNotShowCMakePresetWarning()) {
+      return;
+    }
+    // If the project has a CMake Preset, warn the user
+    const presetFiles = ['CMakePresets.json', 'CMakeUserPresets.json'];
+    const presetFileExists = presetFiles.some((file) => {
+      const presetFilePath = path.join(this.folder.uri.fsPath, file);
+      return fs.existsSync(presetFilePath);
+    });
+    // If cmake.useCMakePresets is not never, warn the user
+    const useCMakePresets =
+      vscode.workspace
+        .getConfiguration('cmake')
+        .get<string>('useCMakePresets') !== 'never';
+    if (presetFileExists && useCMakePresets) {
+      // Show warning message after 2 seconds because when the project is opened,
+      // Multiple messages can be shown at once and our message can be lost.
+      setTimeout(() => {
+        CppProject.warnUserForPresetUsage();
+      }, 2000);
+    }
+  }
+
   private async obtainUsedQtModules() {
     if (!this._cmakeProject) {
       throw new Error('CMake project is not defined');
