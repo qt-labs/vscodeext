@@ -12,8 +12,8 @@
 
     This tutorial illustrates how to use \QVSC to create a
     \l [QtQuick] {Qt Quick} application. You'll create a project using a
-    project wizard and design a Qt Quick UI. Also, you'll learn how to
-    add QML module definitions and QML files to your projects.
+    project wizard and design a UI using \l {Qt Quick Controls}. Also, you'll
+    learn how to add QML files to your projects.
 
     You can download the completed project from \l{Code: QuickAddressBook}.
 
@@ -35,10 +35,11 @@
     \list 1
         \li Go to \uicontrol {Command Palette}, and then select
             \uicontrol {Qt: Create a new project or file}.
-        \li In \uicontrol {Project}, select \uicontrol {Qt Quick project}.
+        \li In \uicontrol {Project}, select \uicontrol {Qt Quick application}.
             \image {vscodeext-create-new-project-quick.webp} {A Qt Quick application in the New item view}
-        \li In \uicontrol {QML root element}, select \uicontrol {Window} as the
-            QML root element.
+        \li In \uicontrol {QML root element}, select
+            \uicontrol {ApplicationWindow} as the QML root element because you
+            plan to use Qt Quick Controls.
         \li In \uicontrol {Name}, enter \c QuickAddressBook.
         \li In \uicontrol {Create in}, enter the path for the project files.
         \li Select \uicontrol {Create} to create the project files.
@@ -52,19 +53,32 @@
     \section1 Design the main window
 
     The wizard created a main QML file for you, which declares a root object of
-    the type \l Window. Change the file to design the application's main
-    window.
+    the type \l ApplicationWindow. Change the file to design the application's
+    main window.
 
-    Specify values for the Window \c color and \c title properties to set the
-    background color and title of the application main window:
+    To bind the components to their context, specify the \c {Bound} argument:
 
     \code
-    Window {
+    pragma ComponentBehavior: Bound
+    \endcode
+
+    Add import statements for the modules that you plan to use in the root type:
+
+    \code
+    import QtQuick
+    import QtQuick.Controls
+    import QtQuick.Layouts
+    \endcode
+
+    Set the value of the \c title property to the title of the application main
+    window:
+
+    \code
+    ApplicationWindow {
         id: mainWindow
         visible: true
         width: 480
         height: 640
-        color: "darkgray"
         title: qsTr("Address Book")
     \endcode
 
@@ -72,13 +86,12 @@
 
     To create the \uicontrol Add button, declare an object of the \l Button type
     from the \l {Qt Quick Controls} module. Set the value of the button \c text
-    property to \c Add and the value of the \c font.pointSize property to \c 24:
+    property to \c {Add...} and the value of the \c font.pointSize property to
+    \c 24:
 
     \code
         Button {
             id: addButton
-            anchors.left: parent.left
-            anchors.right: parent.right
             text: "Add..."
             font.pointSize: 24
     \endcode
@@ -117,9 +130,9 @@
 
     \image {vscodeext-quick-addressbook-entries.webp} {QuickAddressBook entries}
 
-    Within the Window, declare an object of the \l {ListModel} type with the
-    \c id \c addressList for storing the contact data. A list model defines
-    a free-form list data source:
+    Within the ApplicationWindow, declare an object of the \l {ListModel} type
+    with the \c id \c addressList for storing the contact data. A list model
+    defines a free-form list data source:
 
     \code
     ListModel {
@@ -134,11 +147,11 @@
     Use the \c onAddressAdded signal handler to append address
     book entries to the \c addressList model:
 
-
     \code
     NewAddressPopup {
         id: newAddressPopup
-        onAddressAdded: addressList.append({name: newName, addr: newAddr})
+        onAddressAdded: function(newName, newAddr) {
+            addressList.append({name: newName, addr: newAddr})
     }
     \endcode
 
@@ -152,21 +165,22 @@
     \code
     ColumnLayout {
         id: mainWindowLayout
-        anchors.left: parent.left; anchors.right: parent.right
+        Layout.fillWidth: true
         spacing: 0
         Button {
             id: addButton
-            anchors.left: parent.left
-            anchors.right: parent.right
+            Layout.preferredWidth: mainWindow.width
+            Layout.fillWidth: true
             text: "Add..."
             font.pointSize: 24
             onClicked: newAddressPopup.open()
         }
     \endcode
 
-    Anchor the column layout to the left and right edges of its parent to make
-    the application scalable on different screen sizes. Set the \c spacing
-    between the rows in the column to \c 0.
+    Set \c Layout.fillWidth to \c true to make the application scalable on
+    different screen sizes. Set the \c spacing between the rows in the column
+    to \c 0. Bind the preferred width of the button to the width of the main
+    window.
 
     \section2 Add a repeater
 
@@ -182,8 +196,8 @@
         Repeater {
             id: addressListViewer
             model: addressList
-            anchors.left: parent.left
-            anchors.right: parent.right
+            Layout.preferredWidth: mainWindow.width
+            Layout.fillWidth: true
         }
     \endcode
 
@@ -219,24 +233,6 @@
     Use a Qt file wizard in Visual Studio Code to create a custom type
     that defines the popup.
 
-    To create custom QML types, you must first add a QML module definition
-    (\c qmldir) file to the project.
-
-    \section2 Add a QML module definition
-
-    A QML module definition (\c qmldir) maps each custom QML type to its
-    corresponding source file.
-
-    To add a QML module definition, create a file called \c qmldir and add QML
-    type definitions for \c AddressBookItem and \c NewAddressPopup:
-
-    \code
-    AddressBookItem    1.0    AddressBookItem.qml
-    NewAddressPopup    1.0    NewAddressPopup.qml
-    \endcode
-
-    Next, you will create the QML types.
-
     \section2 Create a popup
 
     To add a custom QML type to the project:
@@ -246,18 +242,38 @@
             \uicontrol {Qt: Create a new project or file}.
         \li In \uicontrol {File}, select \uicontrol {QML file}.
         \li In \uicontrol Name, enter \c NewAddressPopup.
+        \li In \uicontrol {Create in}, enter \c QuickAddressBookTypes after the
+            path to the project folder to create the new file in that subfolder.
         \li Select \uicontrol Create to create a custom QML type.
     \endlist
+
+    Add \c NewAddressPopup.qml to the \c QML_FILES section of the CMakeLists.txt
+    file:
+
+    \badcode
+    qt_add_qml_module(appQuickAddressBook
+        URI QuickAddressBook
+        VERSION 1.0
+        QML_FILES
+            Main.qml
+            QuickAddressBookTypes/AddressBookItem.qml
+            QuickAddressBookTypes/NewAddressPopup.qml
+    )
+    \endcode
 
     \section2 Design the popup
 
     In \c NewAddressPopup.qml, declare a root object of the type \l Popup to
-    create a popup that opens in a \l Window. A popup does not
+    create a popup that opens in an \l ApplicationWindow. A popup does not
     provide a layout of its own, so you will use a \l ColumnLayout and a
     \l RowLayout to position the \uicontrol Name and \uicontrol {E-Mail Address}
     fields.
 
     \code
+    import QtQuick
+    import QtQuick.Controls
+    import QtQuick.Layouts
+
     Popup {
         id: newAddressPopup
     \endcode
@@ -307,7 +323,6 @@
             id: nameField
             placeholderText: qsTr("Name")
             font.pointSize: 24
-            background: Rectangle { color: "lightgray" }
             Layout.preferredWidth: newAddressPopup / 2
             Layout.fillWidth: true
         }
@@ -315,7 +330,6 @@
             id: addrField
             placeholderText: qsTr("E-Mail Address")
             font.pointSize: 24
-            background: Rectangle { color: "lightgray" }
             Layout.preferredWidth: newAddressPopup / 2
             Layout.fillWidth: true
         }
@@ -328,7 +342,7 @@
 
     \code
         RowLayout {
-            anchors.left: parent.left; anchors.right: parent.right
+            Layout.fillWidth: true
             Button {
                 text: "Add"
                 enabled: nameField.length > 0 && addrField.length > 0
@@ -354,12 +368,6 @@
     the \c addressAdded() signal and to the popup's \c close() method:
 
     \code
-            Button {
-                text: "Add"
-                enabled: nameField.length > 0 && addrField.length > 0
-                font.pointSize: 24
-                Layout.preferredWidth: newAddressPopup / 2
-                Layout.fillWidth: true
                 onClicked: {
                     newAddressPopup.addressAdded(nameField.text, addrField.text)
                     newAddressPopup.close()
@@ -387,7 +395,7 @@
     entries in the main window.
 
     Follow the instructions in \l {Create a popup} to create a new QML file
-    called \c  AddressBookItem.qml.
+    called \c  AddressBookItem.qml and to add it to the \c CMakeLists.txt file.
 
     \section2 Design the entry
 
@@ -396,8 +404,20 @@
     an \c id to be able to refer to it later.
 
     \code
+    import QtQuick
+    import QtQuick.Controls
+    import QtQuick.Layouts
+
     Rectangle {
         id: addressBookItem
+    \endcode
+
+    Set the properties that you will use in the \c Rectangle and \c Text types:
+
+    \code
+    required property int index
+    required property string name
+    required property string addr
     \endcode
 
     To use alternating colors for rows, set the value of the \c color property:
@@ -434,8 +454,7 @@
     \code
     RowLayout {
         spacing: 12
-        anchors.left: parent.left
-        anchors.leftMargin: spacing
+        Layout.fillWidth: true
         RoundButton {
             id: deleteButton
             text: "??"
@@ -455,7 +474,7 @@
         Text {
             id: itemText
             font.pointSize: 24
-            text: "<b>" + name + "</b><br><i>" + addr + "</i>"
+            text: "<b>" + addressBookItem.name + "</b><br><i>" + addressBookItem.addr + "</i>"
         }
     \endcode
 
