@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>Main.qml</file>
-        <file>qmldir</file>
-        <file>QuickAddressBookTypes/AddressBookItem.qml</file>
-        <file>QuickAddressBookTypes/NewAddressPopup.qml</file>
-    </qresource>
-</RCC>

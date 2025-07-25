@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
     id: addressBookItem
+
+    required property int index
+    required property string name
+    required property string addr
+
     color: (index % 2) == 0 ? "dimgray" : "lightgray"
     anchors.left: parent.left
     anchors.right: parent.right
@@ -17,8 +21,7 @@ Rectangle {
 
     RowLayout {
         spacing: 12
-        anchors.left: parent.left
-        anchors.leftMargin: spacing
+        Layout.fillWidth: true
         RoundButton {
             id: deleteButton
             text: "🗙"
@@ -29,7 +32,7 @@ Rectangle {
         Text {
             id: itemText
             font.pointSize: 24
-            text: "<b>" + name + "</b><br><i>" + addr + "</i>"
+            text: "<b>" + addressBookItem.name + "</b><br><i>" + addressBookItem.addr + "</i>"
         }
     }
 }
