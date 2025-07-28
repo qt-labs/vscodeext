@@ -82,7 +82,7 @@
         "qt-cpp.doNotShowCMakePresetWarning": {
           "type": "boolean",
           "default": false,
-          "description": "Do not show a warning when the CMake Presets are found in the workspace."
+          "description": "Do not show a warning when CMake presets are found in the workspace."
         }
       }
     },
