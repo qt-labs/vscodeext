@@ -361,6 +361,7 @@ export class QmlDebugSession extends LoggingDebugSession {
         response.success = false;
         response.message = message;
         logger.warn(message);
+        this.sendResponse(response);
         return;
       }
       const value = QmlEngine.convertQmlTypeToValue(result.body);
