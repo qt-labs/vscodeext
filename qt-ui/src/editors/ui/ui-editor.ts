@@ -55,7 +55,10 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
             // User may not have selected the kit.
             // We can check and ask for kit selection.
             if (project.workspaceType === QtWorkspaceType.CMakeExt) {
-              askForKitSelection();
+              askForKitSelection({
+                message: 'Cannot find Qt Widgets Designer in the selected kit.',
+                buttonName: 'Select a kit including Qt Widgets Designer'
+              });
             }
             logger.error('Designer client not found');
             return;

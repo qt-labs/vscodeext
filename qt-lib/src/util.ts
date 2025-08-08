@@ -76,14 +76,17 @@ export async function existing(filePath: string) {
   }
 }
 
-export function askForKitSelection() {
+export function askForKitSelection({
+  message = 'No CMake kit selected. Please select a CMake kit.',
+  buttonName = 'Select CMake Kit'
+}: {
+  message?: string;
+  buttonName?: string;
+} = {}) {
   void vscode.window
-    .showInformationMessage(
-      'No CMake kit selected. Please select a CMake kit.',
-      ...['Select CMake Kit']
-    )
+    .showInformationMessage(message, ...[buttonName])
     .then((selection) => {
-      if (selection === 'Select CMake Kit') {
+      if (selection === buttonName) {
         telemetry.sendAction('selectCMakeKit');
         void vscode.commands.executeCommand('cmake.selectKit');
       }
@@ -94,15 +97,15 @@ export function isMultiWorkspace(): boolean {
   return vscode.workspace.workspaceFile !== undefined;
 }
 
-export async function locateQmakeExeFilePath(selectedQtPath: string) {
-  const qmakeVersions = ['qmake', 'qmake6'];
+export async function locateQtPathsExeKitPath(kitPath: string) {
+  const qmakeVersions = ['qtpaths', 'qtpaths6'];
   const suffixes = [OSExeSuffix];
   if (IsWindows) {
     suffixes.push('.bat');
   }
   for (const qmake of qmakeVersions) {
     for (const suffix of suffixes) {
-      const qmakePath = path.join(selectedQtPath, 'bin', qmake + suffix);
+      const qmakePath = path.join(kitPath, 'bin', qmake + suffix);
       if (await exists(qmakePath)) {
         return qmakePath;
       }
@@ -272,6 +275,49 @@ export function findQtPathsInKitDir(dir: string): string | undefined {
     const exePath = path.join(dir, 'bin', exeName);
     if (fsSync.existsSync(exePath)) {
       return exePath;
+    }
+  }
+  return undefined;
+}
+// exePathGetter is a function that takes the bin path and returns the path to
+// the executable. Users of this function specify how to find the executable in
+// the bin path
+export async function searchForExeInQtInfo(
+  info: QtInfo,
+  exePathGetter: (p: string) => string
+) {
+  const keysToCheck = [
+    'QT_HOST_BINS',
+    'QT_HOST_LIBEXECS',
+    'QT_INSTALL_LIBEXECS'
+  ];
+
+  const paths = keysToCheck
+    .map((key) => info.get(key))
+    .filter((p) => {
+      return p !== undefined;
+    });
+
+  const addVcpkgPaths = (p: string[]) => {
+    const keys = ['QT_INSTALL_PREFIX', 'QT_HOST_PREFIX'];
+    for (const key of keys) {
+      const value = info.get(key);
+      if (value) {
+        const vcpkgPath = path.join(value, 'tools', 'qttools', 'bin');
+        p.push(vcpkgPath);
+      }
+    }
+  };
+  // It is a special case for vcpkg because on some platforms, Designer is
+  // installed in a different location
+  addVcpkgPaths(paths);
+
+  for (const p of paths) {
+    if (p) {
+      const exePath = exePathGetter(p);
+      if (await exists(exePath)) {
+        return exePath;
+      }
     }
   }
   return undefined;

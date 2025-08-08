@@ -13,7 +13,7 @@ import {
   telemetry
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
-import { locateDesigner } from '@/util';
+import { locateDesignerFromKit } from '@/util';
 
 const logger = createLogger('commands');
 
@@ -84,7 +84,7 @@ export async function openWidgetDesigner() {
     }
     groupedQtInstallations[version].push(qtInstallation);
   }
-  // gonvert groupedQtInstallations to array<<version, locatedPath>>
+  // convert groupedQtInstallations to array<<version, locatedPath>>
   const versions: { version: string; locatedPath: string }[] = [];
   for (const version in groupedQtInstallations) {
     if (!groupedQtInstallations[version]) {
@@ -94,7 +94,7 @@ export async function openWidgetDesigner() {
     if (!groupedQtInstallations[version][0]) {
       continue;
     }
-    const locatedPath = await locateDesigner(
+    const locatedPath = await locateDesignerFromKit(
       groupedQtInstallations[version][0]
     );
     if (!locatedPath) {
