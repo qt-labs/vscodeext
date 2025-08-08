@@ -18,8 +18,6 @@ import { UIEditorProvider } from '@/editors/ui/ui-editor';
 import { createUIProject, UIProject } from '@/project';
 import { EXTENSION_ID } from '@/constants';
 import { openWidgetDesigner } from '@/commands';
-import { locateDesigner } from '@/util';
-import { DesignerClient } from '@/designer-client';
 
 const logger = createLogger('extension');
 
@@ -42,31 +40,12 @@ export async function activate(context: vscode.ExtensionContext) {
   projectManager = new ProjectManager<UIProject>(context, createUIProject);
   projectManager.onProjectAdded(async (project) => {
     logger.info('Adding project:', project.folder.uri.fsPath);
-    const selectedKitPath = coreAPI?.getValue<string>(
-      project.folder,
-      'selectedKitPath'
-    );
-    const selectedQtPaths = coreAPI?.getValue<string>(
-      project.folder,
-      'selectedQtPaths'
-    );
 
     project.workspaceType = coreAPI?.getValue<QtWorkspaceType>(
       project.folder,
       'workspaceType'
     );
-
-    if (selectedKitPath) {
-      await project.setBinDir(selectedKitPath);
-    } else if (selectedQtPaths) {
-      const designer = await locateDesigner(selectedQtPaths);
-      if (designer) {
-        project.designerClient = new DesignerClient(
-          designer,
-          project.designerServer.getPort()
-        );
-      }
-    }
+    await project.tryToGetDesigner();
   });
   projectManager.onProjectRemoved((project) => {
     logger.info('Project removed:', project.folder.uri.fsPath);
@@ -79,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
   coreAPI.onValueChanged((message) => {
     logger.info('Received config change:', message.config as unknown as string);
-    processMessage(message);
+    void processMessage(message);
   });
   context.subscriptions.push(UIEditorProvider.register(context));
   context.subscriptions.push(
@@ -94,7 +73,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 function getConfigValues() {
   for (const project of projectManager.getProjects()) {
-    project.getConfigValues();
+    void project.getConfigValues();
   }
 }
 
@@ -104,7 +83,7 @@ export function deactivate() {
   projectManager.dispose();
 }
 
-function processMessage(message: QtWorkspaceConfigMessage) {
+async function processMessage(message: QtWorkspaceConfigMessage) {
   // check if workspace folder is a string
   if (typeof message.workspaceFolder === 'string') {
     return;
@@ -114,15 +93,14 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     logger.error('Project not found');
     return;
   }
-
   for (const key of message.config.keys()) {
     if (key === 'selectedKitPath') {
       const selectedKitPath = coreAPI?.getValue<string>(
         message.workspaceFolder,
         'selectedKitPath'
       );
-      if (selectedKitPath !== project.binDir) {
-        void project.setBinDir(selectedKitPath);
+      if (selectedKitPath !== project.selectedKitPath) {
+        await project.setSelectedKitPath(selectedKitPath);
       }
       continue;
     }
@@ -132,7 +110,7 @@ function processMessage(message: QtWorkspaceConfigMessage) {
         'selectedQtPaths'
       );
       if (selectedQtPaths !== project.qtpathsExe) {
-        project.qtpathsExe = selectedQtPaths;
+        await project.setQtPathsExe(selectedQtPaths);
       }
       continue;
     }
