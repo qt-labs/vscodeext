@@ -29,6 +29,7 @@ import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
 import { NewItemPanel } from '@/webview/new-item/panel';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
+import { openInLinguistCommand } from '@/translation';
 
 const logger = createLogger('extension');
 
@@ -73,6 +74,12 @@ export async function activate(context: vscode.ExtensionContext) {
       telemetry.sendAction('createNewItem');
       NewItemPanel.render(context);
     })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.openInLinguist`,
+      openInLinguistCommand
+    )
   );
 
   registerQrcEditorProvider(context);
