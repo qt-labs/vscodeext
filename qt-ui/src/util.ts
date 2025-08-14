@@ -11,7 +11,7 @@ import {
   OSExeSuffix,
   exists,
   searchForExeInQtInfo,
-  locateQtPathsExeKitPath
+  findQtPathsInKitDir
 } from 'qt-lib';
 import { coreAPI } from '@/extension';
 
@@ -62,7 +62,7 @@ export async function locateDesignerFromKit(
     return designerExePath;
   }
   if (qtPathsFallback) {
-    const qtPaths = await locateQtPathsExeKitPath(selectedKitPath);
+    const qtPaths = findQtPathsInKitDir(selectedKitPath);
     if (qtPaths) {
       const qtPathsExePath = await locateDesignerFromQtPaths(qtPaths);
       if (qtPathsExePath) {
