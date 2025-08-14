@@ -11,8 +11,7 @@ import {
   ProjectManager,
   createLogger,
   initLogger,
-  telemetry,
-  waitForQtCpp
+  telemetry
 } from 'qt-lib';
 import { UIEditorProvider } from '@/editors/ui/ui-editor';
 import { createUIProject, UIProject } from '@/project';
@@ -34,8 +33,6 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.error(err);
     throw new Error(err);
   }
-
-  await waitForDependencies();
 
   projectManager = new ProjectManager<UIProject>(context, createUIProject);
   projectManager.onProjectAdded(async (project) => {
@@ -121,8 +118,4 @@ async function processMessage(message: QtWorkspaceConfigMessage) {
       );
     }
   }
-}
-
-async function waitForDependencies() {
-  return waitForQtCpp();
 }
