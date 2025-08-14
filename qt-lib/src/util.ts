@@ -97,23 +97,6 @@ export function isMultiWorkspace(): boolean {
   return vscode.workspace.workspaceFile !== undefined;
 }
 
-export async function locateQtPathsExeKitPath(kitPath: string) {
-  const qmakeVersions = ['qtpaths', 'qtpaths6'];
-  const suffixes = [OSExeSuffix];
-  if (IsWindows) {
-    suffixes.push('.bat');
-  }
-  for (const qmake of qmakeVersions) {
-    for (const suffix of suffixes) {
-      const qmakePath = path.join(kitPath, 'bin', qmake + suffix);
-      if (await exists(qmakePath)) {
-        return qmakePath;
-      }
-    }
-  }
-  return undefined;
-}
-
 export function compareVersions(version1: string, version2: string) {
   if (version1 == version2) {
     return 0;
@@ -269,12 +252,17 @@ export async function waitForQtCpp() {
 }
 
 export function findQtPathsInKitDir(dir: string): string | undefined {
-  const exeNames = [`qtpaths${OSExeSuffix}`, `qtpaths6${OSExeSuffix}`];
-
-  for (const exeName of exeNames) {
-    const exePath = path.join(dir, 'bin', exeName);
-    if (fsSync.existsSync(exePath)) {
-      return exePath;
+  const qtpathsVersions = ['qtpaths', 'qtpaths6'];
+  const suffixes = [OSExeSuffix];
+  if (IsWindows) {
+    suffixes.push('.bat');
+  }
+  for (const qtpaths of qtpathsVersions) {
+    for (const suffix of suffixes) {
+      const qtpathsPath = path.join(dir, 'bin', qtpaths + suffix);
+      if (fsSync.existsSync(qtpathsPath)) {
+        return qtpathsPath;
+      }
     }
   }
   return undefined;
