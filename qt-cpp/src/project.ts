@@ -439,6 +439,12 @@ export class CppProject implements Project {
       `Setting build directory for ${folder.uri.fsPath} to ${this.buildDir}`
     );
     logger.info('Config values initialized for:', folder.uri.fsPath);
+    const message = new QtWorkspaceConfigMessage(folder);
+    message.config.add('selectedKitPath');
+    message.config.add('selectedQtPaths');
+    message.config.add('workspaceType');
+    message.config.add('buildDir');
+    coreAPI.notify(message);
   }
   public getStateManager() {
     return this._stateManager;

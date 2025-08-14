@@ -10,7 +10,6 @@ import {
   initLogger,
   telemetry,
   QtWorkspaceConfigMessage,
-  waitForQtCpp,
   createColorProvider
 } from 'qt-lib';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
@@ -44,8 +43,6 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.error(err);
     throw new Error(err);
   }
-
-  await waitForDependencies();
 
   if (vscode.workspace.workspaceFolders !== undefined) {
     for (const folder of vscode.workspace.workspaceFolders) {
@@ -157,8 +154,4 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     logger.error(err.message);
     void vscode.window.showErrorMessage(`Error: "${err.message}"`);
   }
-}
-
-async function waitForDependencies() {
-  return waitForQtCpp();
 }
