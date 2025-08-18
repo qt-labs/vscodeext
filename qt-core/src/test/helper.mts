@@ -5,9 +5,9 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { QtInfo, CoreAPI } from 'qt-lib';
-import type { CoreAPIImpl } from '@/api';
-import type { CoreProjectManager } from '@/project';
-import isEqual from 'lodash/isEqual';
+import type { CoreAPIImpl } from '../api.ts';
+import type { CoreProjectManager } from '../project.ts';
+import { isEqual } from 'lodash-es';
 type NonEmptyArray<T> = [T, ...T[]];
 
 /**
@@ -254,11 +254,11 @@ export function stubGetConfigurationWithUpdateSpy(
   const updateSpy = sinon.spy();
 
   const configStub: vscode.WorkspaceConfiguration = {
-    get: <T>(_section: string, defaultValue?: T): T | undefined => {
+    get: <T extends unknown>(_section: string, defaultValue?: T): T | undefined => {
       return defaultValue;
     },
     has: (_section: string): boolean => false,
-    inspect: <T>(
+    inspect: <T extends unknown>(
       _section: string
     ):
       | {

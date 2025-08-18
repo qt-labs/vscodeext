@@ -12,9 +12,7 @@ import {
   generateDefaultQtPathsName
 } from 'qt-lib';
 import * as path from 'path';
-//import isEqual from 'lodash/isEqual';
-import { addQtPathToSettings } from '../../qtpaths';
-//type NonEmptyArray<T> = [T, ...T[]];
+import { addQtPathToSettings } from '../../qtpaths.ts';
 import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
@@ -36,7 +34,7 @@ import {
   expectCalledOnce,
   getSearchInputBoxStubWithArg,
   createMockTextEditorWithCurrentWord
-} from '../helper';
+} from '../helper.mts';
 
 describe('command: documentation Homepage', () => {
   let sb: sinon.SinonSandbox;
@@ -452,7 +450,7 @@ describe('command: registerQtByQtpaths', () => {
     const config = vscode.workspace.getConfiguration(
       'qt-core'
     ) as vscode.WorkspaceConfiguration;
-    config.inspect = <T>(_section: string) => {
+    config.inspect = <T extends unknown>(_section: string) => {
       if (_section === sectionName) {
         return {
           key: _section,
