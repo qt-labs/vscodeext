@@ -6,7 +6,6 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { QtInfo, CoreAPI } from 'qt-lib';
 import type { CoreAPIImpl } from '../api.ts';
-import type { CoreProjectManager } from '../project.ts';
 import { isEqual } from 'lodash-es';
 type NonEmptyArray<T> = [T, ...T[]];
 
@@ -588,39 +587,69 @@ export function setupGetQtInfoStub(
   return sb.stub(coreAPI, 'getQtInfo').returns(qtInfo);
 }
 
+// /**
+//  * Retrieves an exported property from the qt-core extension after ensuring it is activated.
+//  * @param key currently only'coreAPI'.
+//  * @returns The requested exported value.
+//  */
+// export async function getQtCoreExport<K extends 'coreAPI' | 'projectManager'>(
+//   key: K
+// ): Promise<K extends 'coreAPI' ? CoreAPIImpl : CoreProjectManager> {
+//   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
+//   if (!ext) {
+//     throw new Error('qt-core extension not found');
+//   }
+
+//   if (!ext.isActive) {
+//     await ext.activate();
+//   }
+
+//   const exports = ext.exports as {
+//     coreAPI?: CoreAPIImpl;
+//     projectManager?: CoreProjectManager;
+//   };
+
+//   const value = exports[key];
+//   if (!value) {
+//     throw new Error(`qt-core ${key} not initialized after activation`);
+//   }
+
+//   return value as any;
+// }
+// Cache the in-flight or resolved CoreAPIImpl so repeated calls are fast
+let coreAPIPromise: Promise<CoreAPIImpl> | undefined;
+
 /**
- * Retrieves an exported property from the qt-core extension after ensuring it is activated.
- * @param key Either 'coreAPI' or 'projectManager'.
- * @returns The requested exported value.
+ * Returns the CoreAPIImpl exported by the 'theqtcompany.qt-core' extension.
+ *
+ * - Activates qt-core if needed, otherwise returns its current exports.
+ * - Uses a cached promise for speed within a single test/run.
  */
-export async function getQtCoreExport<K extends 'coreAPI' | 'projectManager'>(
-  key: K
-): Promise<K extends 'coreAPI' ? CoreAPIImpl : CoreProjectManager> {
-  const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-  if (!ext) {
-    throw new Error('qt-core extension not found');
-  }
+export function getCoreAPI(): Promise<CoreAPIImpl> {
+  if (coreAPIPromise) return coreAPIPromise;
 
-  if (!ext.isActive) {
-    await ext.activate();
-  }
+  const ext = vscode.extensions.getExtension<CoreAPIImpl>('theqtcompany.qt-core');
+  if (!ext) throw new Error('qt-core extension not found');
 
-  const exports = ext.exports as {
-    coreAPI?: CoreAPIImpl;
-    projectManager?: CoreProjectManager;
-  };
+  // Normalize both branches to a Promise and cache it
+  coreAPIPromise = ext.isActive
+    ? Promise.resolve(ext.exports as CoreAPIImpl)
+    : Promise.resolve(ext.activate()); // Thenable -> Promise
 
-  const value = exports[key];
-  if (!value) {
-    throw new Error(`qt-core ${key} not initialized after activation`);
-  }
-
-  return value as any;
+  return coreAPIPromise;
 }
-export const getCoreAPI = (): Promise<CoreAPIImpl> =>
-  getQtCoreExport('coreAPI');
-export const getCoreProjectManager = (): Promise<CoreProjectManager> =>
-  getQtCoreExport('projectManager');
+
+/**
+ * Clears the cached CoreAPIImpl promise.
+ *
+ * Use this in tests only when:
+ * 1) stubbing `vscode.extensions.getExtension().activate` to return a fake CoreAPIImpl,
+ * 2) observing state leaking across tests (e.g., duplicate listeners, carried config),
+ * 3) intentionally wanting to re-test activation in the same run.
+ */
+export function resetQtCoreAPICache(): void {
+  coreAPIPromise = undefined;
+}
 
 /**
  * Asserts that a configuration `update` spy was called with the expected key, value, and target.
