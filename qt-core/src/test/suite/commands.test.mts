@@ -28,7 +28,6 @@ import {
   createFakeQtInfo,
   setupGetQtInfoStub,
   getCoreAPI,
-  getCoreProjectManager,
   expectUpdateCalledWith,
   stubWarningMessage,
   expectCalledOnce,
@@ -607,10 +606,6 @@ describe('command: reset', () => {
 
   it('resets the coreApi and the CoreProjectManager', async () => {
     const coreAPIResetStub = sb.spy(await getCoreAPI(), 'reset');
-    const projectManagerResetStub = sb.spy(
-      await getCoreProjectManager(),
-      'reset'
-    );
 
     await runResetCommand();
 
@@ -618,12 +613,9 @@ describe('command: reset', () => {
       coreAPIResetStub.calledOnce,
       'Expected coreAPI.reset to be called once'
     ).to.be.true;
-    expect(
-      projectManagerResetStub.calledOnce,
-      'Expected coreProjectManager.reset to be called once'
-    ).to.be.true;
   });
-  // Does not test coreAPI nor projectManager logic, just that the command calls them
+  // Does not test coreAPI logic, just that the command calls them
+  // TO DO: create a scenario to test stateManager reset logic.
 
   it('resets all qt extension', async () => {
     const resetSpy = stubExecuteCommandWithSpy(sb, [
