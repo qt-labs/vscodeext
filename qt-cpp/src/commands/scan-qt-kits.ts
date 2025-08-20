@@ -7,8 +7,6 @@ import { kitManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
 
 export function registerScanForQtKitsCommand() {
-  void vscode.window.showInformationMessage('Testing Window');
-
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.scanForQtKits`,
     async () => {

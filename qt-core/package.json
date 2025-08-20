@@ -224,7 +224,7 @@
     "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
-    "test": "npm run compile && npm run compile-test && cd ./out/test/ && node runtest.js",
+    "test": "npm run compile-test && cd ./out/test/ && node runtest.js",
     "lint": "npm run prettierWrite && eslint . --fix --cache",
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs,mts}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs,mts}\"",

@@ -253,7 +253,10 @@ export function stubGetConfigurationWithUpdateSpy(
   const updateSpy = sinon.spy();
 
   const configStub: vscode.WorkspaceConfiguration = {
-    get: <T extends unknown>(_section: string, defaultValue?: T): T | undefined => {
+    get: <T extends unknown>(
+      _section: string,
+      defaultValue?: T
+    ): T | undefined => {
       return defaultValue;
     },
     has: (_section: string): boolean => false,
@@ -587,35 +590,6 @@ export function setupGetQtInfoStub(
   return sb.stub(coreAPI, 'getQtInfo').returns(qtInfo);
 }
 
-// /**
-//  * Retrieves an exported property from the qt-core extension after ensuring it is activated.
-//  * @param key currently only'coreAPI'.
-//  * @returns The requested exported value.
-//  */
-// export async function getQtCoreExport<K extends 'coreAPI' | 'projectManager'>(
-//   key: K
-// ): Promise<K extends 'coreAPI' ? CoreAPIImpl : CoreProjectManager> {
-//   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-//   if (!ext) {
-//     throw new Error('qt-core extension not found');
-//   }
-
-//   if (!ext.isActive) {
-//     await ext.activate();
-//   }
-
-//   const exports = ext.exports as {
-//     coreAPI?: CoreAPIImpl;
-//     projectManager?: CoreProjectManager;
-//   };
-
-//   const value = exports[key];
-//   if (!value) {
-//     throw new Error(`qt-core ${key} not initialized after activation`);
-//   }
-
-//   return value as any;
-// }
 // Cache the in-flight or resolved CoreAPIImpl so repeated calls are fast
 let coreAPIPromise: Promise<CoreAPIImpl> | undefined;
 
@@ -628,7 +602,9 @@ let coreAPIPromise: Promise<CoreAPIImpl> | undefined;
 export function getCoreAPI(): Promise<CoreAPIImpl> {
   if (coreAPIPromise) return coreAPIPromise;
 
-  const ext = vscode.extensions.getExtension<CoreAPIImpl>('theqtcompany.qt-core');
+  const ext = vscode.extensions.getExtension<CoreAPIImpl>(
+    'theqtcompany.qt-core'
+  );
   if (!ext) throw new Error('qt-core extension not found');
 
   // Normalize both branches to a Promise and cache it
