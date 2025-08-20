@@ -149,6 +149,7 @@
       }
     },
     {
+      "type": "shell",
       "label": "npm qt-ui watch and test",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch && npm run compile-test",

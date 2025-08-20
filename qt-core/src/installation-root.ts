@@ -163,7 +163,7 @@ export async function registerQt() {
   telemetry.sendAction('registerQt');
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
-    openLabel: 'Select Qt installation root please',
+    openLabel: 'Select Qt installation root',
     canSelectFiles: false,
     canSelectFolders: true
   };

@@ -19,7 +19,6 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              //"--disable-extensions",
               "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
               "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index"
       ],
@@ -40,7 +39,6 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              //"--disable-extensions",
               "--extensionDevelopmentPath=${workspaceFolder}/qt-qml",
               "--extensionTestsPath=${workspaceFolder}/qt-qml/out/test/suite/index"
       ],
@@ -61,7 +59,6 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              //"--disable-extensions",
               "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
               "--extensionTestsPath=${workspaceFolder}/qt-core/out/test/suite/index"
       ],
@@ -83,7 +80,6 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              //"--disable-extensions",
               "--extensionDevelopmentPath=${workspaceFolder}/qt-ui",
               "--extensionTestsPath=${workspaceFolder}/qt-ui/out/test/suite/index"
       ],

@@ -14,7 +14,7 @@ const packageJson = require('../../../package.json');
 describe('extension', () => {
   before('activate', async function () {
     const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-    if (!ext) throw new Error('qt-qml extension not found');
+    if (!ext) throw new Error('qt-core extension not found');
     await ext.activate();
   });
 
