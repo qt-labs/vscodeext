@@ -3,7 +3,7 @@
 
 import * as cp from 'child_process';
 import * as path from 'path';
-const packageJson = require('../../package.json');
+const packageJson = require('../package.json');
 
 import {
   downloadAndUnzipVSCode,
@@ -27,14 +27,10 @@ async function main() {
 
     if (packageJson.extensionDependencies) {
       for (const extensionId of packageJson.extensionDependencies) {
-        cp.spawnSync(
-          <string>cli,
-          [...args, '--install-extension', extensionId],
-          {
-            encoding: 'utf-8',
-            stdio: 'inherit'
-          }
-        );
+        cp.spawnSync(cli!, [...args, '--install-extension', extensionId], {
+          encoding: 'utf-8',
+          stdio: 'inherit'
+        });
       }
     }
 

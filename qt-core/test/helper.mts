@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { QtInfo, CoreAPI } from 'qt-lib';
-import type { CoreAPIImpl } from '../api.ts';
+import type { CoreAPIImpl } from '../src/api.ts';
 import { isEqual } from 'lodash-es';
 type NonEmptyArray<T> = [T, ...T[]];
 
@@ -109,7 +109,9 @@ export function getMockConfiguration(
 
   const getStub = sinon.stub();
   getStub.callsFake((...args: [string, any?]) => {
-    if (args[0] === configKey) return expectedValue;
+    if (args[0] === configKey) {
+      return expectedValue;
+    }
     return realConfig.get(...args);
   });
 
@@ -278,7 +280,7 @@ export function stubGetConfigurationWithUpdateSpy(
       | undefined => {
       return undefined;
     },
-    update: ((...args: unknown[]) => {
+    update: (async (...args: unknown[]) => {
       const clonedArgs = structuredClone(args);
       updateSpy(...clonedArgs);
       return Promise.resolve();
@@ -450,7 +452,7 @@ export async function testSearchCommandOpensExpectedQtDocPage(
 
   // Expecting a simple browser to open using the following link
   const link = `https://doc.qt.io/qt-6/${currentWord.toLowerCase()}.html`;
-  let getConfigurationStub = sb.stub(vscode.workspace, 'getConfiguration');
+  const getConfigurationStub = sb.stub(vscode.workspace, 'getConfiguration');
   const configKey = 'openOnlineDocumentationInExternalBrowser';
   getConfigurationStub.returns(getMockConfiguration(configKey, false));
   const commandArgs = [
@@ -533,8 +535,12 @@ export function setupDialogAndConfig(
  */
 export async function activateQtCore(): Promise<void> {
   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-  if (!ext) throw new Error('qt-core extension not found');
-  if (!ext.isActive) await ext.activate();
+  if (!ext) {
+    throw new Error('qt-core extension not found');
+  }
+  if (!ext.isActive) {
+    await ext.activate();
+  }
 }
 
 /**
@@ -599,17 +605,21 @@ let coreAPIPromise: Promise<CoreAPIImpl> | undefined;
  * - Activates qt-core if needed, otherwise returns its current exports.
  * - Uses a cached promise for speed within a single test/run.
  */
-export function getCoreAPI(): Promise<CoreAPIImpl> {
-  if (coreAPIPromise) return coreAPIPromise;
+export async function getCoreAPI(): Promise<CoreAPIImpl> {
+  if (coreAPIPromise) {
+    return coreAPIPromise;
+  }
 
   const ext = vscode.extensions.getExtension<CoreAPIImpl>(
     'theqtcompany.qt-core'
   );
-  if (!ext) throw new Error('qt-core extension not found');
+  if (!ext) {
+    throw new Error('qt-core extension not found');
+  }
 
   // Normalize both branches to a Promise and cache it
   coreAPIPromise = ext.isActive
-    ? Promise.resolve(ext.exports as CoreAPIImpl)
+    ? Promise.resolve(ext.exports)
     : Promise.resolve(ext.activate()); // Thenable -> Promise
 
   return coreAPIPromise;
@@ -657,10 +667,7 @@ export function resetQtCoreAPICache(): void {
 export function expectUpdateCalledWith(
   spy: sinon.SinonSpy,
   key: string,
-  expectedValue:
-    | string
-    | Record<string, unknown>
-    | Array<Record<string, unknown>>,
+  expectedValue: string | Record<string, unknown> | Record<string, unknown>[],
   target: vscode.ConfigurationTarget | undefined = undefined,
   shouldMatch = true,
   verifyDeepEquality = true
