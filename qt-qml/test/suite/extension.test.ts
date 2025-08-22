@@ -9,7 +9,7 @@ import {
   assertAllCommandsAreRegistered
 } from 'qt-lib';
 
-const packageJson = require('../../../package.json');
+const packageJson = require('../../package.json');
 
 describe('extension', () => {
   before('activate', async function () {

@@ -8,7 +8,7 @@
     "outDir": "out",
     "lib": ["ES2020", "DOM"],
     "sourceMap": true,
-    "rootDirs": ["src"],
+    "rootDirs": ["src", "test"],
     "strict": true /* enable all strict type-checking options */,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
@@ -28,5 +28,5 @@
       "@debug/*": ["src/debug/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "test/**/*"]
 }
