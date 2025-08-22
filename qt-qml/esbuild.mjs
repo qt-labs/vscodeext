@@ -33,9 +33,9 @@ const extensionTestConfig = {
   tsconfig: './tsconfig.json',
   format: 'cjs',
   entryPoints: [
-    './src/test/runTest.ts',
-    './src/test/suite/index.ts',
-    './src/test/suite/extension.test.ts'
+    './test/runTest.ts',
+    './test/suite/index.ts',
+    './test/suite/extension.test.ts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']
