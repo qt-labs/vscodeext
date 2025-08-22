@@ -9,7 +9,7 @@
     "outDir": "out",
     "lib": ["ES2020", "DOM"],
     "sourceMap": true,
-    "rootDirs": ["src"],
+    "rootDirs": ["src", "test"],
     "strict": true /* enable all strict type-checking options */,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
@@ -30,5 +30,5 @@
   },
   //"exclude": ["node_modules", ".vscode-test", "src/test/**/*"],
   "exclude": ["node_modules", ".vscode-test"],
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "test/**/*"]
 }

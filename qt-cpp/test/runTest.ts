@@ -11,7 +11,7 @@ import {
   runTests
 } from '@vscode/test-electron';
 
-import { localQtCore } from '../../../qt-lib/src/test-constants';
+import { localQtCore } from '../../qt-lib/src/test-constants';
 
 async function main() {
   try {
