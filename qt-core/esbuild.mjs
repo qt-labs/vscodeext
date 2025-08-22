@@ -33,11 +33,11 @@ const extensionTestConfig = {
   tsconfig: './tsconfig.json',
   format: 'cjs',
   entryPoints: [
-    './src/test/runTest.ts',
-    './src/test/suite/index.ts',
-    './src/test/helper.mts',
-    './src/test/suite/extension.test.mts',
-    './src/test/suite/commands.test.mts'
+    './test/runTest.ts',
+    './test/suite/index.ts',
+    './test/helper.mts',
+    './test/suite/extension.test.mts',
+    './test/suite/commands.test.mts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']

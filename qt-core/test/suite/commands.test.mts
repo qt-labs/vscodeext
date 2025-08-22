@@ -12,7 +12,7 @@ import {
   generateDefaultQtPathsName
 } from 'qt-lib';
 import * as path from 'path';
-import { addQtPathToSettings } from '../../qtpaths.ts';
+import { addQtPathToSettings } from '../../src/qtpaths.ts';
 import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
@@ -39,7 +39,7 @@ describe('command: documentation Homepage', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
@@ -103,17 +103,13 @@ describe('command: documentationSearchManually', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
-  beforeEach(
-    'closing all editor',
-    async () =>
-      await vscode.commands.executeCommand('workbench.action.closeAllEditors')
+  beforeEach('closing all editor', async () =>
+    vscode.commands.executeCommand('workbench.action.closeAllEditors')
   );
-  afterEach(
-    'closing all editor',
-    async () =>
-      await vscode.commands.executeCommand('workbench.action.closeAllEditors')
+  afterEach('closing all editor', async () =>
+    vscode.commands.executeCommand('workbench.action.closeAllEditors')
   );
 
   // -- Helper for the current description------------------------
@@ -184,7 +180,7 @@ describe('command: documentationSearchForCurrentWord', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
@@ -253,7 +249,7 @@ describe('command: openSettings', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
@@ -281,7 +277,7 @@ describe('command: setRecommendedSettings', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
@@ -330,7 +326,7 @@ describe('command: registerQt', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
@@ -348,7 +344,7 @@ describe('command: registerQt', () => {
   };
   function assertConfigUpdateCalledWithQtInsRootConfigName(
     spy: sinon.SinonSpy,
-    expected: string | Record<string, unknown> | Array<Record<string, unknown>>,
+    expected: string | Record<string, unknown> | Record<string, unknown>[],
     shouldMatch = true,
     verifyDeepEquality = true
   ): void {
@@ -399,7 +395,7 @@ describe('command: registerQt', () => {
     expectCalledOnce(openDialogSpy, 'openDialog');
     assertConfigUpdateCalledWithQtInsRootConfigName(
       updateSpy,
-      fakeUri[0]!.fsPath
+      fakeUri[0].fsPath
     );
   });
 });
@@ -408,7 +404,7 @@ describe('command: registerQtByQtpaths', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
@@ -428,7 +424,7 @@ describe('command: registerQtByQtpaths', () => {
 
   function assertConfigUpdateCalledWithAdditionalPaths(
     spy: sinon.SinonSpy,
-    expected: string | Record<string, unknown> | Array<Record<string, unknown>>,
+    expected: string | Record<string, unknown> | Record<string, unknown>[],
     shouldMatch = true,
     verifyDeepEquality = true
   ): void {
@@ -446,9 +442,7 @@ describe('command: registerQtByQtpaths', () => {
     sectionName: string,
     existing: QtAdditionalPath
   ): void {
-    const config = vscode.workspace.getConfiguration(
-      'qt-core'
-    ) as vscode.WorkspaceConfiguration;
+    const config = vscode.workspace.getConfiguration('qt-core');
     config.inspect = <T extends unknown>(_section: string) => {
       if (_section === sectionName) {
         return {
@@ -493,7 +487,7 @@ describe('command: registerQtByQtpaths', () => {
     expectCalledOnce(openDialogSpy, 'openDialog');
     assertConfigUpdateCalledWithAdditionalPaths(
       updateSpy,
-      fakeUri[0]!.fsPath,
+      fakeUri[0].fsPath,
       false
     );
     const qtPath: QtAdditionalPath = {
@@ -501,9 +495,9 @@ describe('command: registerQtByQtpaths', () => {
       path: fakePath,
       isVCPKG: false
     };
-    expect(() => addQtPathToSettings(qtPath)).to.throw(
-      `Failed to get Qt info for ${qtPath.path}`
-    );
+    expect(() => {
+      addQtPathToSettings(qtPath);
+    }).to.throw(`Failed to get Qt info for ${qtPath.path}`);
   });
 
   it('adds selected Qt path to config when QtInfo is found', async () => {
@@ -594,7 +588,7 @@ describe('command: reset', () => {
   let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
-    () => activateQtCore()
+    async () => activateQtCore()
   );
 
   // -- Helper for the current description------------------------
