@@ -179,7 +179,9 @@ export function matchesVersionPattern(installationPath: string): boolean {
 }
 
 export function isPathToQtPathsOrQMake(filePath: string): boolean {
-  return filePath.match(/(qtpaths|qmake)[0-9]?(\.(exe|bat))?$/) ? true : false;
+  return filePath.match(/(qtpaths|qmake)[0-9]?(\.(exe|bat|EXE|BAT))?$/)
+    ? true
+    : false;
 }
 
 export function generateDefaultQtPathsName(qtInfo: QtInfo): string {
