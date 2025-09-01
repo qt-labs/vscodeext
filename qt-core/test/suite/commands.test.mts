@@ -11,8 +11,17 @@ import {
   QtInsRootConfigName,
   generateDefaultQtPathsName
 } from 'qt-lib';
+import * as os from 'os';
 import * as path from 'path';
 import { addQtPathToSettings } from '../../src/qtpaths.ts';
+import * as texts from '../../src/texts.ts';
+import {
+  setQtcliTestFinderFactory,
+  setQtcliTestRunnerFactory
+} from '../../src/qtcli/providers.js';
+import { QtcliRunner } from '../../src/qtcli/runner.js';
+import { QtcliAction } from '../../src/qtcli/common.js';
+
 import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
@@ -627,24 +636,83 @@ describe('command: reset', () => {
   });
 });
 
-// describe('command: createNewFile', () => {
-// let sb: sinon.SinonSandbox;
-// setupSandboxLifecycleHooks(
-//   (_sb) => (sb = _sb),
-//   () => activateQtCore()
-// );
-//   it('', async () => {
-//   });
+describe('command: createNewItem', () => {
+  let sb: sinon.SinonSandbox;
+  setupSandboxLifecycleHooks(
+    (_sb) => (sb = _sb),
+    () => activateQtCore()
+  );
+  // -- Helper for the current description------------------------
+  // definitions for webview-panel
+  const PanelColumn = vscode.ViewColumn.One;
+  const PanelViewType = 'ViewTypeWizard';
+  // Function to run the command and wait for VS Code to be idle
+  async function runCreateNewItem(): Promise<void> {
+    await vscode.commands.executeCommand('qt-core.createNewItem');
+    await waitForVSCodeIdle();
+  }
 
-// });
+  it('creates a web view panel', async () => {
+    const createViewPanel = sb
+      .spy(vscode.window, 'createWebviewPanel')
+      .withArgs(PanelViewType, texts.newItem.tabText, PanelColumn);
 
-// describe('command: createNewProject', () => {
-// let sb: sinon.SinonSandbox;
-// setupSandboxLifecycleHooks(
-//   (_sb) => (sb = _sb),
-//   () => activateQtCore()
-// );
-//   it('', async () => {
-//   });
+    await runCreateNewItem();
+    await runCreateNewItem(); // run twice to check singleton behaviour
 
-// });
+    expect(
+      createViewPanel.calledOnce,
+      'createWebviewPanel should be called once'
+    ).to.be.true;
+  });
+  // This is not testing the content of the webview, just that it is created
+
+  it('starts the Qt cli server and create a terminal', async () => {
+    const createTerminalSpy = sb.spy(vscode.window, 'createTerminal');
+    // Required fields (normalize for cross-platform consistency)
+    const expectedCwd = path.normalize(os.homedir());
+    const qtcliCall = (createTerminalSpy as any).withArgs(
+      sinon.match.object
+        .and(sinon.match.has('name', 'qtcli'))
+        .and(sinon.match.has('cwd', expectedCwd))
+    );
+
+    //Fake the finder to avoid hanging (fast path)
+    setQtcliTestFinderFactory(
+      () =>
+        ({
+          addPossibleDir() {},
+          addDistDir() {},
+          run: async () => '/fake/bin/qtcli'
+        }) as any
+    );
+
+    //Provide a factory that returns a REAL runner with spies attached
+    // real runner + spies
+    const realRunner = new QtcliRunner();
+    const setPathSpy = sb.spy(realRunner, 'setQtcliExePath');
+    const runSpy = sb.spy(realRunner, 'run');
+    setQtcliTestRunnerFactory(() => realRunner); //real object, just observed
+
+    await runCreateNewItem();
+
+    expect(
+      setPathSpy.calledOnceWithExactly('/fake/bin/qtcli'),
+      'set with fake qtcli called once'
+    ).to.be.true;
+    expect(
+      runSpy.calledOnceWithExactly(QtcliAction.ServerControl, 'start'),
+      'qtcli run start server called once'
+    ).to.be.true;
+    expect(
+      qtcliCall.calledOnce,
+      'qtcli terminal created once with correct name+cwd'
+    ).to.be.true;
+    //no extra calls in general
+    expect(createTerminalSpy.calledOnce, 'createTerminal called exactly once')
+      .to.be.true;
+  });
+});
+// Does not test QtcliExeFinder logic. (unit tests needed)
+// Does not test the interaction of the panel with qtcli server. (unit test needed)
+// Does not test qtcli server logic. (unit tests needed)
