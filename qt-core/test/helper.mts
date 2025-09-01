@@ -6,9 +6,14 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { QtInfo, CoreAPI } from 'qt-lib';
 import type { CoreAPIImpl } from '../src/api.ts';
+import { resetQtcliProviders } from '../src/qtcli/providers.ts';
 import { isEqual } from 'lodash-es';
 type NonEmptyArray<T> = [T, ...T[]];
 
+// Centralized reset that calls each domain-specific resetter.
+export function resetTestFactories() {
+  resetQtcliProviders();
+}
 /**
  * Sets up Mocha lifecycle hooks to manage a Sinon sandbox throughout a test suite.
  *
@@ -47,6 +52,7 @@ export function setupSandboxLifecycleHooks(
   });
 
   afterEach('verify and restore sandbox', () => {
+    resetTestFactories();
     sb.verifyAndRestore();
   });
 }

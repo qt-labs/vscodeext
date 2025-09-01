@@ -60,8 +60,11 @@
       "runtimeExecutable": "${execPath}",
       "args": [
               "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
-              "--extensionTestsPath=${workspaceFolder}/qt-core/out/test/suite/index"
+              "--extensionTestsPath=${workspaceFolder}/qt-core/out/test/suite/index.js"
       ],
+       "env": {
+        "QT_TESTING": "1"
+      },
       "outFiles": ["${workspaceFolder}/qt-core/out/test/**/*.js"],
       "preLaunchTask": "npm qt-core watch and test"
     },
