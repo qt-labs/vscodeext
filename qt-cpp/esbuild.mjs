@@ -35,7 +35,8 @@ const extensionTestConfig = {
   entryPoints: [
     './test/runTest.mts',
     './test/suite/index.mts',
-    './test/suite/extension.test.mts'
+    './test/suite/extension.test.mts',
+    './test/suite/commands.test.mts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']
@@ -94,7 +95,10 @@ await execCmd('npx tsc --noEmit').then(
       }
     }
   } catch (err) {
-    process.stderr.write(err.stderr);
+    process.stderr.write(
+      /** @type any */ (err)?.stderr ??
+        (err instanceof Error ? err.message : String(err))
+    );
     process.exit(1);
   }
 })();
