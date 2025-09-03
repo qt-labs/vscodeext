@@ -11,7 +11,7 @@ import {
   runTests
 } from '@vscode/test-electron';
 
-import { getLocalQtCore } from '../../qt-lib/src/test-constants';
+import { getLocalQtCore } from '../../qt-lib/src/test-constants.js';
 
 async function main() {
   try {
@@ -34,15 +34,12 @@ async function main() {
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
     cp.spawnSync(
-      <string>cli,
-      [...args, '--install-extension', 'ms-vscode.cmake-tools'],
-      {
-        encoding: 'utf-8',
-        stdio: 'inherit'
-      }
+    cli as string,
+    [...args, '--install-extension', 'ms-vscode.cmake-tools'],
+    { encoding: 'utf-8', stdio: 'inherit' }
     );
     cp.spawnSync(
-      <string>cli,
+      cli as string,
       [
         ...args,
         '--install-extension',

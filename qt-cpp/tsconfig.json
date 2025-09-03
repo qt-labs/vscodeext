@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    //"module": "commonjs",
+    "module": "node16",
+    "moduleResolution": "node16",
     "target": "ES2020",
     // adding type mocha because of: src/test/suite/extension.test.ts(8,1): error TS2593: Cannot find name 'suite'
     "types": ["node", "mocha"],
