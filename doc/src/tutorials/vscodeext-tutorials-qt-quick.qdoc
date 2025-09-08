@@ -37,9 +37,6 @@
             \uicontrol {Qt: Create a new project or file}.
         \li In \uicontrol {Project}, select \uicontrol {Qt Quick application}.
             \image {vscodeext-create-new-project-quick.webp} {A Qt Quick application in the New item view}
-        \li In \uicontrol {QML root element}, select
-            \uicontrol {ApplicationWindow} as the QML root element because you
-            plan to use Qt Quick Controls.
         \li In \uicontrol {Name}, enter \c QuickAddressBook.
         \li In \uicontrol {Create in}, enter the path for the project files.
         \li Select \uicontrol {Create} to create the project files.
