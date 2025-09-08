@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 
 import { createLogger } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
-import { makeQtcliRunner } from '@/qtcli/providers';
 import { QtcliAction } from '@/qtcli/common';
 import {
   findQtcliExePath,
@@ -107,7 +106,7 @@ async function startQtcliServer(extensionUri: vscode.Uri) {
   if (!qtcliRunner) {
     const exePath = await findQtcliExePath(extensionUri);
     if (exePath) {
-      qtcliRunner = makeQtcliRunner();
+      qtcliRunner = new QtcliRunner();
       qtcliRunner.setQtcliExePath(exePath);
     } else {
       logger.error('cannot find qtcli executable');

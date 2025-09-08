@@ -5,17 +5,16 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { EXTENSION_ID } from '@/constants';
-import { makeQtcliFinder } from '@/qtcli/providers';
+import { QtcliExeFinder } from '@/qtcli/exe-finder';
 import { findActiveTabUri, fallbackWorkingDir } from '@/qtcli/common';
 
 const ConfigDefaultProjectDirectory = 'defaultProjectDirectory';
 
 export async function findQtcliExePath(extensionUri: vscode.Uri) {
-  const finder = makeQtcliFinder();
+  const finder = new QtcliExeFinder();
   finder.addPossibleDir(process.cwd());
   finder.addPossibleDir((process.env.PATH ?? '').split(path.delimiter));
   finder.addDistDir(path.join(extensionUri.fsPath, 'res', 'qtcli'));
-
   return finder.run();
 }
 

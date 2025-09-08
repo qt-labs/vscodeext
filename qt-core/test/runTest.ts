@@ -1,7 +1,6 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-process.env.QT_TESTING = '1'; // in case pre-activation code uses the value before the extension host spins up
 import * as cp from 'child_process';
 import * as path from 'path';
 const packageJson = require('../package.json');
@@ -13,7 +12,6 @@ import {
 } from '@vscode/test-electron';
 
 async function main() {
-  console.log('[runTest] setting QT_TESTING=1');
   try {
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
@@ -42,10 +40,7 @@ async function main() {
     await runTests({
       launchArgs,
       extensionDevelopmentPath,
-      extensionTestsPath,
-      extensionTestsEnv: {
-        QT_TESTING: '1'
-      }
+      extensionTestsPath
     });
   } catch {
     console.error('Failed to run tests');
