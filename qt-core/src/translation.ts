@@ -48,7 +48,7 @@ export async function openInLinguistCommand() {
   if (!linguistPath) {
     logger.error('Linguist executable not found');
     void vscode.window.showErrorMessage(
-      'Linguist executable not found. Select a Qt Kit with Linguist installed.'
+      'Cannot find Qt Linguist executable. Check that the Qt version in the kit includes Qt Linguist.'
     );
     return;
   }
