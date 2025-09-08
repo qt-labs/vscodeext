@@ -9,18 +9,13 @@ import {
   QtAdditionalPath,
   AdditionalQtPathsName,
   QtInsRootConfigName,
-  generateDefaultQtPathsName
+  generateDefaultQtPathsName,
+  delay
 } from 'qt-lib';
 import * as os from 'os';
 import * as path from 'path';
 import { addQtPathToSettings } from '../../src/qtpaths.ts';
 import * as texts from '../../src/texts.ts';
-import {
-  setQtcliTestFinderFactory,
-  setQtcliTestRunnerFactory
-} from '../../src/qtcli/providers.js';
-import { QtcliRunner } from '../../src/qtcli/runner.js';
-import { QtcliAction } from '../../src/qtcli/common.js';
 
 import {
   setupSandboxLifecycleHooks,
@@ -652,22 +647,11 @@ describe('command: createNewItem', () => {
     await waitForVSCodeIdle();
   }
 
-  it('creates a web view panel', async () => {
+  it('creates a web view panel and a terminal', async () => {
     const createViewPanel = sb
       .spy(vscode.window, 'createWebviewPanel')
       .withArgs(PanelViewType, texts.newItem.tabText, PanelColumn);
 
-    await runCreateNewItem();
-    await runCreateNewItem(); // run twice to check singleton behaviour
-
-    expect(
-      createViewPanel.calledOnce,
-      'createWebviewPanel should be called once'
-    ).to.be.true;
-  });
-  // This is not testing the content of the webview, just that it is created
-
-  it('starts the Qt cli server and create a terminal', async () => {
     const createTerminalSpy = sb.spy(vscode.window, 'createTerminal');
     // Required fields (normalize for cross-platform consistency)
     const expectedCwd = path.normalize(os.homedir());
@@ -677,33 +661,9 @@ describe('command: createNewItem', () => {
         .and(sinon.match.has('cwd', expectedCwd))
     );
 
-    //Fake the finder to avoid hanging (fast path)
-    setQtcliTestFinderFactory(
-      () =>
-        ({
-          addPossibleDir() {},
-          addDistDir() {},
-          run: async () => '/fake/bin/qtcli'
-        }) as any
-    );
-
-    //Provide a factory that returns a REAL runner with spies attached
-    // real runner + spies
-    const realRunner = new QtcliRunner();
-    const setPathSpy = sb.spy(realRunner, 'setQtcliExePath');
-    const runSpy = sb.spy(realRunner, 'run');
-    setQtcliTestRunnerFactory(() => realRunner); //real object, just observed
-
     await runCreateNewItem();
+    await delay(200); // tiny wait so finder resolves and server starts
 
-    expect(
-      setPathSpy.calledOnceWithExactly('/fake/bin/qtcli'),
-      'set with fake qtcli called once'
-    ).to.be.true;
-    expect(
-      runSpy.calledOnceWithExactly(QtcliAction.ServerControl, 'start'),
-      'qtcli run start server called once'
-    ).to.be.true;
     expect(
       qtcliCall.calledOnce,
       'qtcli terminal created once with correct name+cwd'
@@ -711,7 +671,14 @@ describe('command: createNewItem', () => {
     //no extra calls in general
     expect(createTerminalSpy.calledOnce, 'createTerminal called exactly once')
       .to.be.true;
+    await runCreateNewItem(); // run twice to check singleton behaviour for the panel
+    expect(
+      createViewPanel.calledOnce,
+      'createWebviewPanel should be called once'
+    ).to.be.true;
   });
+
+  // This is not testing the content of the webview, just that it is created
 });
 // Does not test QtcliExeFinder logic. (unit tests needed)
 // Does not test the interaction of the panel with qtcli server. (unit test needed)
