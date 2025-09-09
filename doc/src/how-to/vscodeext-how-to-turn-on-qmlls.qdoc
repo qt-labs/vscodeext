@@ -16,14 +16,18 @@
     \QMLLS from Qt 6.8.0, and later. You can check for \QMLLS updates and
     download the latest version.
 
-    To turn on \QMLLS:
+    To turn on \QMLLS when you activate an extension:
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
             \uicontrol {Qt: Open Qt Settings}.
         \li Go to \uicontrol {Qt Qml Configuration}, and select
-            \uicontrol {Run qmlls when activating an extension}.
+            \uicontrol {Run \QMLLS when activating an extension}.
+            \image {vscodeext-qt-settings-qml.webp} {Qt QML Configuration}
     \endlist
+
+    To use custom \QMLLS arguments instead of the default arguments, select
+    \uicontrol {Add Item} in \uicontrol {Custom Args} and add the arguments.
 
     \section1 Check for updates
 
@@ -34,22 +38,41 @@
     You can also go to \uicontrol {Command Palette}, and then select
     \uicontrol {Qt: Download the most recent \QMLLS language server}.
 
+    To turn off the notification about downloading \QMLLS, go to
+    \uicontrol {Qt Qml Configuration} and select
+    \uicontrol {Do Not Ask for Qmlls Download}.
+
     \section1 Set \QMLLS location
 
-    To use \QMLLS when you develop with an older Qt version than Qt 6.8.0, set
-    the path to \QMLLS from Qt 6.8.0 or later in \uicontrol {Settings}.
+    To use \QMLLS when you develop with an older Qt version than Qt 6.8.0, go to
+    \uicontrol {Qt Qml Configuration} and set the path to \QMLLS from Qt 6.8.0
+    or later in \uicontrol {Custom Exe Path}.
 
     \section1 Configure \QMLLS output
 
-    To collect trace output from \QMLLS, go to \uicontrol {Settings}, and then
-    select an option in \uicontrol {Handle LSP trace}.
+    To collect trace output from \QMLLS, go to \uicontrol {Qt Qml Configuration}
+    and select an option in \uicontrol {Handle LSP trace}.
 
-    To show verbose output from \QMLLS, go to \uicontrol {Settings}, and then
-    select \uicontrol {Run qmlls with --verbose option}.
+    To show verbose output from \QMLLS, select \uicontrol {Verbose Output}.
+
+    \section1 Manage QML modules
+
+    To look for QML modules in the specified folders and use the \c {-I}
+    option to add import statements for them when you start \QMLLS, go to
+    \uicontrol {Qt Qml Configuration} and select \uicontrol {Add Item} in
+    \uicontrol {Additional Import Paths}.
+
+    To use the \c {QML_IMPORT_PATH} and \c {-E} options to look for QML modules
+    when you start \QMLLS, select \uicontrol {Use QML Import Path Env Var}.
+
+    To stop \QMLLS from triggering a CMake rebuild when it detects that the
+    source code of a C++ defined QML type has been modified, select
+    \uicontrol {No CMake Calls}. For more information, see
+    \l {Disabling Automatic CMake Builds}.
 
     \section1 Restart \QMLLS
 
-    To restart \QMLLS, go to \uicontrol {Command Palette}, and then select
+    To restart \QMLLS, go to \uicontrol {Command Palette} and select
     \uicontrol {Qt: Restart \QMLLS}.
 
 

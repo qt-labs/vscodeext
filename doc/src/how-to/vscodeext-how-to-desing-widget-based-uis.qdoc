@@ -21,7 +21,15 @@
 
     \section1 Set \QD location
 
-    If VS Code cannot find \QD, set the path to it in \uicontrol {Settings}.
+    If VS Code cannot find \QD:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Open Qt Settings}.
+        \li In \uicontrol {Custom Widgets Designer Exe Path}, set the path to the
+            folder where you installed \QD.
+            \image {vscodeext-qt-settings-ui.webp} {Qt UI Settings}
+    \endlist
 
     \section1 Open UI files in Text Editor
 

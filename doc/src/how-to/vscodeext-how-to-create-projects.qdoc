@@ -26,6 +26,9 @@
         \li Select a CMake kit for the project.
     \endlist
 
+    To set the project folder shown in \uicontrol {Create in} by default, go to
+    \uicontrol {Command Palette} and select \uicontrol {Open Qt settings}.
+
     \section1 Create custom presets
 
     When you change the \uicontrol {Options} for a project or file type, you can
@@ -34,5 +37,6 @@
 
     To save changes to custom presets, select \uicontrol {Save}.
 
-    \sa {Tutorial: Qt Widgets application}, {Add files to projects}
+    \sa {Tutorial: Qt Widgets application}, {Add files to projects},
+    {Qt settings}
 */

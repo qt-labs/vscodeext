@@ -37,6 +37,9 @@
     is not detected automatically, register your Qt versions as described in the
     following sections.
 
+    To add paths to Qt installations, go to \uicontrol {Command Palette} and
+    select \uicontrol {Open Qt settings}.
+
     \section1 \QOI installations
 
     To register a Qt that you installed with \QOI to a folder that is not on the
@@ -71,4 +74,6 @@
 
     If some Qt CMake kits are missing, go to \uicontrol {Command Palette} and
     select \uicontrol {Qt: Scan for Qt Kits}.
+
+    \sa {Qt settings}
 */

@@ -36,7 +36,7 @@
 
     \list
         \li Get QML syntax highlighting and code completion with
-            \l{\QMLLS Reference}{\QMLLS}
+            \l {\QMLLS}
         \li Verify the syntax of QML code with \l{qmllint Reference}{qmllint}
     \endlist
 
