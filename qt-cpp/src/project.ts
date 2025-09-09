@@ -11,6 +11,7 @@ import { isEmpty, isEqual } from 'lodash';
 import { WorkspaceStateManager } from '@/state';
 import { coreAPI, kitManager } from '@/extension';
 import {
+  exists,
   createLogger,
   IsLinux,
   IsMacOS,
@@ -430,10 +431,9 @@ export class CppProject implements Project {
     logger.info(
       `Setting selected Qt paths for ${folder.uri.fsPath} to ${selectedQtPaths}`
     );
-    coreAPI.setValue(folder, 'workspaceType', QtWorkspaceType.CMakeExt);
-    logger.info(
-      `Setting workspace type for ${folder.uri.fsPath} to ${QtWorkspaceType.CMakeExt}`
-    );
+
+    await this.updateWorkspaceType();
+
     coreAPI.setValue(folder, 'buildDir', this.buildDir);
     logger.info(
       `Setting build directory for ${folder.uri.fsPath} to ${this.buildDir}`
@@ -454,6 +454,19 @@ export class CppProject implements Project {
   }
   get buildDir() {
     return this._buildDir;
+  }
+
+  private async updateWorkspaceType() {
+    const folder = this.folder;
+    const cmakePath = path.join(folder.uri.fsPath, 'CMakeLists.txt');
+
+    if (coreAPI && (await exists(cmakePath))) {
+      const cmakeType = QtWorkspaceType.CMakeExt;
+      coreAPI.setValue(folder, 'workspaceType', cmakeType);
+      logger.info(
+        `Setting workspace type for ${folder.uri.fsPath} to ${cmakeType}`
+      );
+    }
   }
 
   dispose() {
