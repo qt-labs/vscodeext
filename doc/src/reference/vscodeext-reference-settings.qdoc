@@ -16,7 +16,7 @@
 
     \section1 Qt C++ settings
 
-    \image vscodeext-qt-settings-cpp.webp {Qt Settings}
+    \image {vscodeext-qt-settings-cpp.webp} {Qt C++ Configuration}
 
     Settings for the C++ language.
 
@@ -32,7 +32,7 @@
 
     \section1 Qt Core settings
 
-    \image vscodeext-qt-settings-core.webp {Qt Settings}
+    \image {vscodeext-qt-settings-core.webp} {Qt Core Configuration}
 
     Settings for the common features of the Qt extensions.
 
@@ -41,38 +41,74 @@
         \li Setting
         \li Description
     \row
+        \li Additional Qt Paths
+        \li Adds paths to the qtpaths or qmake executable to find Qt
+            installations. For more information, see \l {Other installations}.
+    \row
+        \li Default Project Directory
+        \li Sets the path to the folder that is shown by default when you create
+            new projects. For more information, see \l {Create Qt projects}.
+    \row
         \li Do Not Ask for Default Qt Installation Root
         \li Hides the prompt about setting the value of
             \uicontrol {Qt Installation Root}.
     \row
+        \li Do Not Ask for VCPKG
+        \li Hides the prompt about creating a CMake kit for \c vcpkg. For more
+            information, see \l {Automatic registration}.
+    \row
         \li Open Online Documentation in External Browser
-        \li Opens Qt documentation in the default browser.
-
+        \li Opens Qt documentation in the default browser. For more information,
+            see \l {Read Qt documentation}.
     \row
         \li Qt Installation Root
-        \li Path to the folder where you installed Qt.
+        \li Path to the folder where you installed Qt. For more information, see
+            \l {Automatic registration}.
     \endtable
 
     \section1 \QMLLS settings
 
-    \image vscodeext-qt-settings-qml.webp {Qt Settings}
+    \image {vscodeext-qt-settings-qml.webp} {Qt QML Configuration}
 
-    Settings for \l{\QMLLS Reference}{\QMLLS}.
+    Settings for \l {\QMLLS}. For more information, see \l {Turn on \QMLLS}.
 
     \table
     \header
         \li Setting
         \li Description
     \row
+        \li Do Not Ask for Qmlls Download
+        \li Hides the prompt about downloading \QMLLS.
+    \row
+        \li Additional Import Paths
+        \li Looks for QML modules in the specified folders, and uses the \c {-I}
+            command to add import statements for them when you start \QMLLS.
+            Select \uicontrol {Add Item} to add import paths.
+    \row
+        \li Custom Args
+        \li Select \uicontrol {Add Item} to set custom \QMLLS arguments instead
+            of using the default arguments.
+    \row
+        \li Custom Docs Path
+        \li Path to the folder where you installed \QMLLS documentation.
+            For more information, see \l {Read Qt documentation}.
+    \row
         \li Custom Exe Path
         \li Path to the folder where you installed \QMLLS.
-
     \row
-        \li Enabled
+        \li Run \QMLLS when activating an extension
         \li Turns on \QMLLS when you activate an extension.
     \row
-        \li Trace Lsp
+        \li Handle LSP trace
         \li Collects trace output from \QMLLS.
+    \row
+        \li Use No CMake Calls
+        \li Uses the \c {--no-cmake-calls} option to disable automatic CMake
+            builds you start \QMLLS.
+    \row
+        \li Use QML Import Path Env Var
+        \li Uses the \c {QML_IMPORT_PATH} option to look for QML modules. Turn on
+            this setting to add the \c {-E} argument when you start \QMLLS.
     \row
         \li Verbose Output
         \li Shows verbose output from \QMLLS.
@@ -80,9 +116,10 @@
 
     \section1 Qt UI settings
 
-    \image vscodeext-qt-settings-ui.webp {Qt Settings}
+    \image {vscodeext-qt-settings-ui.webp} {Qt UI Configuration}
 
-    Settings for handling \e {.ui} files.
+    Settings for handling \e {.ui} files. For more information, see
+    \l{Design widgets-based UIs}.
 
     \table
     \header
