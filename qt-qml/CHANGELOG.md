@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.9.0 (Sep 11, 2025)
+
+🎉 **Added**
+
+- Introduce variable substitution in configuration paths
+- Supported variables for substitution:
+  - `${workspaceFolder}` for the workspace root directory
+  - `${userHome}` for the user's home directory
+
+🐞 **Fixed**
+
+- Fix broken watch expressions when invalid expressions are given
+
 ## 1.8.0 (Sep 11, 2025)
 
 The same as `1.7.0`

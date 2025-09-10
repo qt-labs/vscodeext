@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.9.0 (Sep 11, 2025)
+
+🎉 **Added**
+
+- Introduce `qt-cpp.doNotShowCMakePresetWarning` setting to suppress warnings
+- Warn user when using CMake presets
+- Introduce variable substitution in configuration paths
+- Supported variables for substitution:
+  - `${workspaceFolder}` for the workspace root directory
+  - `${userHome}` for the user's home directory
+- Add `sourceFileMap` to launch configurations so that users can debug through the Qt source code
+- Introduce `qt-cpp.sourceDirectory` command to retrieve the Qt source directory
+- Introduce `qt-cpp.doNotWarnMissingSourceDir` setting to suppress warnings
+
 ## 1.8.0 (Sep 11, 2025)
 
 The same as `1.7.0`

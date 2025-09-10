@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.9.0 (Sep 11, 2025)
+
+🎉 **Added**
+
+- Introduce the `Open current file in Linguist` command
+- Introduce QRC editor to modify `qrc` files via UI
+- Introduce variable substitution in configuration paths
+- Supported variables for substitution:
+  - `${workspaceFolder}` for the workspace root directory
+  - `${userHome}` for the user's home directory
+- Use default Qt installation root path in the `Qt: Register Qt Installation` command
+
 ## 1.8.0 (Sep 11, 2025)
 
 ### New Item Wizard
