@@ -29,6 +29,11 @@
 */
 
 /*!
+\externalpage https://doc.qt.io/qt-6/qtlinguist-index.html
+\title \QL
+*/
+
+/*!
 \externalpage https://doc.qt.io/qt-6/designer-connection-mode.html
 \title \QD's Signals and Slots Editing Mode
 */
