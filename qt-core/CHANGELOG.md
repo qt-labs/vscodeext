@@ -1,5 +1,32 @@
 # Change Log
 
+## 1.8.0 (Sep 11, 2025)
+
+### New Item Wizard
+
+🐞 **Fixed**
+
+- Add the missing `options` field causing user-selected options to be ignored
+- Disable timeout for working directory selection
+
+🎉 **Added**
+
+- Add fallback text colors for error/info alerts
+- Introduce `WebviewChannel` for consistent panel-webview communication across multiple apps
+- Reorganize VSCode panel code and type definitions slightly
+
+⚠️ **Changed**
+
+- Change icons
+- Update project structure regarding webview UI to accommodate more apps side-by-side
+
+### qtcli
+
+🐞 **Fixed**
+
+- Remove root element option to fix `ApplicationWindow`
+- Fix signal declaration in the C++ template
+
 ## 1.7.0 (Jul 2, 2025)
 
 🎉 **Added**
@@ -13,13 +40,16 @@
 - Don't change `qtpaths` name if it is already set
 
 ---
+
 ### qtcli
 
 🎉 **Added**
+
 - Add endpoints for managing custom presets
 - Enable wrapping in prompt list navigation
 
 🐞 **Fixed**
+
 - Resolve errors in Qt Widgets application template
 
 ⚠️ **Changed**
@@ -45,6 +75,7 @@ The same as `1.5.1`
 - Add `cmake.useCMakePresets": "never"`to the recommended settings
 
 ---
+
 ### qtcli
 
 🎉 **Added**
