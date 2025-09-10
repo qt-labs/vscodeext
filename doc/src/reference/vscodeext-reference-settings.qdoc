@@ -17,7 +17,7 @@
     \section1 Use variables in settings
 
     \QVSC supports variable substitution in Qt settings. See the following
-    variable reference for the availabe variables.
+    variable reference for the available variables.
 
     \table
     \header
