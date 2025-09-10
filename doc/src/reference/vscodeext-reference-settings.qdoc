@@ -14,6 +14,29 @@
     To view and change Qt settings, go to \uicontrol {Command Palette} and select
     \uicontrol {Qt: Open Qt Settings}.
 
+    \section1 Use variables in settings
+
+    \QVSC supports variable substitution in Qt settings. See the following
+    variable reference for the availabe variables.
+
+    \table
+    \header
+        \li Variable
+        \li Description
+    \row
+        \li ${userHome}
+        \li Expands to the user's home directory.
+    \row
+        \li ${workspaceFolder}
+        \li Expands to the full path to the root directory of the current
+            workspace.
+
+            Prefix the variable to a path to specify a path to the Qt
+            installation or \QMLLS executable that is relative to the
+            current workspace. For example, when using a Yocto SDK and
+            its Qt version as part of the workspace.
+    \endtable
+
     \section1 Qt C++ settings
 
     \image {vscodeext-qt-settings-cpp.webp} {Qt C++ Configuration}
