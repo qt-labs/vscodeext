@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.8.0 (Sep 11, 2025)
+
+The same as `1.7.0`
+
 ## 1.7.0 (Jul 2, 2025)
 
 🎉 **Added**
