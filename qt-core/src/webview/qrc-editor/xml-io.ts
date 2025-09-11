@@ -73,7 +73,7 @@ export function defaultQrcLines() {
     '<RCC version="1.0">',
     '  <qresource prefix="/">',
     '  </qresource>',
-    '<RCC>',
+    '</RCC>',
     ''
   ];
 }
