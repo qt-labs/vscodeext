@@ -1,0 +1,62 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-create-qrc-files.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+
+    \title Create Qt resource collection files
+
+    \l {The Qt Resource System} is a platform-independent mechanism for storing
+    files in the application's executable. Use it if your application always
+    needs a certain set of files (like icons, translation files, images), and
+    you don't want to use system-specific means to package and locate these
+    resources.
+
+    You can create and edit Qt resource collection (\c .qrc) files.
+
+    \section1 Create QRC files
+
+    To create a new QRC file:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and then select
+            \uicontrol {Qt: Create a new project or file}.
+        \li In \uicontrol {File}, select \uicontrol {Qt resource file}.
+            \image {vscodeext-create-new-qrc-file.webp} {Qt resource file selected in the New item view}
+        \li In \uicontrol {Name}, enter a name for the file.
+        \li In \uicontrol {Create in}, enter the path for the file.
+        \li Select \uicontrol {Create} to create the file.
+    \endlist
+
+    \section1 Edit QRC files
+
+    Add groups with different prefixes to structure the resources and avoid
+    clashes between resource files that you add through different \c {.qrc}
+    files in different libraries or plugins.
+
+    Sometimes it is convenient to make a resource file available under a
+    different path at runtime. .qrc files allow this by setting an \c {alias}
+    attribute.
+
+    To edit a QRC file:
+
+    \list 1
+        \li Open a \c {.qrc} file.
+            \image {vscodeext-edit-qrc-file.webp} {Qt resource file open in the editor}
+        \li Select \uicontrol {Files} to add files to the group.
+        \li In \uicontrol {Alias}, set the path where the resource file is
+            available at runtime.
+        \li In \uicontrol {Prefix}, set a prefix to add to each local file name
+            to get the name by which the file is known within the resource
+            system.
+        \li In \uicontrol {Language}, set a suitable locale string to select
+            resources, such as translation files or icons, based on the user's
+            locale.
+    \endlist
+
+    \sa {Tutorial: Qt Widgets application}, {Create Qt projects}
+*/
