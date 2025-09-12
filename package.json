@@ -102,8 +102,8 @@
     "publish:qt-wasm-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/wasm\" --pack=\"qt-wasm-pack\"",
     "publish:qt-all-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/qt\" --pack=\"qt-all-pack\"",
     "prepareNatvisFiles": "ts-node ./scripts/prepare_natvis_files.ts",
-    "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common/.eslintrc.cjs\" --log-level silent",
-    "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common/.eslintrc.cjs\"",
+    "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,mts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common/.eslintrc.cjs\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,mts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common/.eslintrc.cjs\"",
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\"",
     "auditFix": "npm audit fix --force && cd qt-lib && npm audit fix --force && cd ../qt-core && npm audit fix --force && cd ../qt-cpp && npm audit fix --force && cd ../qt-ui && npm audit fix --force && cd ../qt-qml && npm audit fix --force && cd ../qt-core/webview-ui && npm audit fix --force",
     "build:qt-cli": "cd qt-cli && bash run.sh build"
