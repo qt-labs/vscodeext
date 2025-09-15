@@ -18,7 +18,11 @@ interface PackageJson {
  * Returns true if the given extension is active.
  */
 export function isExtensionActive(extensionId: string): boolean {
-  return vscode.extensions.getExtension(extensionId)?.isActive === true;
+  const ext = vscode.extensions.getExtension(extensionId);
+  if (!ext) {
+    throw new Error(`Extension not found: ${extensionId}`);
+  }
+  return ext.isActive;
 }
 /**
  * Asserts that all declared extension dependencies in package.json are active.
