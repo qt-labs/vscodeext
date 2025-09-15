@@ -11,7 +11,7 @@ import {
   runTests
 } from '@vscode/test-electron';
 
-import { localQtCore } from '../../qt-lib/src/test-constants';
+import { getLocalQtCore } from '../../qt-lib/src/test-constants';
 
 async function main() {
   try {
@@ -23,7 +23,7 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
     // Path to the local qt-core extension to be used during testing
-    const localQtCoreVsix = path.resolve(__dirname, localQtCore);
+    const localQtCoreVsix = path.resolve(__dirname, getLocalQtCore());
     // Check that qt-core .vsix exists
     if (!fs.existsSync(localQtCoreVsix)) {
       console.error(`Required extension not found: ${localQtCoreVsix}`);
