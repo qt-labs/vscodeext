@@ -1,0 +1,16 @@
+version: "1"
+
+steps:
+  - id: baseClass
+    type: picker
+    question: "Base class:"
+    default: "QMainWindow"
+    items:
+      - text: "QMainWindow"
+      - text: "QWidget"
+      - text: "QDialog"
+
+  - id: useForm
+    type: confirm
+    question: "Use form?"
+    default: true
