@@ -1,0 +1,37 @@
+version: "1"
+
+meta:
+  type: project
+  title: Qt Widgets application (Qt for Python)
+  description: >-
+    Creates a widget-based Qt application that contains
+    a Qt Widgets Designer-based main window and C++ source and header files
+    to implement the application logic.
+
+files:
+  - in: pyproject.toml
+  - in: requirements.txt
+
+  - in: main.py
+    out: '{{ .fileNameBase }}'
+
+  - in: form.ui
+    when: '{{ .useForm }}'
+
+  - in: '@/common/git.ignore'
+    out: .gitignore
+    bypass: true
+
+fields:
+  - className: |
+      {{ if eq .baseClass "QMainWindow" }}MainWindow
+      {{ else if eq .baseClass "QDialog"}}Dialog
+      {{ else }}Widget
+      {{ end }}
+
+  - fileNameBase: |
+      {{ if eq .baseClass "QMainWindow" }}mainwindow
+      {{ else if eq .baseClass "QDialog"}}dialog
+      {{ else }}widget
+      {{ end }}
+

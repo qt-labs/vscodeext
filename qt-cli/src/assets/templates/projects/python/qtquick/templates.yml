@@ -1,0 +1,17 @@
+version: "1"
+
+meta:
+  type: project
+  title: Qt Quick application (Qt for Python)
+  description: >-
+    Creates a Qt Quick application that contains an empty window.
+
+files:
+  - in: main.py
+  - in: main.qml
+  - in: pyproject.toml
+  - in: requirements.txt
+
+  - in: '@/common/git.ignore'
+    out: .gitignore
+    bypass: true
