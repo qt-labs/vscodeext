@@ -1,0 +1,146 @@
+{
+  "name": "qt-python",
+  "displayName": "Qt Python",
+  "description": "Qt Python Support",
+  "version": "1.11.0",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qtforpython.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "Qt",
+    "PySide",
+    "Python"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "activationEvents": [
+    "workspaceContains:pyproject.toml",
+    "onDebugInitialConfigurations",
+    "onDebugResolve:python"
+  ],
+  "main": "./out/extension.js",
+  "l10n": "./l10n",
+  "contributes": {
+    "configuration": {
+      "title": "Qt Python Configuration",
+      "properties": {}
+    },
+    "taskDefinitions": [
+      {
+        "type": "pyside",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "pyside",
+        "label": "PySide application",
+        "languages": [
+          "python"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to the program to be debugged"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "name": "PySide: Launch",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "preLaunchTask": "PySide: build"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Qt: PySide: Launch",
+            "description": "Launch and debug a PySide application",
+            "body": {
+              "name": "PySide: Launch",
+              "type": "debugpy",
+              "request": "launch",
+              "program": "^\"\\${workspaceFolder}/main.py\"",
+              "preLaunchTask": "PySide: build"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "extensionDependencies": [
+    "theqtcompany.qt-core",
+    "ms-python.python"
+  ],
+  "scripts": {
+    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
+    "compile": "node ./esbuild.mjs",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata",
+    "package": "vsce package --out out"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
+    "@types/command-exists": "^1.2.3",
+    "@types/license-checker": "^25.0.6",
+    "@types/lodash": "^4.17.16",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "^1.94.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vscode/l10n-dev": "^0.0.30",
+    "@vscode/vsce": "^3.6.0",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
+    "license-checker": "^25.0.1",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@vscode/l10n": "^0.0.16",
+    "@vscode/python-extension": "^1.0.5",
+    "command-exists": "^1.2.9",
+    "lodash": "^4.17.21",
+    "module-alias": "^2.2.3",
+    "qt-lib": "file:../qt-lib",
+    "smol-toml": "^1.4.1",
+    "typescript": "^5.6.3"
+  }
+}
