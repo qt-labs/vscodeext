@@ -1,0 +1,95 @@
+name: Qt VS Code Ext Tests
+
+# Triggers: run automatically on every PR,
+# and also allow manual runs from the Actions tab
+on:
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  tests:
+    # Job name will show up in GitHub UI as "tests (ubuntu-latest)" etc.
+    name: tests (${{ matrix.os }})
+    # Run this job on Linux, macOS, and Windows
+    runs-on: ${{ matrix.os }}
+    # Default shell for all `run:` commands in this job
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      # Do not cancel other jobs if one platform fails.
+      # This way you see all failures at once.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      # Check out your branch code into the runner
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # Set up Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Needed by runTest.mts fallback to download Marketplace extensions
+      - name: Install vsce
+        run: npm i -g @vscode/vsce
+
+      # Install dependencies using package-lock.json
+      - name: Install deps (all packages)
+        run: npm run ci:all_sync
+
+      # Build qt-core so we have a .vsix for tests
+      - name: Build qt-lib first (dependency)
+        run: |
+          npm run ci:qt-lib
+          npm run compile:qt-lib
+
+      # Ensure qt-core has a qt-cli binary in res/qtcli for tests
+      - name: Build qtcli (host platform)
+        uses: ./.github/actions/build-qtcli
+        with:
+          working-directory: ./qt-cli
+          deploy-target: ./qt-core/res/qtcli
+          enable-upload: 'false'
+
+      # Package qt-core so qt-cpp tests can install its .vsix via getLocalQtCore()
+      - name: Package qt-core (.vsix)
+        run: npm run package:qt-core 
+
+      # Install Qt using a community-maintained action.
+      # It automatically downloads + caches Qt binaries for the runner’s OS.
+      - name: Install Qt
+        id: qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.6.0   # adjust to the version if needed
+          cache: true      # reuse cached Qt between workflow runs
+
+      # Print where Qt was installed for debugging
+      - name: Print Qt dir
+        run: echo "QT_DIR=${{ steps.qt.outputs.qt_dir }}"
+
+
+      # Run tests on Linux.
+      # We wrap npm run test in xvfb-run to simulate an X server
+      # so Electron (VS Code test harness) can start headless.
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        env:
+          QT_TEST_QT_ROOT: ${{ steps.qt.outputs.QT_DIR }}
+        run: xvfb-run -a -s "-screen 0 1280x720x24" npm run test
+
+      # Run tests on macOS and Windows (no xvfb needed).
+      - name: Run tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        env:
+          QT_TEST_QT_ROOT: ${{ steps.qt.outputs.QT_DIR }}
+        run: npm run test

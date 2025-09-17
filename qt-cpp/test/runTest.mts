@@ -4,7 +4,6 @@
 import * as cp from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as os from 'os';
 
 const QT_INS_ROOT_CONFIG_NAME = 'qtInstallationRoot';
 
@@ -33,6 +32,10 @@ function getCliArg(name: string): string | undefined {
   }
   return undefined;
 }
+import {
+  parseVSCodeDirs,
+  installExtensionWithRetry
+} from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
   try {
@@ -44,7 +47,9 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
     // Path to the local qt-core extension to be used during testing
-    const localQtCoreVsix = path.resolve(__dirname, getLocalQtCore());
+    const localQtCoreVsix = path.normalize(
+      path.resolve(__dirname, getLocalQtCore())
+    );
     // Check that qt-core .vsix exists
     if (!fs.existsSync(localQtCoreVsix)) {
       console.error(`Required extension not found: ${localQtCoreVsix}`);
@@ -54,6 +59,7 @@ async function main() {
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
+    //--------------------
     // Read from env (set this when launching tests)
     // Prefer CLI over env
     const cliQtRoot = getCliArg('qt-root');
@@ -74,51 +80,58 @@ async function main() {
       );
       process.exit(1);
     }
-    let userDataDir: string | undefined;
 
-    if (qtRoot) {
-      userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-qt-test-'));
-      const userDir = path.join(userDataDir, 'User');
-      fs.mkdirSync(userDir, { recursive: true });
+    console.log('[runTest] CLI:', cli, 'args:', args.join(' '));
 
-      const settingsPath = path.join(userDir, 'settings.json');
+    // Reuse the dirs that @vscode/test-electron already configured
+    const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
+    console.log('[runTest] using userDataDir:', userDataDir);
+    console.log('[runTest] using extensionsDir:', extensionsDir);
 
-      const settings = {
-        // VS Code setting key that qt-core reads:
-        [`qt-core.${QT_INS_ROOT_CONFIG_NAME}`]: qtRoot
-      };
-      // Write settings.json with both qt-core and cmake entries
-      fs.writeFileSync(
-        settingsPath,
-        JSON.stringify(settings, null, 2),
-        'utf-8'
+    // Seed VS Code settings in that SAME user-data-dir
+    if (!userDataDir) {
+      console.error(
+        '[runTest] Could not determine userDataDir from VS Code args.'
       );
+      process.exit(1);
+    }
+    const userDir = path.join(userDataDir, 'User');
+    fs.mkdirSync(userDir, { recursive: true });
+
+    const settingsPath = path.join(userDir, 'settings.json');
+    const settings = {
+      // VS Code setting key that qt-core reads:
+      [`qt-core.${QT_INS_ROOT_CONFIG_NAME}`]: qtRoot
+    };
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+    console.log('[runTest] Wrote settings to:', settingsPath);
+
+    // Install required extensions into the SAME profile/dir combo
+    installExtensionWithRetry(cli as string, args, 'ms-vscode.cmake-tools');
+    installExtensionWithRetry(cli as string, args, localQtCoreVsix);
+
+    // Debug/sanity: list installed extensions
+    const listRes = cp.spawnSync(
+      cli as string,
+      [...args, '--list-extensions', '--show-versions'],
+      { encoding: 'utf-8', shell: process.platform === 'win32' }
+    );
+    console.log(
+      '[runTest] Installed extensions:\n' + (listRes.stdout || '<no stdout>')
+    );
+
+    if (!listRes.stdout?.toLowerCase().includes('theqtcompany.qt-core')) {
+      console.error('[runTest] qt-core NOT found');
+      console.error('[runTest] VSIX was:', localQtCoreVsix);
+      console.error('[runTest] userDataDir:', userDataDir);
+      console.error('[runTest] extensionsDir:', extensionsDir);
+      process.exit(1);
     }
 
-    cp.spawnSync(
-      cli as string,
-      [...args, '--install-extension', 'ms-vscode.cmake-tools'],
-      { encoding: 'utf-8', stdio: 'inherit' }
-    );
-    cp.spawnSync(
-      cli as string,
-      [
-        ...args,
-        '--install-extension',
-        // local extension to be used during testing
-        localQtCoreVsix
-      ],
-      {
-        encoding: 'utf-8',
-        stdio: 'inherit'
-      }
-    );
-
-    // Download VS Code, unzip it and run the integration test
+    // Run the integration tests (no need to pass launchArgs; we reused the same dirs)
     await runTests({
       extensionDevelopmentPath,
-      extensionTestsPath,
-      launchArgs: [...(userDataDir ? ['--user-data-dir', userDataDir] : [])]
+      extensionTestsPath
     });
   } catch (e: Error | unknown) {
     console.error('Failed to run tests');

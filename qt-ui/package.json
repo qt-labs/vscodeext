@@ -109,7 +109,7 @@
     "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
-    "prepare-vsix": "cd .. && npm run package:qt-core && cd -",
+    "prepare-vsix": "npm --prefix ../qt-core run package",
     "test": "npm run prepare-vsix && npm run compile-test && cd ./out/test/ && node runTest.js",
     "lint": "npm run prettierWrite && eslint . --fix --cache",
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,mts,json,mjs,cjs}\" --log-level silent",

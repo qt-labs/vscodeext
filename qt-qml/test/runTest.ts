@@ -12,6 +12,10 @@ import {
 } from '@vscode/test-electron';
 
 import { getLocalQtCore } from '../../qt-lib/src/test-constants';
+import {
+  parseVSCodeDirs,
+  installExtensionWithRetry
+} from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
   try {
@@ -34,19 +38,32 @@ async function main() {
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
-    cp.spawnSync(
-      <string>cli,
-      [
-        ...args,
-        '--install-extension',
-        // local extension to be used during testing
-        localQtCoreVsix
-      ],
-      {
-        encoding: 'utf-8',
-        stdio: 'inherit'
-      }
+    // Use the SAME profile/dirs that test-electron sets up
+    const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
+    console.log('[runTest][qt-ui] CLI:', cli, 'args:', args.join(' '));
+    console.log('[runTest][qt-ui] userDataDir:', userDataDir);
+    console.log('[runTest][qt-ui] extensionsDir:', extensionsDir);
+
+    // Install qt-core VSIX into that profile
+    installExtensionWithRetry(cli as string, args, localQtCoreVsix);
+
+    // Sanity: verify it's visible to VS Code
+    const listRes = cp.spawnSync(
+      cli as string,
+      [...args, '--list-extensions', '--show-versions'],
+      { encoding: 'utf-8', shell: process.platform === 'win32' }
     );
+    console.log(
+      '[runTest][qt-ui] Installed extensions:\n' +
+        (listRes.stdout || '<no stdout>')
+    );
+    if (!listRes.stdout?.toLowerCase().includes('theqtcompany.qt-core')) {
+      console.error('[runTest][qt-ui] qt-core NOT found after install.');
+      console.error('[runTest][qt-ui] VSIX was:', localQtCoreVsix);
+      console.error('[runTest][qt-ui] userDataDir:', userDataDir);
+      console.error('[runTest][qt-ui] extensionsDir:', extensionsDir);
+      process.exit(1);
+    }
 
     // Download VS Code, unzip it and run the integration test
     await runTests({ extensionDevelopmentPath, extensionTestsPath });
