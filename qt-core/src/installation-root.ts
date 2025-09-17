@@ -65,7 +65,7 @@ function getConfiguration() {
   return vscode.workspace.getConfiguration(EXTENSION_ID);
 }
 
-function getPossibleDefaultQtInstallationRoot() {
+export function getDefaultQtRootCandidates(): string[] {
   if (!IsUnix && !IsWindows) {
     const errorMessage = 'Unsupported OS';
     logger.error(errorMessage);
@@ -119,6 +119,11 @@ function getPossibleDefaultQtInstallationRoot() {
     );
   }
   const defaultPaths = IsUnix ? unixDefaultPaths : winDefaultPaths;
+  return defaultPaths;
+}
+
+function getPossibleDefaultQtInstallationRoot() {
+  const defaultPaths = getDefaultQtRootCandidates();
   const foundDefaultPath = defaultPaths.find((defPath) =>
     fs.existsSync(defPath)
   );

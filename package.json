@@ -16,6 +16,7 @@
     "test:qt-cpp": "npm --prefix qt-cpp run test",
     "test:qt-qml": "npm --prefix qt-qml run test",
     "test:qt-ui": "npm --prefix qt-ui run test",
+    "test": "npm run test:all",
     "test:all": "npm run test:qt-core && npm run test:qt-cpp && npm run test:qt-ui && npm run test:qt-qml",
     "all_dev:qt-ui": "ts-node ./scripts/all_dev.ts --extension=\"qt-ui\"",
     "lint": "npm run prettierWrite && eslint scripts --fix --cache",

@@ -12,10 +12,12 @@ import {
   generateDefaultQtPathsName,
   delay
 } from 'qt-lib';
+import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { addQtPathToSettings } from '../../src/qtpaths.ts';
 import * as texts from '../../src/texts.ts';
+import { getDefaultQtRootCandidates } from '../../src/installation-root.ts';
 
 import {
   setupSandboxLifecycleHooks,
@@ -369,17 +371,45 @@ describe('command: registerQt', () => {
       options,
       undefined
     );
-    await runRegisterCommand();
 
-    expectCalledOnce(openDialogSpy, 'openDialog');
+    // Pick one candidate and pretend it exists
+    const candidates = getDefaultQtRootCandidates();
+    const portable = path.join(os.homedir(), 'Qt');
+    // Guard to ensure test stays aligned with production candidates
     expect(
-      openDialogSpy.calledWithMatch(
-        sinon.match.has('defaultUri', sinon.match.instanceOf(vscode.Uri))
-      )
+      candidates.includes(portable),
+      `portable default path ${portable} is not in candidates: ${JSON.stringify(candidates)}`
     ).to.be.true;
-    // Configuration is not updated
-    expect(updateSpy.called, `config.update should be not be called`).to.be
-      .false;
+    // Create the directory if missing (needed for CI), and remember if we created it
+    let createdHere = false;
+    if (!fs.existsSync(portable)) {
+      fs.mkdirSync(portable, { recursive: true });
+      createdHere = true;
+    }
+
+    try {
+      await runRegisterCommand();
+
+      expectCalledOnce(openDialogSpy, 'openDialog');
+      expect(
+        openDialogSpy.calledWithMatch(
+          sinon.match.has('defaultUri', sinon.match.instanceOf(vscode.Uri))
+        ),
+        'Expected showOpenDialog to include a defaultUri (vscode.Uri).'
+      ).to.be.true;
+      // Configuration is not updated
+      expect(updateSpy.called, `config.update should be not be called`).to.be
+        .false;
+    } finally {
+      // Clean up only if we created the folder
+      if (createdHere) {
+        try {
+          fs.rmSync(portable, { recursive: true, force: true });
+        } catch {
+          /* ignore */
+        }
+      }
+    }
   });
   // This does not check how the default path is built
 
@@ -646,6 +676,21 @@ describe('command: createNewItem', () => {
     await vscode.commands.executeCommand('qt-core.createNewItem');
     await waitForVSCodeIdle();
   }
+  async function waitFor<T>(
+    cond: () => T,
+    timeoutMs = 5000,
+    intervalMs = 50
+  ): Promise<T> {
+    const t0 = Date.now();
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const v = cond();
+      if (v) return v;
+      if (Date.now() - t0 > timeoutMs)
+        throw new Error(`timeout waiting for condition`);
+      await delay(intervalMs);
+    }
+  }
 
   it('creates a web view panel and a terminal', async () => {
     const createViewPanel = sb
@@ -655,15 +700,57 @@ describe('command: createNewItem', () => {
     const createTerminalSpy = sb.spy(vscode.window, 'createTerminal');
     // Required fields (normalize for cross-platform consistency)
     const expectedCwd = path.normalize(os.homedir());
-    const qtcliCall = (createTerminalSpy as any).withArgs(
-      sinon.match.object
-        .and(sinon.match.has('name', 'qtcli'))
-        .and(sinon.match.has('cwd', expectedCwd))
+    // const qtcliCall = (createTerminalSpy as any).withArgs(
+    //   sinon.match.object
+    //     .and(sinon.match.has('name', 'qtcli'))
+    //     .and(sinon.match.has('cwd', expectedCwd))
+    // );
+
+    // matcher that *safely* inspects the arg without typing 'cwd'
+    const qtcliCall = createTerminalSpy.withArgs(
+      sinon.match((arg: unknown) => {
+        const o = arg as any;
+
+        // name must be 'qtcli'
+        if (!o || o.name !== 'qtcli') return false;
+
+        // cwd may be string | vscode.Uri | undefined
+        let cwd: string | undefined;
+        if (typeof o.cwd === 'string') cwd = o.cwd;
+        else if (o.cwd && typeof o.cwd === 'object' && 'fsPath' in o.cwd)
+          cwd = (o.cwd as vscode.Uri).fsPath;
+
+        // log when missing or mismatched
+        if (!cwd) {
+          console.log('[test] createTerminal arg has no cwd:', o);
+          return false;
+        }
+        const got = path.normalize(cwd);
+        const ok = got === expectedCwd;
+        if (!ok) {
+          console.log('[test] expected cwd:', expectedCwd);
+          console.log('[test] got cwd     :', got);
+          console.log('[test] full arg    :', o);
+        }
+        return ok;
+      }, 'TerminalOptions[name=qtcli,cwd=expected]')
     );
 
     await runCreateNewItem();
-    await delay(200); // tiny wait so finder resolves and server starts
+    await waitFor(() => createTerminalSpy.called, 5000, 50);
+    //await delay(200); // tiny wait so finder resolves and server starts
 
+    // If matcher didn't hit, dump all terminal calls once
+    if (!qtcliCall.called) {
+      const calls = createTerminalSpy.getCalls().map((c) => c.args[0]);
+      console.log(
+        '[test] createTerminal calls:',
+        JSON.stringify(calls, null, 2)
+      );
+      console.log('[test] os.homedir():', os.homedir());
+      console.log('[test] process.env.HOME:', process.env.HOME);
+      console.log('[test] path.sep:', path.sep);
+    }
     expect(
       qtcliCall.calledOnce,
       'qtcli terminal created once with correct name+cwd'

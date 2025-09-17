@@ -16,7 +16,7 @@ function getExtensionVersion(extensionRoot: string): string {
   return packageJson.version;
 }
 
-export function getLocalQtCore() {
+export function getLocalQtCore(): string {
   const qtcoreExtensionRoot = '../../../qt-core';
   const packageVersion = getExtensionVersion(qtcoreExtensionRoot);
   if (!packageVersion) {
