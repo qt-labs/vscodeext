@@ -441,8 +441,19 @@ export class KitManager {
   ) {
     const generatedKits = await KitManager.generateKitsFromQtPathsInfo(paths);
     logger.info(`QtPaths Generated kits: ${JSON.stringify(generatedKits)}`);
-    await this.updateCMakeKitsJsonForQtPathsQtKits(
+    let previousQtKits: Kit[] = [];
+    if (workspaceFolder) {
+      const projectStateManager =
+        this.getProject(workspaceFolder)?.getStateManager();
+      if (projectStateManager) {
+        previousQtKits = projectStateManager.getWorkspaceQtPathsQtKits();
+      }
+    } else {
+      previousQtKits = this.globalStateManager.getGlobalQtPathsQtKits();
+    }
+    await KitManager.updateCMakeKitsJson(
       generatedKits,
+      previousQtKits,
       workspaceFolder
     );
     if (workspaceFolder) {
@@ -464,60 +475,13 @@ export class KitManager {
     return currentKits;
   }
 
-  private async updateCMakeKitsJsonForQtPathsQtKits(
-    newGeneratedKits: Kit[],
-    workspaceFolder?: vscode.WorkspaceFolder
-  ) {
-    let previousQtKits: Kit[] = [];
-    if (workspaceFolder) {
-      const projectStateManager =
-        this.getProject(workspaceFolder)?.getStateManager();
-      if (projectStateManager) {
-        previousQtKits = projectStateManager.getWorkspaceQtPathsQtKits();
-      }
-    } else {
-      previousQtKits = this.globalStateManager.getGlobalQtPathsQtKits();
-    }
-    const cmakeKitsFile = workspaceFolder
-      ? path.join(workspaceFolder.uri.fsPath, '.vscode', 'cmake-kits.json')
-      : CMAKE_GLOBAL_KITS_FILEPATH;
-    if (cmakeKitsFile === undefined) {
-      throw new Error('CMake tools directory not found');
-    }
-    const currentKits = await KitManager.parseCMakeKitsFile(cmakeKitsFile);
-    const newKits = currentKits.filter((kit) => {
-      // filter kits if previousQtKits contains the kit with the same name
-      return !previousQtKits.find((prevKit) => prevKit.name === kit.name);
-    });
-    newKits.push(...newGeneratedKits);
-    if (newKits.length !== 0 || fsSync.existsSync(cmakeKitsFile)) {
-      await fileWriter.push(
-        cmakeKitsFile,
-        JSON.stringify(newKits, null, 2),
-        (err: Error | null | undefined) => {
-          if (err) {
-            logger.error('Error writing to cmake-kits.json:', err.message);
-            throw err;
-          } else {
-            logger.info(`Successfully wrote to ${cmakeKitsFile}`);
-          }
-        }
-      );
-    }
-  }
-
-  private static async loadCMakeKitsFileJSON(): Promise<Kit[]> {
+  private static async loadCMakeKitsFileJSON() {
     if (CMAKE_GLOBAL_KITS_FILEPATH === undefined) {
       throw new Error('CMake tools directory not found');
     }
-    if (!fsSync.existsSync(CMAKE_GLOBAL_KITS_FILEPATH)) {
-      return [];
-    }
-    const data = await fs.readFile(CMAKE_GLOBAL_KITS_FILEPATH);
-    const stringData = data.toString();
     let kits: Kit[] = [];
     try {
-      kits = JSON.parse(stringData) as Kit[];
+      kits = await KitManager.parseCMakeKitsFile(CMAKE_GLOBAL_KITS_FILEPATH);
     } catch (error) {
       if (isError(error)) {
         logger.error('Error parsing cmake-kits.json:', error.message);
@@ -684,21 +648,6 @@ export class KitManager {
       qtInstallations
     );
     logger.info(`New generated kits: ${JSON.stringify(newGeneratedKits)}`);
-    await this.updateCMakeKitsJson(newGeneratedKits, workspaceFolder);
-
-    if (workspaceFolder) {
-      await this.getProject(workspaceFolder)
-        ?.getStateManager()
-        .setWorkspaceQtKits(newGeneratedKits);
-      return;
-    }
-    await this.globalStateManager.setGlobalQtKits(newGeneratedKits);
-  }
-
-  private async updateCMakeKitsJson(
-    newGeneratedKits: Kit[],
-    workspaceFolder?: vscode.WorkspaceFolder
-  ) {
     let previousQtKits: Kit[] = [];
     if (workspaceFolder) {
       const projectStateManager =
@@ -709,6 +658,26 @@ export class KitManager {
     } else {
       previousQtKits = this.globalStateManager.getGlobalQtKits();
     }
+    await KitManager.updateCMakeKitsJson(
+      newGeneratedKits,
+      previousQtKits,
+      workspaceFolder
+    );
+
+    if (workspaceFolder) {
+      await this.getProject(workspaceFolder)
+        ?.getStateManager()
+        .setWorkspaceQtKits(newGeneratedKits);
+      return;
+    }
+    await this.globalStateManager.setGlobalQtKits(newGeneratedKits);
+  }
+
+  private static async updateCMakeKitsJson(
+    newGeneratedKits: Kit[],
+    previousQtKits: Kit[],
+    workspaceFolder?: vscode.WorkspaceFolder
+  ) {
     const cmakeKitsFile = workspaceFolder
       ? path.join(workspaceFolder.uri.fsPath, '.vscode', 'cmake-kits.json')
       : CMAKE_GLOBAL_KITS_FILEPATH;
