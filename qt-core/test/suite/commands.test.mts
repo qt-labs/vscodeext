@@ -738,7 +738,6 @@ describe('command: createNewItem', () => {
 
     await runCreateNewItem();
     await waitFor(() => createTerminalSpy.called, 5000, 50);
-    //await delay(200); // tiny wait so finder resolves and server starts
 
     // If matcher didn't hit, dump all terminal calls once
     if (!qtcliCall.called) {
