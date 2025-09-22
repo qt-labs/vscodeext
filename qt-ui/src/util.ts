@@ -1,10 +1,8 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as vscode from 'vscode';
 import * as path from 'path';
 
-import * as constants from '@/constants';
 import {
   IsMacOS,
   IsWindows,
@@ -15,66 +13,32 @@ import {
 } from 'qt-lib';
 import { coreAPI } from '@/extension';
 
-export function getConfig<T>(
-  key: string,
-  defaultValue: T,
-  folder?: vscode.WorkspaceFolder
-): T {
-  return vscode.workspace
-    .getConfiguration(constants.EXTENSION_ID, folder)
-    .get<T>(key, defaultValue);
-}
-
-export function affectsConfig(
-  event: vscode.ConfigurationChangeEvent,
-  key: string,
-  folder?: vscode.WorkspaceFolder
-): boolean {
-  return event.affectsConfiguration(`${constants.EXTENSION_ID}.${key}`, folder);
-}
-
 export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const DesignerExeName = IsMacOS ? 'Designer' : 'designer' + OSExeSuffix;
-
-function getDesignerExePathFromBin(selectedQtBinPath: string) {
-  const macOSPath = path.join(
-    'Designer.app',
-    'Contents',
-    'MacOS',
-    DesignerExeName
-  );
-  return IsMacOS
-    ? path.join(selectedQtBinPath, macOSPath)
-    : path.join(selectedQtBinPath, DesignerExeName);
 }
 
 export async function locateDesignerFromKit(
   selectedKitPath: string,
   qtPathsFallback = true
 ) {
-  let designerExePath = getDesignerExePathFromBin(
-    path.join(selectedKitPath, 'bin')
-  );
-  if (await exists(designerExePath)) {
-    return designerExePath;
+  let exe = getDesignerExePathFromBin(path.join(selectedKitPath, 'bin'));
+  if (await exists(exe)) {
+    return exe;
   }
+
   if (qtPathsFallback) {
     const qtPaths = findQtPathsInKitDir(selectedKitPath);
-    if (qtPaths) {
-      const qtPathsExePath = await locateDesignerFromQtPaths(qtPaths);
-      if (qtPathsExePath) {
-        return qtPathsExePath;
-      }
+    const exeFromQtPaths =
+      qtPaths && (await locateDesignerFromQtPaths(qtPaths));
+    if (exeFromQtPaths) {
+      return exeFromQtPaths;
     }
   }
 
   if (!IsWindows) {
-    designerExePath = '/usr/bin/designer';
-    if (await exists(designerExePath)) {
-      return designerExePath;
+    exe = '/usr/bin/designer';
+    if (await exists(exe)) {
+      return exe;
     }
   }
 
@@ -86,12 +50,13 @@ export async function locateDesignerFromQtPaths(qtPaths: string) {
   if (!info) {
     return undefined;
   }
-  const designerExePath = await searchForExeInQtInfo(
-    info,
-    getDesignerExePathFromBin
+
+  return searchForExeInQtInfo(info, getDesignerExePathFromBin);
+}
+
+function getDesignerExePathFromBin(selectedQtBinPath: string) {
+  return path.join(
+    selectedQtBinPath,
+    IsMacOS ? 'Designer.app/Contents/MacOS/Designer' : 'designer' + OSExeSuffix
   );
-  if (designerExePath) {
-    return designerExePath;
-  }
-  return undefined;
 }

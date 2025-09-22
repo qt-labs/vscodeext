@@ -4,22 +4,24 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-import { DesignerClient } from '@/designer-client';
-import { DesignerServer } from '@/designer-server';
 import {
+  Project,
   createLogger,
   QtWorkspaceType,
-  Project,
   resolveConfiguration
 } from 'qt-lib';
-import {
-  getConfig,
-  affectsConfig,
-  locateDesignerFromKit,
-  locateDesignerFromQtPaths
-} from '@/util';
-import { CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH } from '@/constants';
+import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
+import { DesignerClient } from '@/designer-client';
+import { DesignerServer } from '@/designer-server';
+import { locateDesignerFromKit, locateDesignerFromQtPaths } from '@/util';
+
+type UpdateReason =
+  | 'init'
+  | 'customExeChanged'
+  | 'workspaceTypeChanged'
+  | 'selectedKitPathChanged'
+  | 'selectedQtPathsChanged';
 
 const logger = createLogger('project');
 
@@ -27,236 +29,164 @@ export async function createUIProject(
   folder: vscode.WorkspaceFolder,
   context: vscode.ExtensionContext
 ) {
-  return Promise.resolve(new UIProject(folder, context));
+  const project = new UIProject(folder, context);
+  return Promise.resolve(project);
 }
 
 // Project class represents a workspace folder in the extension.
 export class UIProject implements Project {
-  private readonly _disposables: vscode.Disposable[] = [];
+  private _customExePath: string | undefined;
   private _workspaceType: QtWorkspaceType | undefined;
   private _selectedKitPath: string | undefined;
+  private _selectedQtPaths: string | undefined;
+
   private _designerClient: DesignerClient | undefined;
-  private _qtpathsExe: string | undefined;
   private readonly _designerServer: DesignerServer;
-  private _customWidgetsDesignerExePath: string | undefined;
+
   public constructor(
     readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
   ) {
     this._designerServer = new DesignerServer();
-    this._customWidgetsDesignerExePath = this.getQtCustomDesignerPath();
-    logger.info(
-      `${CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH}: "${this._customWidgetsDesignerExePath}"`
-    );
-    if (this._customWidgetsDesignerExePath) {
-      if (
-        UIProject.checkCustomDesignerExePath(this._customWidgetsDesignerExePath)
-      ) {
-        this.designerClient = new DesignerClient(
-          this._customWidgetsDesignerExePath,
-          this._designerServer.getPort()
-        );
-      }
-    }
-    const eventHandler = vscode.workspace.onDidChangeConfiguration(
-      async (event) => {
-        if (
-          affectsConfig(
-            event,
-            CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH,
-            this._folder
-          )
-        ) {
-          this._customWidgetsDesignerExePath = this.getQtCustomDesignerPath();
-          logger.info(
-            `new ${CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH}:`,
-            this._customWidgetsDesignerExePath
-          );
-          if (
-            this._customWidgetsDesignerExePath &&
-            UIProject.checkCustomDesignerExePath(
-              this._customWidgetsDesignerExePath
-            )
-          ) {
-            this.designerClient = new DesignerClient(
-              this._customWidgetsDesignerExePath,
-              this._designerServer.getPort()
-            );
-          } else {
-            // That means the user has removed the path.
-            // So, we need to detach the client and get the designer from qtpaths
-            // or from the selected kit.
-            let isDesignerClientSet = false;
-            if (this._designerClient) {
-              if (this._selectedKitPath) {
-                this.designerClient = await this.getNewDesignerClient(
-                  this._selectedKitPath
-                );
-                isDesignerClientSet = true;
-              } else if (this._qtpathsExe) {
-                const designer = await locateDesignerFromQtPaths(
-                  this._qtpathsExe
-                );
-                if (designer) {
-                  this.designerClient = new DesignerClient(
-                    designer,
-                    this.designerServer.getPort()
-                  );
-                  isDesignerClientSet = true;
-                }
-              }
-            }
-            if (!isDesignerClientSet) {
-              this.designerClient = undefined;
-            }
-          }
-        }
-      }
-    );
-    this._disposables.push(eventHandler);
-  }
-  getQtCustomDesignerPath() {
-    return resolveConfiguration(
-      getConfig<string>(CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH, '', this._folder)
-    );
   }
 
-  private async getNewDesignerClient(selectedKitPath: string) {
-    const designerExe = await locateDesignerFromKit(selectedKitPath);
-    if (!designerExe) {
-      return undefined;
-    }
-    const designerClient = new DesignerClient(
-      designerExe,
-      this.designerServer.getPort()
-    );
-    return designerClient;
-  }
-  get workspaceType() {
-    return this._workspaceType;
-  }
-  set workspaceType(workspaceType: QtWorkspaceType | undefined) {
-    this._workspaceType = workspaceType;
+  dispose() {
+    this._designerServer.dispose();
+    this._designerClient?.dispose();
   }
 
-  get selectedKitPath() {
-    return this._selectedKitPath;
-  }
-
-  get qtpathsExe() {
-    return this._qtpathsExe;
-  }
-
-  async setQtPathsExe(qtpathsExe: string | undefined) {
-    if (qtpathsExe === this._qtpathsExe) {
-      return;
-    }
-    this._qtpathsExe = qtpathsExe;
-    if (this._customWidgetsDesignerExePath) {
-      return;
-    }
-    if (qtpathsExe === undefined) {
-      this.designerClient = undefined;
-      return;
-    } else {
-      this._selectedKitPath = undefined; // Reset selectedKitPath when qtpathsExe is set
-    }
-
-    const designer = await locateDesignerFromQtPaths(qtpathsExe);
-    if (designer) {
-      this.designerClient = new DesignerClient(
-        designer,
-        this.designerServer.getPort()
-      );
-    } else {
-      this.designerClient = undefined;
-    }
-  }
-
-  async setSelectedKitPath(selectedKitPath: string | undefined) {
-    if (selectedKitPath === this._selectedKitPath) {
-      return;
-    }
-
-    this._selectedKitPath = selectedKitPath;
-    if (this._customWidgetsDesignerExePath) {
-      return;
-    }
-    if (selectedKitPath === undefined) {
-      this.designerClient = undefined;
-      return;
-    } else {
-      this._qtpathsExe = undefined; // Reset qtpathsExe when a kit is selected
-    }
-    this.designerClient = await this.getNewDesignerClient(selectedKitPath);
+  get folder() {
+    return this._folder;
   }
 
   get designerServer() {
     return this._designerServer;
   }
+
   get designerClient() {
     return this._designerClient;
   }
-  set designerClient(client: DesignerClient | undefined) {
+
+  get workspaceType() {
+    return this._workspaceType;
+  }
+
+  public async init() {
+    const read = coreAPI?.getValue.bind(coreAPI);
+    if (!read) {
+      return;
+    }
+
+    this._customExePath = this._readCustomExePath();
+    this._workspaceType = read<QtWorkspaceType>(this._folder, 'workspaceType');
+    this._selectedKitPath = read<string>(this._folder, 'selectedKitPath');
+    this._selectedQtPaths = read<string>(this._folder, 'selectedQtPaths');
+
+    await this._updateClient('init');
+  }
+
+  public async tryReloadCustomExePath() {
+    const exe = this._readCustomExePath();
+
+    if (this._customExePath !== exe) {
+      this._customExePath = exe;
+      await this._updateClient('customExeChanged');
+    }
+  }
+
+  public async setWorkspaceType(workspaceType: QtWorkspaceType | undefined) {
+    if (this._workspaceType !== workspaceType) {
+      this._workspaceType = workspaceType;
+      await this._updateClient('workspaceTypeChanged');
+    }
+  }
+
+  public async setSelectedKitPath(selectedKitPath: string | undefined) {
+    if (this._selectedKitPath !== selectedKitPath) {
+      this._selectedKitPath = selectedKitPath;
+      await this._updateClient('selectedKitPathChanged');
+    }
+  }
+
+  public async setSelectedQtPaths(exePath: string | undefined) {
+    if (this._selectedQtPaths !== exePath) {
+      this._selectedQtPaths = exePath;
+      await this._updateClient('selectedQtPathsChanged');
+    }
+  }
+
+  private async _updateClient(reason: UpdateReason) {
+    const exe = await this._resolveDesignerExe();
+    if (!exe) {
+      this._clearClient();
+      return;
+    }
+
+    const prev = this._designerClient?.exe;
+    if (!prev && prev === exe) {
+      return;
+    }
+
+    this._clearClient();
+    this._designerClient = new DesignerClient(
+      exe,
+      this._designerServer.getPort()
+    );
+
+    // clean up
+    if (reason === 'selectedKitPathChanged') {
+      this._selectedQtPaths = undefined;
+    } else if (reason === 'selectedQtPathsChanged') {
+      this._selectedKitPath = undefined;
+    }
+  }
+
+  private _clearClient() {
     this._designerClient?.detach();
-    this._designerClient = client;
-  }
-  get folder() {
-    return this._folder;
-  }
-  public async getConfigValues() {
-    await this.tryToGetDesigner();
-    this.workspaceType = coreAPI?.getValue<QtWorkspaceType>(
-      this.folder,
-      'workspaceType'
-    );
-  }
-  public async tryToGetDesigner() {
-    const selectedKitPath = coreAPI?.getValue<string>(
-      this.folder,
-      'selectedKitPath'
-    );
-    const selectedQtPaths = coreAPI?.getValue<string>(
-      this.folder,
-      'selectedQtPaths'
-    );
-
-    if (selectedKitPath) {
-      await this.setSelectedKitPath(selectedKitPath);
-    } else if (selectedQtPaths) {
-      await this.setQtPathsExe(selectedQtPaths);
-    } else {
-      this.designerClient = undefined;
-      logger.warn(
-        'No Qt Widgets Designer found for project:',
-        this.folder.uri.fsPath
-      );
-    }
-  }
-
-  private static checkCustomDesignerExePath(
-    customWidgetsDesignerExePath: string
-  ) {
-    if (!fs.existsSync(customWidgetsDesignerExePath)) {
-      logger.error(
-        'Qt Widgets Designer executable not found at:"',
-        customWidgetsDesignerExePath,
-        '"'
-      );
-      void vscode.window.showWarningMessage(
-        'Qt Widgets Designer executable not found at:"' +
-          customWidgetsDesignerExePath +
-          '"'
-      );
-      return false;
-    }
-    return true;
-  }
-  dispose() {
-    this._designerServer.dispose();
     this._designerClient?.dispose();
-    for (const d of this._disposables) {
-      d.dispose();
+    this._designerClient = undefined;
+  }
+
+  private async _resolveDesignerExe() {
+    if (this._customExePath) {
+      if (fs.existsSync(this._customExePath)) {
+        return this._customExePath;
+      }
+
+      const msg =
+        'Qt Widgets Designer executable not found at: ' +
+        `"${this._customExePath}"`;
+
+      logger.error(msg);
+      void vscode.window.showWarningMessage(msg);
     }
+
+    if (this._workspaceType === QtWorkspaceType.CMakeExt) {
+      if (this._selectedKitPath) {
+        return locateDesignerFromKit(this._selectedKitPath);
+      }
+
+      if (this._selectedQtPaths) {
+        return locateDesignerFromQtPaths(this._selectedQtPaths);
+      }
+    }
+
+    return undefined;
+  }
+
+  private _readCustomExePath() {
+    const folder = this.folder;
+    const config = vscode.workspace
+      .getConfiguration(consts.EXTENSION_ID, folder)
+      .get<string>(consts.CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH, '');
+    const value = resolveConfiguration(config);
+
+    logger.info(
+      'Read custom desinger exe path: ',
+      `value = ${value}, `,
+      `folder = '${folder.uri.fsPath}'`
+    );
+
+    return value;
   }
 }
