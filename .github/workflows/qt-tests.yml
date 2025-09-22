@@ -63,6 +63,13 @@ jobs:
       # Package qt-core so qt-cpp tests can install its .vsix via getLocalQtCore()
       - name: Package qt-core (.vsix)
         run: npm run package:qt-core 
+      # Compile other extensions once (runtime build)
+      - name: Compile qt-cpp / qt-ui / qt-qml
+        run: |
+          npm --prefix qt-cpp run compile
+          npm --prefix qt-ui  run compile
+          npm --prefix qt-qml run compile
+
 
       # Install Qt using a community-maintained action.
       # It automatically downloads + caches Qt binaries for the runner’s OS.
@@ -83,9 +90,19 @@ jobs:
       # so Electron (VS Code test harness) can start headless.
       - name: Run tests (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a -s "-screen 0 1280x720x24" npm run test
-
+        run: |
+          xvfb-run -a -s "-screen 0 1280x720x24" bash -lc '
+            set -euo pipefail
+            npm --prefix qt-core run test:only
+            npm --prefix qt-cpp run test:only
+            npm --prefix qt-qml run test:only
+            npm --prefix qt-ui run test:only
+          '
       # Run tests on macOS and Windows (no xvfb needed).
       - name: Run tests (macOS/Windows)
         if: runner.os != 'Linux'
-        run: npm run test
+        run: |
+          npm --prefix qt-core run test:only
+          npm --prefix qt-cpp run test:only
+          npm --prefix qt-qml run test:only
+          npm --prefix qt-ui run test:only
