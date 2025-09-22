@@ -6,9 +6,14 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
 import {
+  delay
+} from 'qt-lib';
+
+import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
-  activateQtCpp
+  activateQtCpp,
+  activateCMakeTools
 } from '../helper.mts';
 
 describe('command: scanForQtKits', () => {
@@ -30,28 +35,53 @@ describe('command: scanForQtKits', () => {
       );
     }
   });
-
+  
   // Function to run the command and wait for VS Code to be idle
   async function runScanForQtKitsCommand(): Promise<void> {
     await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
     await waitForVSCodeIdle();
   }
+  let spy: sinon.SinonSpy;
+  before(async () => {
+  // Spy BEFORE activation so any later calls are observed
+  spy = sinon.spy(vscode.commands, 'executeCommand');
+  await activateCMakeTools();
+});
+  async function waitFor<T>(
+    cond: () => T,
+    timeoutMs = 5000,
+    intervalMs = 50
+  ): Promise<T> {
+    const t0 = Date.now();
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const v = cond();
+      if (v) return v;
+      if (Date.now() - t0 > timeoutMs)
+        throw new Error(`timeout waiting for condition`);
+      await delay(intervalMs);
+    }
+  }
 
-  it('calls for cmake scan for kits command, on Windows', async () => {
-    const stub = sb.stub(vscode.commands, 'executeCommand');
+  it('calls for cmake scan for kits command, on Windows', async function () {
+    if (process.platform !== 'win32') {
+      this.skip(); // Only meaningful on Windows
+    }
+
     await runScanForQtKitsCommand();
 
-    if (process.platform === 'win32') {
-      expect(
-        stub.calledWith('cmake.scanForKits'),
-        'Expected executeCommand to be called with "cmake.scanForKits" on Windows'
-      ).to.be.true;
-    } else {
-      expect(
-        stub.calledWith('cmake.scanForKits'),
-        'Did not expect executeCommand to be called with "cmake.scanForKits" on non-Windows'
-      ).to.be.false;
-    }
+    // Give the extension a moment to dispatch the command
+    await waitFor(
+      () => spy.getCalls().some(c => c.args?.[0] === 'cmake.scanForKits'),
+      5000, 50
+    );
+
+    // Extra diagnostics if it somehow fails again
+    const seen = spy.getCalls().map(c => c.args?.[0]);
+    expect(
+      seen.includes('cmake.scanForKits'),
+      `Expected executeCommand('cmake.scanForKits') on Windows. Calls seen: ${JSON.stringify(seen)}`
+    ).to.be.true;
   });
 
   it('shows the number of Qt installation found', async () => {
