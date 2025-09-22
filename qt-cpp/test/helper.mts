@@ -4,6 +4,10 @@
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { isDeepStrictEqual } from 'util';
+import {
+  delay
+} from 'qt-lib';
+
 
 /**
  * Mocha lifecycle wiring for a shared Sinon sandbox.
@@ -91,4 +95,18 @@ export function stubExecuteCommandWithSpy(
   );
 
   return spy;
+}
+/**
+ * Ensures that the CMake Tools extension is activated before tests run.
+ */
+export async function activateCMakeTools(): Promise<void> {
+  const ext = vscode.extensions.getExtension('ms-vscode.cmake-tools');
+  if (!ext) {
+    throw new Error('CMake Tools not found (ms-vscode.cmake-tools)');
+  }
+  if (!ext.isActive) {
+    await ext.activate();
+    // small delay to allow command registration to settle
+    await delay(200);
+  }
 }
