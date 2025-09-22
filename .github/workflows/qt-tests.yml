@@ -72,24 +72,20 @@ jobs:
         with:
           version: 6.6.0   # adjust to the version if needed
           cache: true      # reuse cached Qt between workflow runs
+          dir: ${{ github.workspace }}/Qt 
 
       # Print where Qt was installed for debugging
-      - name: Print Qt dir
-        run: echo "QT_DIR=${{ steps.qt.outputs.qt_dir }}"
-
+      - name: Set Qt root
+        run: echo "QT_TEST_QT_ROOT=${{ github.workspace }}/Qt" >> $GITHUB_ENV
 
       # Run tests on Linux.
       # We wrap npm run test in xvfb-run to simulate an X server
       # so Electron (VS Code test harness) can start headless.
       - name: Run tests (Linux)
         if: runner.os == 'Linux'
-        env:
-          QT_TEST_QT_ROOT: ${{ steps.qt.outputs.QT_DIR }}
         run: xvfb-run -a -s "-screen 0 1280x720x24" npm run test
 
       # Run tests on macOS and Windows (no xvfb needed).
       - name: Run tests (macOS/Windows)
         if: runner.os != 'Linux'
-        env:
-          QT_TEST_QT_ROOT: ${{ steps.qt.outputs.QT_DIR }}
         run: npm run test
