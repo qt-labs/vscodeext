@@ -67,15 +67,6 @@ export async function exists(filePath: string) {
   }
 }
 
-export async function existing(filePath: string) {
-  try {
-    await fs.access(filePath);
-    return filePath;
-  } catch {
-    return '';
-  }
-}
-
 export function askForKitSelection({
   message = 'No CMake kit selected. Please select a CMake kit.',
   buttonName = 'Select CMake Kit'
