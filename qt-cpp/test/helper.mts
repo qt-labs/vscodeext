@@ -4,10 +4,7 @@
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { isDeepStrictEqual } from 'util';
-import {
-  delay
-} from 'qt-lib';
-
+import { delay } from 'qt-lib';
 
 /**
  * Mocha lifecycle wiring for a shared Sinon sandbox.

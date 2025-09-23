@@ -4,7 +4,12 @@ name: Qt VS Code Ext Tests
 # and also allow manual runs from the Actions tab
 on:
   pull_request:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+        debug:
+          description: 'Enable debug mode (set DEBUG=1)'
+          required: false
+          default: '0'
 
 jobs:
   tests:
@@ -22,7 +27,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-
+    env:
+      VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off 
+      DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
     steps:
       # Check out your branch code into the runner
       - name: Checkout (with submodules)
@@ -58,7 +65,6 @@ jobs:
         with:
           working-directory: ./qt-cli
           deploy-target: ./qt-core/res/qtcli
-          enable-upload: 'false'
 
       # Package qt-core so qt-cpp tests can install its .vsix via getLocalQtCore()
       - name: Package qt-core (.vsix)
@@ -85,24 +91,41 @@ jobs:
       - name: Set Qt root
         run: echo "QT_TEST_QT_ROOT=${{ github.workspace }}/Qt" >> $GITHUB_ENV
 
-      # Run tests on Linux.
-      # We wrap npm run test in xvfb-run to simulate an X server
-      # so Electron (VS Code test harness) can start headless.
-      - name: Run tests (Linux)
-        if: runner.os == 'Linux'
+      - name: Run tests (all OS)
+        shell: bash
         run: |
-          xvfb-run -a -s "-screen 0 1280x720x24" bash -lc '
-            set -euo pipefail
-            npm --prefix qt-core run test:only
-            npm --prefix qt-cpp run test:only
-            npm --prefix qt-qml run test:only
-            npm --prefix qt-ui run test:only
-          '
-      # Run tests on macOS and Windows (no xvfb needed).
-      - name: Run tests (macOS/Windows)
-        if: runner.os != 'Linux'
-        run: |
-          npm --prefix qt-core run test:only
-          npm --prefix qt-cpp run test:only
-          npm --prefix qt-qml run test:only
-          npm --prefix qt-ui run test:only
+          set -euo pipefail
+
+          # Hide these noisy lines (match after stripping ANSI, but print original so colors stay)
+          FILTER='^(NativeExtensionHostFactory[.:]|Settings Sync:|\\[CMakeTools\\])'
+
+          run_cmd() {
+            if [[ "${DEBUG:-}" = "1" ]]; then
+              "$@"
+            else
+              # 1) merge stderr  2) strip ANSI only for matching  3) print original (colored) if not matched
+              "$@" 2>&1 | awk -v pat="$FILTER" '
+                function strip_ansi(s){ gsub(/\x1B\[[0-9;]*[A-Za-z]/, "", s); return s }
+                {
+                  raw=$0
+                  line=$0
+                  gsub(/\r/, "", line)         # drop CR to avoid partial-line mismatches
+                  if ( strip_ansi(line) ~ pat ) next
+                  print raw
+                  fflush()
+                }'
+            fi
+          }
+
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            XVFB=(xvfb-run -a -s "-screen 0 1280x720x24")
+            run_cmd "${XVFB[@]}" npm --prefix qt-core run test:only
+            run_cmd "${XVFB[@]}" npm --prefix qt-cpp  run test:only
+            run_cmd "${XVFB[@]}" npm --prefix qt-qml  run test:only
+            run_cmd "${XVFB[@]}" npm --prefix qt-ui   run test:only
+          else
+            run_cmd npm --prefix qt-core run test:only
+            run_cmd npm --prefix qt-cpp  run test:only
+            run_cmd npm --prefix qt-qml  run test:only
+            run_cmd npm --prefix qt-ui   run test:only
+          fi

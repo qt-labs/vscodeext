@@ -24,3 +24,18 @@ export function getLocalQtCore(): string {
   }
   return `../../../qt-core/out/qt-core-${packageVersion}.vsix`;
 }
+/**
+ * Returns additional CLI args to quiet VS Code test runs.
+ *
+ * Uses process.env.VSCODE_LOG_LEVEL if set (default: "error").
+ */
+export function getQuietVSCodeArgs(): string[] {
+  return [
+    '--log',
+    process.env.VSCODE_LOG_LEVEL ?? 'error',
+    '--disable-telemetry',
+    '--skip-welcome',
+    '--skip-release-notes',
+    '--disable-updates'
+  ];
+}

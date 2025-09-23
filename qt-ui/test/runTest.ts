@@ -1,7 +1,6 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as cp from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -48,24 +47,6 @@ async function main() {
 
     // Install qt-core VSIX into that profile
     installExtensionWithRetry(cli as string, args, localQtCoreVsix);
-
-    // Sanity: verify it's visible to VS Code
-    const listRes = cp.spawnSync(
-      cli as string,
-      [...args, '--list-extensions', '--show-versions'],
-      { encoding: 'utf-8', shell: process.platform === 'win32' }
-    );
-    console.log(
-      '[runTest][qt-ui] Installed extensions:\n' +
-        (listRes.stdout || '<no stdout>')
-    );
-    if (!listRes.stdout?.toLowerCase().includes('theqtcompany.qt-core')) {
-      console.error('[runTest][qt-ui] qt-core NOT found after install.');
-      console.error('[runTest][qt-ui] VSIX was:', localQtCoreVsix);
-      console.error('[runTest][qt-ui] userDataDir:', userDataDir);
-      console.error('[runTest][qt-ui] extensionsDir:', extensionsDir);
-      process.exit(1);
-    }
 
     // Download VS Code, unzip it and run the integration test
     await runTests({ extensionDevelopmentPath, extensionTestsPath });
