@@ -22,27 +22,31 @@ export function installExtensionWithRetry(
   attempts = 3
 ) {
   for (let i = 1; i <= attempts; i++) {
+    const cleanEnv = { ...process.env };
+    delete (cleanEnv as Record<string, unknown>).ELECTRON_RUN_AS_NODE;
+
     const res = cp.spawnSync(
       cli,
-      [
-        ...baseArgs,
-        '--install-extension',
-        idOrVsix,
-        '--force',
-        '--log',
-        'trace'
-      ],
+      [...baseArgs, '--install-extension', idOrVsix, '--force'],
       {
-        // IMPORTANT: don't force ELECTRON_RUN_AS_NODE here
         encoding: 'utf-8',
-        stdio: 'inherit',
-        shell: process.platform === 'win32' // makes .cmd more reliable on Windows
+        // Keep output quiet unless you want to debug:
+        stdio: process.env.VS_LOG_VERBOSE ? 'inherit' : 'pipe',
+        shell: process.platform === 'win32',
+        env: cleanEnv, 
       }
     );
     if (res.status === 0) {
       return;
     }
 
+    // If muted, print what we captured
+    if (res.stdout) {
+      console.error(res.stdout);
+    }
+    if (res.stderr) {
+      console.error(res.stderr);
+    }
     console.error(
       `[runTest] install "${idOrVsix}" failed (attempt ${i}/${attempts})`
     );

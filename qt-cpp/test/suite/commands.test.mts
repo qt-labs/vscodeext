@@ -5,9 +5,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
-import {
-  delay
-} from 'qt-lib';
+import { delay } from 'qt-lib';
 
 import {
   setupSandboxLifecycleHooks,
@@ -35,7 +33,7 @@ describe('command: scanForQtKits', () => {
       );
     }
   });
-  
+
   // Function to run the command and wait for VS Code to be idle
   async function runScanForQtKitsCommand(): Promise<void> {
     await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
@@ -43,10 +41,10 @@ describe('command: scanForQtKits', () => {
   }
   let spy: sinon.SinonSpy;
   before(async () => {
-  // Spy BEFORE activation so any later calls are observed
-  spy = sinon.spy(vscode.commands, 'executeCommand');
-  await activateCMakeTools();
-});
+    // Spy BEFORE activation so any later calls are observed
+    spy = sinon.spy(vscode.commands, 'executeCommand');
+    await activateCMakeTools();
+  });
   async function waitFor<T>(
     cond: () => T,
     timeoutMs = 5000,
@@ -72,12 +70,13 @@ describe('command: scanForQtKits', () => {
 
     // Give the extension a moment to dispatch the command
     await waitFor(
-      () => spy.getCalls().some(c => c.args?.[0] === 'cmake.scanForKits'),
-      5000, 50
+      () => spy.getCalls().some((c) => c.args?.[0] === 'cmake.scanForKits'),
+      5000,
+      50
     );
 
     // Extra diagnostics if it somehow fails again
-    const seen = spy.getCalls().map(c => c.args?.[0]);
+    const seen = spy.getCalls().map((c) => c.args?.[0]);
     expect(
       seen.includes('cmake.scanForKits'),
       `Expected executeCommand('cmake.scanForKits') on Windows. Calls seen: ${JSON.stringify(seen)}`

@@ -13,7 +13,10 @@ import {
   runTests
 } from '@vscode/test-electron';
 
-import { getLocalQtCore } from '../../qt-lib/src/test-constants.js';
+import {
+  getLocalQtCore,
+  getQuietVSCodeArgs
+} from '../../qt-lib/src/test-constants.js';
 
 // --- CLI arg parsing (no deps) ---------------------------------------------
 function getCliArg(name: string): string | undefined {
@@ -101,31 +104,40 @@ async function main() {
     const settingsPath = path.join(userDir, 'settings.json');
     const settings = {
       // VS Code setting key that qt-core reads:
-      [`qt-core.${QT_INS_ROOT_CONFIG_NAME}`]: qtRoot
+      [`qt-core.${QT_INS_ROOT_CONFIG_NAME}`]: qtRoot,
+      // Silence CMake Tools logs (trace/debug/info/warn → only errors)
+      'cmake.loggingLevel': 'error'
     };
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
     console.log('[runTest] Wrote settings to:', settingsPath);
 
+    const quietArgs = [...args, ...getQuietVSCodeArgs()];
     // Install required extensions into the SAME profile/dir combo
-    installExtensionWithRetry(cli as string, args, 'ms-vscode.cmake-tools');
-    installExtensionWithRetry(cli as string, args, localQtCoreVsix);
+    installExtensionWithRetry(
+      cli as string,
+      quietArgs,
+      'ms-vscode.cmake-tools'
+    );
+    installExtensionWithRetry(cli as string, quietArgs, localQtCoreVsix);
 
     // Debug/sanity: list installed extensions
-    const listRes = cp.spawnSync(
-      cli as string,
-      [...args, '--list-extensions', '--show-versions'],
-      { encoding: 'utf-8', shell: process.platform === 'win32' }
-    );
-    console.log(
-      '[runTest] Installed extensions:\n' + (listRes.stdout || '<no stdout>')
-    );
+    if (process.env.CI_DEBUG) {
+      const listRes = cp.spawnSync(
+        cli as string,
+        [...args, '--list-extensions', '--show-versions'],
+        { encoding: 'utf-8', shell: process.platform === 'win32' }
+      );
+      console.log(
+        '[runTest] Installed extensions:\n' + (listRes.stdout || '<no stdout>')
+      );
 
-    if (!listRes.stdout?.toLowerCase().includes('theqtcompany.qt-core')) {
-      console.error('[runTest] qt-core NOT found');
-      console.error('[runTest] VSIX was:', localQtCoreVsix);
-      console.error('[runTest] userDataDir:', userDataDir);
-      console.error('[runTest] extensionsDir:', extensionsDir);
-      process.exit(1);
+      if (!listRes.stdout?.toLowerCase().includes('theqtcompany.qt-core')) {
+        console.error('[runTest] qt-core NOT found');
+        console.error('[runTest] VSIX was:', localQtCoreVsix);
+        console.error('[runTest] userDataDir:', userDataDir);
+        console.error('[runTest] extensionsDir:', extensionsDir);
+        process.exit(1);
+      }
     }
 
     // Run the integration tests (no need to pass launchArgs; we reused the same dirs)
