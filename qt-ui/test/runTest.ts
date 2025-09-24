@@ -10,10 +10,15 @@ import {
   runTests
 } from '@vscode/test-electron';
 
-import { getLocalQtCore } from '../../qt-lib/src/test-constants';
+import { getLocalQtCore,
+  getQuietVSCodeArgs
+ } from '../../qt-lib/src/test-constants';
+
 import {
   parseVSCodeDirs,
-  installExtensionWithRetry
+  installExtensionWithRetry,
+  debugListExtensions,
+  assertExtensionsInstalled
 } from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
@@ -41,12 +46,18 @@ async function main() {
 
     // Use the SAME profile/dirs that test-electron sets up
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    console.log('[runTest][qt-ui] CLI:', cli, 'args:', args.join(' '));
-    console.log('[runTest][qt-ui] userDataDir:', userDataDir);
-    console.log('[runTest][qt-ui] extensionsDir:', extensionsDir);
+    if (process.env.DEBUG === '1') {
+      console.log('[runTest][qt-ui] CLI:', cli, 'args:', args.join(' '));
+      console.log('[runTest][qt-ui] userDataDir:', userDataDir);
+      console.log('[runTest][qt-ui] extensionsDir:', extensionsDir);
+    }
 
-    // Install qt-core VSIX into that profile
-    installExtensionWithRetry(cli as string, args, localQtCoreVsix);
+    const quietArgs = [...args, ...getQuietVSCodeArgs()];
+    const requiredIds = ['theqtcompany.qt-core'];
+    // Install required extensions into the SAME profile/dir combo
+    installExtensionWithRetry(cli as string, quietArgs, localQtCoreVsix);
+    debugListExtensions(cli as string, args);
+    assertExtensionsInstalled(cli as string, args, requiredIds);
 
     // Download VS Code, unzip it and run the integration test
     await runTests({ extensionDevelopmentPath, extensionTestsPath });

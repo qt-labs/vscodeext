@@ -64,3 +64,44 @@ export function installExtensionWithRetry(
   console.error(`[runTest] Giving up installing "${idOrVsix}"`);
   process.exit(1);
 }
+
+/**
+ * Print the installed extensions (only when DEBUG=1).
+ * Never fails the run; strictly diagnostic.
+ */
+export function debugListExtensions(cli: string, baseArgs: string[]): void {
+  if (process.env.DEBUG !== '1') { return; }
+
+  const res = cp.spawnSync(
+    cli,
+    [...baseArgs, '--list-extensions', '--show-versions'],
+    { encoding: 'utf-8', shell: process.platform === 'win32' }
+  );
+
+  const out = (res.stdout || '').toString().trim();
+  console.log('[debug] --list-extensions --show-versions:\n' + (out || '<empty>'));
+}
+
+/**
+ * Hard-assert that required extension IDs are installed.
+ * Fails fast with exit(1) if any are missing.
+ */
+export function assertExtensionsInstalled(
+  cli: string,
+  baseArgs: string[],
+  requiredIds: string[]
+): void {
+  const res = cp.spawnSync(
+    cli,
+    [...baseArgs, '--list-extensions'],
+    { encoding: 'utf-8', shell: process.platform === 'win32' }
+  );
+
+  const list = (res.stdout || '').toString().toLowerCase();
+  const missing = requiredIds.filter(id => !list.includes(id.toLowerCase()));
+  if (missing.length) {
+    console.error('[runTest] Missing required extensions:', missing.join(', '));
+    process.exit(1);
+  }
+}
+

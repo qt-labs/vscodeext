@@ -1,7 +1,6 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as cp from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -17,6 +16,13 @@ import {
   getLocalQtCore,
   getQuietVSCodeArgs
 } from '../../qt-lib/src/test-constants.js';
+
+import {
+  parseVSCodeDirs,
+  installExtensionWithRetry,
+  debugListExtensions,
+  assertExtensionsInstalled
+} from '../../qt-lib/src/test-vscode-install.js';
 
 // --- CLI arg parsing (no deps) ---------------------------------------------
 function getCliArg(name: string): string | undefined {
@@ -35,10 +41,6 @@ function getCliArg(name: string): string | undefined {
   }
   return undefined;
 }
-import {
-  parseVSCodeDirs,
-  installExtensionWithRetry
-} from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
   try {
@@ -88,8 +90,11 @@ async function main() {
 
     // Reuse the dirs that @vscode/test-electron already configured
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    console.log('[runTest] using userDataDir:', userDataDir);
-    console.log('[runTest] using extensionsDir:', extensionsDir);
+    if (process.env.DEBUG === '1') {
+      console.log('[runTest][qt-cpp] CLI:', cli, 'args:', args.join(' '));
+      console.log('[runTest][qt-cpp] userDataDir:', userDataDir);
+      console.log('[runTest][qt-cpp] extensionsDir:', extensionsDir);
+    }
 
     // Seed VS Code settings in that SAME user-data-dir
     if (!userDataDir) {
@@ -112,33 +117,14 @@ async function main() {
     console.log('[runTest] Wrote settings to:', settingsPath);
 
     const quietArgs = [...args, ...getQuietVSCodeArgs()];
+    const required = ['ms-vscode.cmake-tools', localQtCoreVsix];
+    const requiredIds = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core'];
     // Install required extensions into the SAME profile/dir combo
-    installExtensionWithRetry(
-      cli as string,
-      quietArgs,
-      'ms-vscode.cmake-tools'
-    );
-    installExtensionWithRetry(cli as string, quietArgs, localQtCoreVsix);
-
-    // Debug/sanity: list installed extensions
-    if (process.env.CI_DEBUG) {
-      const listRes = cp.spawnSync(
-        cli as string,
-        [...args, '--list-extensions', '--show-versions'],
-        { encoding: 'utf-8', shell: process.platform === 'win32' }
-      );
-      console.log(
-        '[runTest] Installed extensions:\n' + (listRes.stdout || '<no stdout>')
-      );
-
-      if (!listRes.stdout?.toLowerCase().includes('theqtcompany.qt-core')) {
-        console.error('[runTest] qt-core NOT found');
-        console.error('[runTest] VSIX was:', localQtCoreVsix);
-        console.error('[runTest] userDataDir:', userDataDir);
-        console.error('[runTest] extensionsDir:', extensionsDir);
-        process.exit(1);
-      }
+    for (const ext of required){
+      installExtensionWithRetry(cli as string, quietArgs, ext);
     }
+    debugListExtensions(cli as string, args);
+    assertExtensionsInstalled(cli as string, args, requiredIds);
 
     // Run the integration tests (no need to pass launchArgs; we reused the same dirs)
     await runTests({
