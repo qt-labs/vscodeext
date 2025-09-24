@@ -87,8 +87,6 @@ async function main() {
       process.exit(1);
     }
 
-    console.log('[runTest] CLI:', cli, 'args:', args.join(' '));
-
     // Reuse the dirs that @vscode/test-electron already configured
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
     if (getDebugLevel() >= 1) {
@@ -121,7 +119,7 @@ async function main() {
     const required = ['ms-vscode.cmake-tools', localQtCoreVsix];
     const requiredIds = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core'];
     // Install required extensions into the SAME profile/dir combo
-    for (const ext of required){
+    for (const ext of required) {
       installExtensionWithRetry(cli as string, quietArgs, ext);
     }
     debugListExtensions(cli as string, args);

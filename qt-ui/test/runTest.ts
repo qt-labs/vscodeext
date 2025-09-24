@@ -10,9 +10,10 @@ import {
   runTests
 } from '@vscode/test-electron';
 
-import { getLocalQtCore,
+import {
+  getLocalQtCore,
   getQuietVSCodeArgs
- } from '../../qt-lib/src/test-constants';
+} from '../../qt-lib/src/test-constants';
 
 import {
   parseVSCodeDirs,

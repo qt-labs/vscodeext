@@ -45,7 +45,7 @@ async function main() {
 
     // Use the SAME profile/dirs that test-electron sets up
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    if (getDebugLevel() >=1 ) {
+    if (getDebugLevel() >= 1) {
       console.log('[runTest][qt-qml] CLI:', cli, 'args:', args.join(' '));
       console.log('[runTest][qt-qml] userDataDir:', userDataDir);
       console.log('[runTest][qt-qml] extensionsDir:', extensionsDir);
