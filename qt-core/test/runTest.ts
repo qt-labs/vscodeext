@@ -11,6 +11,10 @@ import {
   runTests
 } from '@vscode/test-electron';
 
+import {
+  parseVSCodeDirs,
+} from '../../qt-lib/src/test-vscode-install.js';
+
 async function main() {
   try {
     // The folder containing the Extension Manifest package.json
@@ -24,6 +28,13 @@ async function main() {
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    
+    const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
+    if (process.env.DEBUG === '1') {
+      console.log('[runTest][qt-core] CLI:', cli, 'args:', args.join(' '));
+      console.log('[runTest][qt-core] userDataDir:', userDataDir);
+      console.log('[runTest][qt-core] extensionsDir:', extensionsDir);
+    }
 
     if (packageJson.extensionDependencies) {
       for (const extensionId of packageJson.extensionDependencies) {
