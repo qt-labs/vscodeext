@@ -30,6 +30,8 @@ jobs:
     env:
       VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off 
       QT_TEST_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
+      DBUS_SESSION_BUS_ADDRESS: "disabled:"
+      NO_AT_BRIDGE: "1"
     steps:
       # Check out your branch code into the runner
       - name: Checkout (with submodules)
@@ -99,7 +101,7 @@ jobs:
           echo "QT_TEST_DEBUG=${QT_TEST_DEBUG:-0}"
 
           # Hide these noisy lines (match after stripping ANSI, but print original so colors stay)
-          FILTER='^(NativeExtensionHostFactory[.:]|Settings Sync:|\\[CMakeTools\\])'
+          FILTER='^(NativeExtensionHostFactory[.:]|Settings Sync:|\\[CMakeTools\\]|.*ERROR:dbus|.*viz_main_impl)'
 
           run_cmd() {
             debug_level="${QT_TEST_DEBUG:-0}"        # default = 0
