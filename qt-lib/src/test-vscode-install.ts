@@ -66,11 +66,22 @@ export function installExtensionWithRetry(
 }
 
 /**
+ * Returns the numeric debug level from process.env.QT_TEST_DEBUG .
+ *
+ * - Defaults to 0 if not set or invalid.
+ * - Example: QT_TEST_DEBUG =2 → returns 2
+ */
+export function getDebugLevel(): number {
+  const raw = process.env.QT_TEST_DEBUG ;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+/**
  * Print the installed extensions (only when DEBUG=1).
  * Never fails the run; strictly diagnostic.
  */
 export function debugListExtensions(cli: string, baseArgs: string[]): void {
-  if (process.env.DEBUG !== '1') { return; }
+  if (getDebugLevel() < 1) { return; }
 
   const res = cp.spawnSync(
     cli,

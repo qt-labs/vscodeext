@@ -18,7 +18,8 @@ import {
   parseVSCodeDirs,
   installExtensionWithRetry,
   debugListExtensions,
-  assertExtensionsInstalled
+  assertExtensionsInstalled,
+  getDebugLevel
 } from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
@@ -46,7 +47,7 @@ async function main() {
 
     // Use the SAME profile/dirs that test-electron sets up
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    if (process.env.DEBUG === '1') {
+    if (getDebugLevel() >= 1) {
       console.log('[runTest][qt-ui] CLI:', cli, 'args:', args.join(' '));
       console.log('[runTest][qt-ui] userDataDir:', userDataDir);
       console.log('[runTest][qt-ui] extensionsDir:', extensionsDir);

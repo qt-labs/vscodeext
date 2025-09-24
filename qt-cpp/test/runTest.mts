@@ -21,7 +21,8 @@ import {
   parseVSCodeDirs,
   installExtensionWithRetry,
   debugListExtensions,
-  assertExtensionsInstalled
+  assertExtensionsInstalled,
+  getDebugLevel
 } from '../../qt-lib/src/test-vscode-install.js';
 
 // --- CLI arg parsing (no deps) ---------------------------------------------
@@ -90,7 +91,7 @@ async function main() {
 
     // Reuse the dirs that @vscode/test-electron already configured
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    if (process.env.DEBUG === '1') {
+    if (getDebugLevel() >= 1) {
       console.log('[runTest][qt-cpp] CLI:', cli, 'args:', args.join(' '));
       console.log('[runTest][qt-cpp] userDataDir:', userDataDir);
       console.log('[runTest][qt-cpp] extensionsDir:', extensionsDir);
