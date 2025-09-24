@@ -101,7 +101,7 @@ jobs:
           echo "QT_TEST_DEBUG=${QT_TEST_DEBUG:-0}"
 
           # Hide these noisy lines (match after stripping ANSI, but print original so colors stay)
-          FILTER='^(NativeExtensionHostFactory[.:]|Settings Sync:|\\[CMakeTools\\]|.*ERROR:dbus|.*viz_main_impl)'
+          FILTER='^(NativeExtensionHostFactory[.:]|Settings Sync:|\\[CMakeTools\\]|workbench#open\(\))|.*ERROR:dbus|.*viz_main_impl|.*ERROR:gpu/'
 
           run_cmd() {
             debug_level="${QT_TEST_DEBUG:-0}"        # default = 0
