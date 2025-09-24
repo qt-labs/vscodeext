@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
         debug:
-          description: 'Enable debug mode (set DEBUG=1)'
+          description: 'Enable test debug mode (QT_TEST_DEBUG): 0=quiet, 1=extra info, 2=show all'
           required: false
           default: '0'
 
@@ -29,7 +29,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
       VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off 
-      DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
+      QT_TEST_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
     steps:
       # Check out your branch code into the runner
       - name: Checkout (with submodules)
@@ -96,11 +96,14 @@ jobs:
         run: |
           set -euo pipefail
 
+          echo "QT_TEST_DEBUG=${QT_TEST_DEBUG:-0}"
+
           # Hide these noisy lines (match after stripping ANSI, but print original so colors stay)
           FILTER='^(NativeExtensionHostFactory[.:]|Settings Sync:|\\[CMakeTools\\])'
 
           run_cmd() {
-            if [[ "${DEBUG:-}" = "1" ]]; then
+            debug_level="${QT_TEST_DEBUG:-0}"        # default = 0
+            if [[ "$debug_level" == "2" ]]; then
               "$@"
             else
               # 1) merge stderr  2) strip ANSI only for matching  3) print original (colored) if not matched

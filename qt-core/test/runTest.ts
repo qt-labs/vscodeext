@@ -13,6 +13,7 @@ import {
 
 import {
   parseVSCodeDirs,
+  getDebugLevel
 } from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
@@ -30,7 +31,7 @@ async function main() {
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
     
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    if (process.env.DEBUG === '1') {
+    if (getDebugLevel() >= 1) {
       console.log('[runTest][qt-core] CLI:', cli, 'args:', args.join(' '));
       console.log('[runTest][qt-core] userDataDir:', userDataDir);
       console.log('[runTest][qt-core] extensionsDir:', extensionsDir);
