@@ -29,7 +29,7 @@ async function main() {
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
-    
+
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
     if (getDebugLevel() >= 1) {
       console.log('[runTest][qt-core] CLI:', cli, 'args:', args.join(' '));

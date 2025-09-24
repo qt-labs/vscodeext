@@ -33,7 +33,7 @@ export function installExtensionWithRetry(
         // Keep output quiet unless you want to debug:
         stdio: process.env.VS_LOG_VERBOSE ? 'inherit' : 'pipe',
         shell: process.platform === 'win32',
-        env: cleanEnv, 
+        env: cleanEnv
       }
     );
     if (res.status === 0) {
@@ -72,7 +72,7 @@ export function installExtensionWithRetry(
  * - Example: QT_TEST_DEBUG =2 → returns 2
  */
 export function getDebugLevel(): number {
-  const raw = process.env.QT_TEST_DEBUG ;
+  const raw = process.env.QT_TEST_DEBUG;
   const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -81,7 +81,9 @@ export function getDebugLevel(): number {
  * Never fails the run; strictly diagnostic.
  */
 export function debugListExtensions(cli: string, baseArgs: string[]): void {
-  if (getDebugLevel() < 1) { return; }
+  if (getDebugLevel() < 1) {
+    return;
+  }
 
   const res = cp.spawnSync(
     cli,
@@ -90,7 +92,9 @@ export function debugListExtensions(cli: string, baseArgs: string[]): void {
   );
 
   const out = (res.stdout || '').toString().trim();
-  console.log('[debug] --list-extensions --show-versions:\n' + (out || '<empty>'));
+  console.log(
+    '[debug] --list-extensions --show-versions:\n' + (out || '<empty>')
+  );
 }
 
 /**
@@ -102,17 +106,15 @@ export function assertExtensionsInstalled(
   baseArgs: string[],
   requiredIds: string[]
 ): void {
-  const res = cp.spawnSync(
-    cli,
-    [...baseArgs, '--list-extensions'],
-    { encoding: 'utf-8', shell: process.platform === 'win32' }
-  );
+  const res = cp.spawnSync(cli, [...baseArgs, '--list-extensions'], {
+    encoding: 'utf-8',
+    shell: process.platform === 'win32'
+  });
 
   const list = (res.stdout || '').toString().toLowerCase();
-  const missing = requiredIds.filter(id => !list.includes(id.toLowerCase()));
+  const missing = requiredIds.filter((id) => !list.includes(id.toLowerCase()));
   if (missing.length) {
     console.error('[runTest] Missing required extensions:', missing.join(', '));
     process.exit(1);
   }
 }
-
