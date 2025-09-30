@@ -1,0 +1,45 @@
+{
+  "name": "qt-python-pack",
+  "displayName": "Qt Python Extension Pack",
+  "description": "Recommended extensions for Qt for Python development.",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qtforpython.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext",
+    "directory": "extension_packs/python"
+  },
+  "bugs": {
+    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+  },
+  "version": "1.0.1",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Extension Packs",
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "Qt",
+    "PySide",
+    "Python",
+    "Qml"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "extensionPack": [
+    "theqtcompany.qt-python",
+    "theqtcompany.qt-core",
+    "theqtcompany.qt-qml",
+    "theqtcompany.qt-ui",
+    "ms-vscode.python"
+  ],
+  "scripts": {
+    "vscode:prepublish": "git rev-parse HEAD > commit",
+    "package": "vsce package"
+  }
+}
