@@ -58,7 +58,6 @@ jobs:
       # Build qt-core so we have a .vsix for tests
       - name: Build qt-lib first (dependency)
         run: |
-          npm run ci:qt-lib
           npm run compile:qt-lib
 
       # Ensure qt-core has a qt-cli binary in res/qtcli for tests
