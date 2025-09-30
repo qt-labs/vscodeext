@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, {{ .baseClass }}
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py
-from ui_form import Ui_Widget
+from ui_form import Ui_{{ .className }}
 {{- end }}
 
 
@@ -15,13 +15,13 @@ class {{ .className }}({{ .baseClass }}):
         super().__init__(parent)
 
 {{- if .useForm }}
-        self.ui = Ui_Widget()
+        self.ui = Ui_{{ .className }}()
         self.ui.setupUi(self)
 {{- end }}
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = Widget()
+    widget = {{ .className }}()
     widget.show()
     sys.exit(app.exec())
