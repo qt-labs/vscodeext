@@ -53,7 +53,7 @@ runs:
         GORELEASER_CURRENT_TAG: ${{ env.QTCLI_VERSION }}
 
     - name: Upload artifact
-      if: ${{ inputs.enable-upload == 'true' }}
+      if: ${{ inputs.skip-upload == 'false' }}
       id: step-artifacts-upload
       uses: actions/upload-artifact@v4
       with:
