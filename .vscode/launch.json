@@ -26,6 +26,22 @@
       "preLaunchTask": "npm qt-cpp watch and test"
     },
     {
+      "name": "Run Extension Tests qt-cpp build",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
+        "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index-build",
+        "${workspaceFolder}/qt-cpp/test/tmp-build", 
+        "--disable-workspace-trust",
+        "--disable-restore-windows"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-cpp/out/test/**/*.js"],
+      "preLaunchTask": "qt-cpp: build test prelaunch chain",
+      "postDebugTask": "qt-cpp: build test clean"
+    },
+    {
       "name": "Run qt-qml Extension",
       "type": "extensionHost",
       "request": "launch",

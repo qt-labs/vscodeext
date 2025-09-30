@@ -181,6 +181,25 @@
       "options": {
         "cwd": "${workspaceFolder}/qt-python"
       }
-    }
+    },
+    {
+      "label": "qt-cpp: prepare test build",
+      "type": "shell",
+      "command": "npx ts-node ./scripts/prepare_test_build.ts",
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "qt-cpp: build test clean",
+      "type": "shell",
+      "command": "npx ts-node ./scripts/clean_test_build.ts",
+      "options": { "cwd": "${workspaceFolder}" }
+    },{
+      "label": "qt-cpp: build test prelaunch chain",
+      "dependsOn": [
+        "qt-cpp: prepare test build",
+        "npm qt-cpp watch and test"
+      ],
+      "dependsOrder": "sequence" 
+    },
   ]
 }
