@@ -67,6 +67,7 @@ jobs:
         with:
           working-directory: ./qt-cli
           deploy-target: ./qt-core/res/qtcli
+          skip-upload: 'true' 
 
       # Package qt-core so qt-cpp tests can install its .vsix via getLocalQtCore()
       - name: Package qt-core (.vsix)
