@@ -89,7 +89,7 @@ export function isErrorResponse(obj: unknown): obj is ErrorResponse {
   return errorOk && detailsOk;
 }
 
-export function isIssue(obj: unknown): obj is Issue {
+function isIssue(obj: unknown): obj is Issue {
   if (typeof obj !== 'object' || obj === null) {
     return false;
   }

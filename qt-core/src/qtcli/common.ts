@@ -97,7 +97,7 @@ export async function openFilesUnder(baseDir: string, names: string[]) {
   }
 }
 
-export async function findPrimaryFileUnder(dir: string) {
+async function findPrimaryFileUnder(dir: string) {
   try {
     const patterns = [/Main.qml$/i, /main\.cpp$/i, /CMakeLists.txt$/];
     const files = await fs.readdir(dir);

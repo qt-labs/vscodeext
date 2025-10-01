@@ -74,7 +74,7 @@ function containsQtPath(qtPath: string, additionalQtPaths: QtAdditionalPath[]) {
   return false;
 }
 
-export function isVCPKGInstalled(): boolean {
+function isVCPKGInstalled(): boolean {
   if (commandExists.sync('vcpkg')) {
     return true;
   }
@@ -89,13 +89,13 @@ function getDoNotAskForVCPKG(): boolean {
   );
 }
 
-export async function setDoNotAskForVCPKG(value: boolean) {
+async function setDoNotAskForVCPKG(value: boolean) {
   await vscode.workspace
     .getConfiguration(EXTENSION_ID)
     .update('doNotAskForVCPKG', value, vscode.ConfigurationTarget.Global);
 }
 
-export function searchForQtPathsInVCPKG(root: string): string | undefined {
+function searchForQtPathsInVCPKG(root: string): string | undefined {
   if (!root) {
     return;
   }

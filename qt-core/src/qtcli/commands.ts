@@ -42,7 +42,7 @@ export async function setDefaultProjectDir(dir: string) {
   );
 }
 
-export function getDefaultProjectDir(): string | undefined {
+function getDefaultProjectDir(): string | undefined {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   const readback = config.inspect<string>(ConfigDefaultProjectDirectory);
   return readback?.globalValue;

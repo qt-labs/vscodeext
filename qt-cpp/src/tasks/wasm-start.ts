@@ -15,7 +15,7 @@ interface WASMStartTaskDefinition extends vscode.TaskDefinition {
 // Since vscode.CustomExecution expects a callback which returns a
 // Pseudoterminal, we need to provide one. That's why we have this dummy
 // terminal class.
-export class DummyTaskTerminal implements vscode.Pseudoterminal {
+class DummyTaskTerminal implements vscode.Pseudoterminal {
   private readonly _writeEmitter = new vscode.EventEmitter<string>();
   private readonly _closeEmitter = new vscode.EventEmitter<number>();
 

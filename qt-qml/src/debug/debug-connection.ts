@@ -16,7 +16,7 @@ export enum ServerScheme {
   Socket = 'unix'
 }
 
-export enum SocketState {
+enum SocketState {
   UnconnectedState = 0,
   HostLookupState = 1,
   ConnectingState = 2,
