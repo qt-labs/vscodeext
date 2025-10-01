@@ -8,6 +8,10 @@ inputs:
   deploy-target:
     description: 'Folder where built binaries will be copied'
 
+  skip-upload:
+    description: 'Decide whether to skip upload or not'
+    default: 'false'
+
 outputs:
   artifact-name:
     description: 'Build artifact name'
@@ -53,7 +57,7 @@ runs:
         GORELEASER_CURRENT_TAG: ${{ env.QTCLI_VERSION }}
 
     - name: Upload artifact
-      if: ${{ inputs.skip-upload == 'false' }}
+      if: ${{ inputs.skip-upload != 'true' }}
       id: step-artifacts-upload
       uses: actions/upload-artifact@v4
       with:
