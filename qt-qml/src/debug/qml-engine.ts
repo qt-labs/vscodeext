@@ -66,7 +66,7 @@ const logger = createLogger('qml-engine');
 
 type LookUpItems = Set<number>;
 
-export enum DebuggerState {
+enum DebuggerState {
   DebuggerNotReady, // Debugger not started
 
   EngineSetupRequested, // Engine starts
@@ -94,7 +94,7 @@ export enum DebuggerState {
   DebuggerFinished
 }
 
-export enum DebuggerStartMode {
+enum DebuggerStartMode {
   NoStartMode,
   StartInternal, // Start current start project's binary
   StartExternal, // Start binary found in file system
@@ -198,7 +198,7 @@ type QmlFrameResponse = QmlResponse<QmlFrame>;
 type QmlScopeResponse = QmlResponse<QmlScope>;
 type QmlEvaluateResponse = QmlResponse<QmlVariable>;
 
-export interface QmlContinueResponse extends QmlResponse<undefined> {
+interface QmlContinueResponse extends QmlResponse<undefined> {
   command: 'continue';
 }
 

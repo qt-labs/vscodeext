@@ -13,11 +13,11 @@ export function IsQtKit(kit: Kit) {
   return IsQtInsKit(kit) || IsQtPathsKit(kit);
 }
 
-export function IsQtInsKit(kit: Kit) {
+function IsQtInsKit(kit: Kit) {
   return getQtInsRoot(kit) !== undefined;
 }
 
-export function IsQtPathsKit(kit: Kit) {
+function IsQtPathsKit(kit: Kit) {
   return getQtPathsExe(kit) !== undefined;
 }
 

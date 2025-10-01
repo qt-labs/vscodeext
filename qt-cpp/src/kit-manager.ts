@@ -36,7 +36,7 @@ import { QtVersionFromKit } from '@util/util';
 
 const logger = createLogger('kit-manager');
 
-export const CMakeDefaultGenerator = 'Ninja';
+const CMakeDefaultGenerator = 'Ninja';
 const CMakeToolsDir = cmakeToolsDir();
 export const CMAKE_GLOBAL_KITS_FILEPATH = cmakeGlobalKitsFilepath();
 
@@ -838,10 +838,10 @@ export class KitManager {
     return path.join(vckpgRoot, 'scripts', 'buildsystems', 'vcpkg.cmake');
   }
 }
-export function getCurrentGlobalQtInstallationRoot(): string {
+function getCurrentGlobalQtInstallationRoot(): string {
   return coreAPI?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
 }
-export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
+function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
   return (
     coreAPI?.getValue<QtAdditionalPath[]>(
       GlobalWorkspace,

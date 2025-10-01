@@ -143,7 +143,7 @@ function isQResourceTagLike(x: unknown): x is Partial<QResourceTag> {
   return !('attributes' in o) || isAttributes(o.attributes);
 }
 
-export function isFileTagLike(x: unknown): x is Partial<FileTag> {
+function isFileTagLike(x: unknown): x is Partial<FileTag> {
   if (typeof x !== 'object' || x === null) {
     return false;
   }
