@@ -141,7 +141,6 @@
     "glob": "^11.0.2",
     "mocha": "^11.5.0",
     "prettier": "^3.3.3",
-    "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {
