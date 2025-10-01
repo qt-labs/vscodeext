@@ -7,7 +7,12 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { spawnSync } from 'child_process';
 
-import { UserLocalDir, OSExeSuffix, fetchWithAbort } from 'qt-lib';
+import {
+  UserLocalDir,
+  OSExeSuffix,
+  fetchWithAbort,
+  createLogger
+} from 'qt-lib';
 import * as unzipper from '@/unzipper';
 import * as downloader from '@/downloader';
 import { setDoNotAskForDownloadingQmlls } from '@/qmlls';
@@ -19,6 +24,8 @@ const InstallDir = installerDir();
 const ExtractDir = path.join(InstallDir, 'files');
 const QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
 const ReleaseJsonPath = path.join(InstallDir, 'release.json');
+
+const logger = createLogger('installer.ts');
 
 interface Asset {
   id: string;
@@ -108,10 +115,13 @@ export async function install(asset: AssetWithTag) {
   const tmpPath = path.join(DownloadDir, asset.name);
 
   // download, unzip
+  logger.info(`Downloading from: ${asset.browser_download_url}`);
   await downloadWithProgress(asset.browser_download_url, tmpPath);
+  logger.info(`Unzipping to: ${ExtractDir}`);
   await unzipWithProgress(tmpPath);
 
   // follow up
+  logger.info(`QML language server installed to: ${QmllsExePath}`);
   fs.chmodSync(QmllsExePath, 0o755);
   fs.unlinkSync(tmpPath);
   fs.writeFileSync(

@@ -17,7 +17,7 @@ export function registerCheckQmllsUpdateCommand() {
       switch (decision.code) {
         case DecisionCode.NeedToUpdate:
           if (decision.asset) {
-            await Qmlls.install(decision.asset, { restart: true });
+            await Qmlls.install(decision.asset);
           }
           break;
 
