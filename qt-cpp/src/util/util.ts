@@ -12,13 +12,6 @@ import {
 import { coreAPI } from '@/extension';
 import { Kit } from '@/kit-manager';
 
-/**
- * Returns true if the extension is currently running tests.
- */
-export function isTestMode(): boolean {
-  return process.env.QT_TESTING === '1';
-}
-
 export function getFilenameWithoutExtension(filename: string): string {
   const separatedPath = filename.split(path.sep).pop();
   if (!separatedPath) {

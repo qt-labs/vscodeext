@@ -33,16 +33,6 @@ export function isValidQtcliPath(qtcliPath: string): boolean {
   return res.status === 0;
 }
 
-export function isValidNewName(name: string): boolean {
-  const o = name.trim();
-  if (o.length === 0) {
-    return false;
-  }
-
-  const regex = /^[a-zA-Z0-9-_]+$/;
-  return regex.test(o);
-}
-
 export function fallbackWorkingDir(): string {
   const docs = path.join(os.homedir(), 'Documents');
   const settings =
