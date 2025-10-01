@@ -164,6 +164,23 @@
       "options": {
         "cwd": "${workspaceFolder}/qt-ui"
       }
+    },
+    {
+      "type": "shell",
+      "label": "npm qt-python watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-python"
+      }
     }
   ]
 }

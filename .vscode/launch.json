@@ -85,6 +85,14 @@
       ],
       "outFiles": ["${workspaceFolder}/qt-ui/out/test/**/*.js"],
       "preLaunchTask": "npm qt-ui watch and test"
+    },
+    {
+      "name": "Run qt-python Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-python"],
+      "outFiles": ["${workspaceFolder}/qt-python/out/**/*.js"],
+      "preLaunchTask": "npm qt-python watch"
     }
   ]
 }
