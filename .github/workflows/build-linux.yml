@@ -66,3 +66,8 @@ jobs:
         with:
           name: qt-ui-vsix
           path: qt-ui/out/*.vsix
+      - name: Upload qt-python
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-python-vsix
+          path: qt-python/out/*.vsix
