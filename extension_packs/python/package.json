@@ -3,7 +3,7 @@
   "displayName": "Qt Python Extension Pack",
   "description": "Recommended extensions for Qt for Python development.",
   "homepage": "https://www.qt.io/",
-  "icon": "res/icons/qtforpython.png",
+  "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
   "repository": {
     "type": "git",
