@@ -28,7 +28,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
-      VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off 
+      VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off
       QT_TEST_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
       DBUS_SESSION_BUS_ADDRESS: "disabled:"
       NO_AT_BRIDGE: "1"
@@ -66,11 +66,11 @@ jobs:
         with:
           working-directory: ./qt-cli
           deploy-target: ./qt-core/res/qtcli
-          skip-upload: 'true' 
+          skip-upload: 'true'
 
       # Package qt-core so qt-cpp tests can install its .vsix via getLocalQtCore()
       - name: Package qt-core (.vsix)
-        run: npm run package:qt-core 
+        run: npm run package:qt-core
       # Compile other extensions once (runtime build)
       - name: Compile qt-cpp / qt-ui / qt-qml
         run: |
@@ -80,18 +80,43 @@ jobs:
 
 
       # Install Qt using a community-maintained action.
-      # It automatically downloads + caches Qt binaries for the runner’s OS.
       - name: Install Qt
-        id: qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: 6.6.0   # adjust to the version if needed
-          cache: true      # reuse cached Qt between workflow runs
-          dir: ${{ github.workspace }}/Qt 
+          version: '6.10.0'
+          host:   ${{ matrix.os == 'windows-latest' && 'windows' ||
+                    matrix.os == 'macos-latest'   && 'mac'      || 'linux' }}
+          target: desktop
+          arch:   ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' ||
+                    matrix.os == 'macos-latest'   && 'clang_64'          || 'linux_gcc_64' }}
+          dir: ${{ github.workspace }}
+          cache: true
+
+      - name: Locate Designer and set QT_TEST_QT_ROOT
+        shell: bash
+        run: |
+          set -euo pipefail
+          QT_ROOT="${{ github.workspace }}/Qt"
+
+          echo "Tree under $QT_ROOT:"
+          find "$QT_ROOT" -maxdepth 3 -type d -print
+
+          # Look for Designer binaries in the typical places regardless of arch/dir naming
+          DESIGNER="$(/usr/bin/find "$QT_ROOT" -type f \( -name Designer -o -name designer -o -name designer.exe \) \
+                      -path '*/bin/*' -print -quit || true)"
+          echo "looking for Designer under $DESIGNER"
+
+          if [[ -n "$DESIGNER" ]]; then
+            echo "Found Designer at: $DESIGNER"
+            echo "QT_TEST_QT_ROOT=$QT_ROOT" >> $GITHUB_ENV
+          else
+            echo "::error::Designer not found under $QT_ROOT after install."
+            exit 1
+          fi
 
       # Print where Qt was installed for debugging
-      - name: Set Qt root
-        run: echo "QT_TEST_QT_ROOT=${{ github.workspace }}/Qt" >> $GITHUB_ENV
+      # - name: Set Qt root
+      #   run: echo "QT_TEST_QT_ROOT=${{ github.workspace }}/Qt" >> $GITHUB_ENV
 
       - name: Run tests (all OS)
         shell: bash

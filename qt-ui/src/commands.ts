@@ -4,6 +4,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as child_process from 'child_process';
+/**
+ * Exposed reference for integration tests.
+ * Holds the last spawned Qt Designer process so tests can close it.
+ */
+export const lastSpawnedDesignerRef: { proc?: child_process.ChildProcess } = {};
 
 import {
   findQtKits,
@@ -129,6 +134,7 @@ export async function openWidgetDesigner() {
     const process = child_process.spawn(selectedQtDesigner.description, [], {
       shell: true
     });
+    lastSpawnedDesignerRef.proc = process;
     process.on('error', (err) => {
       void vscode.window.showErrorMessage(
         `Error while opening Qt Designer: ${err.message}`
