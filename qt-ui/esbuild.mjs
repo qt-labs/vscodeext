@@ -34,8 +34,10 @@ const extensionTestConfig = {
   format: 'cjs',
   entryPoints: [
     './test/runTest.ts',
+    './test/helper.mts',
     './test/suite/index.ts',
-    './test/suite/extension.test.ts'
+    './test/suite/extension.test.mts',
+    './test/suite/commands.test.mts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']
@@ -47,7 +49,7 @@ const webviewConfig = {
   ...baseConfig,
   target: 'es2020',
   format: 'esm',
-  entryPoints: ['./src/editors/ui/webview-ui/main.ts'],
+  entryPoints: ['./src/editors/ui/webview-ui/main.mts'],
   outfile: './out/editors/ui/webview-ui/main.js'
 };
 

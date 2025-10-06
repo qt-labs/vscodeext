@@ -83,6 +83,9 @@
               "--extensionDevelopmentPath=${workspaceFolder}/qt-ui",
               "--extensionTestsPath=${workspaceFolder}/qt-ui/out/test/suite/index"
       ],
+      "env": {
+        "QT_TESTING": "1"
+      },
       "outFiles": ["${workspaceFolder}/qt-ui/out/test/**/*.js"],
       "preLaunchTask": "npm qt-ui watch and test"
     },

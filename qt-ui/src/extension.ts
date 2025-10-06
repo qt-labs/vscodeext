@@ -11,7 +11,7 @@ import {
   telemetry
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { openWidgetDesigner } from '@/commands';
+import { openWidgetDesigner, lastSpawnedDesignerRef } from '@/commands';
 import { UIProjectManager } from '@/project-manager';
 import { UIEditorProvider } from '@/editors/ui/ui-editor';
 
@@ -37,6 +37,10 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   telemetry.sendEvent('activated');
+  if (process.env.QT_TESTING === '1') {
+    return { lastSpawnedDesignerRef };
+  }
+  return {};
 }
 
 export function deactivate() {
