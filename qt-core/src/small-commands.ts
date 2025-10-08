@@ -28,3 +28,12 @@ export function registerOpenSettingsCommand() {
     );
   });
 }
+
+const issueReportLink =
+  'https://bugreports.qt.io/secure/CreateIssue.jspa?pid=13641';
+
+export function reportIssueCommand() {
+  return vscode.commands.registerCommand(`${EXTENSION_ID}.reportIssue`, () => {
+    void vscode.env.openExternal(vscode.Uri.parse(issueReportLink));
+  });
+}
