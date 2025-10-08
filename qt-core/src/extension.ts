@@ -25,7 +25,11 @@ import {
 } from '@/installation-root';
 import { EXTENSION_ID } from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
-import { registerOpenSettingsCommand, resetCommand } from '@/small-commands';
+import {
+  registerOpenSettingsCommand,
+  reportIssueCommand,
+  resetCommand
+} from '@/small-commands';
 import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
 import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
@@ -62,7 +66,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerRegisterQtByPathCommand(),
     registerOpenInLinguistCommand(),
     registerCreateNewItemPanelCommand(context),
-    vscode.languages.registerColorProvider('qss', createColorProvider())
+    vscode.languages.registerColorProvider('qss', createColorProvider()),
+    reportIssueCommand()
   );
 
   registerQrcEditorProvider(context);

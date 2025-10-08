@@ -57,6 +57,11 @@
         "category": "Qt"
       },
       {
+        "command": "qt-core.reportIssue",
+        "title": "%qt-core.command.reportIssue.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-core.setRecommendedSettings",
         "title": "%qt-core.command.setRecommendedSettings.title%",
         "category": "Qt"
