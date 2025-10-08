@@ -16,8 +16,16 @@ import {
   telemetry
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
+import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('translation');
+
+export function registerOpenInLinguistCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.openInLinguist`,
+    openInLinguistCommand
+  );
+}
 
 export async function openInLinguistCommand() {
   telemetry.sendAction('openInLinguist');

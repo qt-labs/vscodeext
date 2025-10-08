@@ -20,17 +20,17 @@ import {
   checkDefaultQtInsRootPath,
   getCurrentGlobalAdditionalQtPaths,
   getCurrentGlobalQtInstallationRoot,
-  registerQt,
-  setGlobalQtInstallationRoot
+  registerRegisterQtByPathCommand,
+  registerRegisterQtCommand
 } from '@/installation-root';
 import { EXTENSION_ID } from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
-import { resetCommand } from '@/reset';
+import { registerOpenSettingsCommand, resetCommand } from '@/small-commands';
 import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
-import { NewItemPanel } from '@/webview/new-item/panel';
+import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
-import { openInLinguistCommand } from '@/translation';
+import { registerOpenInLinguistCommand } from '@/translation';
 
 const logger = createLogger('extension');
 
@@ -51,43 +51,18 @@ export async function activate(context: vscode.ExtensionContext) {
       projectManager.addProject(project);
     }
   }
-  context.subscriptions.push(...registerDocumentationCommands());
-  context.subscriptions.push(registerSetRecommendedSettingsCommand());
-  context.subscriptions.push(resetCommand());
-  context.subscriptions.push(registerQtByQtpaths());
-  context.subscriptions.push(
-    vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
-      telemetry.sendAction('openSettings');
-      void vscode.commands.executeCommand(
-        'workbench.action.openSettings',
-        `@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.${EXTENSION_ID}`
-      );
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(`${EXTENSION_ID}.registerQt`, registerQt)
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      `${EXTENSION_ID}.registerQtByPath`,
-      setGlobalQtInstallationRoot
-    )
-  );
 
   context.subscriptions.push(
+    ...registerDocumentationCommands(),
+    registerSetRecommendedSettingsCommand(),
+    resetCommand(),
+    registerQtByQtpaths(),
+    registerOpenSettingsCommand(),
+    registerRegisterQtCommand(),
+    registerRegisterQtByPathCommand(),
+    registerOpenInLinguistCommand(),
+    registerCreateNewItemPanelCommand(context),
     vscode.languages.registerColorProvider('qss', createColorProvider())
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(`${EXTENSION_ID}.createNewItem`, () => {
-      telemetry.sendAction('createNewItem');
-      NewItemPanel.render(context);
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      `${EXTENSION_ID}.openInLinguist`,
-      openInLinguistCommand
-    )
   );
 
   registerQrcEditorProvider(context);

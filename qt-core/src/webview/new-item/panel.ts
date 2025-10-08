@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
+import { createLogger, telemetry } from 'qt-lib';
 import { QtcliRunner } from '@/qtcli/runner';
 import { QtcliAction } from '@/qtcli/common';
 import {
@@ -19,6 +19,7 @@ import {
   createWebviewOptions,
   basicWebviewAppConfig
 } from '@/webview/utils';
+import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('new-item-panel');
 let qtcliRunner: QtcliRunner | undefined = undefined;
@@ -27,6 +28,17 @@ let qtcliRunner: QtcliRunner | undefined = undefined;
 const PanelColumn = vscode.ViewColumn.One;
 const PanelViewType = 'ViewTypeWizard';
 
+export function registerCreateNewItemPanelCommand(
+  context: vscode.ExtensionContext
+) {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.createNewItem`,
+    () => {
+      telemetry.sendAction('createNewItem');
+      NewItemPanel.render(context);
+    }
+  );
+}
 export class NewItemPanel {
   public static instance: NewItemPanel | undefined;
   private readonly _comm: WebviewChannel;
