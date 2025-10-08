@@ -80,7 +80,7 @@ async function main() {
           '  2) ENV:   QT_TEST_QT_ROOT=/absolute/path/to/Qt',
           '',
           'Examples:',
-          '  npm run test -- --qt-root /Users/me/Qt',
+          '  npm run test -- --qt-root=/Users/me/Qt',
           '  QT_TEST_QT_ROOT=/Users/me/Qt npm run test'
         ].join('\n')
       );
