@@ -163,6 +163,20 @@ export function checkDefaultQtInsRootPath() {
       }
     });
 }
+export function registerRegisterQtCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.registerQt`,
+    registerQt
+  );
+}
+
+//Test-specific command
+export function registerRegisterQtByPathCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.registerQtByPath`,
+    setGlobalQtInstallationRoot
+  );
+}
 
 export async function registerQt() {
   telemetry.sendAction('registerQt');

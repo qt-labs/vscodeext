@@ -1,4 +1,4 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
@@ -16,5 +16,15 @@ export function resetCommand() {
     extensions.forEach((extension) => {
       void vscode.commands.executeCommand(`${extension}.reset`);
     });
+  });
+}
+
+export function registerOpenSettingsCommand() {
+  return vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
+    telemetry.sendAction('openSettings');
+    void vscode.commands.executeCommand(
+      'workbench.action.openSettings',
+      `@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.${EXTENSION_ID}`
+    );
   });
 }
