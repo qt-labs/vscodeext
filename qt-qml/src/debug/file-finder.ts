@@ -72,7 +72,8 @@ export class FileFinder {
     }
     const files = this.filesWithSameFileName(lastSegment);
     matches.push(...files.map((file) => file.fsPath));
-    const matchedFilePaths = FileFinder.bestMatches(matches, originalPath);
+    const filePathToFind = vscode.Uri.parse(originalPath).fsPath;
+    const matchedFilePaths = FileFinder.bestMatches(matches, filePathToFind);
     if (matchedFilePaths.length === 0) {
       return undefined;
     }
