@@ -2743,7 +2743,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-vscode-cmake-tools 1.2.0 - MIT
+vscode-cmake-tools 1.5.0 - MIT
 https://github.com/microsoft/vscode-cmake-tools-api#readme
 
 vscode-cmake-tools-api

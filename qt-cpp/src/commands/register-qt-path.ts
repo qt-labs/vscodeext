@@ -33,7 +33,7 @@ export function getQtPathsExe(kit: Kit) {
   return kit.environmentVariables?.VSCODE_QT_QTPATHS_EXE;
 }
 
-async function getActiveFolder() {
+export async function getActiveFolder() {
   const activeFolder = await vscode.commands.executeCommand<string>(
     'cmake.activeFolderPath'
   );

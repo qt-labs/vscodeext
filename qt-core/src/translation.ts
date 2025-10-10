@@ -9,7 +9,7 @@ import {
   CoreKey,
   createLogger,
   exists,
-  findQtPathsInKitDir,
+  findQtPathsInInstallationPath,
   IsMacOS,
   IsWindows,
   OSExeSuffix,
@@ -51,7 +51,7 @@ export async function openInLinguistCommand() {
   );
   const selectedKitPath = coreAPI?.getValue<string>(
     project.folder,
-    CoreKey.SELECTED_KIT_PATH
+    CoreKey.INSTALLATION_PATH
   );
   const selectedQtPaths = coreAPI?.getValue<string>(
     project.folder,
@@ -131,7 +131,7 @@ async function locateLinguist(selectedKitPath: string) {
   if (await exists(linguistExePath)) {
     return linguistExePath;
   }
-  const qtPaths = findQtPathsInKitDir(selectedKitPath);
+  const qtPaths = findQtPathsInInstallationPath(selectedKitPath);
   if (qtPaths) {
     const linguistPath = await locateLinguistFromQtPaths(qtPaths);
     if (linguistPath) {

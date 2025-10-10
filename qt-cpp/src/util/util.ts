@@ -25,6 +25,10 @@ export function getFilenameWithoutExtension(filename: string): string {
   return splitPath;
 }
 
+export const isValidAndString = (value: unknown) => {
+  return value !== undefined && typeof value === 'string';
+};
+
 export function QtVersionFromKit(kit: Kit) {
   const qtInsRoot = getQtInsRoot(kit);
   if (qtInsRoot) {

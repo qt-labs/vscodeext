@@ -10,7 +10,7 @@ export const CoreKey = {
   QT_INSTALLATION_ROOT: 'qtInstallationRoot',
   VENV_BIN_PATH: 'venvBinPath',
   WORKSPACE_FEATURES: 'workspaceFeatures',
-  SELECTED_KIT_PATH: 'selectedKitPath',
+  INSTALLATION_PATH: 'installationPath',
   SELECTED_QT_PATHS: 'selectedQtPaths',
   BUILD_DIR: 'buildDir',
   GLOBAL_WORKSPACE: 'global'

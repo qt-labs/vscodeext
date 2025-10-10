@@ -2,4 +2,3 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 export const EXTENSION_ID = 'qt-cpp';
-export const CONFIG_CMAKE_PRESET_WARNING = 'doNotShowCMakePresetWarning';
