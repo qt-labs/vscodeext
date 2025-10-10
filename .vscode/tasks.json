@@ -185,13 +185,13 @@
     {
       "label": "qt-cpp: prepare test build",
       "type": "shell",
-      "command": "npx ts-node ./scripts/prepare_test_build.ts",
+      "command": "npx ts-node ./qt-cpp/test/scripts/prepare_test_build.ts",
       "options": { "cwd": "${workspaceFolder}" }
     },
     {
       "label": "qt-cpp: build test clean",
       "type": "shell",
-      "command": "npx ts-node ./scripts/clean_test_build.ts",
+      "command": "npx ts-node ./qt-cpp/test/scripts/clean_test_build.ts",
       "options": { "cwd": "${workspaceFolder}" }
     },{
       "label": "qt-cpp: build test prelaunch chain",
@@ -199,7 +199,7 @@
         "qt-cpp: prepare test build",
         "npm qt-cpp watch and test"
       ],
-      "dependsOrder": "sequence" 
+      "dependsOrder": "sequence"
     },
   ]
 }
