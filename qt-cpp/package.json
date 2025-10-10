@@ -78,11 +78,6 @@
           "type": "boolean",
           "default": false,
           "description": "Do not show a warning when the source directory cannot be determined from the selected kit."
-        },
-        "qt-cpp.doNotShowCMakePresetWarning": {
-          "type": "boolean",
-          "default": false,
-          "description": "Do not show a warning when CMake presets are found in the workspace."
         }
       }
     },
@@ -328,6 +323,6 @@
     "qt-lib": "file:../qt-lib",
     "sinon": "^20.0.0",
     "typescript": "^5.6.3",
-    "vscode-cmake-tools": "^1.2.0"
+    "vscode-cmake-tools": "^1.5.0"
   }
 }

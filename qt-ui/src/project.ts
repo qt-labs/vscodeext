@@ -91,7 +91,7 @@ export class UIProject implements Project {
     );
     this._selectedKitPath = read<string>(
       this._folder,
-      CoreKey.SELECTED_KIT_PATH
+      CoreKey.INSTALLATION_PATH
     );
     this._selectedQtPaths = read<string>(
       this._folder,

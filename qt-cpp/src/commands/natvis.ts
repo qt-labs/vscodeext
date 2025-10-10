@@ -9,6 +9,8 @@ import { getSelectedKit, IsQtKit } from '@cmd/register-qt-path';
 import { createLogger, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { QtVersionFromKit } from '@/util/util';
+import { CppProjectType, getActiveProject } from '@/project';
+import { coreAPI } from '@/extension';
 
 const logger = createLogger('natvis');
 
@@ -47,18 +49,40 @@ export function registerNatvisCommand() {
     `${EXTENSION_ID}.natvis`,
     async () => {
       telemetry.sendAction('natvis');
-      const kit = await getSelectedKit();
-      if (!kit || !IsQtKit(kit)) {
-        const error = `${kit?.name} is not a Qt kit`;
-        throw new Error(error);
+      const project = await getActiveProject();
+      if (!project) {
+        logger.error('Cannot find an active project');
+        return '';
       }
-      const version = QtVersionFromKit(kit);
-      if (version) {
-        const majorVersion = version.split('.')[0];
+      if (project.type === CppProjectType.Presets) {
+        const qtpaths = await project.getQtPaths({
+          includeInstallationPathSearch: true
+        });
+        if (!qtpaths) {
+          const error = 'Cannot find Qt Paths in the project presets';
+          throw new Error(error);
+        }
+        const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
+        const majorVersion = qtInfo?.get('QT_VERSION')?.split('.')[0];
         if (!majorVersion) {
           throw new Error('Cannot determine the major version');
         }
         return getNatvis(majorVersion);
+      } else {
+        // CppProjectType.Kit
+        const kit = await getSelectedKit();
+        if (!kit || !IsQtKit(kit)) {
+          const error = `${kit?.name} is not a Qt kit`;
+          throw new Error(error);
+        }
+        const version = QtVersionFromKit(kit);
+        if (version) {
+          const majorVersion = version.split('.')[0];
+          if (!majorVersion) {
+            throw new Error('Cannot determine the major version');
+          }
+          return getNatvis(majorVersion);
+        }
       }
       return undefined;
     }

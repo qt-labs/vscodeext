@@ -18,7 +18,7 @@ import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
 import { registerDebugPort } from '@cmd/debug';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
 import { getDoNotAskForDownloadingQmlls, Qmlls, QmllsStatus } from '@/qmlls';
-import { EXTENSION_ID } from '@/constants';
+import * as consts from '@/constants';
 import { QMLProjectManager, createQMLProject } from '@/project';
 import { registerResetCommand } from '@cmd/reset';
 import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter';
@@ -35,7 +35,7 @@ let taskProvider: vscode.Disposable | undefined;
 const logger = createLogger('extension');
 
 export async function activate(context: vscode.ExtensionContext) {
-  initLogger(EXTENSION_ID);
+  initLogger(consts.EXTENSION_ID);
   telemetry.activate(context);
   projectManager = new QMLProjectManager(context);
   coreAPI = await getCoreApi();
@@ -91,7 +91,7 @@ async function startQmlls() {
 }
 
 export function deactivate() {
-  logger.info(`Deactivating ${EXTENSION_ID}`);
+  logger.info(`Deactivating ${consts.EXTENSION_ID}`);
   telemetry.dispose();
   projectManager.dispose();
   if (taskProvider) {
@@ -113,10 +113,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     }
     let updateQmlls = false;
     for (const key of message.config.keys()) {
-      if (key === CoreKey.SELECTED_KIT_PATH) {
+      if (key === CoreKey.INSTALLATION_PATH) {
         const selectedKitPath = coreAPI?.getValue<string>(
           message.workspaceFolder,
-          CoreKey.SELECTED_KIT_PATH
+          CoreKey.INSTALLATION_PATH
         );
         if (selectedKitPath !== project.kitPath) {
           updateQmlls = true;

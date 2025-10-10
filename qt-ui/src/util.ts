@@ -9,7 +9,7 @@ import {
   OSExeSuffix,
   exists,
   searchForExeInQtInfo,
-  findQtPathsInKitDir
+  findQtPathsInInstallationPath
 } from 'qt-lib';
 import { coreAPI } from '@/extension';
 
@@ -27,7 +27,7 @@ export async function locateDesignerFromKit(
   }
 
   if (qtPathsFallback) {
-    const qtPaths = findQtPathsInKitDir(selectedKitPath);
+    const qtPaths = findQtPathsInInstallationPath(selectedKitPath);
     const exeFromQtPaths =
       qtPaths && (await locateDesignerFromQtPaths(qtPaths));
     if (exeFromQtPaths) {

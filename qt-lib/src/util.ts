@@ -244,7 +244,7 @@ export async function waitForQtCpp() {
   }
 }
 
-export function findQtPathsInKitDir(dir: string): string | undefined {
+export function findQtPathsInInstallationPath(dir: string): string | undefined {
   const qtpathsVersions = ['qtpaths', 'qtpaths6'];
   const suffixes = [OSExeSuffix];
   if (IsWindows) {

@@ -7,6 +7,7 @@ import * as path from 'path';
 import { createLogger, telemetry } from 'qt-lib';
 import { getQtInsRoot, getSelectedKit } from '@cmd/register-qt-path';
 import { EXTENSION_ID } from '@/constants';
+import { CppProjectType, getActiveProject } from '@/project';
 
 const logger = createLogger('source-directory');
 
@@ -15,42 +16,51 @@ export function registerSourceDirectoryCommand() {
     `${EXTENSION_ID}.sourceDirectory`,
     async () => {
       telemetry.sendAction('sourceDirectory');
-      const kit = await getSelectedKit();
-      if (!kit) {
+      const project = await getActiveProject();
+      if (!project) {
         return undefined;
       }
-      const insRoot = getQtInsRoot(kit);
-      if (!insRoot) {
-        const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-        const doNotWarn = config.get<boolean>(
-          'doNotWarnMissingSourceDir',
-          false
-        );
-        const message = `Cannot find VSCODE_QT_INSTALLATION in the selected kit: ${kit.name}. Source directory cannot be determined.`;
-        logger.error(message);
-        if (!doNotWarn) {
-          const doNotAskBtn = 'Do not show again';
-          void vscode.window
-            .showWarningMessage(message, doNotAskBtn)
-            .then((result) => {
-              if (result === doNotAskBtn) {
-                void config.update(
-                  'doNotWarnMissingSourceDir',
-                  true,
-                  vscode.ConfigurationTarget.Global
-                );
-              }
-            });
+      if (project.type === CppProjectType.Presets) {
+        return undefined;
+      } else {
+        // CppProjectType.Kit
+        const kit = await getSelectedKit();
+        if (!kit) {
+          return undefined;
         }
-        return undefined;
+        const insRoot = getQtInsRoot(kit);
+        if (!insRoot) {
+          const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+          const doNotWarn = config.get<boolean>(
+            'doNotWarnMissingSourceDir',
+            false
+          );
+          const message = `Cannot find VSCODE_QT_INSTALLATION in the selected kit: ${kit.name}. Source directory cannot be determined.`;
+          logger.error(message);
+          if (!doNotWarn) {
+            const doNotAskBtn = 'Do not show again';
+            void vscode.window
+              .showWarningMessage(message, doNotAskBtn)
+              .then((result) => {
+                if (result === doNotAskBtn) {
+                  void config.update(
+                    'doNotWarnMissingSourceDir',
+                    true,
+                    vscode.ConfigurationTarget.Global
+                  );
+                }
+              });
+          }
+          return undefined;
+        }
+        // Remove the last part of the path to get the source directory
+        // For example, if insRoot is '/path/to/Qt/6.5.0/gcc_64', we want to get '/path/to/Qt/6.5.0'
+        const versionDir = path.dirname(insRoot);
+        // Add the 'Src' directory to the path
+        const sourceDir = path.join(versionDir, 'Src');
+        logger.info(`Source directory for kit ${kit.name} is: ${sourceDir}`);
+        return sourceDir;
       }
-      // Remove the last part of the path to get the source directory
-      // For example, if insRoot is '/path/to/Qt/6.5.0/gcc_64', we want to get '/path/to/Qt/6.5.0'
-      const versionDir = path.dirname(insRoot);
-      // Add the 'Src' directory to the path
-      const sourceDir = path.join(versionDir, 'Src');
-      logger.info(`Source directory for kit ${kit.name} is: ${sourceDir}`);
-      return sourceDir;
     }
   );
 }
