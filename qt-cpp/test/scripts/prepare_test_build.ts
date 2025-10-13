@@ -7,7 +7,7 @@ import { promises as fsp } from 'fs';
 import path from 'path';
 
 async function main() {
-  const testRoot = path.join(__dirname, '..', 'qt-cpp', 'test');
+  const testRoot = path.join(__dirname, '..');
   const srcDir = path.join(testRoot, 'projectFolder');
   const tmpDir = path.join(testRoot, 'tmp-build');
 
