@@ -5,6 +5,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 
 import { isDeepStrictEqual } from 'util';
 import { delay } from 'qt-lib';
@@ -278,4 +279,184 @@ export function prepareCMakeQtEnvWithVersion(opts?: {
   logs.push(msg);
   if (verbose) logs.forEach((l) => console.log(l));
   throw new Error(msg);
+}
+
+export function getWorkspaceFolderOrThrow(): vscode.WorkspaceFolder {
+  const ws = vscode.workspace.workspaceFolders?.[0];
+  if (!ws)
+    throw new Error('No workspace folder open — expected project folder.');
+  return ws;
+}
+
+export async function cleanBuildDir(
+  projectDir: string,
+  subdir = 'build'
+): Promise<string> {
+  const buildDir = path.join(projectDir, subdir);
+  await fs.promises
+    .rm(buildDir, { recursive: true, force: true })
+    .catch(() => {});
+  return buildDir;
+}
+
+export async function setCMakeGeneratorForPlatform(
+  ws: vscode.WorkspaceFolder
+): Promise<void> {
+  const generator = process.platform === 'win32' ? 'Ninja' : 'Unix Makefiles';
+  await vscode.workspace
+    .getConfiguration('cmake', ws.uri)
+    .update('generator', generator, vscode.ConfigurationTarget.Workspace);
+}
+
+/**
+ * Reads a specific variable value from a CMake build directory's `CMakeCache.txt` file.
+ *
+ * The function searches the cache file for a line starting with `<name>:` and returns
+ * the value after the equals sign (`=`). This is useful in tests to confirm which
+ * configuration variables (e.g. `Qt6_DIR`, `CMAKE_PREFIX_PATH`) CMake actually used
+ * during `cmake.configure()`.
+ *
+ * Example line in `CMakeCache.txt`:
+ * ```
+ * Qt6_DIR:PATH=/Users/alice/Qt/6.9.0/macos/lib/cmake/Qt6
+ * ```
+ * Calling `readCMakeCacheVar(buildDir, 'Qt6_DIR')` would return:
+ * ```
+ * /Users/alice/Qt/6.9.0/macos/lib/cmake/Qt6
+ * ```
+ *
+ * @param buildDir - Path to the CMake build directory containing `CMakeCache.txt`.
+ * @param name - The cache variable name to look for (e.g. `"Qt6_DIR"`).
+ * @returns The variable value as a string, or `undefined` if not found or unreadable.
+ */
+export function readCMakeCacheVar(
+  buildDir: string,
+  name: string
+): string | undefined {
+  const cache = path.join(buildDir, 'CMakeCache.txt');
+  try {
+    const line = fs
+      .readFileSync(cache, 'utf8')
+      .split(/\r?\n/)
+      .find((l) => l.startsWith(`${name}:`));
+    return line?.split('=')[1];
+  } catch {
+    return undefined;
+  }
+}
+
+export function prepareStandardCMakeArgs(
+  debugFlag = process.env.QT_TEST_DEBUG === '1'
+): string[] {
+  const args = ['-DCMAKE_BUILD_TYPE=Debug'];
+  if (debugFlag) args.push('-DCMAKE_FIND_DEBUG_MODE=ON');
+  return args;
+}
+
+/** :
+ *  - Windows:  %USERPROFILE%\AppData\Local\CMakeTools\cmake-tools-kits.json
+ *  - Others (incl. macOS): ~/.local/share/CMakeTools/cmake-tools-kits.json
+ */
+function kitsPath(): string {
+  const home = os.homedir();
+  if (process.platform === 'win32') {
+    return path.join(
+      home,
+      'AppData',
+      'Local',
+      'CMakeTools',
+      'cmake-tools-kits.json'
+    );
+  }
+  return path.join(
+    home,
+    '.local',
+    'share',
+    'CMakeTools',
+    'cmake-tools-kits.json'
+  );
+}
+
+type KitLike = { name?: string; label?: string };
+
+/** Read kits */
+function readKitsFromDisk(): KitLike[] {
+  const p = kitsPath();
+  try {
+    if (fs.existsSync(p)) {
+      const raw = fs.readFileSync(p, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as KitLike[];
+    }
+  } catch {
+    // ignore; fall through to empty
+  }
+  return [];
+}
+
+/**
+ * Selects the most appropriate CMake Kit name from a given list.
+ *
+ * The selection logic follows platform-specific compiler preferences:
+ *  - **macOS:** prefers Clang (arm64 or AppleClang), then generic Clang, then GCC.
+ *  - **Windows:** prefers MSVC / Visual Studio / Clang-cl, then Clang, then MinGW/GCC.
+ *  - **Linux/other:** prefers GCC, then Clang.
+ *
+ * If no kit matches these patterns, the first available kit is returned as a fallback.
+ *
+ * @param list - Array of kits (each with an optional `name` or `label`).
+ * @returns The chosen kit name or `undefined` if no kits are available.
+ */
+function pickKit(list: KitLike[]): string | undefined {
+  if (!Array.isArray(list) || list.length === 0) return undefined;
+
+  const preferences: RegExp[] =
+    process.platform === 'darwin'
+      ? [/Clang.*arm64/i, /AppleClang/i, /Clang/i, /GCC/i]
+      : process.platform === 'win32'
+        ? [/MSVC|Visual Studio|Clang-cl/i, /Clang/i, /GCC|MinGW/i]
+        : [/GCC/i, /Clang/i];
+
+  for (const re of preferences) {
+    const k = list.find((kk) => re.test(kk.name ?? kk.label ?? ''));
+    if (k) return k.name ?? k.label;
+  }
+  const first = list[0];
+  return first ? (first.name ?? first.label) : undefined;
+}
+
+/**
+ * Performs non-interactive CMake Kit selection using the same logic
+ * as the original (pre-refactor) build test.
+ *
+ * Steps:
+ *  1. Runs the `cmake.scanForKits` command to refresh available kits.
+ *  2. Reads the kits file from disk (`cmake-tools-kits.json`) in the
+ *     standard CMake Tools location for the current platform.
+ *  3. Chooses the best matching kit using {@link pickKit} preferences.
+ *  4. Applies the kit via `cmake.setKitByName` and waits briefly for
+ *     CMake Tools to update its state.
+ *
+ * This function reproduces exactly the same behavior used before the
+ * test helper refactor — ensuring consistent results across platforms
+ * without user prompts.
+ *
+ * @returns The selected kit name, or `undefined` if no kit was found.
+ */
+export async function selectAndApplyKitLegacy(): Promise<string | undefined> {
+  await vscode.commands.executeCommand('cmake.scanForKits');
+
+  const kits = readKitsFromDisk();
+
+  const kitName = pickKit(kits);
+
+  if (kitName) {
+    await vscode.commands.executeCommand('cmake.setKitByName', kitName);
+    await waitForVSCodeIdle();
+    console.log('[build.test] Selected Kit:', kitName);
+  } else {
+    console.warn('[build.test] No kitName resolved; configure may prompt.');
+  }
+
+  return kitName;
 }
