@@ -13,7 +13,8 @@ import { delay } from 'qt-lib';
 import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
-  activateQtCpp
+  activateQtCpp,
+  prepareCMakeQtEnvWithVersion
 } from '../helper.mts';
 
 describe('build: minimal Qt project (index-build)', function () {
@@ -26,7 +27,7 @@ describe('build: minimal Qt project (index-build)', function () {
     async () => activateQtCpp()
   );
 
-  it('configures and builds a tiny Qt app with CMAKE_PREFIX_PATH', async function () {
+  it('configures and builds a tiny Qt app', async function () {
     const wsFolder = vscode.workspace.workspaceFolders?.[0];
     if (!wsFolder) {
       throw new Error('No workspace folder open — expected projectFolder.');
@@ -44,15 +45,6 @@ describe('build: minimal Qt project (index-build)', function () {
     // clean build dir
     const buildDir = path.join(projectDir, 'build');
     await fsp.rm(buildDir, { recursive: true, force: true }).catch(() => {});
-
-    // configure CMake
-    await vscode.workspace
-      .getConfiguration('cmake', wsFolder.uri)
-      .update(
-        'configureSettings',
-        { CMAKE_PREFIX_PATH: qtRoot },
-        vscode.ConfigurationTarget.Workspace
-      );
 
     const generator = process.platform === 'win32' ? 'Ninja' : 'Unix Makefiles';
     await vscode.workspace
@@ -126,6 +118,12 @@ describe('build: minimal Qt project (index-build)', function () {
       console.warn('[build.test] No kitName resolved; configure may prompt.');
     }
 
+    // Right BEFORE configure():
+    const { cmakeArgs } = prepareCMakeQtEnvWithVersion({ verbose: true });
+    cmakeArgs.push('-DCMAKE_BUILD_TYPE=Debug');
+    if (process.env.QT_TEST_DEBUG === '1') {
+      cmakeArgs.push('-DCMAKE_FIND_DEBUG_MODE=ON'); // only when needed
+    }
     // ... run cmake.configure / cmake.build / assertions ...
     console.log('Running cmake.configure...');
     const rcCfg =
@@ -133,7 +131,25 @@ describe('build: minimal Qt project (index-build)', function () {
     await waitForVSCodeIdle();
     expect(rcCfg, `cmake.configure failed (rc=${rcCfg})`).to.equal(0);
 
-    console.log('Running cmake.build...');
+    if (process.env.QT_TEST_DEBUG === '1') {
+      function readCacheVar(
+        cachePath: string,
+        name: string
+      ): string | undefined {
+        const line = fs
+          .readFileSync(cachePath, 'utf8')
+          .split(/\r?\n/)
+          .find((l) => l.startsWith(`${name}:`));
+        return line?.split('=')[1];
+      }
+      const cache = path.join(buildDir, 'CMakeCache.txt'); // match your build dir
+      console.log('== WHAT CMAKE USED ==');
+      console.log('  Qt6_DIR =', readCacheVar(cache, 'Qt6_DIR') ?? '<unknown>');
+      console.log(
+        '  CMAKE_PREFIX_PATH =',
+        readCacheVar(cache, 'CMAKE_PREFIX_PATH') ?? '<unknown>'
+      );
+    }
     const rcBuild = await vscode.commands.executeCommand<number>('cmake.build');
     await waitForVSCodeIdle();
     expect(rcBuild, `cmake.build failed (rc=${rcBuild})`).to.equal(0);
