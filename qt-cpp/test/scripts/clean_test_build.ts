@@ -7,7 +7,7 @@ import { promises as fsp } from 'fs';
 import path from 'path';
 
 async function main() {
-  const tmpDir = path.join(__dirname, '..', 'qt-cpp', 'test', 'tmp-build');
+  const tmpDir = path.join(__dirname, '..', 'tmp-build');
   await fsp.rm(tmpDir, { recursive: true, force: true });
   console.log('[clean-test-build] Removed', tmpDir);
 }
