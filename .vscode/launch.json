@@ -29,11 +29,14 @@
       "name": "Run Extension Tests qt-cpp build",
       "type": "extensionHost",
       "request": "launch",
+      "env": {
+        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
+      },
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
         "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index-build",
-        "${workspaceFolder}/qt-cpp/test/tmp-build", 
+        "${workspaceFolder}/qt-cpp/test/tmp-build",
         "--disable-workspace-trust",
         "--disable-restore-windows"
       ],
