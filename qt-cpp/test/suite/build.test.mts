@@ -50,7 +50,13 @@ describe('build: minimal Qt project (index-build)', function () {
     await selectAndApplyKitLegacy();
 
     // Qt: pin ONLY Qt6_DIR (no CMAKE_PREFIX_PATH)
-    prepareCMakeQtEnvWithVersion({ verbose: true });
+    const qtRoot = vscode.workspace
+      .getConfiguration('qt-core')
+      .get<string>('qtInstallationRoot');
+    if (typeof qtRoot !== 'string' || qtRoot.trim() === '') {
+      throw new Error('qt-core.qtInstallationRoot is not configured.');
+    }
+    prepareCMakeQtEnvWithVersion({ topLevel: qtRoot, verbose: true });
 
     // Standard args
     prepareStandardCMakeArgs();
