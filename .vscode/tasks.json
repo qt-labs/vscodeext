@@ -193,10 +193,31 @@
       "type": "shell",
       "command": "npx ts-node ./qt-cpp/test/scripts/clean_test_build.ts",
       "options": { "cwd": "${workspaceFolder}" }
-    },{
+    },
+    {
       "label": "qt-cpp: build test prelaunch chain",
       "dependsOn": [
         "qt-cpp: prepare test build",
+        "npm qt-cpp watch and test"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "qt-cpp: prepare test natvis",
+      "type": "shell",
+      "command": "npx ts-node ./qt-cpp/test/scripts/prepare_test_natvis.ts",
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "qt-cpp: natvis test clean",
+      "type": "shell",
+      "command": "npx ts-node ./qt-cpp/test/scripts/clean_test_natvis.ts",
+      "options": { "cwd": "${workspaceFolder}" }
+    },
+    {
+      "label": "qt-cpp: natvis test prelaunch chain",
+      "dependsOn": [
+        "qt-cpp: prepare test natvis",
         "npm qt-cpp watch and test"
       ],
       "dependsOrder": "sequence"

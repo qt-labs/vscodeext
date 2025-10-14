@@ -35,11 +35,14 @@ const extensionTestConfig = {
   entryPoints: [
     './test/runTest.mts',
     './test/runTest.build.mts',
+    './test/runTest.natvis.mts',
     './test/suite/index.mts',
     './test/suite/index-build.mts',
+    './test/suite/index-natvis.mts',
     './test/suite/extension.test.mts',
     './test/suite/commands.test.mts',
-    './test/suite/build.test.mts'
+    './test/suite/build.test.mts',
+    './test/suite/natvis.test.mts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']
