@@ -443,7 +443,7 @@ function pickKit(list: KitLike[]): string | undefined {
  *
  * @returns The selected kit name, or `undefined` if no kit was found.
  */
-export async function selectAndApplyKitLegacy(): Promise<string | undefined> {
+export async function selectAndApplyKit(): Promise<string | undefined> {
   await vscode.commands.executeCommand('cmake.scanForKits');
 
   const kits = readKitsFromDisk();
