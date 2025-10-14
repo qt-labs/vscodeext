@@ -18,7 +18,7 @@ import {
   setCMakeGeneratorForPlatform,
   prepareStandardCMakeArgs,
   readCMakeCacheVar,
-  selectAndApplyKitLegacy
+  selectAndApplyKit
 } from '../helper.mts';
 
 describe('build: minimal Qt project (index-build)', function () {
@@ -39,15 +39,7 @@ describe('build: minimal Qt project (index-build)', function () {
 
     await setCMakeGeneratorForPlatform(wsFolder);
 
-    // Non-interactive Kit (required esp. on Windows; harmless elsewhere)
-    // const kitName = await selectBestCMakeKitNonInteractive();
-    // await applyCMakeKitByName(wsFolder, kitName);
-    // if (kitName) {
-    //   console.log('[build.test] Selected Kit:', kitName);
-    // } else {
-    //   console.warn('[build.test] No kitName resolved; configure may prompt.');
-    // }
-    await selectAndApplyKitLegacy();
+    await selectAndApplyKit();
 
     // Qt: pin ONLY Qt6_DIR (no CMAKE_PREFIX_PATH)
     const qtRoot = vscode.workspace
