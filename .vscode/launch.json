@@ -90,7 +90,34 @@
       "postDebugTask": "qt-cpp: build test clean"
     },
     {
-      "name": "Test qt-qml",
+      "name": "Run Extension Tests qt-cpp natvis",
+      "type": "extensionHost",
+      "request": "launch",
+      "env": {
+        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
+      },
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
+        "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index-natvis",
+        "${workspaceFolder}/qt-cpp/test/tmp-natvis",
+        "--disable-workspace-trust",
+        "--disable-restore-windows"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-cpp/out/test/**/*.js"],
+      "preLaunchTask": "qt-cpp: natvis test prelaunch chain",
+      "postDebugTask": "qt-cpp: natvis test clean"
+    },
+    {
+      "name": "Run qt-qml Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-qml"],
+      "outFiles": ["${workspaceFolder}/qt-qml/out/**/*.js"],
+      "preLaunchTask": "npm qt-qml watch"
+    },
+    {
+      "name": "Run Extension Tests qt-qml",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
