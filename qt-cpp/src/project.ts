@@ -16,7 +16,7 @@ import {
   IsMacOS,
   IsWindows,
   QtWorkspaceConfigMessage,
-  QtWorkspaceType,
+  QtWorkspaceFeatures,
   telemetry
 } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
@@ -430,10 +430,17 @@ export class CppProject implements Project {
     logger.info(
       `Setting selected Qt paths for ${folder.uri.fsPath} to ${selectedQtPaths}`
     );
-    coreAPI.setValue(folder, 'workspaceType', QtWorkspaceType.CMakeExt);
+
+    const featuresKey = 'workspaceFeatures';
+    let features = coreAPI.getValue<QtWorkspaceFeatures>(folder, featuresKey);
+    features ??= { projectTypes: {} };
+    features.projectTypes.cmake = true;
+
+    coreAPI.setValue(folder, featuresKey, features);
     logger.info(
-      `Setting workspace type for ${folder.uri.fsPath} to ${QtWorkspaceType.CMakeExt}`
+      `Setting workspace features for ${folder.uri.fsPath} to ${JSON.stringify(features)}`
     );
+
     coreAPI.setValue(folder, 'buildDir', this.buildDir);
     logger.info(
       `Setting build directory for ${folder.uri.fsPath} to ${this.buildDir}`
@@ -442,7 +449,7 @@ export class CppProject implements Project {
     const message = new QtWorkspaceConfigMessage(folder);
     message.config.add('selectedKitPath');
     message.config.add('selectedQtPaths');
-    message.config.add('workspaceType');
+    message.config.add(featuresKey);
     message.config.add('buildDir');
     coreAPI.notify(message);
   }

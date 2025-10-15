@@ -30,7 +30,7 @@ export function compareQtAdditionalPath(
 export type ConfigType =
   | string
   | QtAdditionalPath[]
-  | QtWorkspaceType
+  | QtWorkspaceFeatures
   | undefined;
 
 export type QtWorkspaceConfig = Map<string, ConfigType>;
@@ -55,10 +55,11 @@ export class QtWorkspaceConfigMessage {
   }
 }
 
-export enum QtWorkspaceType {
-  CMakeExt = 'CMakeExt',
-  CMakeCMD = 'CMakeCMD',
-  PythonExt = 'PythonExt'
+export interface QtWorkspaceFeatures {
+  projectTypes: {
+    cmake?: boolean;
+    pyside?: boolean;
+  };
 }
 
 export type QtPathsData = Map<string, string>;

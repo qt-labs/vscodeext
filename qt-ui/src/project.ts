@@ -7,8 +7,8 @@ import * as fs from 'fs';
 import {
   Project,
   createLogger,
-  QtWorkspaceType,
-  resolveConfiguration
+  resolveConfiguration,
+  QtWorkspaceFeatures
 } from 'qt-lib';
 import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
@@ -19,7 +19,7 @@ import { locateDesignerFromKit, locateDesignerFromQtPaths } from '@/util';
 type UpdateReason =
   | 'init'
   | 'customExeChanged'
-  | 'workspaceTypeChanged'
+  | 'workspaceFeatureChanged'
   | 'selectedKitPathChanged'
   | 'selectedQtPathsChanged';
 
@@ -36,7 +36,7 @@ export async function createUIProject(
 // Project class represents a workspace folder in the extension.
 export class UIProject implements Project {
   private _customExePath: string | undefined;
-  private _workspaceType: QtWorkspaceType | undefined;
+  private _workspaceFeatures: QtWorkspaceFeatures | undefined;
   private _selectedKitPath: string | undefined;
   private _selectedQtPaths: string | undefined;
 
@@ -67,8 +67,8 @@ export class UIProject implements Project {
     return this._designerClient;
   }
 
-  get workspaceType() {
-    return this._workspaceType;
+  get workspaceFeatures() {
+    return this._workspaceFeatures;
   }
 
   public async init() {
@@ -78,7 +78,10 @@ export class UIProject implements Project {
     }
 
     this._customExePath = this._readCustomExePath();
-    this._workspaceType = read<QtWorkspaceType>(this._folder, 'workspaceType');
+    this._workspaceFeatures = read<QtWorkspaceFeatures>(
+      this._folder,
+      'workspaceFeatures'
+    );
     this._selectedKitPath = read<string>(this._folder, 'selectedKitPath');
     this._selectedQtPaths = read<string>(this._folder, 'selectedQtPaths');
 
@@ -94,10 +97,10 @@ export class UIProject implements Project {
     }
   }
 
-  public async setWorkspaceType(workspaceType: QtWorkspaceType | undefined) {
-    if (this._workspaceType !== workspaceType) {
-      this._workspaceType = workspaceType;
-      await this._updateClient('workspaceTypeChanged');
+  public async setWorkspaceFeatures(features: QtWorkspaceFeatures | undefined) {
+    if (this._workspaceFeatures !== features) {
+      this._workspaceFeatures = features;
+      await this._updateClient('workspaceFeatureChanged');
     }
   }
 
@@ -161,7 +164,7 @@ export class UIProject implements Project {
       void vscode.window.showWarningMessage(msg);
     }
 
-    if (this._workspaceType === QtWorkspaceType.CMakeExt) {
+    if (this._workspaceFeatures?.projectTypes.cmake) {
       if (this._selectedKitPath) {
         return locateDesignerFromKit(this._selectedKitPath);
       }
