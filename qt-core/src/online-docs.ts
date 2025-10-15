@@ -106,6 +106,18 @@ async function openQt6Doc(word: string, token?: vscode.CancellationToken) {
   return false;
 }
 
+function openQtforPythonDoc(word: string, possibleUrl: string) {
+  const parts = possibleUrl.split('/');
+  const lastPart = parts[parts.length - 1];
+  const starting = `${QtDocHostUrl}/qtforpython-6/PySide6/`;
+  if (possibleUrl.startsWith(starting) && lastPart === `${word}.html`) {
+    browseUrl(possibleUrl);
+    return true;
+  }
+
+  return false;
+}
+
 async function pickAndOpen(items: PickItem[]) {
   if (items.length === 0) {
     return;
@@ -160,12 +172,20 @@ function openOrSearchAndPick(edit: CurrentEdit) {
 
   const task = async (_: Progress, token: Token) => {
     try {
-      if (await openQt6Doc(edit.word, token)) {
+      const isPython = edit.filePath.endsWith('.py');
+      if (!isPython && (await openQt6Doc(edit.word, token))) {
         return;
       }
 
-      const keywords = [edit.word];
+      const keywords = [edit.word, isPython ? 'pyside6' : ''];
       const found = await search(keywords, token);
+      const firstUrl = found[0]?.url;
+      if (firstUrl) {
+        if (isPython && openQtforPythonDoc(edit.word, firstUrl)) {
+          return;
+        }
+      }
+
       itemsToPick = found;
     } catch (e) {
       const text = isError(e) ? e.message : String(e);
