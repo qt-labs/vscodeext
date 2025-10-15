@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { ProjectManager, createLogger, QtWorkspaceType } from 'qt-lib';
+import { ProjectManager, createLogger, QtWorkspaceFeatures } from 'qt-lib';
 import { PySideProject } from './project';
 import { pyApi, coreApi } from './extension';
 import * as consts from '@/constants';
@@ -43,18 +43,13 @@ function updateCoreValues(p: PySideProject) {
     return;
   }
 
-  const fsPath = p.folder.uri.fsPath;
+  const key = consts.CORE_API_KEY_WORKSPACE_FEATURES;
+  let features = coreApi.getValue<QtWorkspaceFeatures>(p.folder, key);
+  features ??= { projectTypes: {} };
+  features.projectTypes.pyside = p.isValid();
 
-  if (p.isValid()) {
-    coreApi.setValue(
-      p.folder,
-      consts.CORE_API_KEY_WORKSPACE_TYPE,
-      QtWorkspaceType.PythonExt
-    );
-
-    logger.info(`Set workspace type to Python: "${fsPath}"`);
-    return;
-  }
-
-  logger.info(`Not a PySide6 project: "${fsPath}"`);
+  coreApi.setValue(p.folder, key, features);
+  logger.info(
+    `Setting core value: key = ${key}, value = ${JSON.stringify(features)}`
+  );
 }

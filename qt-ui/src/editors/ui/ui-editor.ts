@@ -3,12 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import {
-  askForKitSelection,
-  createLogger,
-  QtWorkspaceType,
-  telemetry
-} from 'qt-lib';
+import { askForKitSelection, createLogger, telemetry } from 'qt-lib';
 import { getNonce, getUri } from '@/editors/util';
 import { projectManager } from '@/extension';
 import { delay } from '@/util';
@@ -54,7 +49,7 @@ export class UIEditorProvider implements vscode.CustomTextEditorProvider {
           if (designerClient === undefined) {
             // User may not have selected the kit.
             // We can check and ask for kit selection.
-            if (project.workspaceType === QtWorkspaceType.CMakeExt) {
+            if (project.workspaceFeatures?.projectTypes.cmake) {
               askForKitSelection({
                 message:
                   'Cannot find Qt Widgets Designer in the Qt installation that the selected kit refers to.',

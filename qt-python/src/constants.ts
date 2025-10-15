@@ -23,7 +23,7 @@ export const VENV = {
 };
 
 export const EXECUTABLE_EXT = IsWindows ? '.exe' : '';
-export const CORE_API_KEY_WORKSPACE_TYPE = 'workspaceType';
+export const CORE_API_KEY_WORKSPACE_FEATURES = 'workspaceFeatures';
 
 export const TOML_PROJECT_FILE_NAME = 'pyproject.toml';
 export const TOML_KEY_PROJECT_NAME = 'project.name';

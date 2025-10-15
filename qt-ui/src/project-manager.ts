@@ -5,9 +5,9 @@ import * as vscode from 'vscode';
 
 import {
   QtWorkspaceConfigMessage,
-  QtWorkspaceType,
   ProjectManager,
-  createLogger
+  createLogger,
+  QtWorkspaceFeatures
 } from 'qt-lib';
 import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
@@ -70,9 +70,9 @@ export class UIProjectManager extends ProjectManager<UIProject> {
         continue;
       }
 
-      if (key === 'workspaceType') {
-        await project.setWorkspaceType(
-          coreAPI?.getValue<QtWorkspaceType>(folder, key)
+      if (key === 'workspaceFeatures') {
+        await project.setWorkspaceFeatures(
+          coreAPI?.getValue<QtWorkspaceFeatures>(folder, key)
         );
       }
     }
