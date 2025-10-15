@@ -6,15 +6,17 @@ import * as vscode from 'vscode';
 import { EXTENSION_ID } from '@/constants';
 import { telemetry, createLogger, isError, fetchWithAbort } from 'qt-lib';
 
+const QtDocHostUrl = 'https://doc.qt.io';
+const SearchHostUrl = 'https://d24zn9cw9ofw9u.cloudfront.net';
+
 const logger = createLogger('online-docs');
-interface SearchItem {
-  link: string;
-  snippet: string;
-  title: string;
-}
 
 interface SearchResponse {
-  items?: SearchItem[];
+  items?: {
+    link: string;
+    snippet: string;
+    title: string;
+  }[];
   searchInformation: {
     formattedTotalResults: string;
     totalResults: string;
@@ -26,181 +28,205 @@ interface SearchResponse {
   };
 }
 
-function getCurrentWord(): string {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return '';
-  }
-  const range = editor.selection.isEmpty
-    ? editor.document.getWordRangeAtPosition(editor.selection.active)
-    : editor.selection;
-  if (range) {
-    const word = editor.document.getText(range);
-    return word;
-  }
-  return '';
+interface PickItem {
+  url: string;
+  label: string;
+  detail: string;
 }
 
-async function tryToOpenDocumentationFor(
-  word: string,
-  token?: vscode.CancellationToken
-) {
-  if (!word) {
-    return false;
-  }
-  const link = `https://doc.qt.io/qt-6/${word.toLowerCase()}.html`;
+interface CurrentEdit {
+  word: string;
+  filePath: string;
+}
 
-  if (token?.isCancellationRequested) {
-    return false;
+function getCurrentEdit(): CurrentEdit | undefined {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return undefined;
   }
+
+  const doc = editor.document;
+  const range = editor.selection.isEmpty
+    ? doc.getWordRangeAtPosition(editor.selection.active)
+    : editor.selection;
+
+  return (
+    range && {
+      word: doc.getText(range).trim(),
+      filePath: doc.uri.fsPath
+    }
+  );
+}
+
+async function fetchUrl(url: string, token?: vscode.CancellationToken) {
+  if (token?.isCancellationRequested) {
+    return undefined;
+  }
+
   const controller = new AbortController();
-  token?.onCancellationRequested(() => {
+  const listener = token?.onCancellationRequested(() => {
     controller.abort();
   });
-  const response = await fetchWithAbort(link, {
-    controller: controller,
-    timeout: 5000
-  });
 
-  if (response?.ok) {
-    openInBrowser(link);
+  try {
+    const options = { controller, timeout: 5000 };
+    const res = await fetchWithAbort(url, options);
+    return res?.ok ? res : undefined;
+  } finally {
+    listener?.dispose();
+  }
+}
+
+function browseUrl(url: string) {
+  const useExternal = vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .get<boolean>('openOnlineDocumentationInExternalBrowser');
+
+  if (useExternal) {
+    void vscode.env.openExternal(vscode.Uri.parse(url));
+  } else {
+    const cmd = 'simpleBrowser.api.open';
+    const options = { viewColumn: vscode.ViewColumn.Beside };
+    void vscode.commands.executeCommand(cmd, url, options);
+  }
+}
+
+async function openQt6Doc(word: string, token?: vscode.CancellationToken) {
+  if (word.length === 0 || token?.isCancellationRequested) {
+    return false;
+  }
+
+  const url = `${QtDocHostUrl}/qt-6/${word.toLowerCase()}.html`;
+  const res = await fetchUrl(url, token);
+  if (!token?.isCancellationRequested && res?.ok) {
+    browseUrl(url);
     return true;
   }
+
   return false;
 }
 
-function openInBrowser(url: string) {
-  const openInExternalBrowserCommand = vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .get<boolean>('openOnlineDocumentationInExternalBrowser');
-  if (openInExternalBrowserCommand) {
-    void vscode.env.openExternal(vscode.Uri.parse(url));
+async function pickAndOpen(items: PickItem[]) {
+  if (items.length === 0) {
     return;
   }
-  const simpleBrowserCommand = 'simpleBrowser.api.open';
-  void vscode.commands.executeCommand(simpleBrowserCommand, url, {
-    viewColumn: vscode.ViewColumn.Beside
+
+  const placeHolder = 'Select a search result';
+  const selected = await vscode.window.showQuickPick(items, { placeHolder });
+  if (selected) {
+    browseUrl(selected.url);
+  }
+}
+
+async function search(keywords: string[], token?: vscode.CancellationToken) {
+  const queries = keywords
+    .filter((k) => k.trim().length !== 0)
+    .map((k) => `q=${k.trim()}`)
+    .join('&');
+
+  if (!queries || token?.isCancellationRequested) {
+    return [];
+  }
+
+  const raw = await fetchUrl(`${SearchHostUrl}?${queries}`, token);
+  if (!raw?.ok) {
+    throw new Error(`Network response: status = ${raw?.status ?? 'unknown'}`);
+  }
+
+  if (token?.isCancellationRequested) {
+    return [];
+  }
+
+  const res = (await raw.json()) as SearchResponse;
+  const rawItems = res.items ?? [];
+  const pickItems = rawItems.map((item) => ({
+    url: item.link,
+    label: item.title,
+    detail: item.snippet
+  }));
+
+  if (pickItems.length === 0) {
+    void vscode.window.showInformationMessage('No search results found.');
+  }
+
+  return pickItems;
+}
+
+function openOrSearchAndPick(edit: CurrentEdit) {
+  type Progress = vscode.Progress<{ message?: string; increment?: number }>;
+  type Token = vscode.CancellationToken;
+
+  let itemsToPick: PickItem[] = [];
+
+  const task = async (_: Progress, token: Token) => {
+    try {
+      if (await openQt6Doc(edit.word, token)) {
+        return;
+      }
+
+      const keywords = [edit.word];
+      const found = await search(keywords, token);
+      itemsToPick = found;
+    } catch (e) {
+      const text = isError(e) ? e.message : String(e);
+      logger.error(text);
+      void vscode.window.showErrorMessage(`Error: "${text}"`);
+    }
+  };
+
+  const options = {
+    title: 'Searching...',
+    location: vscode.ProgressLocation.Notification,
+    cancellable: true
+  };
+
+  void vscode.window.withProgress(options, task).then(async () => {
+    await pickAndOpen(itemsToPick);
   });
 }
 
-async function search() {
-  telemetry.sendAction('documentationSearchManually');
-  const hintWord = getCurrentWord();
-  const value = await vscode.window.showInputBox({
-    value: hintWord,
+function onOpenHomePage() {
+  browseUrl(QtDocHostUrl);
+}
+
+async function onSearchManually() {
+  const edit = getCurrentEdit();
+  const input = await vscode.window.showInputBox({
+    value: edit?.word ?? '',
     placeHolder: 'Search for...',
     prompt: 'Enter a term to search for in the Qt Documentation'
   });
-  if (value === undefined || value === '') {
-    return;
+
+  const word = input?.trim();
+  if (word && word.length !== 0) {
+    openOrSearchAndPick({ word, filePath: edit?.filePath ?? '' });
   }
-
-  searchAndAskforResult(value);
 }
 
-async function searchWithEngine(
-  value: string,
-  token?: vscode.CancellationToken
-) {
-  const link = 'https://d24zn9cw9ofw9u.cloudfront.net?q=';
-  const controller = new AbortController();
-  token?.onCancellationRequested(() => {
-    controller.abort();
-  });
-  const response = await fetchWithAbort(link + value, {
-    controller: controller,
-    timeout: 5000
-  });
-
-  if (token?.isCancellationRequested) {
-    return;
-  }
-  if (!response?.ok) {
-    throw new Error('Network response: ' + response?.status);
-  }
-
-  return (await response.json()) as SearchResponse;
-}
-
-function searchAndAskforResult(value: string) {
-  let quickPickItems: {
-    label: string;
-    link: string;
-    detail: string;
-  }[] = [];
-  const task = async (
-    _: vscode.Progress<{ message?: string; increment?: number }>,
-    token: vscode.CancellationToken
-  ) => {
-    try {
-      if (await tryToOpenDocumentationFor(value, token)) {
-        return;
-      }
-      const searchResponseJson = await searchWithEngine(value, token);
-      if (token.isCancellationRequested) {
-        return;
-      }
-      if (!searchResponseJson?.items) {
-        void vscode.window.showInformationMessage('No search results found.');
-        return;
-      }
-      quickPickItems = searchResponseJson.items.map((item) => ({
-        label: item.title,
-        link: item.link,
-        detail: item.snippet
-      }));
-    } catch (error) {
-      const err = isError(error) ? error.message : String(error);
-      logger.error(err);
-      void vscode.window.showErrorMessage(`Error: "${err}"`);
-    }
-  };
-  const options = {
-    location: vscode.ProgressLocation.Notification,
-    title: 'Searching...',
-    cancellable: true
-  };
-  void vscode.window.withProgress(options, task).then(async () => {
-    if (quickPickItems.length === 0) {
-      return;
-    }
-    const selected = await vscode.window.showQuickPick(quickPickItems, {
-      placeHolder: 'Select a search result'
-    });
-    if (selected) {
-      openInBrowser(selected.link);
-    }
-  });
-}
-
-function openHomepage() {
-  telemetry.sendAction('documentationHomepage');
-  openInBrowser('https://doc.qt.io');
-}
-
-function searchForCurrentWord() {
-  telemetry.sendAction('documentationSearchForCurrentWord');
-  const word = getCurrentWord();
-  if (word === '') {
+function onSearchForCurrentWord() {
+  const edit = getCurrentEdit();
+  if (!edit || edit.word.length === 0) {
     void vscode.window.showInformationMessage('No word found at the cursor.');
     return;
   }
 
-  searchAndAskforResult(word);
+  openOrSearchAndPick(edit);
 }
 
 export function registerDocumentationCommands() {
-  const homepageCommand = vscode.commands.registerCommand(
-    `${EXTENSION_ID}.documentationHomepage`,
-    openHomepage
-  );
-  const searchManuallyCommand = vscode.commands.registerCommand(
-    `${EXTENSION_ID}.documentationSearchManually`,
-    search
-  );
-  const searchForCurrentWordCommand = vscode.commands.registerCommand(
-    `${EXTENSION_ID}.documentationSearchForCurrentWord`,
-    searchForCurrentWord
-  );
-  return [homepageCommand, searchManuallyCommand, searchForCurrentWordCommand];
+  function register(cmd: string, callback: (...args: unknown[]) => unknown) {
+    return vscode.commands.registerCommand(
+      `${EXTENSION_ID}.${cmd}`,
+      async () => {
+        telemetry.sendAction(cmd);
+        await callback();
+      }
+    );
+  }
+
+  return [
+    register('documentationHomepage', onOpenHomePage),
+    register('documentationSearchManually', onSearchManually),
+    register('documentationSearchForCurrentWord', onSearchForCurrentWord)
+  ];
 }
