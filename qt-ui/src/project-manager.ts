@@ -74,6 +74,12 @@ export class UIProjectManager extends ProjectManager<UIProject> {
         await project.setWorkspaceFeatures(
           coreAPI?.getValue<QtWorkspaceFeatures>(folder, key)
         );
+        continue;
+      }
+
+      if (key === 'venvBinPath') {
+        const value = coreAPI?.getValue<string>(folder, key);
+        await project.setVenvBinPath(value);
       }
     }
   };

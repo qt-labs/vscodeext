@@ -23,6 +23,8 @@ export const VENV = {
 };
 
 export const EXECUTABLE_EXT = IsWindows ? '.exe' : '';
+
+export const CORE_API_KEY_VENV_BIN_PATH = 'venvBinPath';
 export const CORE_API_KEY_WORKSPACE_FEATURES = 'workspaceFeatures';
 
 export const TOML_PROJECT_FILE_NAME = 'pyproject.toml';

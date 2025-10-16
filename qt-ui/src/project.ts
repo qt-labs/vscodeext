@@ -14,14 +14,19 @@ import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
-import { locateDesignerFromKit, locateDesignerFromQtPaths } from '@/util';
+import {
+  locateDesignerFromKit,
+  locateDesignerFromQtPaths,
+  locateDesignerFromVenvBinPaths
+} from '@/util';
 
 type UpdateReason =
   | 'init'
   | 'customExeChanged'
   | 'workspaceFeatureChanged'
   | 'selectedKitPathChanged'
-  | 'selectedQtPathsChanged';
+  | 'selectedQtPathsChanged'
+  | 'venvBinPathChanged';
 
 const logger = createLogger('project');
 
@@ -39,6 +44,7 @@ export class UIProject implements Project {
   private _workspaceFeatures: QtWorkspaceFeatures | undefined;
   private _selectedKitPath: string | undefined;
   private _selectedQtPaths: string | undefined;
+  private _venvBinPath: string | undefined;
 
   private _designerClient: DesignerClient | undefined;
   private readonly _designerServer: DesignerServer;
@@ -84,6 +90,7 @@ export class UIProject implements Project {
     );
     this._selectedKitPath = read<string>(this._folder, 'selectedKitPath');
     this._selectedQtPaths = read<string>(this._folder, 'selectedQtPaths');
+    this._venvBinPath = read<string>(this._folder, 'venvBinPath');
 
     await this._updateClient('init');
   }
@@ -115,6 +122,13 @@ export class UIProject implements Project {
     if (this._selectedQtPaths !== exePath) {
       this._selectedQtPaths = exePath;
       await this._updateClient('selectedQtPathsChanged');
+    }
+  }
+
+  public async setVenvBinPath(venvBinPath: string | undefined) {
+    if (this._venvBinPath !== venvBinPath) {
+      this._venvBinPath = venvBinPath;
+      await this._updateClient('venvBinPathChanged');
     }
   }
 
@@ -162,6 +176,12 @@ export class UIProject implements Project {
 
       logger.error(msg);
       void vscode.window.showWarningMessage(msg);
+    }
+
+    if (this._workspaceFeatures?.projectTypes.pyside) {
+      if (this._venvBinPath) {
+        return locateDesignerFromVenvBinPaths(this._venvBinPath);
+      }
     }
 
     if (this._workspaceFeatures?.projectTypes.cmake) {

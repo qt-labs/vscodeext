@@ -80,6 +80,6 @@ const onPyApiEnvChanged = async (e: PyApiEnvChanged) => {
   const folder = e.resource;
   const project = folder && projectManager.getProject(folder);
   if (project) {
-    await project.refreshEnv(pyApi);
+    await projectManager.refreshEnv(project);
   }
 };
