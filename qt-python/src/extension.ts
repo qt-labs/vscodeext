@@ -7,7 +7,13 @@ import {
   ActiveEnvironmentPathChangeEvent as PyApiEnvChanged
 } from '@vscode/python-extension';
 
-import { CoreAPI, getCoreApi, createLogger, initLogger } from 'qt-lib';
+import {
+  CoreAPI,
+  getCoreApi,
+  createLogger,
+  initLogger,
+  telemetry
+} from 'qt-lib';
 import { PySideTaskProvider } from './task';
 import { PySideDebugConfigProvider } from './debug';
 import { PySideProjectManager } from './project-manager';
@@ -22,12 +28,14 @@ export let coreApi: CoreAPI | undefined;
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(consts.LOG_NAME);
   logger.info(`Activate: ${consts.EXTENSION_ID}`);
+  telemetry.activate(context);
 
   try {
     await initDependency();
     await initCoreApi();
     await initPythonSupport(context);
     logger.info(`Activated: ${consts.EXTENSION_ID}`);
+    telemetry.sendEvent('activated');
   } catch (e) {
     logger.error(`Cannot activate: ${consts.EXTENSION_ID}: ${String(e)}`);
   }
@@ -35,6 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logger.info(`Deactivate: ${consts.EXTENSION_ID}`);
+  telemetry.dispose();
 }
 
 // helpers
