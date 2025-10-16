@@ -69,17 +69,15 @@ async function initPythonSupport(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     projectManager,
     pyApi.environments.onDidChangeActiveEnvironmentPath(onPyApiEnvChanged),
-    vscode.tasks.registerTaskProvider(consts.TASK.TYPE, task),
-    vscode.debug.registerDebugConfigurationProvider(consts.DEBUG.TYPE, debug)
+    vscode.tasks.registerTaskProvider(consts.TASK_TYPE, task),
+    vscode.debug.registerDebugConfigurationProvider(consts.DEBUG_TYPE, debug)
   );
 }
 
 const onPyApiEnvChanged = async (e: PyApiEnvChanged) => {
-  logger.info(`Active environment changed: ${e.resource?.uri.fsPath}`);
-
   const folder = e.resource;
-  const project = folder && projectManager.getProject(folder);
-  if (project) {
-    await projectManager.refreshEnv(project);
+  if (folder) {
+    logger.info(`Active environment changed: ${folder.uri.fsPath}`);
+    await projectManager.refreshEnv(folder);
   }
 };

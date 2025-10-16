@@ -16,10 +16,10 @@ export class PySideDebugConfigProvider
     folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration
   ) {
-    config.type = consts.DEBUG.DELEGATE_TYPE;
+    config.type = consts.DEBUG_DELEGATE_TYPE;
     config.program ??= path.join(
       folder?.uri.fsPath ?? './',
-      consts.DEBUG.DEFAULT_ENTRY_POINT
+      consts.DEBUG_DEFAULT_ENTRY_POINT
     );
     config.preLaunchTask ??= findTaskFullName(TaskId.Build);
 
