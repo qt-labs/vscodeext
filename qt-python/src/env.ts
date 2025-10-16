@@ -17,7 +17,7 @@ export class PySideEnv {
   get venvBinPath(): string {
     const root = this._pyEnv?.executable.sysPrefix ?? '';
     return root
-      ? utils.toForwardSlash(path.join(root, consts.VENV.BIN_DIR))
+      ? utils.toForwardSlash(path.join(root, consts.VENV_BIN_DIR))
       : '';
   }
 }

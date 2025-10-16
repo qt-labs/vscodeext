@@ -60,7 +60,7 @@ export class PySideTaskProvider implements vscode.TaskProvider {
 }
 
 export function findTaskFullName(id: TaskId): string {
-  return `${consts.TASK.SOURCE}: ${findTaskName(id)}`;
+  return `${consts.TASK_SOURCE}: ${findTaskName(id)}`;
 }
 
 // helpers
@@ -77,11 +77,11 @@ function createTask(project: PySideProject, taskId: TaskId) {
   const cwd = folder.uri.fsPath;
   const cmd = createCmdline(taskId, env);
   const def = {
-    type: consts.TASK.TYPE,
+    type: consts.TASK_TYPE,
     action // contributes > taskDefinitions
   };
 
-  const task = new vscode.Task(def, folder, taskName, consts.TASK.SOURCE);
+  const task = new vscode.Task(def, folder, taskName, consts.TASK_SOURCE);
   task.detail = `${consts.PYSIDE_PROJECT_TOOL} ${action}`;
   task.execution = new vscode.ShellExecution(cmd, { cwd });
   task.presentationOptions = { clear: true };

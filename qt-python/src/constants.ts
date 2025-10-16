@@ -3,29 +3,21 @@
 
 import { IsWindows } from 'qt-lib';
 
-export const EXTENSION_ID = 'theqtcompany.qt-python';
+export const EXTENSION_ID = 'qt-python';
 export const MS_PYTHON_ID = 'ms-python.python';
 export const LOG_NAME = 'qt-python';
 
-export const TASK = {
-  TYPE: 'pyside', // contributes > taskDefinitions
-  SOURCE: 'PySide'
-};
+export const TASK_TYPE = 'pyside'; // contributes > taskDefinitions
+export const TASK_SOURCE = 'PySide';
 
-export const DEBUG = {
-  TYPE: 'pyside', // contributes > debuggers
-  DELEGATE_TYPE: 'debugpy',
-  DEFAULT_ENTRY_POINT: 'main.py'
-};
+export const DEBUG_TYPE = 'pyside'; // contributes > debuggers
+export const DEBUG_DELEGATE_TYPE = 'debugpy';
+export const DEBUG_DEFAULT_ENTRY_POINT = 'main.py';
 
-export const VENV = {
-  BIN_DIR: IsWindows ? 'Scripts' : 'bin'
-};
+export const VENV_BIN_DIR = IsWindows ? 'Scripts' : 'bin';
 
-export const EXECUTABLE_EXT = IsWindows ? '.exe' : '';
-
-export const CORE_API_KEY_VENV_BIN_PATH = 'venvBinPath';
-export const CORE_API_KEY_WORKSPACE_FEATURES = 'workspaceFeatures';
+export const CORE_KEY_VENV_BIN_PATH = 'venvBinPath';
+export const CORE_KEY_WORKSPACE_FEATURES = 'workspaceFeatures';
 
 export const TOML_PROJECT_FILE_NAME = 'pyproject.toml';
 export const TOML_KEY_PROJECT_NAME = 'project.name';
