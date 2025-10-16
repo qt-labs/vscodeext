@@ -3,11 +3,18 @@
 
 import * as vscode from 'vscode';
 
-import { ProjectManager, createLogger, QtWorkspaceFeatures } from 'qt-lib';
+import {
+  ConfigType,
+  QtWorkspaceFeatures,
+  QtWorkspaceConfigMessage,
+  ProjectManager,
+  createLogger
+} from 'qt-lib';
 import { PySideProject } from './project';
 import { pyApi, coreApi } from './extension';
 import * as consts from '@/constants';
 
+type Folder = vscode.WorkspaceFolder;
 type Context = vscode.ExtensionContext;
 
 const logger = createLogger('project-manager');
@@ -29,15 +36,30 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
   }
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  public async refreshEnv(p: PySideProject) {
+    await p.refreshEnv(pyApi);
+    updateVenvBinPath(p);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private readonly _onProjectAdded = async (p: PySideProject) => {
     await p.refreshEnv(pyApi);
     p.refreshInfo();
-    updateCoreValues(p);
+    updateVenvBinPath(p);
+    updateWorkspaceFeatures(p);
   };
 }
 
 // helpers
-function updateCoreValues(p: PySideProject) {
+function updateVenvBinPath(p: PySideProject) {
+  setCoreValueAndNotify(
+    p.folder,
+    consts.CORE_API_KEY_VENV_BIN_PATH,
+    p.env?.venvBinPath
+  );
+}
+
+function updateWorkspaceFeatures(p: PySideProject) {
   if (!coreApi) {
     logger.error('CoreAPI is not initialized');
     return;
@@ -48,8 +70,22 @@ function updateCoreValues(p: PySideProject) {
   features ??= { projectTypes: {} };
   features.projectTypes.pyside = p.isValid();
 
-  coreApi.setValue(p.folder, key, features);
+  setCoreValueAndNotify(p.folder, key, features);
+}
+
+function setCoreValueAndNotify(folder: Folder, key: string, value: ConfigType) {
+  if (!coreApi) {
+    logger.error('CoreAPI is not initialized');
+    return;
+  }
+
+  const msg = new QtWorkspaceConfigMessage(folder);
+  msg.config.add(key);
+
   logger.info(
-    `Setting core value: key = ${key}, value = ${JSON.stringify(features)}`
+    `Updating core (${folder.name}): '${key}' = ${JSON.stringify(value)}`
   );
+
+  coreApi.setValue(folder, key, value);
+  coreApi.notify(msg);
 }

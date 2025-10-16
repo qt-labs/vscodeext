@@ -54,6 +54,11 @@ export async function locateDesignerFromQtPaths(qtPaths: string) {
   return searchForExeInQtInfo(info, getDesignerExePathFromBin);
 }
 
+export async function locateDesignerFromVenvBinPaths(venvBinPath: string) {
+  const candidate = path.join(venvBinPath, 'pyside6-designer' + OSExeSuffix);
+  return (await exists(candidate)) ? candidate : undefined;
+}
+
 function getDesignerExePathFromBin(selectedQtBinPath: string) {
   return path.join(
     selectedQtBinPath,

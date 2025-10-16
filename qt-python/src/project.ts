@@ -11,7 +11,6 @@ import { PythonExtension as PyApi } from '@vscode/python-extension';
 import { Project, createLogger } from 'qt-lib';
 import { PySideEnv } from './env';
 import { PySideProjectInfo } from './types';
-import { coreApi } from './extension';
 
 import * as consts from './constants';
 
@@ -36,6 +35,10 @@ export class PySideProject implements Project {
     return this._env;
   }
 
+  set env(env: PySideEnv | undefined) {
+    this._env = env;
+  }
+
   get folder() {
     return this._folder;
   }
@@ -46,11 +49,6 @@ export class PySideProject implements Project {
 
   public async refreshEnv(pyapi: PyApi | undefined) {
     this._env = await resolveEnv(pyapi, this._folder);
-    const venvBinPath = this._env?.venvBinPath;
-
-    if (venvBinPath) {
-      coreApi?.setValue(this._folder, 'pythonVenvBinPath', venvBinPath);
-    }
   }
 
   public refreshInfo() {
