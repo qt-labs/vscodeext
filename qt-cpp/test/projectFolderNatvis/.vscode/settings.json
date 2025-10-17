@@ -1,4 +1,10 @@
 {
+  "cmake.configureSettings": {
+    "CMAKE_BUILD_TYPE": "Debug"
+  },
+  "cmake.buildConfig": "Debug",
   "cmake.configureOnOpen": false,
-  "cmake.loggingLevel": "error"
+  "cmake.loggingLevel": "error",
+  "cmake.options.statusBarVisibility": "visible",
+  "debug.showVariableTypes": true
 }
