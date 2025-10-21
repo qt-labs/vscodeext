@@ -123,6 +123,7 @@ export class QMLProject implements Project {
 
   updateQmllsParams() {
     this.qmlls.clearImportPaths();
+    this.qmlls.docsPath = undefined;
     if (this.kitPath) {
       this.qmlls.addImportPath(path.join(this.kitPath, 'qml'));
       const docsPath = this.getDocsPathFromKitDir(this.kitPath);
