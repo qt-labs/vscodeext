@@ -4,11 +4,11 @@
 import _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { IsWindows, createLogger } from 'qt-lib';
+import { createLogger } from 'qt-lib';
 import { TaskId, type ProjectToolAction } from './types';
-import { PySideEnv } from './env';
 import { PySideProject } from './project';
 import { projectManager } from './extension';
+import { PySideCommandBuilder } from './builder';
 import * as consts from './constants';
 
 const logger = createLogger('task');
@@ -74,8 +74,14 @@ function createTask(project: PySideProject, taskId: TaskId) {
     return undefined;
   }
 
-  const cwd = folder.uri.fsPath;
-  const cmd = createCmdline(taskId, env);
+  const builder = new PySideCommandBuilder(env, { useVenv: true });
+  const commandLine = builder.build(createProjectToolCommand(taskId));
+  const shellOptions = {
+    cwd: folder.uri.fsPath,
+    executable: builder.shellPath,
+    shellArgs: builder.shellArgs
+  };
+
   const def = {
     type: consts.TASK_TYPE,
     action // contributes > taskDefinitions
@@ -83,7 +89,7 @@ function createTask(project: PySideProject, taskId: TaskId) {
 
   const task = new vscode.Task(def, folder, taskName, consts.TASK_SOURCE);
   task.detail = `${consts.PYSIDE_PROJECT_TOOL} ${action}`;
-  task.execution = new vscode.ShellExecution(cmd, { cwd });
+  task.execution = new vscode.ShellExecution(commandLine, shellOptions);
   task.presentationOptions = { clear: true };
 
   const group = findTaskGroup(taskId);
@@ -94,17 +100,9 @@ function createTask(project: PySideProject, taskId: TaskId) {
   return task;
 }
 
-function createCmdline(taskId: TaskId, env: PySideEnv) {
+function createProjectToolCommand(taskId: TaskId) {
   const action = findProjectToolAction(taskId);
-  const pysideCmd = `${consts.PYSIDE_PROJECT_TOOL} ${action ?? ''}`;
-  const binPath = env.venvBinPath;
-  const shellExec = IsWindows
-    ? (process.env.ComSpec ?? 'C:/Windows/System32/cmd.exe') + ' /c'
-    : '/usr/bin/env bash -c';
-
-  return IsWindows
-    ? `${shellExec} '"${binPath}/activate.bat" && ${pysideCmd}'`
-    : `${shellExec} 'source "${binPath}/activate" && ${pysideCmd}'`;
+  return `${consts.PYSIDE_PROJECT_TOOL} ${action ?? ''}`;
 }
 
 function findTaskName(id: TaskId): string | undefined {

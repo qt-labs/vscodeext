@@ -18,6 +18,7 @@ import { PySideTaskProvider } from './task';
 import { PySideDebugConfigProvider } from './debug';
 import { PySideProjectManager } from './project-manager';
 import * as consts from '@/constants';
+import { onInstallPySide6Command } from './installer';
 
 const logger = createLogger('extension');
 
@@ -34,6 +35,8 @@ export async function activate(context: vscode.ExtensionContext) {
     await initDependency();
     await initCoreApi();
     await initPythonSupport(context);
+    initCommands(context);
+
     logger.info(`Activated: ${consts.EXTENSION_ID}`);
     telemetry.sendEvent('activated');
   } catch (e) {
@@ -71,6 +74,22 @@ async function initPythonSupport(context: vscode.ExtensionContext) {
     pyApi.environments.onDidChangeActiveEnvironmentPath(onPyApiEnvChanged),
     vscode.tasks.registerTaskProvider(consts.TASK_TYPE, task),
     vscode.debug.registerDebugConfigurationProvider(consts.DEBUG_TYPE, debug)
+  );
+}
+
+function initCommands(context: vscode.ExtensionContext) {
+  function register(c: string, callback: (...args: unknown[]) => unknown) {
+    return vscode.commands.registerCommand(
+      `${consts.COMMAND_PREFIX}.${c}`,
+      async () => {
+        telemetry.sendAction(c);
+        await callback();
+      }
+    );
+  }
+
+  context.subscriptions.push(
+    register(consts.COMMAND_INSTALL_PYSIDE, onInstallPySide6Command)
   );
 }
 

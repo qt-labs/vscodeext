@@ -7,6 +7,11 @@ export const EXTENSION_ID = 'qt-python';
 export const MS_PYTHON_ID = 'ms-python.python';
 export const LOG_NAME = 'qt-python';
 
+export const COMMAND_PREFIX = 'qt-python';
+export const COMMAND_INSTALL_PYSIDE = 'installPySide6'; // contributes > commands
+export const COMMAND_PYTHON_CREATE_ENV = 'python.createEnvironment';
+export const COMMAND_PYTHON_SELECT_PYTHON = 'python.setInterpreter';
+
 export const TASK_TYPE = 'pyside'; // contributes > taskDefinitions
 export const TASK_SOURCE = 'PySide';
 
@@ -21,3 +26,4 @@ export const TOML_KEY_PROJECT_NAME = 'project.name';
 export const TOML_KEY_PROJECT_FILES = 'tool.pyside6-project.files';
 
 export const PYSIDE_PROJECT_TOOL = 'pyside6-project';
+export const MAINT_WHEEL_DIR_NAME = 'QtForPython';
