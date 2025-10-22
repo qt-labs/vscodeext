@@ -6,6 +6,7 @@ import path from 'path';
 import * as child_process from 'child_process';
 
 import {
+  CoreKey,
   createLogger,
   exists,
   findQtPathsInKitDir,
@@ -41,11 +42,11 @@ export async function openInLinguistCommand() {
   }
   const selectedKitPath = coreAPI?.getValue<string>(
     project.folder,
-    'selectedKitPath'
+    CoreKey.SELECTED_KIT_PATH
   );
   const selectedQtPaths = coreAPI?.getValue<string>(
     project.folder,
-    'selectedQtPaths'
+    CoreKey.SELECTED_QT_PATHS
   );
   let linguistPath: string | undefined;
   if (selectedKitPath) {

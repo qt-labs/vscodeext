@@ -7,7 +7,7 @@ import { isEmpty, isEqual } from 'lodash';
 import {
   AdditionalQtPathsName,
   createLogger,
-  GlobalWorkspace,
+  CoreKey,
   QtInsRootConfigName,
   QtAdditionalPath,
   compareQtAdditionalPath,
@@ -97,13 +97,13 @@ export class CoreProject implements Project {
   public initConfigValues() {
     const folder = this.folder;
     const qtInsRoot = CoreProjectManager.getWorkspaceFolderQtInsRoot(folder);
-    coreAPI?.setValue(folder, QtInsRootConfigName, qtInsRoot);
+    coreAPI?.setValue(folder, CoreKey.QT_INSTALLATION_ROOT, qtInsRoot);
     logger.info(
       `Setting Qt installation root for ${folder.uri.fsPath} to: ${qtInsRoot}`
     );
     const additionalQtPaths =
       CoreProjectManager.getWorkspaceFolderAdditionalQtPaths(folder);
-    coreAPI?.setValue(folder, AdditionalQtPathsName, additionalQtPaths);
+    coreAPI?.setValue(folder, CoreKey.ADDITIONAL_QT_PATHS, additionalQtPaths);
     logger.info(
       `Setting additional Qt paths for ${folder.uri.fsPath} to: ${additionalQtPaths.join(', ')}`
     );
@@ -146,7 +146,7 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
             void this.globalStateManager.setQtInstallationRoot(
               currentQtInsRoot
             );
-            onQtInsRootUpdated(currentQtInsRoot, GlobalWorkspace);
+            onQtInsRootUpdated(currentQtInsRoot, CoreKey.GLOBAL_WORKSPACE);
           }
           const previousAdditionalQtPaths =
             this.globalStateManager.getAdditionalQtPaths();
@@ -162,7 +162,7 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
             );
             onAdditionalQtPathsUpdated(
               currentAdditionalQtPaths,
-              GlobalWorkspace
+              CoreKey.GLOBAL_WORKSPACE
             );
           }
         }

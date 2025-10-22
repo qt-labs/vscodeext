@@ -11,6 +11,7 @@ import { isEmpty, isEqual } from 'lodash';
 import { WorkspaceStateManager } from '@/state';
 import { coreAPI, kitManager } from '@/extension';
 import {
+  CoreKey,
   createLogger,
   IsLinux,
   IsMacOS,
@@ -98,8 +99,8 @@ export class CppProject implements Project {
             );
             this._buildDir = currentBuildDir;
             const message = new QtWorkspaceConfigMessage(this.folder);
-            coreAPI?.setValue(this.folder, 'buildDir', currentBuildDir);
-            message.config.add('buildDir');
+            coreAPI?.setValue(this.folder, CoreKey.BUILD_DIR, currentBuildDir);
+            message.config.add(CoreKey.BUILD_DIR);
             logger.info(
               `Notifying coreAPI with message: ${message.toString()}`
             );
@@ -123,12 +124,12 @@ export class CppProject implements Project {
     }
     const selectedKitPath = kit ? getQtInsRoot(kit) : undefined;
     const message = new QtWorkspaceConfigMessage(this.folder);
-    coreAPI?.setValue(this.folder, 'selectedKitPath', selectedKitPath);
-    message.config.add('selectedKitPath');
+    coreAPI?.setValue(this.folder, CoreKey.SELECTED_KIT_PATH, selectedKitPath);
+    message.config.add(CoreKey.SELECTED_KIT_PATH);
 
     const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
-    coreAPI?.setValue(this.folder, 'selectedQtPaths', selectedQtPaths);
-    message.config.add('selectedQtPaths');
+    coreAPI?.setValue(this.folder, CoreKey.SELECTED_QT_PATHS, selectedQtPaths);
+    message.config.add(CoreKey.SELECTED_QT_PATHS);
     logger.info(`Notifying coreAPI with message: ${message.toString()}`);
     coreAPI?.notify(message);
   }
@@ -424,14 +425,14 @@ export class CppProject implements Project {
     logger.info(
       `Setting selected kit path for ${folder.uri.fsPath} to ${selectedKitPath}`
     );
-    coreAPI.setValue(folder, 'selectedKitPath', selectedKitPath);
+    coreAPI.setValue(folder, CoreKey.SELECTED_KIT_PATH, selectedKitPath);
     const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
-    coreAPI.setValue(folder, 'selectedQtPaths', selectedQtPaths);
+    coreAPI.setValue(folder, CoreKey.SELECTED_QT_PATHS, selectedQtPaths);
     logger.info(
       `Setting selected Qt paths for ${folder.uri.fsPath} to ${selectedQtPaths}`
     );
 
-    const featuresKey = 'workspaceFeatures';
+    const featuresKey = CoreKey.WORKSPACE_FEATURES;
     let features = coreAPI.getValue<QtWorkspaceFeatures>(folder, featuresKey);
     features ??= { projectTypes: {} };
     features.projectTypes.cmake = true;
@@ -441,16 +442,16 @@ export class CppProject implements Project {
       `Setting workspace features for ${folder.uri.fsPath} to ${JSON.stringify(features)}`
     );
 
-    coreAPI.setValue(folder, 'buildDir', this.buildDir);
+    coreAPI.setValue(folder, CoreKey.BUILD_DIR, this.buildDir);
     logger.info(
       `Setting build directory for ${folder.uri.fsPath} to ${this.buildDir}`
     );
     logger.info('Config values initialized for:', folder.uri.fsPath);
     const message = new QtWorkspaceConfigMessage(folder);
-    message.config.add('selectedKitPath');
-    message.config.add('selectedQtPaths');
+    message.config.add(CoreKey.SELECTED_KIT_PATH);
+    message.config.add(CoreKey.SELECTED_QT_PATHS);
     message.config.add(featuresKey);
-    message.config.add('buildDir');
+    message.config.add(CoreKey.BUILD_DIR);
     coreAPI.notify(message);
   }
   public getStateManager() {

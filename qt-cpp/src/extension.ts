@@ -9,9 +9,7 @@ import {
   createLogger,
   initLogger,
   QtWorkspaceConfigMessage,
-  QtInsRootConfigName,
-  AdditionalQtPathsName,
-  GlobalWorkspace,
+  CoreKey,
   QtAdditionalPath,
   telemetry
 } from 'qt-lib';
@@ -108,7 +106,7 @@ async function processMessage(message: QtWorkspaceConfigMessage) {
   // check if workspace folder is a string
   let project: CppProject | undefined;
   if (typeof message.workspaceFolder === 'string') {
-    if (message.workspaceFolder !== GlobalWorkspace) {
+    if (message.workspaceFolder !== CoreKey.GLOBAL_WORKSPACE) {
       throw new Error('Invalid global workspace');
     }
   } else {
@@ -119,21 +117,21 @@ async function processMessage(message: QtWorkspaceConfigMessage) {
     }
   }
   for (const key of message.config.keys()) {
-    if (key === QtInsRootConfigName) {
+    if (key === CoreKey.QT_INSTALLATION_ROOT) {
       const value =
         coreAPI?.getValue<string>(
           message.workspaceFolder,
-          QtInsRootConfigName
+          CoreKey.QT_INSTALLATION_ROOT
         ) ?? '';
       await kitManager.onQtInstallationRootChanged(value, project?.folder);
       continue;
     }
 
-    if (key === AdditionalQtPathsName) {
+    if (key === CoreKey.ADDITIONAL_QT_PATHS) {
       const additionalQtPaths =
         coreAPI?.getValue<QtAdditionalPath[]>(
           message.workspaceFolder,
-          AdditionalQtPathsName
+          CoreKey.ADDITIONAL_QT_PATHS
         ) ?? [];
       await kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
       continue;

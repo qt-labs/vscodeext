@@ -17,7 +17,8 @@ import {
   QtAdditionalPath,
   IsMacOS,
   telemetry,
-  resolveConfiguration
+  resolveConfiguration,
+  CoreKey
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
@@ -226,8 +227,12 @@ export function onQtInsRootUpdated(
   logger.info(`Qt installation root updated: "${newQtInstallationRoot}"`);
 
   const message = new QtWorkspaceConfigMessage(folder);
-  coreAPI?.setValue(folder, QtInsRootConfigName, newQtInstallationRoot);
-  message.config.add(QtInsRootConfigName);
+  coreAPI?.setValue(
+    folder,
+    CoreKey.QT_INSTALLATION_ROOT,
+    newQtInstallationRoot
+  );
+  message.config.add(CoreKey.QT_INSTALLATION_ROOT);
   logger.info(`Notifying coreAPI with message: ${message.toString()}`);
   coreAPI?.notify(message);
 }
@@ -250,8 +255,8 @@ export function onAdditionalQtPathsUpdated(
   logger.info('Additional Qt Paths updated: ' + JSON.stringify(newPaths));
 
   const message = new QtWorkspaceConfigMessage(folder);
-  coreAPI?.setValue(folder, AdditionalQtPathsName, newPaths);
-  message.config.add(AdditionalQtPathsName);
+  coreAPI?.setValue(folder, CoreKey.ADDITIONAL_QT_PATHS, newPaths);
+  message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
   logger.info(`Notifying coreAPI with message: ${message.toString()}`);
   coreAPI?.notify(message);
 }
