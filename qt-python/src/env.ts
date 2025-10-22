@@ -14,10 +14,22 @@ export class PySideEnv {
     this._pyEnv = pyenv;
   }
 
+  public isVenv(): boolean {
+    return this._pyEnv?.environment?.type === 'VirtualEnvironment';
+  }
+
+  get venvName(): string | undefined {
+    return this._pyEnv?.environment?.name;
+  }
+
   get venvBinPath(): string {
     const root = this._pyEnv?.executable.sysPrefix ?? '';
     return root
       ? utils.toForwardSlash(path.join(root, consts.VENV_BIN_DIR))
       : '';
+  }
+
+  get interpreterPath(): string | undefined {
+    return this._pyEnv?.executable.uri?.fsPath;
   }
 }

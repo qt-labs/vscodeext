@@ -40,6 +40,21 @@
       "title": "Qt Python Configuration",
       "properties": {}
     },
+    "commands": [
+      {
+        "command": "qt-python.installPySide6",
+        "title": "%qt-python.command.installPySide6.title%",
+        "category": "Qt-Python"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "qt-python.installPySide6",
+          "when": "workspaceFolderCount > 0"
+        }
+      ]
+    },
     "taskDefinitions": [
       {
         "type": "pyside",

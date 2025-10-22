@@ -9,6 +9,7 @@ import { PySideProjectInfo } from './types';
 
 type Folder = vscode.WorkspaceFolder;
 type Context = vscode.ExtensionContext;
+
 const logger = createLogger('project');
 
 export class PySideProject implements Project {
