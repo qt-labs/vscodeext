@@ -11,9 +11,7 @@ import {
   OSExeSuffix,
   UserLocalDir,
   createLogger,
-  QtInsRootConfigName,
-  AdditionalQtPathsName,
-  GlobalWorkspace,
+  CoreKey,
   compareVersions,
   findQtKits,
   isError,
@@ -821,13 +819,18 @@ export class KitManager {
   }
 
   public static getWorkspaceFolderQtInsRoot(folder: vscode.WorkspaceFolder) {
-    return coreAPI?.getValue<string>(folder, QtInsRootConfigName) ?? '';
+    return (
+      coreAPI?.getValue<string>(folder, CoreKey.QT_INSTALLATION_ROOT) ?? ''
+    );
   }
   public static getWorkspaceFolderAdditionalQtPaths(
     folder: vscode.WorkspaceFolder
   ) {
     return (
-      coreAPI?.getValue<QtAdditionalPath[]>(folder, AdditionalQtPathsName) ?? []
+      coreAPI?.getValue<QtAdditionalPath[]>(
+        folder,
+        CoreKey.ADDITIONAL_QT_PATHS
+      ) ?? []
     );
   }
   private static getVCPKGToolchainFile() {
@@ -839,13 +842,18 @@ export class KitManager {
   }
 }
 function getCurrentGlobalQtInstallationRoot(): string {
-  return coreAPI?.getValue<string>(GlobalWorkspace, QtInsRootConfigName) ?? '';
+  return (
+    coreAPI?.getValue<string>(
+      CoreKey.GLOBAL_WORKSPACE,
+      CoreKey.QT_INSTALLATION_ROOT
+    ) ?? ''
+  );
 }
 function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
   return (
     coreAPI?.getValue<QtAdditionalPath[]>(
-      GlobalWorkspace,
-      AdditionalQtPathsName
+      CoreKey.GLOBAL_WORKSPACE,
+      CoreKey.ADDITIONAL_QT_PATHS
     ) ?? []
   );
 }

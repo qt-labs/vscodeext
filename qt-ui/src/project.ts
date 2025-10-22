@@ -8,7 +8,8 @@ import {
   Project,
   createLogger,
   resolveConfiguration,
-  QtWorkspaceFeatures
+  QtWorkspaceFeatures,
+  CoreKey
 } from 'qt-lib';
 import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
@@ -86,11 +87,17 @@ export class UIProject implements Project {
     this._customExePath = this._readCustomExePath();
     this._workspaceFeatures = read<QtWorkspaceFeatures>(
       this._folder,
-      'workspaceFeatures'
+      CoreKey.WORKSPACE_FEATURES
     );
-    this._selectedKitPath = read<string>(this._folder, 'selectedKitPath');
-    this._selectedQtPaths = read<string>(this._folder, 'selectedQtPaths');
-    this._venvBinPath = read<string>(this._folder, 'venvBinPath');
+    this._selectedKitPath = read<string>(
+      this._folder,
+      CoreKey.SELECTED_KIT_PATH
+    );
+    this._selectedQtPaths = read<string>(
+      this._folder,
+      CoreKey.SELECTED_QT_PATHS
+    );
+    this._venvBinPath = read<string>(this._folder, CoreKey.VENV_BIN_PATH);
 
     await this._updateClient('init');
   }

@@ -10,7 +10,8 @@ import {
   initLogger,
   telemetry,
   QtWorkspaceConfigMessage,
-  createColorProvider
+  createColorProvider,
+  CoreKey
 } from 'qt-lib';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
@@ -112,10 +113,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     }
     let updateQmlls = false;
     for (const key of message.config.keys()) {
-      if (key === 'selectedKitPath') {
+      if (key === CoreKey.SELECTED_KIT_PATH) {
         const selectedKitPath = coreAPI?.getValue<string>(
           message.workspaceFolder,
-          'selectedKitPath'
+          CoreKey.SELECTED_KIT_PATH
         );
         if (selectedKitPath !== project.kitPath) {
           updateQmlls = true;
@@ -123,10 +124,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
         }
         continue;
       }
-      if (key === 'selectedQtPaths') {
+      if (key === CoreKey.SELECTED_QT_PATHS) {
         const selectedQtPaths = coreAPI?.getValue<string>(
           message.workspaceFolder,
-          'selectedQtPaths'
+          CoreKey.SELECTED_QT_PATHS
         );
         if (selectedQtPaths !== project.qtpathsExe) {
           updateQmlls = true;
@@ -134,10 +135,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
         }
         continue;
       }
-      if (key === 'buildDir') {
+      if (key === CoreKey.BUILD_DIR) {
         const buildDir = coreAPI?.getValue<string>(
           message.workspaceFolder,
-          'buildDir'
+          CoreKey.BUILD_DIR
         );
         if (buildDir !== project.buildDir) {
           updateQmlls = true;

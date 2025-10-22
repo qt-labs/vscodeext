@@ -6,10 +6,8 @@ import { isEmpty } from 'lodash';
 
 import {
   createLogger,
-  GlobalWorkspace,
+  CoreKey,
   initLogger,
-  QtInsRootConfigName,
-  AdditionalQtPathsName,
   telemetry,
   createColorProvider
 } from 'qt-lib';
@@ -91,14 +89,14 @@ export function deactivate() {
 
 export function initCoreValues() {
   coreAPI?.setValue(
-    GlobalWorkspace,
-    QtInsRootConfigName,
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.QT_INSTALLATION_ROOT,
     getCurrentGlobalQtInstallationRoot()
   );
   const currentAdditionalQtPaths = getCurrentGlobalAdditionalQtPaths();
   coreAPI?.setValue(
-    GlobalWorkspace,
-    AdditionalQtPathsName,
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.ADDITIONAL_QT_PATHS,
     currentAdditionalQtPaths
   );
   if (!isEmpty(currentAdditionalQtPaths)) {

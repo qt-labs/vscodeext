@@ -13,7 +13,8 @@ import {
   QtWorkspaceFeatures,
   QtWorkspaceConfigMessage,
   ProjectManager,
-  createLogger
+  createLogger,
+  CoreKey
 } from 'qt-lib';
 import { PySideEnv } from './env';
 import { PySideProject } from './project';
@@ -49,11 +50,7 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
     }
 
     project.env = await resolveEnv(pyApi, folder);
-    setCoreAndNotify(
-      folder,
-      consts.CORE_KEY_VENV_BIN_PATH,
-      project.env?.venvBinPath
-    );
+    setCoreAndNotify(folder, CoreKey.VENV_BIN_PATH, project.env?.venvBinPath);
   }
 
   private _refreshProjectInfo(folder: Folder) {
@@ -66,7 +63,7 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
       path.join(folder.uri.fsPath, consts.TOML_PROJECT_FILE_NAME)
     );
 
-    const key = consts.CORE_KEY_WORKSPACE_FEATURES;
+    const key = CoreKey.WORKSPACE_FEATURES;
     let value = coreApi?.getValue<QtWorkspaceFeatures>(folder, key);
     value ??= { projectTypes: {} };
     value.projectTypes.pyside = project.isValid();

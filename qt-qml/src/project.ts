@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import path from 'path';
 
 import {
+  CoreKey,
   Project,
   ProjectManager,
   createLogger,
@@ -103,9 +104,15 @@ export class QMLProject implements Project {
   }
 
   getConfigValues() {
-    this.kitPath = coreAPI?.getValue<string>(this.folder, 'selectedKitPath');
-    this.qtpathsExe = coreAPI?.getValue<string>(this.folder, 'selectedQtPaths');
-    this.buildDir = coreAPI?.getValue<string>(this.folder, 'buildDir');
+    this.kitPath = coreAPI?.getValue<string>(
+      this.folder,
+      CoreKey.SELECTED_KIT_PATH
+    );
+    this.qtpathsExe = coreAPI?.getValue<string>(
+      this.folder,
+      CoreKey.SELECTED_QT_PATHS
+    );
+    this.buildDir = coreAPI?.getValue<string>(this.folder, CoreKey.BUILD_DIR);
   }
   getDocsPathFromKitDir(kitDir: string) {
     const qtpaths = findQtPathsInKitDir(kitDir);

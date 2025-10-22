@@ -16,9 +16,6 @@ export const DEBUG_DEFAULT_ENTRY_POINT = 'main.py';
 
 export const VENV_BIN_DIR = IsWindows ? 'Scripts' : 'bin';
 
-export const CORE_KEY_VENV_BIN_PATH = 'venvBinPath';
-export const CORE_KEY_WORKSPACE_FEATURES = 'workspaceFeatures';
-
 export const TOML_PROJECT_FILE_NAME = 'pyproject.toml';
 export const TOML_KEY_PROJECT_NAME = 'project.name';
 export const TOML_KEY_PROJECT_FILES = 'tool.pyside6-project.files';

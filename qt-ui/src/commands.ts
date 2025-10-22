@@ -13,7 +13,7 @@ export const lastSpawnedDesignerRef: { proc?: child_process.ChildProcess } = {};
 import {
   findQtKits,
   createLogger,
-  GlobalWorkspace,
+  CoreKey,
   CORE_EXTENSION_ID,
   telemetry
 } from 'qt-lib';
@@ -30,7 +30,7 @@ export async function openWidgetDesigner() {
   const qtInsRoots: string[] = [];
 
   const globalQtInstallationRoot = coreAPI?.getValue<string>(
-    GlobalWorkspace,
+    CoreKey.GLOBAL_WORKSPACE,
     'qtInstallationRoot'
   );
   if (globalQtInstallationRoot) {

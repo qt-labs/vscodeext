@@ -17,9 +17,8 @@ import {
   isError,
   exists,
   OSExeSuffix,
-  QtInsRootConfigName,
   compareVersions,
-  GlobalWorkspace,
+  CoreKey,
   telemetry,
   resolveConfiguration
 } from 'qt-lib';
@@ -405,15 +404,15 @@ async function findMostRecentExecutableQmlLS(): Promise<
   for (const project of projectManager.getProjects()) {
     const qtInsRoot = coreAPI?.getValue<string>(
       project.folder,
-      QtInsRootConfigName
+      CoreKey.QT_INSTALLATION_ROOT
     );
     if (qtInsRoot) {
       allQtInsRootDirs.push(qtInsRoot);
     }
   }
   const globalQtInsRoot = coreAPI?.getValue<string>(
-    GlobalWorkspace,
-    QtInsRootConfigName
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.QT_INSTALLATION_ROOT
   );
   if (globalQtInsRoot) {
     allQtInsRootDirs.push(globalQtInsRoot);

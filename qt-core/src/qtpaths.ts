@@ -8,7 +8,7 @@ import {
   AdditionalQtPathsName,
   createLogger,
   generateDefaultQtPathsName,
-  GlobalWorkspace,
+  CoreKey,
   QtAdditionalPath,
   telemetry
 } from 'qt-lib';
@@ -112,5 +112,5 @@ export function addQtPathToSettings(qtPath: QtAdditionalPath) {
     vscode.ConfigurationTarget.Global
   );
   const convertedValue = convertAdditionalQtPaths(valueToSet);
-  onAdditionalQtPathsUpdated(convertedValue, GlobalWorkspace);
+  onAdditionalQtPathsUpdated(convertedValue, CoreKey.GLOBAL_WORKSPACE);
 }

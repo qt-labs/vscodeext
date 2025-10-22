@@ -7,7 +7,8 @@ import {
   QtWorkspaceConfigMessage,
   ProjectManager,
   createLogger,
-  QtWorkspaceFeatures
+  QtWorkspaceFeatures,
+  CoreKey
 } from 'qt-lib';
 import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
@@ -58,26 +59,26 @@ export class UIProjectManager extends ProjectManager<UIProject> {
     }
 
     for (const key of msg.config.keys()) {
-      if (key === 'selectedKitPath') {
+      if (key === CoreKey.SELECTED_KIT_PATH) {
         const value = coreAPI?.getValue<string>(folder, key);
         await project.setSelectedKitPath(value);
         continue;
       }
 
-      if (key === 'selectedQtPaths') {
+      if (key === CoreKey.SELECTED_QT_PATHS) {
         const value = coreAPI?.getValue<string>(folder, key);
         await project.setSelectedQtPaths(value);
         continue;
       }
 
-      if (key === 'workspaceFeatures') {
+      if (key === CoreKey.WORKSPACE_FEATURES) {
         await project.setWorkspaceFeatures(
           coreAPI?.getValue<QtWorkspaceFeatures>(folder, key)
         );
         continue;
       }
 
-      if (key === 'venvBinPath') {
+      if (key === CoreKey.VENV_BIN_PATH) {
         const value = coreAPI?.getValue<string>(folder, key);
         await project.setVenvBinPath(value);
       }
