@@ -14,7 +14,8 @@ import {
   IsWindows,
   OSExeSuffix,
   searchForExeInQtInfo,
-  telemetry
+  telemetry,
+  QtWorkspaceFeatures
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
@@ -37,9 +38,17 @@ export async function openInLinguistCommand() {
   }
   const project = projectManager.findProjectContainingFile(activeDocument);
   if (!project) {
-    logger.error('No project found for the active document');
+    logger.error('The active document does not belong to a project');
     return;
   }
+  const workspaceFeatures = coreAPI?.getValue<QtWorkspaceFeatures>(
+    project.folder,
+    CoreKey.WORKSPACE_FEATURES
+  );
+  const venvBinPath = coreAPI?.getValue<string>(
+    project.folder,
+    CoreKey.VENV_BIN_PATH
+  );
   const selectedKitPath = coreAPI?.getValue<string>(
     project.folder,
     CoreKey.SELECTED_KIT_PATH
@@ -49,16 +58,38 @@ export async function openInLinguistCommand() {
     CoreKey.SELECTED_QT_PATHS
   );
   let linguistPath: string | undefined;
-  if (selectedKitPath) {
-    linguistPath = await locateLinguist(selectedKitPath);
-  } else if (selectedQtPaths) {
-    linguistPath = await locateLinguistFromQtPaths(selectedQtPaths);
+
+  if (workspaceFeatures?.projectTypes.pyside) {
+    if (venvBinPath) {
+      linguistPath = await locateLinguistFromVenvBinPaths(venvBinPath);
+    }
   }
+
+  if (workspaceFeatures?.projectTypes.cmake) {
+    if (selectedKitPath) {
+      linguistPath = await locateLinguist(selectedKitPath);
+    } else if (selectedQtPaths) {
+      linguistPath = await locateLinguistFromQtPaths(selectedQtPaths);
+    }
+  }
+
   if (!linguistPath) {
     logger.error('Linguist executable not found');
-    void vscode.window.showErrorMessage(
-      'Cannot find Qt Linguist executable. Check that the Qt version in the kit includes Qt Linguist.'
-    );
+
+    const isCMake = !!workspaceFeatures?.projectTypes.cmake;
+    const isPySide = !!workspaceFeatures?.projectTypes.pyside;
+    const message = ['Cannot find the Qt Linguist executable'];
+
+    if (isCMake && !isPySide) {
+      message.push('Check that the Qt version in the kit includes Qt Linguist');
+    } else if (!isCMake && isPySide) {
+      message.push(
+        'Check that PySide6 is properly installed ' +
+          'in a valid virtual environment'
+      );
+    }
+
+    void vscode.window.showErrorMessage(message.join('. '));
     return;
   }
   if (!(await exists(linguistPath))) {
@@ -116,6 +147,11 @@ async function locateLinguist(selectedKitPath: string) {
   }
 
   return '';
+}
+
+async function locateLinguistFromVenvBinPaths(venvBinPath: string) {
+  const candidate = path.join(venvBinPath, 'pyside6-linguist' + OSExeSuffix);
+  return (await exists(candidate)) ? candidate : undefined;
 }
 
 function openInLinguist(linguistPath: string, file: string) {
