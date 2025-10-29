@@ -6,6 +6,7 @@ import * as winston from 'winston';
 import { LogOutputChannelTransport } from 'winston-transport-vscode';
 
 let logger: winston.Logger | undefined = undefined;
+let outputChannel: vscode.LogOutputChannel | undefined;
 
 export class Logger {
   constructor(private readonly tag: string) {
@@ -44,7 +45,7 @@ export class Logger {
 }
 
 export function initLogger(extensionName: string) {
-  const outputChannel = vscode.window.createOutputChannel(extensionName, {
+  outputChannel = vscode.window.createOutputChannel(extensionName, {
     log: true
   });
   logger = winston.createLogger({
@@ -56,4 +57,8 @@ export function initLogger(extensionName: string) {
 
 export function createLogger(tag: string) {
   return new Logger(tag);
+}
+
+export function getLogOutputChannel(): vscode.LogOutputChannel | undefined {
+  return outputChannel;
 }

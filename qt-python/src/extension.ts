@@ -12,6 +12,7 @@ import {
   getCoreApi,
   createLogger,
   initLogger,
+  getLogOutputChannel,
   telemetry
 } from 'qt-lib';
 import { PySideTaskProvider } from './task';
@@ -78,17 +79,23 @@ async function initPythonSupport(context: vscode.ExtensionContext) {
 }
 
 function initCommands(context: vscode.ExtensionContext) {
-  function register(c: string, callback: (...args: unknown[]) => unknown) {
+  type Callback = (...args: unknown[]) => unknown;
+
+  function register(c: string, callback: Callback, useTelemetry = true) {
     return vscode.commands.registerCommand(
       `${consts.COMMAND_PREFIX}.${c}`,
       async () => {
-        telemetry.sendAction(c);
+        if (useTelemetry) {
+          telemetry.sendAction(c);
+        }
+
         await callback();
       }
     );
   }
 
   context.subscriptions.push(
+    register(consts.COMMAND_SHOW_LOG, onShowLog, false),
     register(consts.COMMAND_INSTALL_PYSIDE, onInstallPySide6Command)
   );
 }
@@ -100,3 +107,7 @@ const onPyApiEnvChanged = async (e: PyApiEnvChanged) => {
     await projectManager.refreshEnv(folder);
   }
 };
+
+function onShowLog() {
+  getLogOutputChannel()?.show();
+}
