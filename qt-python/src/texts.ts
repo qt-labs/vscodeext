@@ -10,11 +10,14 @@ export const install = {
     alreadyInstalled: (folder: string, pysideVersion: string, venv: string) =>
       `PySide ${pysideVersion} is already installed for '${folder}'. ` +
       `(venv: ${venv})`,
+    installFailed: (folder: string) =>
+      `Failed to install PySide for '${folder}'`,
     noVenv: (folder: string) =>
       `No virtual environment found for '${folder}'. ` +
       'Please create or select a virtual environment first.',
     buttonCreateEnv: 'Create Environment',
-    buttonSelectEnv: 'Select Interpreter'
+    buttonSelectEnv: 'Select Interpreter',
+    linkShowLog: 'Show logs'
   },
   placeHolder: {
     selectFolder: 'Select a Folder',

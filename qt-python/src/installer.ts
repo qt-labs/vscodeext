@@ -157,8 +157,12 @@ async function tryInstallPySide(
     info(folder, ' ', line);
   };
 
+  const linkText = texts.install.popup.linkShowLog;
+  const linkCommand = `${consts.COMMAND_PREFIX}.${consts.COMMAND_SHOW_LOG}`;
+  const linkShowLogs = `[${linkText}](command:${linkCommand})`;
+
   const options = {
-    title: texts.install.popup.installing,
+    title: texts.install.popup.installing + ` (${linkShowLogs})`,
     location: vscode.ProgressLocation.Notification,
     cancellable: false
   };
@@ -187,6 +191,10 @@ async function tryInstallPySide(
           pyside6Version,
           env.venvName ?? ''
         )
+      );
+    } else {
+      void vscode.window.showWarningMessage(
+        texts.install.popup.installFailed(folder.name) + ` (${linkShowLogs})`
       );
     }
   });

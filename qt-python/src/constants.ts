@@ -8,6 +8,7 @@ export const MS_PYTHON_ID = 'ms-python.python';
 export const LOG_NAME = 'qt-python';
 
 export const COMMAND_PREFIX = 'qt-python';
+export const COMMAND_SHOW_LOG = 'showLogOutputChannel';
 export const COMMAND_INSTALL_PYSIDE = 'installPySide6'; // contributes > commands
 export const COMMAND_PYTHON_CREATE_ENV = 'python.createEnvironment';
 export const COMMAND_PYTHON_SELECT_PYTHON = 'python.setInterpreter';
