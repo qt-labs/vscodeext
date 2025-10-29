@@ -155,6 +155,18 @@
           "light": "res/icons/qdoc-light.svg",
           "dark": "res/icons/qdoc-dark.svg"
         }
+      },
+      {
+        "id": "qt-ts",
+        "configuration": "./res/lang/qt-ts/language-configuration.json",
+        "aliases": [
+          "Qt TS",
+          "Qt Translation Script"
+        ],
+        "icon": {
+          "light": "res/icons/qt-ts-light.svg",
+          "dark": "res/icons/qt-ts-dark.svg"
+        }
       }
     ],
     "grammars": [
@@ -172,6 +184,11 @@
         "language": "qss",
         "scopeName": "source.qss",
         "path": "./res/lang/qss/qss.tmLanguage.json"
+      },
+      {
+        "language": "qt-ts",
+        "scopeName": "source.qt-ts",
+        "path": "./res/lang/qt-ts/qt-ts.tmLanguage.json"
       }
     ],
     "configuration": {
@@ -221,6 +238,15 @@
           "scope": "machine-overridable"
         }
       }
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "qt-core.openInLinguist",
+          "when": "editorLangId == qt-ts",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "scripts": {
