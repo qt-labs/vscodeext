@@ -116,6 +116,7 @@
           ".qrc.cmakein"
         ],
         "aliases": [
+          "QRC",
           "Qrc"
         ],
         "icon": {
@@ -147,8 +148,8 @@
           ".qdocinc"
         ],
         "aliases": [
-          "Qdoc",
           "QDoc",
+          "Qdoc",
           "qdoc"
         ],
         "icon": {
