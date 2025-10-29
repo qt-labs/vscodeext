@@ -20,7 +20,7 @@
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
-            \uicontrol {Qt: Open Qt Settings}.
+            \uicontrol {Qt: Open Qt Extension settings}.
         \li Go to \uicontrol {Qt Qml Configuration}, and select
             \uicontrol {Run \QMLLS when activating an extension}.
             \image {vscodeext-qt-settings-qml.webp} {Qt QML Configuration}
