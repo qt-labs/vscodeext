@@ -21,7 +21,7 @@
     \list 1
         \li Go to \uicontrol {Explorer}, and select a \e {.ts} file.
         \li Go to \uicontrol {Command Palette}, and select
-            \uicontrol {Qt: Open current file in Linguist}.
+            \uicontrol {Qt: Open current file in Qt Linguist}.
         \li Use \QL to translate UI text.
     \endlist
 */

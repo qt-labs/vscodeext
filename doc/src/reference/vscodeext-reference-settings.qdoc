@@ -12,7 +12,7 @@
     \brief A summary of Qt settings.
 
     To view and change Qt settings, go to \uicontrol {Command Palette} and select
-    \uicontrol {Qt: Open Qt Settings}.
+    \uicontrol {Qt: Open Qt Extension settings}.
 
     \section1 Use variables in settings
 

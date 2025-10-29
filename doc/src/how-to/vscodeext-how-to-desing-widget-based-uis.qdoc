@@ -25,7 +25,7 @@
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
-            \uicontrol {Qt: Open Qt Settings}.
+            \uicontrol {Qt: Open Qt Extension settings}.
         \li In \uicontrol {Custom Widgets Designer Exe Path}, set the path to the
             folder where you installed \QD.
             \image {vscodeext-qt-settings-ui.webp} {Qt UI Settings}

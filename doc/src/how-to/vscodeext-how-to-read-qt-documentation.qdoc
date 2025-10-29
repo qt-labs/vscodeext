@@ -13,7 +13,7 @@
     \title Read Qt documentation
 
     To open the Qt documentation pages, go to \uicontrol {Command Palette} and
-    select \uicontrol {Qt: Documentation: Open Homepage}.
+    select \uicontrol {Qt: Documentation: Open homepage}.
 
     Qt documentation opens in Simple Browser in Visual Studio Code. To open it in
     another browser, select \uicontrol {Open Online Documentation in External Browser}

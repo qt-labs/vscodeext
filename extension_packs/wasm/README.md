@@ -16,7 +16,7 @@ You can:
 ## Get started
 
 1. Select `Install` to install the Qt extension pack.
-1. Go to `Command Palette`, and select `Qt: Register Qt Installation`.
+1. Go to `Command Palette`, and select `Qt: Register Qt installation`.
 1. Open a folder that contains a Qt CMake project (that has a `CMakeLists.txt`
    file).
 1. Go to `Command Palette`, and select `CMake: Select a Kit` to select a kit that

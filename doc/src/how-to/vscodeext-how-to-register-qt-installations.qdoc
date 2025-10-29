@@ -47,7 +47,7 @@
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
-            \uicontrol {Qt: Register Qt Installation}.
+            \uicontrol {Qt: Register Qt installation}.
         \li Select the folder where you installed Qt, and then select
             \uicontrol {Select the Qt installation path}.
     \endlist
@@ -73,7 +73,7 @@
     \section1 Scan for Qt kits
 
     If some Qt CMake kits are missing, go to \uicontrol {Command Palette} and
-    select \uicontrol {Qt: Scan for Qt Kits}.
+    select \uicontrol {Qt: Scan for Qt kits}.
 
     \sa {Qt settings}
 */
