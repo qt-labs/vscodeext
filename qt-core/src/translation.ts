@@ -156,7 +156,6 @@ async function locateLinguistFromVenvBinPaths(venvBinPath: string) {
 
 function openInLinguist(linguistPath: string, file: string) {
   const child = child_process.spawn(linguistPath, [file], {
-    stdio: 'inherit',
     shell: true
   });
 
