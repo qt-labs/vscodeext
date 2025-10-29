@@ -79,7 +79,11 @@
         "aliases": [
           "QMLDir",
           "qmldir"
-        ]
+        ],
+        "icon": {
+          "light": "res/icons/qmldir-light.svg",
+          "dark": "res/icons/qmldir-dark.svg"
+        }
       }
     ],
     "grammars": [
