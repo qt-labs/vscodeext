@@ -69,6 +69,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   registerQrcEditorProvider(context);
+  await enableQtTsFileSupport(context);
 
   telemetry.sendEvent(`activated`);
 
@@ -106,4 +107,39 @@ export function initCoreValues() {
   for (const project of projectManager.getProjects()) {
     project.initConfigValues();
   }
+}
+
+async function enableQtTsFileSupport(context: vscode.ExtensionContext) {
+  const checker = async (doc: vscode.TextDocument) => {
+    // <?xml version="1.0" encoding="utf-8"?>
+    // <!DOCTYPE TS>
+    // <TS version="2.1" language="en_US">
+    //   <context> ...
+    //   </context>
+    // </TS>
+
+    const languageId = 'qt-ts'; // contributes > languages
+    const maxLinesToCheck = 3;
+    const rootTagOpening = '<TS ';
+
+    if (!doc.fileName.endsWith('.ts') || doc.languageId === languageId) {
+      return;
+    }
+
+    for (let i = 0; i < Math.min(maxLinesToCheck, doc.lineCount); i++) {
+      if (doc.lineAt(i).text.startsWith(rootTagOpening)) {
+        await vscode.languages.setTextDocumentLanguage(doc, languageId);
+        break;
+      }
+    }
+  };
+
+  for (const doc of vscode.workspace.textDocuments) {
+    await checker(doc);
+  }
+
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(checker),
+    vscode.workspace.onDidSaveTextDocument(checker)
+  );
 }
