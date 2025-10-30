@@ -1,8 +1,8 @@
-# Qt Extensions for Visual Studio Code
+# Qt Extension for VS Code
 
 ## Overview
 
-This repository contains the source code for the Qt extensions for Visual Studio
+This repository contains the source code for the Qt Extension for Visual Studio
 Code.
 
 ## Development
@@ -12,10 +12,10 @@ For more information about developing Qt extensions, see [Development.md](Develo
 ## Documentation
 
 For more information about using Qt extensions, go to
-[Qt Extensions for VS Code Documentation](https://doc.qt.io/vscodeext/index.html).
+[Qt Extension for VS Code Documentation](https://doc.qt.io/vscodeext/index.html).
 
 For pre-release versions, go to
-[Qt Extensions for VS Code Pre-release Documentation](https://doc-snapshots.qt.io/vscodeext-dev/).
+[Qt Extension for VS Code Pre-release Documentation](https://doc-snapshots.qt.io/vscodeext-dev/).
 
 ## Issues
 
