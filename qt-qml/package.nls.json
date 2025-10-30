@@ -9,5 +9,7 @@
   "qt-qml.debug.cppdbg.label": "Qt: Debug with cppdbg and QML debugger",
   "qt-qml.debug.cppdbg.description": "Launch a QML application with C++ debugger and attach with QML debugger",
   "qt-qml.debug.cppvsdbg.label": "Qt: Debug with cppdbg and QML debugger (Windows)",
-  "qt-qml.debug.cppvsdbg.description": "Launch a QML application with Visual Studio Debugger and attach with QML debugger"
+  "qt-qml.debug.cppvsdbg.description": "Launch a QML application with Visual Studio Debugger and attach with QML debugger",
+  "qt-qml.debug.pyside.label": "Qt: PySide: Launch with QML debugger",
+  "qt-qml.debug.pyside.description": "Launch a PySide QML application and attach with QML debugger"
 }

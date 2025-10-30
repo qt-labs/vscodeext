@@ -370,6 +370,20 @@
                 ]
               }
             }
+          },
+          {
+            "label": "%qt-qml.debug.pyside.label%",
+            "description": "%qt-qml.debug.pyside.description%",
+            "body": {
+              "name": "%qt-qml.debug.pyside.label%",
+              "type": "debugpy",
+              "request": "launch",
+              "program": "^\"\\${workspaceFolder}/main.py\"",
+              "preLaunchTask": "PySide: build",
+              "args": [
+                "^\"-qmljsdebugger=port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
+              ]
+            }
           }
         ]
       }
