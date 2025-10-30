@@ -1,4 +1,4 @@
-# Qt C++ Extension for Visual Studio Code
+# Qt C++ Extension for VS Code
 
 This extension helps you develop Qt C++ projects with Visual Studio
 Code and CMake.
@@ -25,10 +25,10 @@ required. They will be installed automatically.
 ## Documentation
 
 For more information about using Qt extensions, go to
-[Qt Extensions for VS Code Documentation](https://doc.qt.io/vscodeext/index.html).
+[Qt Extension for VS Code Documentation](https://doc.qt.io/vscodeext/index.html).
 
 For pre-release versions, go to
-[Qt Extensions for VS Code Pre-release Documentation](https://doc-snapshots.qt.io/vscodeext-dev/).
+[Qt Extension for VS Code Pre-release Documentation](https://doc-snapshots.qt.io/vscodeext-dev/).
 
 ## Issues
 

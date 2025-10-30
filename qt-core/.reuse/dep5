@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Qt Extension for Visual Studio Code
+Upstream-Name: Qt Extension for VS Code
 Upstream-Contact: The Qt Company Ltd <https://www.qt.io/>
 Source: https://github.com/qt-labs/vscodeext
 
