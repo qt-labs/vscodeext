@@ -11,7 +11,7 @@ You can:
 - Build PySide6 projects
 - Debug PySide6 applications
 - Handle Qt-specific file formats
-- Read Qt documentation
+- Read PySide6 documentation
 
 ## Documentation
 
