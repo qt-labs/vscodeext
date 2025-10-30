@@ -1,3 +1,5 @@
 {
-  "qt-python.command.installPySide6.title": "Install PySide6"
+  "qt-python.command.installPySide6.title": "Install PySide6",
+  "qt-python.debug.launch.label": "Qt: PySide: Launch",
+  "qt-python.debug.launch.description": "Launch a PySide application"
 }
