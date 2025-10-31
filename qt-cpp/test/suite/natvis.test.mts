@@ -12,13 +12,9 @@ import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
   activateQtCpp,
-  prepareCMakeQtEnvWithVersion,
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
-  setCMakeGeneratorForPlatform,
-  prepareStandardCMakeArgs,
   readCMakeCacheVar,
-  selectAndApplyKit
 } from '../helper.mts';
 import {
   prepareBreakpointsFromMarkers,
@@ -28,6 +24,7 @@ import {
   stopDebugSession,
   getLocals
 } from '../debug-helper.mts';
+import { selectAndApplyQtKit } from '../qt-kits-helper.mts';
 
 describe('natvis: minimal Qt project debug (index-natvis)', function () {
   this.timeout(150_000);
@@ -39,15 +36,18 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     async () => activateQtCpp()
   );
 
+
   it('configures, builds, and stops at a breakpoint', async function () {
     const wsFolder = getWorkspaceFolderOrThrow();
     const projectDir = wsFolder.uri.fsPath;
     console.log('Using projectDir:', projectDir);
     const buildDir = await cleanBuildDir(projectDir);
 
-    await setCMakeGeneratorForPlatform(wsFolder);
+    await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
+    await waitForVSCodeIdle();
 
-    await selectAndApplyKit();
+    const kit = await selectAndApplyQtKit(wsFolder);
+    console.log('Selected Qt kit:', kit);
 
     // Qt: pin ONLY Qt6_DIR (no CMAKE_PREFIX_PATH)
     const qtRoot = vscode.workspace
@@ -56,10 +56,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     if (typeof qtRoot !== 'string' || qtRoot.trim() === '') {
       throw new Error('qt-core.qtInstallationRoot is not configured.');
     }
-    prepareCMakeQtEnvWithVersion({ topLevel: qtRoot, verbose: true });
-
-    // Standard args
-    prepareStandardCMakeArgs();
 
     // spy on error messages
     const errSpy = sb.spy(vscode.window, 'showErrorMessage');
@@ -125,11 +121,11 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       console.log('cmake.buildConfig:', vscode.workspace.getConfiguration('cmake').get('buildConfig'));
       // --- launch debugger and wait for stop ---
 
-      const cfg = makeCppDebugConfig({
-        program: outPath, // from your build step
-        cwd: buildDir,
-        //visualizerFile: natvisPath//'${command:qt-cpp.natvis}'
-      });
+      const nvPath = await vscode.commands.executeCommand<string>('qt-cpp.natvis');
+      console.log('[natvis.test] visualizer path:', nvPath);
+      expect(nvPath, 'qt-cpp.natvis did not resolve to a path').to.be.a('string').and.not.empty;
+
+      const cfg = makeCppDebugConfig();
 
       const wantAll =
         process.env.HIT_ALL_BREAKPOINTS === '1'
@@ -146,7 +142,6 @@ expect(stops.length).to.be.greaterThan(0);
 
 const stop = stops[0]!;
 const frameId = stop.frameId!;
-//const threadId = stop.threadId!;
 
       expect(
         stops.length,
@@ -172,15 +167,13 @@ expect(vBA,  'qByteArray not found in Locals').to.exist;
 expect(vStr,  'qString not found in Locals').to.exist;
 
 // NatVis proof
-// expect(String(vRect.value)).to.match(/height.*/i);
+expect(String(vRect.value)).to.match(/height.*/i);
 
-// // Optional: sanity on values (keep regex tolerant across adapters)
-// expect(String(vRect.value)).to.match(/x\s*=\s*5/i);
-// expect(String(vRect.value)).to.match(/y\s*=\s*5/i);
-// expect(String(vRect.value)).to.match(/width\s*=\s*42/i);
-// expect(String(vStr.value)).to.match(/Hello World!?/);
-
-
+// Optional: sanity on values (keep regex tolerant across adapters)
+expect(String(vRect.value)).to.match(/x\s*=\s*5/i);
+expect(String(vRect.value)).to.match(/y\s*=\s*5/i);
+expect(String(vRect.value)).to.match(/width\s*=\s*42/i);
+expect(String(vStr.value)).to.match(/Hello World!?/);
 
     } finally {
       // cleanup always
