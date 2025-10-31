@@ -9,9 +9,9 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 type KitLike = {
-  name?: string;            // CMake Tools kit name
-  label?: string;           // sometimes used instead of name
-  toolchainFile?: string;   // Qt6 toolchain path -> strong Qt signal
+  name?: string; // CMake Tools kit name
+  label?: string; // sometimes used instead of name
+  toolchainFile?: string; // Qt6 toolchain path -> strong Qt signal
   environmentVariables?: Record<string, string | undefined>; // VSCODE_QT_INSTALLATION, etc.
 };
 
@@ -19,11 +19,13 @@ function hasAnyQtKit(kits: KitLike[]): boolean {
   return kits.some(isQtKit);
 }
 /** Call the qt-cpp scan and then select+apply a Qt kit. Returns the chosen kit name or undefined. */
-export async function selectAndApplyQtKit(wsFolder?: vscode.WorkspaceFolder): Promise<string | undefined> {
+export async function selectAndApplyQtKit(
+  wsFolder?: vscode.WorkspaceFolder
+): Promise<string | undefined> {
   // Read kits from disk (workspace and global)
   let kits = readQtKitsFromDisk(wsFolder);
 
-   // If nothing Qt-like is present, do one *quiet* refresh, then read again
+  // If nothing Qt-like is present, do one *quiet* refresh, then read again
   if (!hasAnyQtKit(kits)) {
     await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
     kits = readQtKitsFromDisk(wsFolder);
@@ -37,12 +39,13 @@ export async function selectAndApplyQtKit(wsFolder?: vscode.WorkspaceFolder): Pr
     await vscode.commands.executeCommand('cmake.setKitByName', kitName);
     console.log('[qt-kits-helper] Selected Qt Kit:', kitName);
   } else {
-    console.warn('[qt-kits-helper] No suitable Qt kit found; CMake may prompt interactively.');
+    console.warn(
+      '[qt-kits-helper] No suitable Qt kit found; CMake may prompt interactively.'
+    );
   }
 
   return kitName;
 }
-
 
 /** Determine likely kit file paths (workspace + platform-global). */
 function candidateKitsFiles(ws?: vscode.WorkspaceFolder): string[] {
@@ -52,20 +55,38 @@ function candidateKitsFiles(ws?: vscode.WorkspaceFolder): string[] {
   if (ws) files.push(path.join(ws.uri.fsPath, '.vscode', 'cmake-kits.json'));
 
   // Global CMake Tools (macOS typical)
-  files.push(path.join(process.env.HOME ?? '', 'Library', 'Application Support', 'CMakeTools', 'cmake-tools-kits.json'));
+  files.push(
+    path.join(
+      process.env.HOME ?? '',
+      'Library',
+      'Application Support',
+      'CMakeTools',
+      'cmake-tools-kits.json'
+    )
+  );
   // Global CMake Tools (XDG-style / Linux — some mac setups also end up here)
-  files.push(path.join(process.env.HOME ?? '', '.local', 'share', 'CMakeTools', 'cmake-tools-kits.json'));
+  files.push(
+    path.join(
+      process.env.HOME ?? '',
+      '.local',
+      'share',
+      'CMakeTools',
+      'cmake-tools-kits.json'
+    )
+  );
   // Windows
   if (process.platform === 'win32' && process.env.APPDATA) {
-    files.push(path.join(process.env.APPDATA, 'CMakeTools', 'cmake-tools-kits.json'));
+    files.push(
+      path.join(process.env.APPDATA, 'CMakeTools', 'cmake-tools-kits.json')
+    );
   }
 
   // Dedup + keep existing only
   const seen = new Set<string>();
   return files
-    .map(p => path.normalize(p))
-    .filter(p => !seen.has(p) && (seen.add(p), true))
-    .filter(p => fs.existsSync(p));
+    .map((p) => path.normalize(p))
+    .filter((p) => !seen.has(p) && (seen.add(p), true))
+    .filter((p) => fs.existsSync(p));
 }
 
 /** Read Qt kits from typical CMake Tools kit files (workspace first, then global). */
@@ -96,7 +117,11 @@ function isQtKit(k: KitLike): boolean {
 
   // Strong signals:
   if (k.environmentVariables?.VSCODE_QT_INSTALLATION) return true;
-  if (k.toolchainFile && /[\/\\]Qt6[\/\\]qt\.toolchain\.cmake$/i.test(k.toolchainFile)) return true;
+  if (
+    k.toolchainFile &&
+    /[\/\\]Qt6[\/\\]qt\.toolchain\.cmake$/i.test(k.toolchainFile)
+  )
+    return true;
 
   // Weak signal: name starts with "Qt " or contains typical tokens
   if (/\bqt\b/i.test(nm)) return true;
@@ -125,20 +150,22 @@ export function pickQtKit(allKits: KitLike[]): string | undefined {
   const compilerPrefs: RegExp[] = isWin
     ? [/MSVC|Visual Studio|Clang-cl/i, /MinGW|GCC/i, /Clang/i]
     : isMac
-    ? [/Clang.*arm64/i, /Apple.?Clang/i, /Clang/i, /GCC/i]
-    : [/GCC/i, /Clang/i];
+      ? [/Clang.*arm64/i, /Apple.?Clang/i, /Clang/i, /GCC/i]
+      : [/GCC/i, /Clang/i];
 
   // 1) Try arch match + compiler preference
   for (const arch of archPrefs) {
     for (const comp of compilerPrefs) {
-      const found = qtKits.find(k => arch.test(nameFor(k)) && comp.test(nameFor(k)));
+      const found = qtKits.find(
+        (k) => arch.test(nameFor(k)) && comp.test(nameFor(k))
+      );
       if (found) return nameFor(found);
     }
   }
 
   // 2) Try compiler preference only
   for (const comp of compilerPrefs) {
-    const found = qtKits.find(k => comp.test(nameFor(k)));
+    const found = qtKits.find((k) => comp.test(nameFor(k)));
     if (found) return nameFor(found);
   }
 

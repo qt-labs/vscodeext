@@ -61,10 +61,16 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
 }
 
 // --- Build a cross-platform C++ debug configuration -------------------------
-export function makeCppDebugConfig(): vscode.DebugConfiguration {
+export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   const isWin = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
   const miMode = process.env.MIMODE || (isMac ? 'lldb' : 'gdb');
+
+  // Resolve what ${command:...} would have produced
+  const program = await vscode.commands.executeCommand<string>('cmake.launchTargetPath');
+  const cwd = await vscode.commands.executeCommand<string>('cmake.getLaunchTargetDirectory');
+  const visualizerFile = await vscode.commands.executeCommand<string>('qt-cpp.natvis');
+
 
   const cfg: vscode.DebugConfiguration = {
     name: 'natvis-test-launch',
@@ -72,12 +78,13 @@ export function makeCppDebugConfig(): vscode.DebugConfiguration {
     request: 'launch',
     ...(isWin ? {} : { MIMode: miMode }),
     // Always the correct binary/dir for the *selected kit* and *build type*
-    program: '${command:cmake.launchTargetPath}',          // built binary
-    cwd: '${command:cmake.getLaunchTargetDirectory}',      // correct working dir
+    program: program,//'${command:cmake.launchTargetPath}', // built binary
+    cwd: cwd,//'${command:cmake.getLaunchTargetDirectory}', // correct working dir
     // Let the Qt extension provide the NatVis (need a Qt kit to be selected)
-    visualizerFile: '${command:qt-cpp.natvis}',            // Qt NatVis provider
-    stopAtEntry: false,
-    console: 'integratedTerminal',
+    visualizerFile: visualizerFile,//'${command:qt-cpp.natvis}', // Qt NatVis provider
+    stopAtEntry: true,
+    console: 'internalConsole',
+    externalConsole: false,
     showDisplayString: true
   };
 
@@ -92,14 +99,27 @@ export async function startDebugAndWaitForStop(
   opts?: { timeoutMs?: number; continueUntilHits?: number }
 ): Promise<{
   session: vscode.DebugSession;
-  stops: Array<{ source?: string; line?: number; threadId?: number; frameId?: number }>;
+  stops: Array<{
+    source?: string;
+    line?: number;
+    threadId?: number;
+    frameId?: number;
+  }>;
 }> {
   const timeoutMs = opts?.timeoutMs ?? 15000;
   let session!: vscode.DebugSession;
-  const stops: Array<{ source?: string; line?: number; threadId?: number; frameId?: number }> = [];
+  const stops: Array<{
+    source?: string;
+    line?: number;
+    threadId?: number;
+    frameId?: number;
+  }> = [];
 
   const done = new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`Timed out waiting for 'stopped'`)), timeoutMs);
+    const timer = setTimeout(
+      () => reject(new Error(`Timed out waiting for 'stopped'`)),
+      timeoutMs
+    );
 
     const trackerDisp = vscode.debug.registerDebugAdapterTrackerFactory('*', {
       createDebugAdapterTracker: (s) => ({
@@ -116,17 +136,28 @@ export async function startDebugAndWaitForStop(
               }
 
               // skip non-breakpoint stops (entry, signal, etc.)
-              if (reason !== 'breakpoint' && (opts?.continueUntilHits ?? 0) >= 0) {
+              if (
+                reason !== 'breakpoint' &&
+                (opts?.continueUntilHits ?? 0) >= 0
+              ) {
                 await s.customRequest('continue', { threadId: tid });
                 return;
               }
 
               const st = await s.customRequest('stackTrace', { threadId: tid });
               const f = st?.stackFrames?.[0];
-              stops.push({ source: f?.source?.path, line: f?.line, threadId: tid, frameId: f?.id });
+              stops.push({
+                source: f?.source?.path,
+                line: f?.line,
+                threadId: tid,
+                frameId: f?.id
+              });
 
               // continue to hit N stops if requested
-              if (opts?.continueUntilHits && stops.length < opts.continueUntilHits) {
+              if (
+                opts?.continueUntilHits &&
+                stops.length < opts.continueUntilHits
+              ) {
                 await s.customRequest('continue', { threadId: tid });
                 return;
               }
@@ -144,7 +175,9 @@ export async function startDebugAndWaitForStop(
           if (m?.event === 'terminated' && stops.length === 0) {
             clearTimeout(timer);
             trackerDisp.dispose();
-            reject(new Error('Debug session terminated before hitting a breakpoint'));
+            reject(
+              new Error('Debug session terminated before hitting a breakpoint')
+            );
           }
         }
       })
@@ -168,11 +201,15 @@ export async function stopDebugSession(session?: vscode.DebugSession) {
   }
 }
 
-export async function getTopFrameId(session: vscode.DebugSession): Promise<number> {
+export async function getTopFrameId(
+  session: vscode.DebugSession
+): Promise<number> {
   const { threads } = await session.customRequest('threads');
   const threadId = threads?.[0]?.id;
   if (threadId == null) throw new Error('No debug thread found');
-  const { stackFrames } = await session.customRequest('stackTrace', { threadId });
+  const { stackFrames } = await session.customRequest('stackTrace', {
+    threadId
+  });
   const frame = stackFrames?.[0];
   if (!frame) throw new Error('No stack frame');
   return frame.id as number;
@@ -184,7 +221,7 @@ export async function getLocals(session: vscode.DebugSession, frameId: number) {
     scopes?.find((sc: any) => /locals?/i.test(sc.name)) ?? scopes?.[0];
   if (!localsScope) throw new Error('No Locals scope found');
   const { variables } = await session.customRequest('variables', {
-    variablesReference: localsScope.variablesReference,
+    variablesReference: localsScope.variablesReference
   });
   return variables ?? [];
 }
