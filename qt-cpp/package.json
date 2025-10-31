@@ -276,6 +276,7 @@
     "tsc-test": "npm run compile && npm run build-test && cd ./out/test/ && node runTest.js",
     "prepare-vsix": "npm --prefix ../qt-core run package",
     "run-test-build": "cd ./out/test/ && node runTest.build.js",
+    "natvis:golden:update": "npm run compile-test && cd ./out/test/ && cross-env UPDATE_NATVIS_GOLDEN=1 QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js",
     "run-test-natvis": "cd ./out/test/ && node runTest.natvis.js",
     "run-test": "cd ./out/test/ && node runTest.js",
     "test:only:natvis": "npm run compile-test && npm run run-test-natvis --",

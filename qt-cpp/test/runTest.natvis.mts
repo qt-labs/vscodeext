@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as fsp from 'fs/promises';
+//import { spawnSync } from 'node:child_process';
 
 const QT_INS_ROOT_CONFIG_NAME = 'qtInstallationRoot';
 
@@ -64,8 +65,16 @@ async function main() {
       process.exit(1); // Fail early
     }
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
-    const [cli, ...args] =
-      resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    // const [cli, ...args] =
+    //   resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+
+    const parts = resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    if (!parts.length || !parts[0]) {
+      throw new Error(
+        'Could not resolve VS Code CLI path from vscodeExecutablePath'
+      );
+    }
+    const [cli, ...args] = parts as [string, ...string[]];
 
     //--------------------
     // Read from env (set this when launching tests)
@@ -119,14 +128,27 @@ async function main() {
     console.log('[runTest] Wrote settings to:', settingsPath);
 
     const quietArgs = [...args, ...getQuietVSCodeArgs()];
-    const required = ['ms-vscode.cmake-tools', localQtCoreVsix];
-    const requiredIds = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core'];
+    //const required = ['ms-vscode.cmake-tools', localQtCoreVsix];
+    //const requiredIds = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core'];
+    const required = [
+      'ms-vscode.cpptools',
+      'ms-vscode.cmake-tools',
+      localQtCoreVsix
+    ];
+    const requiredIds = [
+      'ms-vscode.cpptools',
+      'ms-vscode.cmake-tools',
+      'theqtcompany.qt-core'
+    ];
+    console.log('[runTest] Installing required extensions:', requiredIds);
     // Install required extensions into the SAME profile/dir combo
     for (const ext of required) {
       installExtensionWithRetry(cli as string, quietArgs, ext);
     }
-    debugListExtensions(cli as string, args);
-    assertExtensionsInstalled(cli as string, args, requiredIds);
+    //debugListExtensions(cli as string, args);
+    //assertExtensionsInstalled(cli as string, args, requiredIds);
+    debugListExtensions(cli as string, quietArgs);
+    assertExtensionsInstalled(cli as string, quietArgs, requiredIds);
 
     // The workspace folder we want to open
     const projectDir = path.resolve(
