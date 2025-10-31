@@ -131,7 +131,10 @@ async function showMessageOrInstall(result: CheckResult) {
   }
 
   if (!result.env) {
-    logger.error('Environment is invalid');
+    logger.error(
+      'The environment is invalid. ',
+      'Check the Python development setup or report the error'
+    );
     return;
   }
 

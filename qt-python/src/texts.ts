@@ -13,20 +13,20 @@ export const install = {
     installFailed: (folder: string) =>
       `Failed to install PySide for '${folder}'`,
     noVenv: (folder: string) =>
-      `No virtual environment found for '${folder}'. ` +
-      'Please create or select a virtual environment first.',
-    buttonCreateEnv: 'Create Environment',
-    buttonSelectEnv: 'Select Interpreter',
+      `Cannot find a virtual environment for '${folder}'. ` +
+      'Create or select a virtual environment first.',
+    buttonCreateEnv: 'Create environment',
+    buttonSelectEnv: 'Select interpreter',
     linkShowLog: 'Show logs'
   },
   placeHolder: {
-    selectFolder: 'Select a Folder',
-    selectVersion: 'Select PySide Version'
+    selectFolder: 'Select a folder',
+    selectVersion: 'Select PySide version'
   },
   sourcePicker: {
     labelOss: 'Latest PySide6 from PyPI',
     labelDownload:
-      'Visit https://account.qt.io/ ' +
+      'Go to https://account.qt.io/ ' +
       'to download and install the wheels manually',
     annotationForLocal: 'from Qt installation root'
   }
