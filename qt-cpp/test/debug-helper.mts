@@ -61,11 +61,7 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
 }
 
 // --- Build a cross-platform C++ debug configuration -------------------------
-export function makeCppDebugConfig(opts: {
-  program: string; // absolute path to the built binary
-  cwd: string; // working dir (e.g., build dir)
-  visualizerFile?: string; // optional: qt natvis path
-}): vscode.DebugConfiguration {
+export function makeCppDebugConfig(): vscode.DebugConfiguration {
   const isWin = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
   const miMode = process.env.MIMODE || (isMac ? 'lldb' : 'gdb');
@@ -75,17 +71,16 @@ export function makeCppDebugConfig(opts: {
     type: isWin ? 'cppvsdbg' : 'cppdbg',
     request: 'launch',
     ...(isWin ? {} : { MIMode: miMode }),
-    program: opts.program,
-    cwd: opts.cwd,
+    // Always the correct binary/dir for the *selected kit* and *build type*
+    program: '${command:cmake.launchTargetPath}',          // built binary
+    cwd: '${command:cmake.getLaunchTargetDirectory}',      // correct working dir
+    // Let the Qt extension provide the NatVis (need a Qt kit to be selected)
+    visualizerFile: '${command:qt-cpp.natvis}',            // Qt NatVis provider
     stopAtEntry: false,
     console: 'integratedTerminal',
     showDisplayString: true
   };
 
-  if (opts.visualizerFile) {
-    // cppdbg supports "visualizerFile"; cppvsdbg reads natvis from VS, but keeping this is harmless.
-    (cfg as any).visualizerFile = path.normalize(opts.visualizerFile);
-  }
   return cfg;
 }
 
