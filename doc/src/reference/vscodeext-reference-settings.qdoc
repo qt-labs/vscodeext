@@ -48,9 +48,14 @@
         \li Setting
         \li Description
     \row
-        \li Do Not Ask for CMake path
+        \li Do Not Ask for CMake Path
         \li Lets CMake Tools search the PATH environment variable and make some
             educated guesses on where to find CMake.
+    \row
+        \li Do Not Warn Missing Source Dir
+        \li Hides a warning about not being able to detect the source directory
+            from a kit. This might happen if you installed Qt with vcpkg, for
+            example. For more information, see \l{Debug Qt Applications}.
     \endtable
 
     \section1 Qt Core settings
