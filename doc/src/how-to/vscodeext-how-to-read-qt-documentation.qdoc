@@ -12,10 +12,11 @@
 
     \title Read Qt documentation
 
-    To open the Qt documentation pages, go to \uicontrol {Command Palette} and
-    select \uicontrol {Qt: Documentation: Open homepage}.
+    To open \l {Qt Documentation}{Qt} or \l {Qt for Python} documentation
+    (depending on the type of the file open in the editor), go to
+    \uicontrol {Command Palette} and select \uicontrol {Qt: Documentation: Open homepage}.
 
-    Qt documentation opens in Simple Browser in Visual Studio Code. To open it in
+    The documentation opens in Simple Browser in Visual Studio Code. To open it in
     another browser, select \uicontrol {Open Online Documentation in External Browser}
     in \l {Qt settings}.
 
@@ -30,9 +31,10 @@
             \uicontrol {Qt: Documentation: Search for the current word}.
     \endlist
 
-    \image vscodeext-documentation.webp {Qt documentation open in Simple Browser}
+    \image vscodeext-documentation.webp {Qt documentation opened in Simple Browser}
+    \caption Qt documentation opened in Simple Browser.
 
-    To find any text in Qt documentation:
+    To find any text in the documentation:
 
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
