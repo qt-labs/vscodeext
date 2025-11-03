@@ -53,6 +53,18 @@
         \li Read Qt documentation
     \endlist
 
+    \section1 Python development
+
+    With the Qt Python extension pack, you can develop \l {Qt for Python}
+    projects with VS Code and Python.
+
+    \list
+        \li Install PySide6 packages
+        \li Build, run, and clean Pyside6 projects
+        \li Debug PySide6 applications with \c debugpy and QML debugger
+        \li Read Qt for Python documentation
+    \endlist
+
     \section1 Usage data collection
 
     \QVSC collects anonymous data about how you use it to help Qt to improve it:

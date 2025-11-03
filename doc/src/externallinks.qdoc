@@ -42,6 +42,12 @@
 \externalpage https://doc.qt.io/index.html
 \title Qt Documentation
 */
+
+/*!
+\externalpage https://doc.qt.io/qtforpython-6/index.html
+\title Qt for Python
+*/
+
 /*!
 \externalpage https://code.visualstudio.com/Docs/editor/debugging
 \title VS Code: Debugging
