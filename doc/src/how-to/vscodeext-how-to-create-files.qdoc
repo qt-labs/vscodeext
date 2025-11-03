@@ -17,7 +17,7 @@
         \li Go to \uicontrol {Command Palette}, and then select
             \uicontrol {Qt: Create a new project or file}.
         \li In \uicontrol {File}, select the file type.
-            \image {vscodeext-create-new-file.webp} {New item view}
+            \image {vscodeext-create-new-file.webp} {Create a new project or file}
         \li In \uicontrol {Name}, enter a name for the file.
         \li In \uicontrol {Create in}, enter the path for the file.
         \li In \uicontrol {Options}, set options depending on the file type.

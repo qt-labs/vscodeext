@@ -47,7 +47,7 @@
         \li Go to \uicontrol {Command Palette}, and then select
             \uicontrol {Qt: Create a new project or file}.
         \li In \uicontrol {Project}, select \uicontrol {Qt Widgets project}.
-            \image {vscodeext-create-new-project.webp} {New item view}
+            \image {vscodeext-create-new-project.webp} {Create a new project or file}
         \li In \uicontrol {Base class}, select \uicontrol {QWidget} as the base
             class type.
         \li Select \uicontrol {UI form} to generate a UI form.
