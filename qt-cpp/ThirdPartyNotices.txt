@@ -88,7 +88,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-1ds-core-js 4.3.3 - MIT
+1ds-core-js 4.3.10 - MIT
 https://github.com/microsoft/ApplicationInsights-JS/tree/main/shared/1ds-core-js#readme
 
 The MIT License (MIT)
@@ -116,7 +116,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-1ds-post-js 4.3.3 - MIT
+1ds-post-js 4.3.10 - MIT
 https://github.com/microsoft/ApplicationInsights-JS/tree/main/channels/1ds-post-js#readme
 
 The MIT License (MIT)
@@ -144,8 +144,8 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-applicationinsights-channel-js 3.3.3 - MIT
-https://github.com/Microsoft/applicationinsights-js#readme
+applicationinsights-channel-js 3.3.10 - MIT
+https://github.com/microsoft/ApplicationInsights-JS/tree/main/channels/applicationinsights-channel-js#readme
 
 The MIT License (MIT)
 
@@ -173,7 +173,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-applicationinsights-common 3.3.3 - MIT
+applicationinsights-common 3.3.10 - MIT
 https://github.com/microsoft/ApplicationInsights-JS/tree/main/shared/AppInsightsCommon#readme
 
 The MIT License (MIT)
@@ -202,7 +202,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-applicationinsights-core-js 3.3.3 - MIT
+applicationinsights-core-js 3.3.10 - MIT
 https://github.com/microsoft/ApplicationInsights-JS/tree/main/shared/AppInsightsCore#readme
 
 The MIT License (MIT)
@@ -260,8 +260,8 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-applicationinsights-web-basic 3.3.3 - MIT
-https://github.com/microsoft/ApplicationInsights-JS#readme
+applicationinsights-web-basic 3.3.10 - MIT
+https://github.com/microsoft/ApplicationInsights-JS/tree/main/AISKULight#readme
 
 The MIT License (MIT)
 
@@ -318,7 +318,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-ts-async 0.5.2 - MIT
+ts-async 0.5.4 - MIT
 https://github.com/nevware21/ts-async#readme
 
 MIT License
@@ -347,7 +347,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-ts-utils 0.11.5 - MIT
+ts-utils 0.12.5 - MIT
 https://github.com/nevware21/ts-utils#readme
 
 MIT License
@@ -495,7 +495,7 @@ https://github.com/DefinitelyTyped/DefinitelyTyped#readme
 
 ---------------------------------------------------------
 
-extension-telemetry 0.9.7 - MIT
+extension-telemetry 1.1.0 - MIT
 https://github.com/Microsoft/vscode-extension-telemetry#readme
 
 vscode-extension-telemetry
@@ -2558,7 +2558,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-tslib 2.8.0 - 0BSD
+tslib 2.8.1 - 0BSD
 https://github.com/Microsoft/tslib#readme
 
 Copyright (c) Microsoft Corporation.

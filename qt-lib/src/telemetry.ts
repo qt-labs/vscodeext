@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import TelemetryReporter, {
+import {
   TelemetryEventMeasurements,
-  TelemetryEventProperties
+  TelemetryEventProperties,
+  TelemetryReporter
 } from '@vscode/extension-telemetry';
 
-export { TelemetryEventProperties };
+export { TelemetryEventProperties, TelemetryReporter };
 
 const globalConnectionString =
   'InstrumentationKey=09d5f9a1-0532-4146-b158-a653220b28b6;IngestionEndpoint=https://germanywestcentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://germanywestcentral.livediagnostics.monitor.azure.com/;ApplicationId=8758b8d8-22d0-459d-b1b4-1689a3a350d5';
@@ -25,7 +26,9 @@ class Telemetry {
   reporter: TelemetryReporter | undefined;
   activate(context: vscode.ExtensionContext, connectionString?: string) {
     this.reporter = new TelemetryReporter(
-      connectionString ?? globalConnectionString
+      connectionString ?? globalConnectionString,
+      undefined,
+      { ignoreUnhandledErrors: true }
     );
     context.subscriptions.push(this.reporter);
   }
