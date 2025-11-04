@@ -41,7 +41,7 @@ function main() {
     } else {
       const errorMessage =
         `ThirdPartyNotices.txt is out of date.` +
-        `Please run 'npm run generateLicenses' to update it.`;
+        `Please run 'npm run generateLicenses:all' to update it.`;
       throw new Error(errorMessage);
     }
   } catch (error) {
