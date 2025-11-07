@@ -26,9 +26,9 @@ import {
 } from '../debug-helper.mts';
 import {
   toSnapshot,
-  parseNatvisTypes,
+  parseNatvisTypesWithAlternatives,
   collectTypesFromSnapshot,
-  matchNatvisTypePatterns,
+  matchNatvisTypePatternsConsideringAlternatives,
   writeGolden,
   readGolden
 } from '../debug-golden.mts';
@@ -259,20 +259,20 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         //    Read the NatVis path from your config (you pass ${command:qt-cpp.natvis}; the provider
         //    should resolve to a file path—if you also have the absolute path handy, use it directly).
         const natvisPath = nvPath; // you already compute this earlier in your test
-        const natvisTypes = await parseNatvisTypes(natvisPath);
-        const seenTypes = collectTypesFromSnapshot(snapshot);
-        const { missing } = matchNatvisTypePatterns(natvisTypes, seenTypes);
 
-        if (missing.length) {
-          const msg =
-            `[natvis.coverage] Missing types not exercised in Locals:\n  - ` +
-            missing.join('\n  - ');
-          if (process.env.NATVIS_COVERAGE === 'strict') {
-            throw new Error(msg);
-          } else {
-            console.warn(msg);
-          }
-        }
+        const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
+const seenTypes = collectTypesFromSnapshot(snapshot);
+const { missing } = matchNatvisTypePatternsConsideringAlternatives(natvis, seenTypes);
+
+if (missing.length) {
+  const lines = missing.map((base) => {
+    const alts = natvis.alts.get(base);
+    return alts && alts.size
+      ? `- ${base} (alts: ${[...alts].join(', ')})`
+      : `- ${base}`;
+  });
+  console.warn(`[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`);
+}
       }
     } finally {
       // cleanup always

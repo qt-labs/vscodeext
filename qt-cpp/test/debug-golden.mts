@@ -125,56 +125,107 @@ function decodeXmlEntities(input: string): string {
   };
   return input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
 }
+
+type NatvisTypes = {
+  all: Set<string>;
+  bases: Set<string>;
+  alts: Map<string, Set<string>>;
+};
+
 /**
- * Parse NatVis file and extract all <Type Name="..."> entries.
+ * Parse NatVis file and extract all <Type Name="..."> entries (or alternate type).
  * This is a fast, regex-based approximation sufficient for coverage warnings.
  */
-export async function parseNatvisTypes(
+export async function parseNatvisTypesWithAlternatives(
   natvisPath: string
-): Promise<Set<string>> {
+): Promise<NatvisTypes> {
+  const all = new Set<string>();
+  const bases = new Set<string>();
+  const alts = new Map<string, Set<string>>();
+
   try {
     const xml = await fs.readFile(natvisPath, 'utf8');
-    const re = /<\s*Type\b[^>]*\bName\s*=\s*"([^"]+)"/g;
-    const types = new Set<string>();
+    const withoutComments = xml.replace(/<!--[\s\S]*?-->/g, '');
 
-    for (let m: RegExpExecArray | null; (m = re.exec(xml)); ) {
-      const name = m[1];
-      if (typeof name === 'string' && name.length > 0) {
-        // Names can include wildcard patterns like QVector<*>
-        const decoded = decodeXmlEntities(name).trim();
-        types.add(decoded);
+    // Capture each <Type ...> ... </Type> block
+    const typeBlockRe =
+      /<\s*Type\b([^>]*)>([\s\S]*?)<\/\s*Type\s*>/g;
+
+    let m: RegExpExecArray | null;
+    while ((m = typeBlockRe.exec(withoutComments))) {
+      const typeOpenAttrs = m[1] ?? '';
+      const typeInner = m[2] ?? '';
+
+      const nameAttr = /(?:^|\s)Name\s*=\s*"([^"]+)"/.exec(typeOpenAttrs);
+      if (!nameAttr) continue;
+
+      const baseRaw = nameAttr[1];
+      if (!baseRaw) continue;
+      const base = decodeXmlEntities(baseRaw).trim();
+      if (!base) continue;
+
+      bases.add(base);
+      all.add(base);
+
+      // Collect <AlternativeType Name="..."> inside this block
+      const altRe = /<\s*AlternativeType\b[^>]*\bName\s*=\s*"([^"]+)"/g;
+      let am: RegExpExecArray | null;
+      while ((am = altRe.exec(typeInner))) {
+        const altRaw = am[1];
+        if (!altRaw) continue;
+        const alt = decodeXmlEntities(altRaw).trim();
+        if (!alt) continue;
+        all.add(alt);
+        const set = alts.get(base) ?? new Set<string>();
+        set.add(alt);
+        alts.set(base, set);
       }
     }
-    return types;
+
+    // Also catch any stray AlternativeType outside blocks (rare)
+    const strayAltRe =
+      /<\s*AlternativeType\b[^>]*\bName\s*=\s*"([^"]+)"/g;
+    while ((m = strayAltRe.exec(withoutComments))) {
+      const rawAlt = m?.[1];
+      if (!rawAlt) continue;
+      const alt = decodeXmlEntities(rawAlt).trim();
+      if (alt) all.add(alt);
+    }
+
+    return { all, bases, alts };
   } catch {
-    return new Set();
+    return { all, bases, alts };
   }
 }
 
+function wildcardToRegex(pat: string): RegExp {
+  // Escape regex specials, then turn \* into .*
+  const rx = '^' +
+    pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+       .replace(/\\\*/g, '.*') +
+    '$';
+  return new RegExp(rx);
+}
+
 /**
- * Given NatVis type patterns and the set of types seen in the snapshot,
- * return the list of NatVis patterns with no matching seen type.
- * Very light wildcard support: '*' -> '.*' anchored full-match.
+ * A base is covered if base OR ANY of its alternatives matches a seen type.
+ * Returns missing base names (not each alt).
  */
-export function matchNatvisTypePatterns(
-  natvisTypes: Set<string>,
+export function matchNatvisTypePatternsConsideringAlternatives(
+  natvis: NatvisTypes,
   seenTypes: Set<string>
 ): { missing: string[] } {
   const seen = [...seenTypes];
-  const covered = new Set<string>();
+  const missing: string[] = [];
 
-  for (const pat of natvisTypes) {
-    const rx = new RegExp(
-      '^' +
-        pat
-          // escape regex, then turn \* into .*
-          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-          .replace(/\\\*/g, '.*') +
-        '$'
-    );
-    for (const t of seen) if (rx.test(t)) covered.add(pat);
+  for (const base of natvis.bases) {
+    const candidates = [base, ...(natvis.alts.get(base) ?? [])];
+    const anyMatched = candidates.some((pat) => {
+      const rx = wildcardToRegex(pat);
+      return seen.some((t) => rx.test(t));
+    });
+    if (!anyMatched) missing.push(base);
   }
 
-  const missing = [...natvisTypes].filter((p) => !covered.has(p));
   return { missing: missing.sort() };
 }
