@@ -114,6 +114,17 @@ export function collectTypesFromSnapshot(s: SnapVar[]): Set<string> {
   return out;
 }
 
+//decode &lt; &gt; &amp; &quot; &apos; in attribute values
+function decodeXmlEntities(input: string): string {
+  const map: Record<string, string> = {
+    '&lt;': '<',
+    '&gt;': '>',
+    '&amp;': '&',
+    '&quot;': '"',
+    '&apos;': "'",
+  };
+  return input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
+}
 /**
  * Parse NatVis file and extract all <Type Name="..."> entries.
  * This is a fast, regex-based approximation sufficient for coverage warnings.
@@ -130,7 +141,8 @@ export async function parseNatvisTypes(
       const name = m[1];
       if (typeof name === 'string' && name.length > 0) {
         // Names can include wildcard patterns like QVector<*>
-        types.add(name);
+        const decoded = decodeXmlEntities(name).trim();
+        types.add(decoded);
       }
     }
     return types;
