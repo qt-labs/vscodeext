@@ -74,12 +74,15 @@ function createTask(project: PySideProject, taskId: TaskId) {
     return undefined;
   }
 
-  const builder = new PySideCommandBuilder(env, { useVenv: true });
-  const commandLine = builder.build(createProjectToolCommand(taskId));
+  const cmd = new PySideCommandBuilder()
+    .useVenv(true)
+    .venvBinPath(env.venvBinPath)
+    .build(createProjectToolCommand(taskId));
+
   const shellOptions = {
     cwd: folder.uri.fsPath,
-    executable: builder.shellPath,
-    shellArgs: builder.shellArgs
+    executable: cmd.shellPath,
+    shellArgs: cmd.shellArgs
   };
 
   const def = {
@@ -89,7 +92,7 @@ function createTask(project: PySideProject, taskId: TaskId) {
 
   const task = new vscode.Task(def, folder, taskName, consts.TASK_SOURCE);
   task.detail = `${consts.PYSIDE_PROJECT_TOOL} ${action}`;
-  task.execution = new vscode.ShellExecution(commandLine, shellOptions);
+  task.execution = new vscode.ShellExecution(cmd.commandLine, shellOptions);
   task.presentationOptions = { clear: true };
 
   const group = findTaskGroup(taskId);
