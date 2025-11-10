@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import {
-  isError,
   CoreKey,
   createLogger,
   QtInsRootConfigName,
@@ -14,7 +13,6 @@ import {
 } from 'qt-lib';
 import { PySideEnv } from './env';
 import { PySideProject } from './project';
-import { PySidePackageInfo } from './types';
 import { PySideCommandRunner } from './runner';
 import { coreApi, projectManager } from './extension';
 import { normalizeDriveLetter } from './utils';
@@ -92,7 +90,10 @@ async function checkInstallation(project: PySideProject): Promise<CheckResult> {
     return { status: 'noVenv', folder };
   }
 
-  const pyside = await fetchPySide6Version(env);
+  const logIndented = (line: string) => {
+    logger.info(' ', line);
+  };
+  const pyside = await env.readPySide6PackageInfo(logIndented);
   if (!pyside) {
     return { status: 'noPySide', folder, env };
   }
@@ -194,7 +195,7 @@ async function tryInstallPySide(
 
     await projectManager.refreshEnv(folder);
 
-    const pyside = await fetchPySide6Version(env);
+    const pyside = await env.readPySide6PackageInfo(logIndented);
     if (pyside) {
       void vscode.window.showInformationMessage(
         texts.install.popup.installed(
@@ -290,45 +291,3 @@ async function getLocalPackageInfo(insRoot: string, env: PySideEnv) {
 const info = (folder: vscode.WorkspaceFolder, ...message: string[]) => {
   logger.info(`(${folder.name}) `, ...message);
 };
-
-export async function fetchPySide6Version(env: PySideEnv) {
-  const logIndented = (line: string) => {
-    logger.info(' ', line);
-  };
-
-  const parsedOutput: Record<string, string> = {};
-
-  try {
-    // expected output from 'pip show <package>'
-    //
-    // Version: 6.10.0
-    // Summary: Python bindings for the Qt cross-platform application and UI framework
-    // Home-page:
-    // Author:
-    // Author-email: Qt for Python Team <pyside@qt-project.org>
-    // License: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-    // Location: /Users/bencho/ws_temp/myenv/lib/python3.9/site-packages
-    // Requires: PySide6_Essentials, PySide6_Addons, shiboken6
-    // Required-by:
-
-    const runner = new PySideCommandRunner(env);
-    runner.onStdout(logIndented);
-    runner.onStderr(logIndented);
-
-    const lines = await runner.run(`pip show PySide6`, { useVenv: true });
-    lines.forEach((line) => {
-      const [key, value] = line.split(': ');
-      if (key && value) {
-        parsedOutput[key.trim()] = value.trim();
-      }
-    });
-  } catch (e) {
-    logger.error(isError(e) ? e.message : String(e));
-    return undefined;
-  }
-
-  return {
-    version: parsedOutput.Version ?? '',
-    location: parsedOutput.Location ?? ''
-  } as PySidePackageInfo;
-}

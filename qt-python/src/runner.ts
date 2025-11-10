@@ -5,9 +5,14 @@ import * as childProcess from 'child_process';
 
 import { createLogger } from 'qt-lib';
 import { PySideEnv } from './env';
-import { PySideCommandBuilder, PySideCommandBuildOptions } from './builder';
+import { PySideCommandBuilder } from './builder';
 
 const logger = createLogger('runner');
+
+export interface PySideCommandRunOptions {
+  useVenv?: boolean;
+  cwd?: string;
+}
 
 export class PySideCommandRunner {
   private _onStdout: ((line: string) => void) | undefined;
@@ -23,20 +28,23 @@ export class PySideCommandRunner {
     this._onStderr = f;
   }
 
-  public async run(command: string, options?: PySideCommandBuildOptions) {
-    const builder = new PySideCommandBuilder(this._env, options);
-    const commandLine = builder.build(command);
+  public async run(command: string, options?: PySideCommandRunOptions) {
+    const cmd = new PySideCommandBuilder()
+      .venvBinPath(this._env.venvBinPath)
+      .useVenv(options?.useVenv)
+      .cwd(options?.cwd)
+      .build(command);
 
     logger.info('Running command');
-    logger.info(`- shell: ${builder.shellPath}`);
-    logger.info(`- command: ${commandLine}`);
+    logger.info(`- shell: ${cmd.shellPath}`);
+    logger.info(`- command: ${cmd.commandLine}`);
     logger.info(
       '- venv activation: ' +
         `${options?.useVenv ?? false}, ` +
-        builder.venvActivationCommand
+        cmd.venvActivationCommand
     );
 
-    const proc = childProcess.spawn(commandLine, { shell: builder.shellPath });
+    const proc = childProcess.spawn(cmd.commandLine, { shell: cmd.shellPath });
     const outPromise = streamToLines(proc.stdout, this._onStdout);
     const errPromise = streamToLines(proc.stderr, this._onStderr);
 

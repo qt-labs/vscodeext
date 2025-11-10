@@ -21,7 +21,6 @@ import { PySideProject } from './project';
 import { PySideProjectInfo } from './types';
 import { pyApi, coreApi } from './extension';
 import * as consts from '@/constants';
-import { fetchPySide6Version } from './installer';
 
 type Folder = vscode.WorkspaceFolder;
 type Context = vscode.ExtensionContext;
@@ -50,8 +49,12 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
       return;
     }
 
+    const logIndented = (line: string) => {
+      logger.info(' ', line);
+    };
+
     const env = await resolveEnv(pyApi, folder);
-    const pyside = env && (await fetchPySide6Version(env));
+    const pyside = env && (await env.readPySide6PackageInfo(logIndented));
     const qmlImportPath = pyside?.location
       ? path.normalize(path.join(pyside.location, 'PySide6/qml'))
       : '';
