@@ -20,7 +20,9 @@ import {
   compareVersions,
   CoreKey,
   telemetry,
-  resolveConfiguration
+  resolveConfiguration,
+  PySideEnvData,
+  QtWorkspaceFeatures
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
@@ -289,6 +291,25 @@ export class Qmlls {
         'additionalImportPaths',
         []
       );
+
+      if (coreAPI) {
+        const workspaceFeatures = coreAPI.getValue<QtWorkspaceFeatures>(
+          this._folder,
+          CoreKey.WORKSPACE_FEATURES
+        );
+
+        const pysideEnv = coreAPI.getValue<PySideEnvData>(
+          this._folder,
+          CoreKey.PYSIDE_ENV_DATA
+        );
+
+        if (
+          workspaceFeatures?.projectTypes.pyside &&
+          pysideEnv?.qmlImportPath
+        ) {
+          additionalImportPaths.push(pysideEnv.qmlImportPath);
+        }
+      }
 
       let docsPath = configs.get<string>('customDocsPath', '');
       if (docsPath) {

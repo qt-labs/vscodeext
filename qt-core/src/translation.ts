@@ -15,7 +15,8 @@ import {
   OSExeSuffix,
   searchForExeInQtInfo,
   telemetry,
-  QtWorkspaceFeatures
+  QtWorkspaceFeatures,
+  PySideEnvData
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
@@ -45,9 +46,9 @@ export async function openInLinguistCommand() {
     project.folder,
     CoreKey.WORKSPACE_FEATURES
   );
-  const venvBinPath = coreAPI?.getValue<string>(
+  const pysideEnv = coreAPI?.getValue<PySideEnvData>(
     project.folder,
-    CoreKey.VENV_BIN_PATH
+    CoreKey.PYSIDE_ENV_DATA
   );
   const selectedKitPath = coreAPI?.getValue<string>(
     project.folder,
@@ -60,8 +61,10 @@ export async function openInLinguistCommand() {
   let linguistPath: string | undefined;
 
   if (workspaceFeatures?.projectTypes.pyside) {
-    if (venvBinPath) {
-      linguistPath = await locateLinguistFromVenvBinPaths(venvBinPath);
+    if (pysideEnv?.venvBinPath) {
+      linguistPath = await locateLinguistFromVenvBinPaths(
+        pysideEnv.venvBinPath
+      );
     }
   }
 

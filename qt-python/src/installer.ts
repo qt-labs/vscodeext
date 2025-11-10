@@ -14,6 +14,7 @@ import {
 } from 'qt-lib';
 import { PySideEnv } from './env';
 import { PySideProject } from './project';
+import { PySidePackageInfo } from './types';
 import { PySideCommandRunner } from './runner';
 import { coreApi, projectManager } from './extension';
 import { normalizeDriveLetter } from './utils';
@@ -91,12 +92,17 @@ async function checkInstallation(project: PySideProject): Promise<CheckResult> {
     return { status: 'noVenv', folder };
   }
 
-  const pysideVersion = await fetchPySide6Version(env);
-  if (!pysideVersion) {
+  const pyside = await fetchPySide6Version(env);
+  if (!pyside) {
     return { status: 'noPySide', folder, env };
   }
 
-  return { status: 'alreadyInstalled', folder, env, pysideVersion };
+  return {
+    status: 'alreadyInstalled',
+    folder,
+    env,
+    pysideVersion: pyside.version
+  };
 }
 
 async function showMessageOrInstall(result: CheckResult) {
@@ -186,12 +192,14 @@ async function tryInstallPySide(
       return;
     }
 
-    const pyside6Version = await fetchPySide6Version(env);
-    if (pyside6Version) {
+    await projectManager.refreshEnv(folder);
+
+    const pyside = await fetchPySide6Version(env);
+    if (pyside) {
       void vscode.window.showInformationMessage(
         texts.install.popup.installed(
           folder.name,
-          pyside6Version,
+          pyside.version,
           env.venvName ?? ''
         )
       );
@@ -283,33 +291,44 @@ const info = (folder: vscode.WorkspaceFolder, ...message: string[]) => {
   logger.info(`(${folder.name}) `, ...message);
 };
 
-async function fetchPySide6Version(env: PySideEnv) {
+export async function fetchPySide6Version(env: PySideEnv) {
   const logIndented = (line: string) => {
     logger.info(' ', line);
   };
 
+  const parsedOutput: Record<string, string> = {};
+
   try {
     // expected output from 'pip show <package>'
     //
-    // Name: PySide6_Essentials
-    // Version: 6.7.0+commercial
-    // Summary: Python bindings for the Qt cross-platform ...
+    // Version: 6.10.0
+    // Summary: Python bindings for the Qt cross-platform application and UI framework
+    // Home-page:
+    // Author:
+    // Author-email: Qt for Python Team <pyside@qt-project.org>
+    // License: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+    // Location: /Users/bencho/ws_temp/myenv/lib/python3.9/site-packages
+    // Requires: PySide6_Essentials, PySide6_Addons, shiboken6
+    // Required-by:
 
     const runner = new PySideCommandRunner(env);
     runner.onStdout(logIndented);
     runner.onStderr(logIndented);
 
-    const output = await runner.run(`pip show PySide6`, { useVenv: true });
-
-    for (const line of output) {
-      const [key, value] = line.split(':');
-      if (key?.toLowerCase() === 'version' && value) {
-        return value.trim();
+    const lines = await runner.run(`pip show PySide6`, { useVenv: true });
+    lines.forEach((line) => {
+      const [key, value] = line.split(': ');
+      if (key && value) {
+        parsedOutput[key.trim()] = value.trim();
       }
-    }
+    });
   } catch (e) {
     logger.error(isError(e) ? e.message : String(e));
+    return undefined;
   }
 
-  return undefined;
+  return {
+    version: parsedOutput.Version ?? '',
+    location: parsedOutput.Location ?? ''
+  } as PySidePackageInfo;
 }

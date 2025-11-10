@@ -12,6 +12,7 @@ export const COMMAND_SHOW_LOG = 'showLogOutputChannel';
 export const COMMAND_INSTALL_PYSIDE = 'installPySide6'; // contributes > commands
 export const COMMAND_PYTHON_CREATE_ENV = 'python.createEnvironment';
 export const COMMAND_PYTHON_SELECT_PYTHON = 'python.setInterpreter';
+export const COMMAND_RESTART_QMLLS = 'qt-qml.restartQmlls';
 
 export const TASK_TYPE = 'pyside'; // contributes > taskDefinitions
 export const TASK_SOURCE = 'PySide';

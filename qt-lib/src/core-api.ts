@@ -10,6 +10,11 @@ export interface QtAdditionalPath {
   isVCPKG?: boolean;
 }
 
+export interface PySideEnvData {
+  venvBinPath?: string;
+  qmlImportPath?: string;
+}
+
 // Implement sorter for QtAdditionalPath
 export function compareQtAdditionalPath(
   a: QtAdditionalPath,
@@ -31,6 +36,7 @@ export type ConfigType =
   | string
   | QtAdditionalPath[]
   | QtWorkspaceFeatures
+  | PySideEnvData
   | undefined;
 
 export type QtWorkspaceConfig = Map<string, ConfigType>;
