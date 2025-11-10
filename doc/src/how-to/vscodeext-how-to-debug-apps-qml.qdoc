@@ -227,5 +227,6 @@
 
        \endlist
 
-    \sa {Debug Qt applications}, {VS Code: Debugging}
+    \sa {Debug Qt applications}, {Debug Qt for Python applications},
+    {VS Code: Debugging}
 */
