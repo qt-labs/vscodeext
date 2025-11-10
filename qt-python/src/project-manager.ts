@@ -21,6 +21,7 @@ import { PySideProject } from './project';
 import { PySideProjectInfo } from './types';
 import { pyApi, coreApi } from './extension';
 import * as consts from '@/constants';
+import { fetchPySide6Version } from './installer';
 
 type Folder = vscode.WorkspaceFolder;
 type Context = vscode.ExtensionContext;
@@ -49,8 +50,20 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
       return;
     }
 
-    project.env = await resolveEnv(pyApi, folder);
-    setCoreAndNotify(folder, CoreKey.VENV_BIN_PATH, project.env?.venvBinPath);
+    const env = await resolveEnv(pyApi, folder);
+    const pyside = env && (await fetchPySide6Version(env));
+    const qmlImportPath = pyside?.location
+      ? path.normalize(path.join(pyside.location, 'PySide6/qml'))
+      : '';
+
+    project.env = env;
+
+    setCoreAndNotify(folder, CoreKey.PYSIDE_ENV_DATA, {
+      venvBinPath: env?.venvBinPath ?? '',
+      qmlImportPath
+    });
+
+    void vscode.commands.executeCommand(consts.COMMAND_RESTART_QMLLS);
   }
 
   private _refreshProjectInfo(folder: Folder) {

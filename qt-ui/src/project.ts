@@ -9,7 +9,8 @@ import {
   createLogger,
   resolveConfiguration,
   QtWorkspaceFeatures,
-  CoreKey
+  CoreKey,
+  PySideEnvData
 } from 'qt-lib';
 import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
@@ -27,7 +28,7 @@ type UpdateReason =
   | 'workspaceFeatureChanged'
   | 'selectedKitPathChanged'
   | 'selectedQtPathsChanged'
-  | 'venvBinPathChanged';
+  | 'pythonEnvDataChanged';
 
 const logger = createLogger('project');
 
@@ -45,7 +46,7 @@ export class UIProject implements Project {
   private _workspaceFeatures: QtWorkspaceFeatures | undefined;
   private _selectedKitPath: string | undefined;
   private _selectedQtPaths: string | undefined;
-  private _venvBinPath: string | undefined;
+  private _pythonEnvData: PySideEnvData | undefined;
 
   private _designerClient: DesignerClient | undefined;
   private readonly _designerServer: DesignerServer;
@@ -97,7 +98,10 @@ export class UIProject implements Project {
       this._folder,
       CoreKey.SELECTED_QT_PATHS
     );
-    this._venvBinPath = read<string>(this._folder, CoreKey.VENV_BIN_PATH);
+    this._pythonEnvData = read<PySideEnvData>(
+      this._folder,
+      CoreKey.PYSIDE_ENV_DATA
+    );
 
     await this._updateClient('init');
   }
@@ -132,10 +136,10 @@ export class UIProject implements Project {
     }
   }
 
-  public async setVenvBinPath(venvBinPath: string | undefined) {
-    if (this._venvBinPath !== venvBinPath) {
-      this._venvBinPath = venvBinPath;
-      await this._updateClient('venvBinPathChanged');
+  public async setPySideEnv(data: PySideEnvData | undefined) {
+    if (this._pythonEnvData !== data) {
+      this._pythonEnvData = data;
+      await this._updateClient('pythonEnvDataChanged');
     }
   }
 
@@ -186,8 +190,8 @@ export class UIProject implements Project {
     }
 
     if (this._workspaceFeatures?.projectTypes.pyside) {
-      if (this._venvBinPath) {
-        return locateDesignerFromVenvBinPaths(this._venvBinPath);
+      if (this._pythonEnvData?.venvBinPath) {
+        return locateDesignerFromVenvBinPaths(this._pythonEnvData.venvBinPath);
       }
     }
 

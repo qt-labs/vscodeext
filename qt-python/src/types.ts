@@ -14,3 +14,8 @@ export interface PySideProjectInfo {
   name: string;
   files: string[];
 }
+
+export interface PySidePackageInfo {
+  version: string;
+  location: string;
+}

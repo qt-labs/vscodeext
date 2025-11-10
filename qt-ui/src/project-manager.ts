@@ -8,7 +8,8 @@ import {
   ProjectManager,
   createLogger,
   QtWorkspaceFeatures,
-  CoreKey
+  CoreKey,
+  PySideEnvData
 } from 'qt-lib';
 import * as consts from '@/constants';
 import { coreAPI } from '@/extension';
@@ -78,9 +79,9 @@ export class UIProjectManager extends ProjectManager<UIProject> {
         continue;
       }
 
-      if (key === CoreKey.VENV_BIN_PATH) {
-        const value = coreAPI?.getValue<string>(folder, key);
-        await project.setVenvBinPath(value);
+      if (key === CoreKey.PYSIDE_ENV_DATA) {
+        const value = coreAPI?.getValue<PySideEnvData>(folder, key);
+        await project.setPySideEnv(value);
       }
     }
   };
