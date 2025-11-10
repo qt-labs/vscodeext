@@ -1,0 +1,183 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-debug-apps-python.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+
+    \title Debug Qt for Python applications
+
+    You can debug Python applications that contain both Python and QML code with
+    \l{debugpy} and the QML debugger.
+
+    \section1 Debug Python code
+
+    To debug only the Qt for Python code in an application, follow the
+    instructions in \l{VS Code: Python debugging in VS Code}.
+
+    To launch and debug Qt for Python applications:
+
+    \list 1
+        \li Open a \e {launch.json} file. For more information, see
+            \l {Debug Qt applications}.
+        \li Select \uicontrol {Python Debugger}.
+        \li Select \uicontrol {Add Configuration}, and then select the
+            \uicontrol {Qt: PySide: Launch} debug configuration.
+    \endlist
+
+    The configuration looks as follows:
+
+    \badcode
+    "configurations": [
+        Pyside
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Qt: PySide: Launch",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "preLaunchTask": "PySide: build"
+        }
+    ]
+    \endcode
+
+    \note If \c main.py is not the application entry point, change it in
+    \c "program".
+
+    \section1 Debug mixed Python and QML code
+
+    You can create a debug configuration that first starts an application and
+    then attaches both \c debugpy and the QML debugger to it using a port number
+    that the \uicontrol {Qt: Acquire Port} pre-launch task acquires.
+
+    \section2 Turn on QML debugging
+
+    To turn on QML debugging, add the following code to your QML application:
+
+    \badcode
+    from pathlib import Path
+    from argparse import ArgumentParser
+
+    from PySide6.QtGui import QGuiApplication
+    from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler
+
+    if __name__ == "__main__":
+        argument_parser = ArgumentParser()
+        argument_parser.add_argument("-qmljsdebugger", action="store",
+                                     help="Enable QML debugging")
+        options = argument_parser.parse_args()
+        if options.qmljsdebugger:
+            QQmlDebuggingEnabler.enableDebugging(True)
+
+        app = QApplication(sys.argv)
+        engine = QQmlApplicationEngine()
+    \endcode
+
+    \section2 Launch and debug applications
+
+    The QML debugger connects to a socket server that is run by the QmlEngine
+    instance. Specify the port number in the launch configuration.
+
+    To debug a Qt Quick application that contains both Python and QML code:
+
+    \list 1
+        \li Open a \e {launch.json} file. For more information, see
+            \l {Debug Qt applications}.
+        \li Select \uicontrol {Python Debugger}.
+        \li Select \uicontrol {Add Configuration}, and then select the
+            \uicontrol {Qt: PySide: Launch with QML Debugger} debug
+            configuration.
+        \li In \c args, set the value of \c "port" to the port number to use:
+            \badcode
+            "configurations": [
+                {
+                "name": "Qt: PySide: Launch with QML debugger",
+                "type": "debugpy",
+                "request": "launch",
+                "program": "${workspaceFolder}/main.py",
+                "preLaunchTask": "PySide: build",
+                "args": [
+                    "-qmljsdebugger=port:<port_number>,block,services:DebugMessages,QmlDebugger,V8Debugger"
+            ]
+            \endcode
+        \li Select \uicontrol {Add Configuration}, and then select the
+            \uicontrol {Qt: QML: Attach by port} debug configuration.
+        \li Set the port number as the value of the \c port option in the
+            \e {launch.json} file:
+            \badcode
+            "configurations": [
+                {
+                    "name": "Qt: QML: Attach by port",
+                    "type": "qml",
+                    "request": "attach",
+                    "host": "localhost",
+                    "port": "<port_number>"
+                },
+            \endcode
+        \li Add a compound launch task for Python/QML debugging to the
+            \e {launch.json} file:
+            \badcode
+            "compounds": [
+                {
+                    "name": "Python/QML",
+                    "configurations": [
+                        "Qt: PySide: Launch with QML debugger,
+                        "Qt: QML: Attach by port"
+                    ]
+                }
+            ]
+            \endcode
+        \li Run the compound debug configuration.
+    \endlist
+
+    \section2 Automatically assign port numbers
+
+    Use the \c ${command:qt-qml.debugPort} variable and a compound launch and
+    pre-launch task to automatically assign port numbers:
+
+    \badcode
+    "configurations": [
+        {
+            "name": "Qt: PySide: Launch with QML debugger",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "preLaunchTask": "PySide: build",
+            "args": [
+                "-qmljsdebugger=port:${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger"
+                ]
+        },
+        {
+            "name": "Qt: QML: Attach by port",
+            "type": "qml",
+            "request": "attach",
+            "host": "localhost",
+            "port": "${command:qt-qml.debugPort}"
+        },
+    ],
+    "compounds": [
+        {
+            "name": "Python/QML",
+            "configurations": [
+                "Qt: PySide: Launch with QML debugger,
+                "Qt: QML: Attach by port"
+            ],
+            "preLaunchTask": "Qt: Acquire Port",
+        }
+    ]
+    \endcode
+
+
+    \sa {Debug Qt applications}, {Debug Qt Quick applications},
+    {VS Code: Debugging}, {VS Code:Python debugging in VS Code}
+*/

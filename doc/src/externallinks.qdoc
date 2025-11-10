@@ -52,3 +52,13 @@
 \externalpage https://code.visualstudio.com/Docs/editor/debugging
 \title VS Code: Debugging
 */
+
+/*!
+\externalpage https://code.visualstudio.com/Docs/python/debugging
+\title VS Code: Python debugging in VS Code
+*/
+
+/*!
+\externalpage https://pypi.org/project/debugpy/
+\title debugpy
+*/

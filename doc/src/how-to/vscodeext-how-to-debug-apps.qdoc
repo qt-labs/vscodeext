@@ -42,6 +42,19 @@
             select \uicontrol {CMake: Set Launch/Debug Target}.
     \endlist
 
+    \section1 Debug source code
+
+    You can also debug the Qt source code. However, if you installed Qt with
+    vcpkg, \QVSC cannot find the source code and shows a warning. To disable the
+    warning:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette} and select
+            \uicontrol {Open Qt settings}.
+        \li Select \uicontrol {Qt C++ Configuration}, and then select
+            \uicontrol {Do Not Warn Missing Source Dir}.
+    \endlist
+
     \section1 Qt debug configurations
 
     Select one of the following Qt debug configurations:
@@ -61,11 +74,15 @@
         \li \uicontrol {Qt: Debug with cppvsdbg and QML debugger (Windows)} for
             debugging Qt Quick applications that contain C/C++ code with the
             Visual Studio Windows debugger and the QML debugger.
+        \li \uicontrol {Qt: PySide: Launch} for debugging Qt for Python
+            applications with \c debugpy.
+        \li \uicontrol {Qt: PySide: Launch with QML Debugger} for debugging
+            Qt for Python and QML applications with \c debugpy and QML debugger.
         \li \uicontrol {Qt: Debug with lldb} for debugging with LLDB.
         \li \uicontrol {Qt: Debug Qt WASM with Chrome} for debugging
             Qt WebAssembly applications with Chrome.
     \endlist
 
-    \sa {Debug Qt Quick applications}, {Debug Qt WebAssembly applications},
-    {VS Code: Debugging}
+    \sa {Debug Qt Quick applications}, {Debug Qt for Python applications},
+    {Debug Qt WebAssembly applications}, {VS Code: Debugging}
 */
