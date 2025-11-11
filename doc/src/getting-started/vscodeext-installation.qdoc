@@ -13,6 +13,7 @@
 
     \list
         \li Qt C++ for developing Qt C++ and Qt Quick applications
+        \li Qt Python for developing applications with Qt for Python
         \li Qt WebAssembly for developing applications for WebAssembly
     \endlist
 

@@ -60,7 +60,7 @@
 
     \list
         \li Install PySide6 packages
-        \li Build, run, and clean Pyside6 projects
+        \li Build, run, and clean PySide6 projects
         \li Debug PySide6 applications with \c debugpy and QML debugger
         \li Read Qt for Python documentation
     \endlist
