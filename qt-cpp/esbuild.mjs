@@ -36,6 +36,7 @@ const extensionTestConfig = {
     './test/runTest.mts',
     './test/runTest.build.mts',
     './test/runTest.natvis.mts',
+    './test/util/stdioFilter.mts',
     './test/suite/index.mts',
     './test/suite/index-build.mts',
     './test/suite/index-natvis.mts',
