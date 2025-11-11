@@ -25,12 +25,22 @@ type TemplateFileContents struct {
 	Files   []TemplateItem      `yaml:"files"`
 	Fields  []util.StringAnyMap `yaml:"fields"`
 	Meta    TemplateMeta        `yaml:"meta"`
+	Options TemplateOptions     `yaml:"options"`
 }
 
 type TemplateMeta struct {
 	Type        string `yaml:"type" json:"type"`
 	Title       string `yaml:"title" json:"title"`
 	Description string `yaml:"description" json:"description"`
+}
+
+type TemplateOptions struct {
+	Polish TemplatePolishOptions `yaml:"polish"`
+}
+
+type TemplatePolishOptions struct {
+	TrimStart          *bool `yaml:"trimStart"`
+	CompressEmptyLines *bool `yaml:"compressEmptyLines"`
 }
 
 type TemplateItem struct {
@@ -87,6 +97,10 @@ func (f *TemplateFile) GetMeta() TemplateMeta {
 	return f.contents.Meta
 }
 
+func (f *TemplateFile) GetOptions() TemplateOptions {
+	return f.contents.Options
+}
+
 func (f *TemplateFile) open() error {
 	logrus.Debug(fmt.Sprintf(
 		"reading template definition, file = '%v'", f.filePath))
@@ -101,5 +115,20 @@ func (f *TemplateFile) open() error {
 		return err
 	}
 
+	f.validateOptions()
 	return nil
+}
+
+func (f *TemplateFile) validateOptions() {
+	o := &f.contents.Options
+
+	if o.Polish.TrimStart == nil {
+		DefaultTrimStart := true
+		o.Polish.TrimStart = &DefaultTrimStart
+	}
+
+	if o.Polish.CompressEmptyLines == nil {
+		DefaultCompressEmptyLines := true
+		o.Polish.CompressEmptyLines = &DefaultCompressEmptyLines
+	}
 }

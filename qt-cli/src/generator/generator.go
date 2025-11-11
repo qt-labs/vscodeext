@@ -12,6 +12,7 @@ import (
 	"qtcli/common"
 	"qtcli/util"
 	"regexp"
+	"runtime"
 	"strings"
 	"text/template"
 
@@ -31,6 +32,7 @@ type Context struct {
 	data            util.StringAnyMap
 	funcs           template.FuncMap
 	items           []common.TemplateItem
+	options         common.TemplateOptions
 	outputDirOffset string
 }
 
@@ -118,21 +120,22 @@ func (g *Generator) Render() *Result {
 }
 
 func (g *Generator) prepContext() error {
-	files, fields, err := g.readFilesAndFields()
-	if err != nil {
+	template, err := g.readTemplateFile()
+	if template == nil || err != nil {
 		return err
 	}
 
 	g.context.data = g.preset.GetOptions()
 	g.context.data["name"] = g.name
 	g.context.funcs = getApi()
-	g.context.items = files
+	g.context.items = template.GetFileItems()
+	g.context.options = template.GetOptions()
 	g.context.outputDirOffset = ""
 	if g.preset.GetTypeId() == common.TargetTypeProject {
 		g.context.outputDirOffset = g.name
 	}
 
-	err = g.evalFields(fields)
+	err = g.evalFields(template.GetFields())
 	if err != nil {
 		return err
 	}
@@ -201,28 +204,25 @@ func (g *Generator) runNames() (ResultData, error) {
 	return result, nil
 }
 
-func (g *Generator) readFilesAndFields() (
-	[]common.TemplateItem, []util.StringAnyMap, error) {
+func (g *Generator) readTemplateFile() (*common.TemplateFile, error) {
 	dir := g.preset.GetTemplateDir()
 	filePath := path.Join(dir, g.env.TemplateFileName)
 
 	if len(dir) == 0 {
-		return []common.TemplateItem{}, []util.StringAnyMap{},
-			errors.New(util.Msg("cannot determine a config file path"))
+		return nil, errors.New(util.Msg("cannot determine a config file path"))
 	}
 
 	if !util.EntryExistsFS(g.env.FS, filePath) {
-		return []common.TemplateItem{}, []util.StringAnyMap{},
-			fmt.Errorf(
-				util.Msg("template definition does not exist, dir = '%v'"), dir)
+		return nil, fmt.Errorf(
+			util.Msg("template definition does not exist, dir = '%v'"), dir)
 	}
 
 	template, err := common.OpenTemplateFile(g.env.FS, filePath)
 	if err != nil {
-		return []common.TemplateItem{}, []util.StringAnyMap{}, err
+		return nil, err
 	}
 
-	return template.GetFileItems(), template.GetFields(), nil
+	return template, nil
 }
 
 func (g *Generator) runContents(result ResultItem) error {
@@ -255,7 +255,7 @@ func (g *Generator) runContents(result ResultItem) error {
 
 	// save to file
 	if !g.dryRun {
-		output = polishOutput(output)
+		output = polishOutput(output, g.context.options.Polish)
 		_, err = util.WriteAll([]byte(output), result.outputFileAbs)
 		if err != nil {
 			return err
@@ -300,13 +300,27 @@ func (g *Generator) evalWhenCondition(file common.TemplateItem) (bool, error) {
 		RunStringToBool(file.When, true)
 }
 
-func polishOutput(contents string) string {
-	tooManyLinesWin := regexp.MustCompile(`(\r\n){3,}`)
-	tooManyLinesUnix := regexp.MustCompile(`\n{3,}`)
+func polishOutput(contents string, options common.TemplatePolishOptions) string {
+	v := contents
 
-	v := strings.TrimLeft(contents, " \t\r\n")
-	v = tooManyLinesWin.ReplaceAllString(v, "\r\n\r\n")
-	v = tooManyLinesUnix.ReplaceAllString(v, "\n\n")
+	if options.TrimStart != nil && *options.TrimStart {
+		v = strings.TrimLeft(v, " \t\r\n")
+	}
+
+	if options.CompressEmptyLines != nil && *options.CompressEmptyLines {
+		tooManyLinesWin := regexp.MustCompile(`(\r\n){3,}`)
+		tooManyLinesUnix := regexp.MustCompile(`\n{3,}`)
+
+		v = tooManyLinesWin.ReplaceAllString(v, "\r\n\r\n")
+		v = tooManyLinesUnix.ReplaceAllString(v, "\n\n")
+	}
+
+	v = strings.ReplaceAll(v, "\r\n", "\n")
+	v = strings.ReplaceAll(v, "\r", "\n")
+
+	if runtime.GOOS == "windows" {
+		v = strings.ReplaceAll(v, "\n", "\r\n")
+	}
 
 	return v
 }
