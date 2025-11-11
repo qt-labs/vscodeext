@@ -5,7 +5,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as fsp from 'fs/promises';
-//import { spawnSync } from 'node:child_process';
 
 const QT_INS_ROOT_CONFIG_NAME = 'qtInstallationRoot';
 
@@ -27,6 +26,9 @@ import {
   assertExtensionsInstalled,
   getDebugLevel
 } from '../../qt-lib/src/test-vscode-install.js';
+
+import { installStdioFilter } from './util/stdioFilter.mts';
+const uninstallStdio = installStdioFilter();
 
 // --- CLI arg parsing (no deps) ---------------------------------------------
 function getCliArg(name: string): string | undefined {
@@ -128,8 +130,6 @@ async function main() {
     console.log('[runTest] Wrote settings to:', settingsPath);
 
     const quietArgs = [...args, ...getQuietVSCodeArgs()];
-    //const required = ['ms-vscode.cmake-tools', localQtCoreVsix];
-    //const requiredIds = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core'];
     const required = [
       'ms-vscode.cpptools',
       'ms-vscode.cmake-tools',
@@ -182,4 +182,8 @@ async function main() {
   }
 }
 
-main();
+main().catch((e) => {
+  try { uninstallStdio(); } catch {}
+  console.error(e);
+  process.exit(1);
+});
