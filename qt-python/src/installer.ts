@@ -182,21 +182,24 @@ async function tryInstallPySide(
     runner.onStdout(logIndented);
     runner.onStderr(logIndented);
 
-    if (source.source === 'oss') {
-      await runner.run('pip install PySide6', { useVenv: true });
-    } else if (source.source === 'local' && source.localPath) {
-      await runner.run('pip install -r requirements.txt', {
-        useVenv: true,
-        cwd: source.localPath
-      });
-    } else {
-      return;
-    }
+    try {
+      if (source.source === 'oss') {
+        await runner.run('pip install PySide6', { useVenv: true });
+      } else if (source.source === 'local' && source.localPath) {
+        await runner.run('pip install -r requirements.txt', {
+          useVenv: true,
+          cwd: source.localPath
+        });
+      } else {
+        return;
+      }
 
-    await projectManager.refreshEnv(folder);
+      const pyside = await env.readPySide6PackageInfo(logIndented);
+      if (!pyside) {
+        throw new Error('Cannot read PySide6 package information');
+      }
 
-    const pyside = await env.readPySide6PackageInfo(logIndented);
-    if (pyside) {
+      await projectManager.refreshEnv(folder);
       void vscode.window.showInformationMessage(
         texts.install.popup.installed(
           folder.name,
@@ -204,7 +207,7 @@ async function tryInstallPySide(
           env.venvName ?? ''
         )
       );
-    } else {
+    } catch (e) {
       void vscode.window.showWarningMessage(
         texts.install.popup.installFailed(folder.name) + ` (${linkShowLogs})`
       );
