@@ -35,3 +35,6 @@ fields:
       {{ else }}widget
       {{ end }}
 
+options:
+  polish:
+    compressEmptyLines: false

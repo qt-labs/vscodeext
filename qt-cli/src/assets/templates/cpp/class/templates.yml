@@ -4,7 +4,7 @@ meta:
   type: file
   title: C++ class
   description: >-
-    Creates a C++ header and source file 
+    Creates a C++ header and source file
     for a new class that you can add to a C++ project.
 
 files:

@@ -1,5 +1,5 @@
-{{- $target := printf "app%s" .name }}
-{{- $mininumQtVersionFloat := (.minimumQtVersion | Qt.ParseFloat) }}
+{{- $target := printf "app%s" .name -}}
+{{- $mininumQtVersionFloat := (.minimumQtVersion | Qt.ParseFloat) -}}
 cmake_minimum_required(VERSION 3.16)
 
 project({{ .name }} VERSION 0.1 LANGUAGES CXX)
