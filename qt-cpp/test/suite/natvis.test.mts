@@ -83,44 +83,37 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     }
   );
 
+  const DEBUG = process.env.QT_TEST_DEBUG === '1';
+  const dlog = (...args: unknown[]) => { if (DEBUG) console.log(...args); };
+
   it('configures, builds, and stops at a breakpoint', async function () {
     const wsFolder = getWorkspaceFolderOrThrow();
     const projectDir = wsFolder.uri.fsPath;
-    console.log('Using projectDir:', projectDir);
+    dlog('Using projectDir:', projectDir);
     const buildDir = await cleanBuildDir(projectDir);
 
     await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
     await waitForVSCodeIdle();
 
     const kit = await selectAndApplyQtKit(wsFolder);
-    console.log('Selected Qt kit:', kit);
-
-    // Qt: pin ONLY Qt6_DIR (no CMAKE_PREFIX_PATH)
-    const qtRoot = vscode.workspace
-      .getConfiguration('qt-core')
-      .get<string>('qtInstallationRoot');
-    if (typeof qtRoot !== 'string' || qtRoot.trim() === '') {
-      throw new Error('qt-core.qtInstallationRoot is not configured.');
-    }
+    dlog('Selected Qt kit:', kit);
 
     // spy on error messages
     const errSpy = sb.spy(vscode.window, 'showErrorMessage');
 
     // ... run cmake.configure / cmake.build / assertions ...
-    console.log('Running cmake.configure...');
+    dlog('Running cmake.configure...');
     const rcCfg =
       await vscode.commands.executeCommand<number>('cmake.configure');
     await waitForVSCodeIdle();
     expect(rcCfg, `cmake.configure failed (rc=${rcCfg})`).to.equal(0);
 
     // confirm what CMake used
-    if (process.env.QT_TEST_DEBUG === '1') {
-      console.log('== WHAT CMAKE USED ==');
-      console.log(
+      dlog('== WHAT CMAKE USED ==');
+      dlog(
         '  Qt6_DIR =',
         readCMakeCacheVar(buildDir, 'Qt6_DIR') ?? '<unknown>'
       );
-    }
 
     const rcBuild = await vscode.commands.executeCommand<number>('cmake.build');
     await waitForVSCodeIdle();
@@ -130,7 +123,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 
     const bin = process.platform === 'win32' ? 'hello.exe' : 'hello';
     const outPath = path.join(buildDir, bin);
-    console.log('Checking for binary at', outPath);
+    dlog('Checking for binary at', outPath);
 
     expect(fs.existsSync(outPath), `Expected build artifact at ${outPath}`).to
       .be.true;
@@ -153,7 +146,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 
       const lines = doc.getText().split('\n');
 
-      // Collect all marker lines
+      // Quick check that the markers are present
       const markerIdxs = lines
         .map((ln, i) => (ln.includes('BREAK_HERE') ? i : -1))
         .filter((i) => i >= 0);
@@ -163,18 +156,18 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         'No // BREAK_HERE markers found in source'
       ).to.be.greaterThan(0);
 
-      console.log(
+      dlog(
         'CMAKE_BUILD_TYPE:',
         readCMakeCacheVar(buildDir, 'CMAKE_BUILD_TYPE')
       );
-      console.log(
+      dlog(
         'cmake.buildConfig:',
         vscode.workspace.getConfiguration('cmake').get('buildConfig')
       );
       // --- launch debugger and wait for stop ---
       const nvPath =
         await vscode.commands.executeCommand<string>('qt-cpp.natvis');
-      console.log(
+      dlog(
         '[natvis.test] visualizer path:',
         nvPath
       );
@@ -199,23 +192,17 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       );
       session = s;
 
-      expect(stops.length).to.be.greaterThan(0);
-
-      const stop = stops[0]!;
-      const frameId = stop.frameId!;
-
       expect(
         stops.length,
         'Debugger did not stop on a breakpoint'
       ).to.be.greaterThan(0);
-      console.log(
-        '[natvis.test] stops:',
-        stops.map((s) => `${s.source}:${s.line}`).join(', ')
-      );
+      dlog('[natvis.test] stops:', stops.map(s => `${s.source}:${s.line}`).join(', '));
 
+      const stop = stops[0]!;
+      const frameId = stop.frameId!;
       // Fetch Locals from the top frame
       const locals = await getLocals(session, frameId);
-      console.log(
+      dlog(
         'Locals at top frame:',
         locals.map((v: any) => v.name).join(', ')
       );
@@ -224,7 +211,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       const vRect = locals.find((v: any) => v.name === 'qRect');
       const vBA = locals.find((v: any) => v.name === 'qByteArray');
       const vStr = locals.find((v: any) => v.name === 'qString');
-      console.log('Rectangle from Locals:', vRect);
+      dlog('Rectangle from Locals:', vRect);
 
       //--------------------------------- temp test ------------------------------------------------
       expect(vRect, 'qRect not found in Locals').to.exist;
@@ -264,7 +251,8 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 const seenTypes = collectTypesFromSnapshot(snapshot);
 const { missing } = matchNatvisTypePatternsConsideringAlternatives(natvis, seenTypes);
 
-if (missing.length) {
+const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
+if (missing.length && SHOW_COVERAGE_MISSING) {
   const lines = missing.map((base) => {
     const alts = natvis.alts.get(base);
     return alts && alts.size
