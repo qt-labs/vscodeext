@@ -11,7 +11,8 @@ import {
   QtWorkspaceConfigMessage,
   CoreKey,
   QtAdditionalPath,
-  telemetry
+  telemetry,
+  compareVersions
 } from 'qt-lib';
 import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
 import { registerResetCommand } from '@cmd/reset-qt-ext';
@@ -87,6 +88,8 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   void tryToUseCMakeFromQtTools();
 
+  checkCMakeToolsVersion();
+
   if (isAnyOfProjectsUsingKits()) {
     await kitManager.checkForAllQtInstallations();
   }
@@ -151,4 +154,54 @@ function isAnyOfProjectsUsingKits(): boolean {
   return Array.from(projectManager.getProjects()).some(
     (project) => project.type === CppProjectType.Kit
   );
+}
+
+function checkCMakeToolsVersion(): void {
+  const cmakeExt = vscode.extensions.getExtension('ms-vscode.cmake-tools');
+  if (!cmakeExt) {
+    logger.warn('CMake Tools extension not found');
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const version = cmakeExt.packageJSON.version as string;
+  const requiredVersion = '1.22.16';
+
+  // compareVersions returns: -1 if version1 < version2, 0 if equal, 1 if version1 > version2
+  const isOutdated = compareVersions(version, requiredVersion) < 0;
+
+  if (!isOutdated) {
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const disableWarning = config.get<boolean>(
+    'doNotWarnOutdatedCMakeTools',
+    false
+  );
+  if (disableWarning) {
+    return;
+  }
+
+  const message = `CMake Tools ${version} is outdated. Version ${requiredVersion} or later is required for CMake Presets support.`;
+  const updateBtn = 'Update';
+  const doNotShowBtn = 'Do not show again';
+  logger.error(message);
+
+  void vscode.window
+    .showErrorMessage(message, updateBtn, doNotShowBtn)
+    .then((selection) => {
+      if (selection === updateBtn) {
+        void vscode.commands.executeCommand(
+          'extension.open',
+          'ms-vscode.cmake-tools'
+        );
+      } else if (selection === doNotShowBtn) {
+        void config.update(
+          'doNotWarnOutdatedCMakeTools',
+          true,
+          vscode.ConfigurationTarget.Global
+        );
+      }
+    });
 }

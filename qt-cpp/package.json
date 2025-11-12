@@ -78,6 +78,11 @@
           "type": "boolean",
           "default": false,
           "description": "Do not show a warning when the source directory cannot be determined from the selected kit."
+        },
+        "qt-cpp.doNotWarnOutdatedCMakeTools": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not show a warning when the installed CMake Tools extension is too old for CMake Presets support."
         }
       }
     },

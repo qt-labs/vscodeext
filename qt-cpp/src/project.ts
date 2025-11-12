@@ -93,7 +93,9 @@ export class CppProject implements Project {
     this._stateManager = new WorkspaceStateManager(_context, _folder);
     this._buildDir = buildDir;
 
-    if (this._cmakeProject.useCMakePresets) {
+    const usePresets = this._cmakeProject.useCMakePresets;
+
+    if (usePresets) {
       logger.info('Using CMake presets');
       this._type = CppProjectType.Presets;
     } else {
