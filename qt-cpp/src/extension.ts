@@ -26,7 +26,12 @@ import {
   qpaPlatformPluginPathCommand,
   qmlImportPathCommand
 } from '@cmd/launch-variables';
-import { createCppProject, CppProjectManager, CppProject } from '@/project';
+import {
+  createCppProject,
+  CppProjectManager,
+  CppProject,
+  CppProjectType
+} from '@/project';
 import { KitManager, tryToUseCMakeFromQtTools } from '@/kit-manager';
 import { wasmStartTaskProvider, WASMStartTaskProvider } from '@task/wasm-start';
 import { EXTENSION_ID } from '@/constants';
@@ -81,7 +86,10 @@ export async function activate(context: vscode.ExtensionContext) {
     return processMessage(message);
   });
   void tryToUseCMakeFromQtTools();
-  await kitManager.checkForAllQtInstallations();
+
+  if (isAnyOfProjectsUsingKits()) {
+    await kitManager.checkForAllQtInstallations();
+  }
 
   await initConfigValues();
   logger.info('Config values initialized');
@@ -137,4 +145,10 @@ async function processMessage(message: QtWorkspaceConfigMessage) {
       continue;
     }
   }
+}
+
+function isAnyOfProjectsUsingKits(): boolean {
+  return Array.from(projectManager.getProjects()).some(
+    (project) => project.type === CppProjectType.Kit
+  );
 }
