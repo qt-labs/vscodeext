@@ -25,7 +25,7 @@ import {
   fileWriter
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
-import { CppProject } from '@/project';
+import { CppProject, CppProjectType } from '@/project';
 import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
 import { IsQtKit } from '@cmd/register-qt-path';
@@ -235,7 +235,9 @@ export class KitManager {
 
   private async checkForWorkspaceFolderQtInstallations() {
     for (const project of this.projects) {
-      await this.checkForQtInstallations(project);
+      if (project.type === CppProjectType.Kit) {
+        await this.checkForQtInstallations(project);
+      }
     }
   }
 
