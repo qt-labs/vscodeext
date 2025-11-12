@@ -1,4 +1,4 @@
-{{- $mininumQtVersionFloat := (.minimumQtVersion | Qt.ParseFloat) }}
+{{- $mininumQtVersionFloat := (.minimumQtVersion | Qt.ParseFloat) -}}
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 

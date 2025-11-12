@@ -15,3 +15,7 @@ files:
   - in: '@/common/git.ignore'
     out: .gitignore
     bypass: true
+
+options:
+  polish:
+    compressEmptyLines: false
