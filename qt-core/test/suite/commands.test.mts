@@ -301,7 +301,7 @@ describe('command: setRecommendedSettings', () => {
 
     await runRecommandSettingsCommand();
 
-    expect(updateSpy.callCount).to.equal(3);
+    expect(updateSpy.callCount).to.equal(2);
     const configurationTarget = isMultiWorkspace()
       ? vscode.ConfigurationTarget.Workspace
       : undefined;
@@ -320,9 +320,6 @@ describe('command: setRecommendedSettings', () => {
         `\${workspaceFolder}${path.sep}builds${path.sep}\${buildKit}${path.sep}\${buildType}`,
         configurationTarget
       )
-    ).to.be.true;
-    expect(
-      updateSpy.calledWith('useCMakePresets', 'never', configurationTarget)
     ).to.be.true;
   });
 });

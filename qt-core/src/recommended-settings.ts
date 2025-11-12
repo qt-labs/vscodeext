@@ -24,11 +24,6 @@ export function registerSetRecommendedSettingsCommand() {
       extensionId: 'cmake',
       setting: 'buildDirectory',
       value: `\${workspaceFolder}${path.sep}builds${path.sep}\${buildKit}${path.sep}\${buildType}`
-    },
-    {
-      extensionId: 'cmake',
-      setting: 'useCMakePresets',
-      value: 'never'
     }
   ];
 
