@@ -72,6 +72,15 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   const visualizerFile = await vscode.commands.executeCommand<string>('qt-cpp.natvis');
 
 
+if (!program || !cwd) {
+  throw new Error(
+    `Failed to resolve debug launch paths from CMake Tools.
+     program=${program ?? '<undefined>'}, cwd=${cwd ?? '<undefined>'}`
+  );
+}
+if (!visualizerFile) {
+  throw new Error('qt-cpp.natvis did not resolve to a NatVis file path.');
+}
   const cfg: vscode.DebugConfiguration = {
     name: 'natvis-test-launch',
     type: isWin ? 'cppvsdbg' : 'cppdbg',
