@@ -73,27 +73,18 @@ gen-all() {
     ext=".exe"
   fi
 
-  presets=(
-    "@projects/cpp/console"
-    "@projects/cpp/qtquick"
-    "@projects/cpp/qwidget"
-    "@types/qml"
-    "@types/qrc"
-    "@types/ui"
-    "@cpp/class"
-  )
+  qtcli="$(realpath ../qtcli${ext})"
 
-  for preset in "${presets[@]}"; do
-    name="new_$(echo "$preset" | sed 's/^@//' | tr '/' '_')"
-    subcmd="new-file"
-    if [[ "$preset" == @projects/* ]]; then
-      subcmd="new"
-    fi
+  ${qtcli} new projects_cpp_console --preset @projects/cpp/console
+  ${qtcli} new projects_cpp_qtquick --preset @projects/cpp/qtquick
+  ${qtcli} new projects_cpp_qwidget --preset @projects/cpp/qwidget
+  ${qtcli} new projects_python_qtquick --preset @projects/python/qtquick
+  ${qtcli} new projects_python_qwidget --preset @projects/python/qwidget
 
-    cmd="../qtcli${ext} $subcmd $name --preset $preset"
-    echo "Running: $cmd"
-    $cmd
-  done
+  _run_in_dir types_qml ${qtcli} new-file myitem --preset @types/qml
+  _run_in_dir types_qrc ${qtcli} new-file myasset --preset @types/qrc
+  _run_in_dir types_ui  ${qtcli} new-file myui --preset @types/ui
+  _run_in_dir cpp_class ${qtcli} new-file MyClass --preset @cpp/class
 
   echo '-----------------------------------'
   echo Output Dir: $(pwd)
@@ -125,6 +116,15 @@ update-license() {
     --template ../others/ThirdPartyNotices.tpl \
     --ignore qtcli > $TARGET_DIR/$TARGET_FILE
   popd > /dev/null
+}
+
+_run_in_dir() {
+  dir="$1"
+  shift
+  mkdir "$dir" && (
+    cd "$dir"
+    "$@"
+  )
 }
 
 case "$1" in
