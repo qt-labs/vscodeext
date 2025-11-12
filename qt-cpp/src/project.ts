@@ -677,39 +677,10 @@ export class CppProject implements Project {
     if (!coreAPI) {
       throw new Error('CoreAPI is not initialized');
     }
-    // const installationPath = await this.getInstallationPath();
-    // logger.info(
-    //   `Setting installation path for ${folder.uri.fsPath} to ${installationPath}`
-    // );
 
-    // // const kit = await getSelectedKit(folder, true);
-    // coreAPI.setValue(folder, CoreKey.INSTALLATION_PATH, installationPath);
-    // // const selectedQtPaths = kit ? getQtPathsExe(kit) : undefined;
-    // const selectedQtPaths = await this.getQtPaths();
-    // coreAPI.setValue(folder, CoreKey.SELECTED_QT_PATHS, selectedQtPaths);
-    // logger.info(
-    //   `Setting selected Qt paths for ${folder.uri.fsPath} to ${selectedQtPaths}`
-    // );
-
-    // coreAPI.setValue(folder, featuresKey, features);
-    // logger.info(
-    //   `Setting workspace features for ${folder.uri.fsPath} to ${JSON.stringify(features)}`
-    // );
-
-    // coreAPI.setValue(folder, CoreKey.BUILD_DIR, this.buildDir);
-    // logger.info(
-    //   `Setting build directory for ${folder.uri.fsPath} to ${this.buildDir}`
-    // );
-    // logger.info('Config values initialized for:', folder.uri.fsPath);
-    // const message = new QtWorkspaceConfigMessage(folder);
-    // message.config.add(CoreKey.INSTALLATION_PATH);
-    // message.config.add(CoreKey.SELECTED_QT_PATHS);
-    // message.config.add(featuresKey);
-    // message.config.add(CoreKey.BUILD_DIR);
     if (!this._cmakeProject) {
       throw new Error('CMake project is not defined');
     }
-    // coreAPI.notify(message);
     const folder = this.folder;
     let features = coreAPI.getValue<QtWorkspaceFeatures>(
       folder,
