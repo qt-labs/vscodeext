@@ -10,14 +10,6 @@ import { spawnSync } from 'child_process';
 
 import { createLogger, isError, OSExeSuffix } from 'qt-lib';
 
-export enum QtcliAction {
-  ServerControl
-}
-
-export const qtcliSubCommands: Record<QtcliAction, string> = {
-  [QtcliAction.ServerControl]: 'server'
-};
-
 export const qtcliExeName = 'qtcli' + OSExeSuffix;
 export const logger = createLogger('qtcli');
 

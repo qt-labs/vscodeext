@@ -1,21 +1,25 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+import { exists } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { QtcliExeFinder } from '@/qtcli/exe-finder';
-import { findActiveTabUri, fallbackWorkingDir } from '@/qtcli/common';
+import {
+  qtcliExeName,
+  findActiveTabUri,
+  fallbackWorkingDir
+} from '@/qtcli/common';
 
 const ConfigDefaultProjectDirectory = 'defaultProjectDirectory';
 
 export async function findQtcliExePath(extensionUri: vscode.Uri) {
-  const finder = new QtcliExeFinder();
-  finder.addPossibleDir(process.cwd());
-  finder.addPossibleDir((process.env.PATH ?? '').split(path.delimiter));
-  finder.addDistDir(path.join(extensionUri.fsPath, 'res', 'qtcli'));
-  return finder.run();
+  const prefix = findQtcliOsPrefix();
+  const distDir = path.join(extensionUri.fsPath, 'res', 'qtcli');
+
+  return findQtcliInDist(distDir, prefix);
 }
 
 export function getNewFileBaseDir() {
@@ -46,4 +50,35 @@ function getDefaultProjectDir(): string | undefined {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   const readback = config.inspect<string>(ConfigDefaultProjectDirectory);
   return readback?.globalValue;
+}
+
+function findQtcliOsPrefix(): string {
+  const platform = process.platform;
+
+  if (platform === 'win32') {
+    return 'qtcli-windows-';
+  } else if (platform === 'darwin' || platform === 'linux') {
+    return `qtcli-${platform}-`;
+  } else {
+    throw new Error(`Platform '${platform}' is not supported`);
+  }
+}
+
+async function findQtcliInDist(distDir: string, prefix: string) {
+  try {
+    const entries = await fs.readdir(distDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory() && entry.name.startsWith(prefix)) {
+        const fullPath = path.join(distDir, entry.name, qtcliExeName);
+        if (await exists(fullPath)) {
+          return fullPath;
+        }
+      }
+    }
+  } catch {
+    // do nothing
+  }
+
+  return undefined;
 }
