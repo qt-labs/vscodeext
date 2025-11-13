@@ -27,7 +27,11 @@ async function main() {
       await setupTestInfrastructure(vscodeExecutablePath);
 
     setupVSCodeSettings(userDataDir, qtRoot);
-    installRequiredExtensions(cli, args, localQtCoreVsix);
+    const extensions = [
+      { idOrVsix: 'ms-vscode.cmake-tools' },
+      { idOrVsix: localQtCoreVsix }
+    ];
+    installRequiredExtensions(cli, args, extensions);
 
     // Run the integration tests (no need to pass launchArgs; we reused the same dirs)
     await runTests({

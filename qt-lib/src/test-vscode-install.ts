@@ -3,6 +3,11 @@
 
 import * as cp from 'child_process';
 
+export interface ExtensionInstallInfo {
+  idOrVsix: string;
+  preRelease?: boolean;
+}
+
 export function parseVSCodeDirs(cliArgs: string[]) {
   const pick = (key: string) => {
     const pref = `${key}=`;
@@ -18,24 +23,23 @@ export function parseVSCodeDirs(cliArgs: string[]) {
 export function installExtensionWithRetry(
   cli: string,
   baseArgs: string[],
-  idOrVsix: string,
+  ext: ExtensionInstallInfo,
   attempts = 3
 ) {
   for (let i = 1; i <= attempts; i++) {
     const cleanEnv = { ...process.env };
     delete (cleanEnv as Record<string, unknown>).ELECTRON_RUN_AS_NODE;
-
-    const res = cp.spawnSync(
-      cli,
-      [...baseArgs, '--install-extension', idOrVsix, '--force'],
-      {
-        encoding: 'utf-8',
-        // Keep output quiet unless you want to debug:
-        stdio: process.env.VS_LOG_VERBOSE ? 'inherit' : 'pipe',
-        shell: process.platform === 'win32',
-        env: cleanEnv
-      }
-    );
+    const args = [...baseArgs, '--install-extension', ext.idOrVsix, '--force'];
+    if (ext.preRelease) {
+      args.push('--pre-release');
+    }
+    const res = cp.spawnSync(cli, args, {
+      encoding: 'utf-8',
+      // Keep output quiet unless you want to debug:
+      stdio: process.env.VS_LOG_VERBOSE ? 'inherit' : 'pipe',
+      shell: process.platform === 'win32',
+      env: cleanEnv
+    });
     if (res.status === 0) {
       return;
     }
@@ -48,7 +52,7 @@ export function installExtensionWithRetry(
       console.error(res.stderr);
     }
     console.error(
-      `[runTest] install "${idOrVsix}" failed (attempt ${i}/${attempts})`
+      `[runTest] install "${ext.idOrVsix}" failed (attempt ${i}/${attempts})`
     );
     if (i < attempts) {
       try {
@@ -61,7 +65,7 @@ export function installExtensionWithRetry(
       }
     }
   }
-  console.error(`[runTest] Giving up installing "${idOrVsix}"`);
+  console.error(`[runTest] Giving up installing "${ext.idOrVsix}"`);
   process.exit(1);
 }
 

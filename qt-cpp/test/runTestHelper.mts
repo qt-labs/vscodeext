@@ -13,7 +13,8 @@ import {
   installExtensionWithRetry,
   debugListExtensions,
   assertExtensionsInstalled,
-  getDebugLevel
+  getDebugLevel,
+  ExtensionInstallInfo
 } from '../../qt-lib/src/test-vscode-install.js';
 
 const QT_INS_ROOT_CONFIG_NAME = 'qtInstallationRoot';
@@ -108,18 +109,17 @@ export function setupVSCodeSettings(
 export function installRequiredExtensions(
   cli: string,
   args: string[],
-  localQtCoreVsix: string
+  extensions: ExtensionInstallInfo[],
+  requiredIDs: string[] = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core']
 ): void {
   const quietArgs = [...args, ...getQuietVSCodeArgs()];
-  const required = ['ms-vscode.cmake-tools', localQtCoreVsix];
-  const requiredIds = ['ms-vscode.cmake-tools', 'theqtcompany.qt-core'];
 
-  for (const ext of required) {
+  for (const ext of extensions) {
     installExtensionWithRetry(cli, quietArgs, ext);
   }
 
   debugListExtensions(cli, args);
-  assertExtensionsInstalled(cli, args, requiredIds);
+  assertExtensionsInstalled(cli, args, requiredIDs);
 }
 
 /**

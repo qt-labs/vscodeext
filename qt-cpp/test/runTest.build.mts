@@ -31,7 +31,11 @@ async function main() {
     setupVSCodeSettings(userDataDir, qtRoot, {
       'cmake.configureOnOpen': false
     });
-    installRequiredExtensions(cli, args, localQtCoreVsix);
+    const extensions = [
+      { idOrVsix: 'ms-vscode.cmake-tools' },
+      { idOrVsix: localQtCoreVsix }
+    ];
+    installRequiredExtensions(cli, args, extensions);
 
     // The workspace folder we want to open
     const projectDir = path.resolve(__dirname, '../../test/projectFolder');
