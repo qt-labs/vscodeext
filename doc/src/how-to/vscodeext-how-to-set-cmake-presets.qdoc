@@ -1,0 +1,107 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-build-with-cmake-presets.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-qml
+
+    \title Build with CMake presets
+
+    Instead of using CMake kits for building projects, you can set build options
+    in a \c CMakePresets.json file. Create the presets file in the format
+    described in \l{CMake: cmake-presets(7)} and store it in the project's root
+    directory.
+
+    \QVSC reads and uses all the fields that the CMake extension supports.
+
+    \section1 Configure presets
+
+    The following configure presets tell CMake to do a \e Debug build with the Qt
+    version that you set in \c CMAKE_TOOLCHAIN_FILE:
+
+    \badcode
+    {
+        "version": 3,
+        "configurePresets": [
+            {
+                "name": "debug",
+                "displayName": "my debug configure preset",
+                "binaryDir": "build-debug",
+                "cacheVariables": {
+
+                    "CMAKE_BUILD_TYPE": "Debug",
+                    "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                    "CMAKE_TOOLCHAIN_FILE": "C:\Qt\6.9.1\msvc2022_64\lib\cmake\Qt6\qt.toolchain.cmake"
+                }
+        ]
+    }
+    \endcode
+
+    The following sections describe alternative ways of using CMake presets to
+    register Qt.
+
+    \section1 CMake variables
+
+    Instead of \c {CMAKE_TOOLCHAIN_FILE}, you can also use one of the following
+    keys:
+
+    \list
+        \li \c {CMAKE_PREFIX_PATH}
+        \li \c {Qt5_DIR}
+        \li \c {Qt6_DIR}
+        \li \c {Qt6_ROOT}
+        \li \c {QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
+        \li \c {QT_PACKAGES_PREFIX_PATH}
+        \li \c {Qt_ROOT}
+        \li \c {QTDIR}
+    \endtable
+
+    \section1 CMake configure presets
+
+    Instead of CMake keys, you can use the \c {toolchainFile} CMake configure
+    preset to set the path to the toolchain file:
+
+    \badcode
+    {
+        "version": 3,
+        "configurePresets": [
+            {
+                "name": "debug",
+                "displayName": "my debug configure preset",
+                "binaryDir": "build-debug",
+            },
+            "toolchainFile": "/home/user/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        ]
+    }
+    \endcode
+
+    \section1 Qt vendor presets
+
+    You can also use Qt vendor presets to register the Qt installation.
+
+    To set the path to the Qt installation, use \c {VSCODE_QT_INSTALLATION}:
+
+    \badcode
+            "vendor": {
+                "qt-cpp": {
+                    "VSCODE_QT_INSTALLATION": "C:\Qt\6.9.1\msvc2022_64"
+                }
+            }
+    \endcode
+
+    To set the path to \c qtpaths, select \c {VSCODE_QT_QTPATHS_EXE}:
+
+    \badcode
+            "vendor": {
+                "qt-cpp": {
+                    "VSCODE_QT_QTPATHS_EXE": "C:\Qt\6.9.1\msvc2022_64\bin\qtpaths"
+                }
+            }
+    \endcode
+
+    \sa {Register Qt installations}
+*/

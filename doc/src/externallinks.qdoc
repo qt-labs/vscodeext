@@ -62,3 +62,8 @@
 \externalpage https://pypi.org/project/debugpy/
 \title debugpy
 */
+
+/*!
+\externalpage https://cmake.org/cmake/help/v3.24/manual/cmake-presets.7.html
+\title CMake: cmake-presets(7)
+*/
