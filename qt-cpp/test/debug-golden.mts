@@ -64,7 +64,7 @@ export function toSnapshot(vars: any[]): SnapVar[] {
 export async function readGolden<T = unknown>(
   projectDir: string
 ): Promise<T | undefined> {
-  const runtime = path.join(projectDir, GOLDEN_FILE_NAME);//getGoldenPaths(projectDir);
+  const runtime = path.join(projectDir, GOLDEN_FILE_NAME); //getGoldenPaths(projectDir);
   try {
     const txt = await fs.readFile(runtime, 'utf8');
     return JSON.parse(txt) as T;
@@ -80,12 +80,14 @@ export async function writeGolden(
   //projectDir: string,
   snapshot: unknown
 ): Promise<void> {
-  console.log('[natvis.test] writing golden snapshot without checkout out dir...');
+  console.log(
+    '[natvis.test] writing golden snapshot without checkout out dir...'
+  );
   const source = path.join(
-  __dirname,
-  '../../../test/projectFolderNatvis',
-  GOLDEN_FILE_NAME
-);
+    __dirname,
+    '../../../test/projectFolderNatvis',
+    GOLDEN_FILE_NAME
+  );
   console.log('[natvis.test] source golden path:', source);
   const data = JSON.stringify(snapshot, null, 2) + '\n';
 
@@ -121,7 +123,7 @@ function decodeXmlEntities(input: string): string {
     '&gt;': '>',
     '&amp;': '&',
     '&quot;': '"',
-    '&apos;': "'",
+    '&apos;': "'"
   };
   return input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
 }
@@ -148,8 +150,7 @@ export async function parseNatvisTypesWithAlternatives(
     const withoutComments = xml.replace(/<!--[\s\S]*?-->/g, '');
 
     // Capture each <Type ...> ... </Type> block
-    const typeBlockRe =
-      /<\s*Type\b([^>]*)>([\s\S]*?)<\/\s*Type\s*>/g;
+    const typeBlockRe = /<\s*Type\b([^>]*)>([\s\S]*?)<\/\s*Type\s*>/g;
 
     let m: RegExpExecArray | null;
     while ((m = typeBlockRe.exec(withoutComments))) {
@@ -183,8 +184,7 @@ export async function parseNatvisTypesWithAlternatives(
     }
 
     // Also catch any stray AlternativeType outside blocks (rare)
-    const strayAltRe =
-      /<\s*AlternativeType\b[^>]*\bName\s*=\s*"([^"]+)"/g;
+    const strayAltRe = /<\s*AlternativeType\b[^>]*\bName\s*=\s*"([^"]+)"/g;
     while ((m = strayAltRe.exec(withoutComments))) {
       const rawAlt = m?.[1];
       if (!rawAlt) continue;
@@ -200,9 +200,9 @@ export async function parseNatvisTypesWithAlternatives(
 
 function wildcardToRegex(pat: string): RegExp {
   // Escape regex specials, then turn \* into .*
-  const rx = '^' +
-    pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-       .replace(/\\\*/g, '.*') +
+  const rx =
+    '^' +
+    pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*') +
     '$';
   return new RegExp(rx);
 }

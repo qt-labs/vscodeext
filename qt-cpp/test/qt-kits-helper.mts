@@ -53,40 +53,59 @@ function candidateKitsFiles(ws?: vscode.WorkspaceFolder): string[] {
 
   // workspace kits
   if (ws) files.push(path.join(ws.uri.fsPath, '.vscode', 'cmake-kits.json'));
+  const home = process.env.HOME ?? process.env.USERPROFILE ?? '';
 
   // Global CMake Tools (macOS typical)
-  files.push(
-    path.join(
-      process.env.HOME ?? '',
-      'Library',
-      'Application Support',
-      'CMakeTools',
-      'cmake-tools-kits.json'
-    )
-  );
-  // Global CMake Tools (XDG-style / Linux — some mac setups also end up here)
-  files.push(
-    path.join(
-      process.env.HOME ?? '',
-      '.local',
-      'share',
-      'CMakeTools',
-      'cmake-tools-kits.json'
-    )
-  );
-  // Windows
-  if (process.platform === 'win32' && process.env.APPDATA) {
+  if (process.platform === 'darwin') {
+    // macOS: ~/Library/Application Support/CMakeTools/cmake-tools-kits.json
     files.push(
-      path.join(process.env.APPDATA, 'CMakeTools', 'cmake-tools-kits.json')
+      path.join(
+        home,
+        'Library',
+        'Application Support',
+        'CMakeTools',
+        'cmake-tools-kits.json'
+      )
     );
+  }
+
+  if (process.platform === 'linux' || process.platform === 'darwin') {
+    // Linux / XDG: ~/.local/share/CMakeTools/cmake-tools-kits.json
+    files.push(
+      path.join(home, '.local', 'share', 'CMakeTools', 'cmake-tools-kits.json')
+    );
+  }
+  // Windows
+  if (process.platform === 'win32') {
+    // Windows: prefer LOCALAPPDATA (CMake Tools default), fall back to a sane guess.
+    const localAppData =
+      process.env.LOCALAPPDATA ||
+      (home ? path.join(home, 'AppData', 'Local') : '');
+
+    if (localAppData) {
+      files.push(
+        path.join(localAppData, 'CMakeTools', 'cmake-tools-kits.json')
+      );
+    }
+
+    // Optional fallback: some older setups might have used APPDATA (Roaming)
+    if (process.env.APPDATA) {
+      files.push(
+        path.join(process.env.APPDATA, 'CMakeTools', 'cmake-tools-kits.json')
+      );
+    }
   }
 
   // Dedup + keep existing only
   const seen = new Set<string>();
-  return files
+  const existing = files
     .map((p) => path.normalize(p))
     .filter((p) => !seen.has(p) && (seen.add(p), true))
     .filter((p) => fs.existsSync(p));
+
+  console.log('[qt-kits] checking files:', existing);
+
+  return existing;
 }
 
 /** Read Qt kits from typical CMake Tools kit files (workspace first, then global). */

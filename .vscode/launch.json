@@ -99,7 +99,7 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
-        "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/natvis-with-stdio-filter",
+        "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index-natvis",
         "${workspaceFolder}/qt-cpp/test/tmp-natvis",
         "--disable-workspace-trust",
         "--disable-restore-windows"
