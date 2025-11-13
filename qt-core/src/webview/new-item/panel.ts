@@ -3,14 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
-import { QtcliRunner } from '@/qtcli/runner';
-import { QtcliAction } from '@/qtcli/common';
-import {
-  findQtcliExePath,
-  getNewFileBaseDir,
-  getNewProjectBaseDir
-} from '@/qtcli/commands';
+import { getNewFileBaseDir, getNewProjectBaseDir } from '@/qtcli/commands';
 import { WebviewChannel } from '@/webview/channel';
 import { NewItemDispatcher } from './dispatcher';
 import * as texts from '@/texts';
@@ -19,9 +12,7 @@ import {
   createWebviewOptions,
   basicWebviewAppConfig
 } from '@/webview/utils';
-
-const logger = createLogger('new-item-panel');
-let qtcliRunner: QtcliRunner | undefined = undefined;
+import { startQtcliServer } from '@/qtcli/runner';
 
 // definitions for webview-panel
 const PanelColumn = vscode.ViewColumn.One;
@@ -79,8 +70,6 @@ export class NewItemPanel {
   }
 
   public static render(context: vscode.ExtensionContext) {
-    const uri = context.extensionUri;
-
     if (!NewItemPanel.instance) {
       const panel = vscode.window.createWebviewPanel(
         PanelViewType,
@@ -91,7 +80,7 @@ export class NewItemPanel {
       NewItemPanel.instance = new NewItemPanel(panel, context);
     }
 
-    void startQtcliServer(uri);
+    void startQtcliServer(context.extensionUri);
 
     NewItemPanel.instance._dispatcher.setUiConfigs({
       newFileBaseDir: getNewFileBaseDir(),
@@ -99,20 +88,4 @@ export class NewItemPanel {
     });
     NewItemPanel.instance._panel.reveal(PanelColumn);
   }
-}
-
-// helpers
-async function startQtcliServer(extensionUri: vscode.Uri) {
-  if (!qtcliRunner) {
-    const exePath = await findQtcliExePath(extensionUri);
-    if (exePath) {
-      qtcliRunner = new QtcliRunner();
-      qtcliRunner.setQtcliExePath(exePath);
-    } else {
-      logger.error('cannot find qtcli executable');
-      return;
-    }
-  }
-
-  qtcliRunner.run(QtcliAction.ServerControl, 'start');
 }
