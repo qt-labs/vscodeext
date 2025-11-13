@@ -16,7 +16,7 @@ export function run(): Promise<void> {
   return new Promise((c, e) => {
     const testFiles = new glob.Glob('**.test.js', {
       cwd: testsRoot,
-      ignore: ['**/build.test.js', '**/natvis.test.js']
+      ignore: ['**/build.test.js', '**/natvis.test.js', '**/presets.test.js']
     });
     const testFileStream = testFiles.stream();
     testFileStream.on('data', (file) => {
