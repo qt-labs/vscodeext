@@ -7,14 +7,6 @@ import * as fsp from 'fs/promises';
 
 import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron';
 
-import { getQuietVSCodeArgs } from '../../qt-lib/src/test-constants.js';
-
-import {
-  installExtensionWithRetry,
-  debugListExtensions,
-  assertExtensionsInstalled
-} from '../../qt-lib/src/test-vscode-install.js';
-
 import {
   setupVSCodeSettings,
   setupTestInfrastructure,
@@ -46,14 +38,12 @@ async function main() {
     });
 
     // Install core required extensions (CMake Tools + qt-core) via helper
-    installRequiredExtensions(cli, args, localQtCoreVsix);
-
-    const quietArgs = [...args, ...getQuietVSCodeArgs()];
-    installExtensionWithRetry(cli, quietArgs, 'ms-vscode.cpptools');
-
-    // Final extension check: ensure cpptools is present
-    debugListExtensions(cli, quietArgs);
-    assertExtensionsInstalled(cli, quietArgs, ['ms-vscode.cpptools']);
+    const extensions = [
+      { idOrVsix: 'ms-vscode.cmake-tools' },
+      { idOrVsix: 'ms-vscode.cpptools' },
+      { idOrVsix: localQtCoreVsix }
+    ];
+    installRequiredExtensions(cli, args, extensions);
 
     // The workspace folder we want to open
     const projectDir = path.resolve(

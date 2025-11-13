@@ -54,7 +54,9 @@ async function main() {
     const quietArgs = [...args, ...getQuietVSCodeArgs()];
     const requiredIds = ['theqtcompany.qt-core'];
     // Install required extensions into the SAME profile/dir combo
-    installExtensionWithRetry(cli as string, quietArgs, localQtCoreVsix);
+    installExtensionWithRetry(cli as string, quietArgs, {
+      idOrVsix: localQtCoreVsix
+    });
     debugListExtensions(cli as string, args);
     assertExtensionsInstalled(cli as string, args, requiredIds);
 
