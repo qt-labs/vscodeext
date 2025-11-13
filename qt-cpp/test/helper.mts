@@ -299,10 +299,24 @@ export async function cleanBuildDir(
   return buildDir;
 }
 
+export async function setCMakeConfigurationForPlatform(
+  ws: vscode.WorkspaceFolder,
+  settingName: string,
+  value: unknown
+) {
+  await vscode.workspace
+    .getConfiguration('cmake', ws.uri)
+    .update(settingName, value, vscode.ConfigurationTarget.Workspace);
+}
+
+export function getPlatformCMakeGenerator(): string {
+  return process.platform === 'win32' ? 'Ninja' : 'Unix Makefiles';
+}
+
 export async function setCMakeGeneratorForPlatform(
   ws: vscode.WorkspaceFolder
 ): Promise<void> {
-  const generator = process.platform === 'win32' ? 'Ninja' : 'Unix Makefiles';
+  const generator = getPlatformCMakeGenerator();
   await vscode.workspace
     .getConfiguration('cmake', ws.uri)
     .update('generator', generator, vscode.ConfigurationTarget.Workspace);
