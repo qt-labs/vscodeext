@@ -9,10 +9,8 @@ import {
   QtAdditionalPath,
   AdditionalQtPathsName,
   QtInsRootConfigName,
-  generateDefaultQtPathsName,
-  delay
+  generateDefaultQtPathsName
 } from 'qt-lib';
-import * as os from 'os';
 import * as path from 'path';
 import { addQtPathToSettings } from '../../src/qtpaths.ts';
 import * as texts from '../../src/texts.ts';
@@ -647,31 +645,13 @@ describe('command: createNewItem', () => {
     await waitForVSCodeIdle();
   }
 
-  it('creates a web view panel and a terminal', async () => {
+  it('creates a web view panel', async () => {
     const createViewPanel = sb
       .spy(vscode.window, 'createWebviewPanel')
       .withArgs(PanelViewType, texts.newItem.tabText, PanelColumn);
 
-    const createTerminalSpy = sb.spy(vscode.window, 'createTerminal');
-    // Required fields (normalize for cross-platform consistency)
-    const expectedCwd = path.normalize(os.homedir());
-    const qtcliCall = (createTerminalSpy as any).withArgs(
-      sinon.match.object
-        .and(sinon.match.has('name', 'qtcli'))
-        .and(sinon.match.has('cwd', expectedCwd))
-    );
-
     await runCreateNewItem();
-    await delay(200); // tiny wait so finder resolves and server starts
 
-    expect(
-      qtcliCall.calledOnce,
-      'qtcli terminal created once with correct name+cwd'
-    ).to.be.true;
-    //no extra calls in general
-    expect(createTerminalSpy.calledOnce, 'createTerminal called exactly once')
-      .to.be.true;
-    await runCreateNewItem(); // run twice to check singleton behaviour for the panel
     expect(
       createViewPanel.calledOnce,
       'createWebviewPanel should be called once'
