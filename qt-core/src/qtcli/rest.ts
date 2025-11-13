@@ -18,7 +18,7 @@ export class QtcliRestClient {
   });
 
   private readonly _maxRetries = 75;
-  private readonly _retryDelay = 200;
+  private readonly _retryDelay = 100;
 
   // convenients
   public async get(url: string, params?: unknown) {

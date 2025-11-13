@@ -1,83 +1,85 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as os from 'os';
 import * as vscode from 'vscode';
 
-import {
-  QtcliAction,
-  logger,
-  errorString,
-  qtcliSubCommands
-} from '@/qtcli/common';
+import * as childProcess from 'child_process';
 
-export class QtcliRunner {
-  private _qtcliExecPath = '';
-  private _terminal: vscode.Terminal | undefined = undefined;
-  private _terminalDisposables: vscode.Disposable[] = [];
+import { createLogger } from 'qt-lib';
+import { findQtcliExePath } from '@/qtcli/commands';
 
-  dispose() {
-    if (this._terminal) {
-      this._terminal.dispose();
-      this._terminal = undefined;
+let qtcliExePath: string | undefined;
+const logger = createLogger('qtcli-runner');
 
-      for (const d of this._terminalDisposables) {
-        d.dispose();
-      }
-
-      this._terminalDisposables = [];
-    }
+export async function startQtcliServer(extensionUri: vscode.Uri) {
+  qtcliExePath ||= await findQtcliExePath(extensionUri);
+  if (!qtcliExePath) {
+    logger.error('Cannot locate qtcli executable');
+    return;
   }
 
-  public setQtcliExePath(fullPath: string) {
-    this._qtcliExecPath = fullPath;
-  }
+  await runQtcli(qtcliExePath, ['server', 'start'], onOutputFromQtcli);
+}
 
-  public run(action: QtcliAction, arg: string) {
-    try {
-      const subCommand = qtcliSubCommands[action];
-      if (subCommand) {
-        this._runQtcli([subCommand, arg]);
+// helpers
+function onOutputFromQtcli(line: string) {
+  // eslint-disable-next-line no-control-regex
+  const removeAnsiColor = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
+  logger.info(removeAnsiColor(line));
+}
+
+async function runQtcli(
+  command: string,
+  args: string[],
+  onOutput: (line: string) => void
+) {
+  const proc = childProcess.spawn(command, args);
+  const outPromise = streamToLines(proc.stdout, onOutput);
+  const errPromise = streamToLines(proc.stderr, onOutput);
+
+  await new Promise<void>((resolve, reject) => {
+    proc.on('error', reject);
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve();
         return;
       }
 
-      throw new Error('action is invalid');
-    } catch (e) {
-      logger.error('cannot run qtcli:', errorString(e));
-    }
-  }
-
-  private _runQtcli(args: string[]) {
-    this._ensureTerminalIsValid();
-
-    if (this._terminal) {
-      const safePath = this._qtcliExecPath.replace(/\\/g, '/');
-      this._terminal.sendText(`${safePath} ${args.join(' ')}`);
-    }
-  }
-
-  private _ensureTerminalIsValid() {
-    if (this._terminal) {
-      return;
-    }
-
-    this._terminal = vscode.window.createTerminal({
-      name: 'qtcli',
-      cwd: os.homedir()
+      reject(new Error(`Process exited with code ${code}`));
     });
+  });
 
-    this._terminalDisposables.push(
-      vscode.window.onDidCloseTerminal((t) => {
-        if (t === this._terminal) {
-          this.dispose();
-        }
-      }),
+  const out = await outPromise;
+  const err = await errPromise;
+  void err;
 
-      vscode.window.onDidEndTerminalShellExecution((e) => {
-        if (e.terminal === this._terminal && e.exitCode === 0) {
-          this._terminal.hide();
-        }
-      })
-    );
+  return out;
+}
+
+type Stream = NodeJS.ReadableStream;
+type Callback = ((line: string) => void) | undefined;
+
+async function streamToLines(stream: Stream, callback: Callback) {
+  let leftover = '';
+  const lines: string[] = [];
+
+  for await (const chunk of stream) {
+    const text = leftover + chunk.toString();
+    const parts = text.split('\n');
+    leftover = parts.pop() ?? '';
+
+    for (const line of parts) {
+      const trimmed = line.trim();
+      lines.push(trimmed);
+      callback?.(trimmed);
+    }
   }
+
+  if (leftover.trim()) {
+    const trimmed = leftover.trim();
+    lines.push(trimmed);
+    callback?.(trimmed);
+  }
+
+  return lines;
 }
