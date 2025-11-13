@@ -64,39 +64,65 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
 export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   const isWin = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
+  const isLinux = process.platform === 'linux';
   const miMode = process.env.MIMODE || (isMac ? 'lldb' : 'gdb');
 
   // Resolve what ${command:...} would have produced
-  const program = await vscode.commands.executeCommand<string>('cmake.launchTargetPath');
-  const cwd = await vscode.commands.executeCommand<string>('cmake.getLaunchTargetDirectory');
-  const visualizerFile = await vscode.commands.executeCommand<string>('qt-cpp.natvis');
-
-
-if (!program || !cwd) {
-  throw new Error(
-    `Failed to resolve debug launch paths from CMake Tools.
-     program=${program ?? '<undefined>'}, cwd=${cwd ?? '<undefined>'}`
+  const program = await vscode.commands.executeCommand<string>(
+    'cmake.launchTargetPath'
   );
-}
-if (!visualizerFile) {
-  throw new Error('qt-cpp.natvis did not resolve to a NatVis file path.');
-}
+  const cwd = await vscode.commands.executeCommand<string>(
+    'cmake.getLaunchTargetDirectory'
+  );
+  const visualizerFile =
+    await vscode.commands.executeCommand<string>('qt-cpp.natvis');
+
+  if (!program || !cwd) {
+    throw new Error(
+      `Failed to resolve debug launch paths from CMake Tools.
+     program=${program ?? '<undefined>'}, cwd=${cwd ?? '<undefined>'}`
+    );
+  }
+  if (!visualizerFile) {
+    throw new Error('qt-cpp.natvis did not resolve to a NatVis file path.');
+  }
   const cfg: vscode.DebugConfiguration = {
     name: 'natvis-test-launch',
     type: isWin ? 'cppvsdbg' : 'cppdbg',
     request: 'launch',
     ...(isWin ? {} : { MIMode: miMode }),
     // Always the correct binary/dir for the *selected kit* and *build type*
-    program: program,//'${command:cmake.launchTargetPath}', // built binary
-    cwd: cwd,//'${command:cmake.getLaunchTargetDirectory}', // correct working dir
+    program: program, //'${command:cmake.launchTargetPath}', // built binary
+    cwd: cwd, //'${command:cmake.getLaunchTargetDirectory}', // correct working dir
     // Let the Qt extension provide the NatVis (need a Qt kit to be selected)
-    visualizerFile: visualizerFile,//'${command:qt-cpp.natvis}', // Qt NatVis provider
+    visualizerFile: visualizerFile, //'${command:qt-cpp.natvis}', // Qt NatVis provider
     stopAtEntry: true,
     console: 'internalConsole',
     externalConsole: false,
     showDisplayString: true
   };
 
+  // Non-Windows: set MI mode, and on Linux also force the debugger path.
+  if (!isWin) {
+    (cfg as any).MIMode = miMode;
+
+    // On Ubuntu CI, cpptools can't infer the MI debugger, so we point it at gdb explicitly.
+    if (isLinux && !(cfg as any).miDebuggerPath) {
+      (cfg as any).miDebuggerPath = 'gdb';
+    }
+  }
+
+  // 🔍 Log what we *intend* to launch (only when QT_TEST_DEBUG=1)
+  if (process.env.QT_TEST_DEBUG === '1') {
+    console.log(
+      '[natvis.test] Debug config type:',
+      cfg.type,
+      'MIMode:',
+      (cfg as any).MIMode ?? '<none>',
+      'MIDebuggerPath:',
+      (cfg as any).miDebuggerPath ?? '<none>'
+    );
+  }
   return cfg;
 }
 

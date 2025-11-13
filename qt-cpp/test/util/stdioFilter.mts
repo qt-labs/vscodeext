@@ -6,7 +6,10 @@ let origStderrWrite: ((...args: any[]) => any) | undefined;
 
 function suppress(line: string): boolean {
   // Drop noisy CMake Tools lines (debug/info)
-  if (line.includes('[CMakeTools]') && (line.includes('[debug]') || line.includes('[info]'))) {
+  if (
+    line.includes('[CMakeTools]') &&
+    (line.includes('[debug]') || line.includes('[info]'))
+  ) {
     return true;
   }
   // Keep everything else
@@ -14,15 +17,20 @@ function suppress(line: string): boolean {
 }
 
 export function installStdioFilter(): () => void {
-  if (!origStdoutWrite) origStdoutWrite = process.stdout.write.bind(process.stdout);
-  if (!origStderrWrite) origStderrWrite = process.stderr.write.bind(process.stderr);
+  if (!origStdoutWrite)
+    origStdoutWrite = process.stdout.write.bind(process.stdout);
+  if (!origStderrWrite)
+    origStderrWrite = process.stderr.write.bind(process.stderr);
 
   const filteredWrite = (orig: (chunk: any, enc?: any, cb?: any) => any) =>
     function write(this: any, chunk: any, enc?: any, cb?: any) {
       try {
-        const s = typeof chunk === 'string' ? chunk : chunk?.toString?.() ?? '';
+        const s =
+          typeof chunk === 'string' ? chunk : (chunk?.toString?.() ?? '');
         if (!s || suppress(s)) return true; // swallow
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return orig.call(this, chunk, enc, cb);
     };
 

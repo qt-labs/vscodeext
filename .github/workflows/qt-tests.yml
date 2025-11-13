@@ -9,6 +9,10 @@ on:
         debug:
           description: 'Enable test debug mode (QT_TEST_DEBUG): 0=quiet, 1=extra info, 2=show all'
           required: false
+          default: '1'
+        natvis_show_missing:
+          description: 'Show missing NatVis types (NATVIS_SHOW_MISSING=1)'
+          required: false
           default: '0'
 
 jobs:
@@ -27,10 +31,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        # Ubuntu : gdb (cppdbg)
+        # macOS  : lldb (cppdbg)
+        # Windows: cppvsdbg
     env:
       QT_VERSION_FOR_TEST: "6.9.0"
       VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off
       QT_TEST_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
+      NATVIS_SHOW_MISSING: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.natvis_show_missing || '' }}
       DBUS_SESSION_BUS_ADDRESS: "disabled:"
       NO_AT_BRIDGE: "1"
 
@@ -73,6 +81,9 @@ jobs:
       # Package qt-core so qt-cpp tests can install its .vsix via getLocalQtCore()
       - name: Package qt-core (.vsix)
         run: npm run package:qt-core
+      # Prepare NatVis files (run from repo root — generates qt-cpp/res/natvis/qt6.natvis)
+      - name: Prepare NatVis files
+        run: npm run prepareNatvisFiles
       # Compile other extensions once (runtime build)
       - name: Compile qt-cpp / qt-ui / qt-qml
         run: |
@@ -122,6 +133,18 @@ jobs:
         run: |
             echo "QT_TEST_QT_ROOT=${{ github.workspace }}/Qt" >> $GITHUB_ENV
             echo "QT_VERSION_FOR_TEST=${QT_VERSION_FOR_TEST}" >> $GITHUB_ENV
+
+      - name: Ensure gdb is installed (Linux only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          set -euo pipefail
+          if command -v gdb >/dev/null 2>&1; then
+            echo "gdb already installed"
+          else
+            echo "gdb not found — installing"
+            sudo apt-get update
+            sudo apt-get install -y gdb
+          fi
 
       - name: Run tests (all OS)
         shell: bash

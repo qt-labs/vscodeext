@@ -44,47 +44,31 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     async () => activateQtCpp()
   );
 
-  before(
-    'cpptools is installed, activated, and cppdbg can launch',
-    async () => {
-      const ext = vscode.extensions.getExtension('ms-vscode.cpptools');
-      expect(ext, 'ms-vscode.cpptools is not installed in the test host').to
-        .exist;
+  before('cpptools is installed and activated', async () => {
+    const ext = vscode.extensions.getExtension('ms-vscode.cpptools');
+    expect(ext, 'ms-vscode.cpptools is not installed in the test host').to
+      .exist;
 
-      if (!ext!.isActive) {
-        await ext!.activate(); // registers commands and the debug adapter
-      }
-
-      // Sanity: cpptools commands surfaced?
-      const cmds = await vscode.commands.getCommands(true);
-      const hasCpptoolsCmd =
-        cmds.some((c) => /c_cpp\./i.test(c)) ||
-        cmds.some((c) => /cpptools/i.test(c));
-      expect(hasCpptoolsCmd, 'cpptools commands not visible after activation')
-        .to.be.true;
-
-      // Probe that the cppdbg adapter can start (noDebug = true, exits immediately).
-      // Use a harmless binary that always exists on macOS.
-      const ok = await vscode.debug.startDebugging(
-        vscode.workspace.workspaceFolders?.[0],
-        {
-          name: 'cppdbg-probe',
-          type: 'cppdbg',
-          request: 'launch',
-          program: '/usr/bin/true',
-          cwd: '/',
-          stopAtEntry: false,
-          MIMode: 'lldb'
-        },
-        { noDebug: true }
-      );
-
-      expect(ok, 'cppdbg adapter failed to start (probe)').to.equal(true);
+    if (!ext!.isActive) {
+      await ext!.activate(); // registers commands and the debug adapter
     }
-  );
+
+    // Sanity: cpptools commands surfaced?
+    const cmds = await vscode.commands.getCommands(true);
+    const hasCpptoolsCmd =
+      cmds.some((c) => /c_cpp\./i.test(c)) ||
+      cmds.some((c) => /cpptools/i.test(c));
+
+    expect(hasCpptoolsCmd, 'cpptools commands not visible after activation').to
+      .be.true;
+
+    // No extra probe here: the main test will fail if debugging cannot start.
+  });
 
   const DEBUG = process.env.QT_TEST_DEBUG === '1';
-  const dlog = (...args: unknown[]) => { if (DEBUG) console.log(...args); };
+  const dlog = (...args: unknown[]) => {
+    if (DEBUG) console.log(...args);
+  };
 
   it('configures, builds, and stops at a breakpoint', async function () {
     const wsFolder = getWorkspaceFolderOrThrow();
@@ -96,6 +80,9 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     await waitForVSCodeIdle();
 
     const kit = await selectAndApplyQtKit(wsFolder);
+    if (!kit) {
+      throw new Error('[natvis.test] No Qt kit available on this machine. ');
+    }
     dlog('Selected Qt kit:', kit);
 
     // spy on error messages
@@ -109,11 +96,8 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     expect(rcCfg, `cmake.configure failed (rc=${rcCfg})`).to.equal(0);
 
     // confirm what CMake used
-      dlog('== WHAT CMAKE USED ==');
-      dlog(
-        '  Qt6_DIR =',
-        readCMakeCacheVar(buildDir, 'Qt6_DIR') ?? '<unknown>'
-      );
+    dlog('== WHAT CMAKE USED ==');
+    dlog('  Qt6_DIR =', readCMakeCacheVar(buildDir, 'Qt6_DIR') ?? '<unknown>');
 
     const rcBuild = await vscode.commands.executeCommand<number>('cmake.build');
     await waitForVSCodeIdle();
@@ -167,10 +151,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       // --- launch debugger and wait for stop ---
       const nvPath =
         await vscode.commands.executeCommand<string>('qt-cpp.natvis');
-      dlog(
-        '[natvis.test] visualizer path:',
-        nvPath
-      );
+      dlog('[natvis.test] visualizer path:', nvPath);
       expect(nvPath, 'qt-cpp.natvis did not resolve to a path').to.be.a(
         'string'
       ).and.not.empty;
@@ -182,7 +163,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
           ? breakpoints.length
           : undefined;
       const opts = {
-        timeoutMs: 20000,
+        timeoutMs: 30000,
         ...(wantAll !== undefined ? { continueUntilHits: wantAll } : {})
       };
       const { session: s, stops } = await startDebugAndWaitForStop(
@@ -191,21 +172,31 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         opts
       );
       session = s;
+      // --- Print debugger backend used -----------------------------
+      if (session) {
+        const dbgType = session.type; // 'cppdbg' or 'cppvsdbg'
+        const miMode = session.configuration?.MIMode; // 'lldb' or 'gdb' (cppdbg only)
+
+        dlog('[natvis.test] Debugger backend:', dbgType);
+        if (dbgType === 'cppdbg') {
+          dlog('[natvis.test] MIMode:', miMode);
+        }
+      }
 
       expect(
         stops.length,
         'Debugger did not stop on a breakpoint'
       ).to.be.greaterThan(0);
-      dlog('[natvis.test] stops:', stops.map(s => `${s.source}:${s.line}`).join(', '));
+      dlog(
+        '[natvis.test] stops:',
+        stops.map((s) => `${s.source}:${s.line}`).join(', ')
+      );
 
       const stop = stops[0]!;
       const frameId = stop.frameId!;
       // Fetch Locals from the top frame
       const locals = await getLocals(session, frameId);
-      dlog(
-        'Locals at top frame:',
-        locals.map((v: any) => v.name).join(', ')
-      );
+      dlog('Locals at top frame:', locals.map((v: any) => v.name).join(', '));
 
       // Grab variables
       const vRect = locals.find((v: any) => v.name === 'qRect');
@@ -248,19 +239,24 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         const natvisPath = nvPath; // you already compute this earlier in your test
 
         const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
-const seenTypes = collectTypesFromSnapshot(snapshot);
-const { missing } = matchNatvisTypePatternsConsideringAlternatives(natvis, seenTypes);
+        const seenTypes = collectTypesFromSnapshot(snapshot);
+        const { missing } = matchNatvisTypePatternsConsideringAlternatives(
+          natvis,
+          seenTypes
+        );
 
-const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
-if (missing.length && SHOW_COVERAGE_MISSING) {
-  const lines = missing.map((base) => {
-    const alts = natvis.alts.get(base);
-    return alts && alts.size
-      ? `- ${base} (alts: ${[...alts].join(', ')})`
-      : `- ${base}`;
-  });
-  console.warn(`[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`);
-}
+        const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
+        if (missing.length && SHOW_COVERAGE_MISSING) {
+          const lines = missing.map((base) => {
+            const alts = natvis.alts.get(base);
+            return alts && alts.size
+              ? `- ${base} (alts: ${[...alts].join(', ')})`
+              : `- ${base}`;
+          });
+          console.warn(
+            `[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`
+          );
+        }
       }
     } finally {
       // cleanup always

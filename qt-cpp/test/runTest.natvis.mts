@@ -183,7 +183,9 @@ async function main() {
 }
 
 main().catch((e) => {
-  try { uninstallStdio(); } catch {}
+  try {
+    uninstallStdio();
+  } catch {}
   console.error(e);
   process.exit(1);
 });
