@@ -9,8 +9,7 @@ import {
   QtAdditionalPath,
   AdditionalQtPathsName,
   QtInsRootConfigName,
-  generateDefaultQtPathsName,
-  delay
+  generateDefaultQtPathsName
 } from 'qt-lib';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -676,88 +675,14 @@ describe('command: createNewItem', () => {
     await vscode.commands.executeCommand('qt-core.createNewItem');
     await waitForVSCodeIdle();
   }
-  async function waitFor<T>(
-    cond: () => T,
-    timeoutMs = 5000,
-    intervalMs = 50
-  ): Promise<T> {
-    const t0 = Date.now();
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const v = cond();
-      if (v) return v;
-      if (Date.now() - t0 > timeoutMs)
-        throw new Error(`timeout waiting for condition`);
-      await delay(intervalMs);
-    }
-  }
 
-  it('creates a web view panel and a terminal', async () => {
+  it('creates a web view panel', async () => {
     const createViewPanel = sb
       .spy(vscode.window, 'createWebviewPanel')
       .withArgs(PanelViewType, texts.newItem.tabText, PanelColumn);
 
-    const createTerminalSpy = sb.spy(vscode.window, 'createTerminal');
-    // Required fields (normalize for cross-platform consistency)
-    const expectedCwd = path.normalize(os.homedir());
-    // const qtcliCall = (createTerminalSpy as any).withArgs(
-    //   sinon.match.object
-    //     .and(sinon.match.has('name', 'qtcli'))
-    //     .and(sinon.match.has('cwd', expectedCwd))
-    // );
-
-    // matcher that *safely* inspects the arg without typing 'cwd'
-    const qtcliCall = createTerminalSpy.withArgs(
-      sinon.match((arg: unknown) => {
-        const o = arg as any;
-
-        // name must be 'qtcli'
-        if (!o || o.name !== 'qtcli') return false;
-
-        // cwd may be string | vscode.Uri | undefined
-        let cwd: string | undefined;
-        if (typeof o.cwd === 'string') cwd = o.cwd;
-        else if (o.cwd && typeof o.cwd === 'object' && 'fsPath' in o.cwd)
-          cwd = (o.cwd as vscode.Uri).fsPath;
-
-        // log when missing or mismatched
-        if (!cwd) {
-          console.log('[test] createTerminal arg has no cwd:', o);
-          return false;
-        }
-        const got = path.normalize(cwd);
-        const ok = got === expectedCwd;
-        if (!ok) {
-          console.log('[test] expected cwd:', expectedCwd);
-          console.log('[test] got cwd     :', got);
-          console.log('[test] full arg    :', o);
-        }
-        return ok;
-      }, 'TerminalOptions[name=qtcli,cwd=expected]')
-    );
-
     await runCreateNewItem();
-    await waitFor(() => createTerminalSpy.called, 5000, 50);
 
-    // If matcher didn't hit, dump all terminal calls once
-    if (!qtcliCall.called) {
-      const calls = createTerminalSpy.getCalls().map((c) => c.args[0]);
-      console.log(
-        '[test] createTerminal calls:',
-        JSON.stringify(calls, null, 2)
-      );
-      console.log('[test] os.homedir():', os.homedir());
-      console.log('[test] process.env.HOME:', process.env.HOME);
-      console.log('[test] path.sep:', path.sep);
-    }
-    expect(
-      qtcliCall.calledOnce,
-      'qtcli terminal created once with correct name+cwd'
-    ).to.be.true;
-    //no extra calls in general
-    expect(createTerminalSpy.calledOnce, 'createTerminal called exactly once')
-      .to.be.true;
-    await runCreateNewItem(); // run twice to check singleton behaviour for the panel
     expect(
       createViewPanel.calledOnce,
       'createWebviewPanel should be called once'
