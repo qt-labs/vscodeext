@@ -1,23 +1,8 @@
 [
   {
-    "name": "app",
-    "type": "QCoreApplication",
-    "value": "{...}"
-  },
-  {
-    "name": "argc",
-    "type": "int",
-    "value": "1"
-  },
-  {
-    "name": "argv",
-    "type": "char **",
-    "value": "0xADDR"
-  },
-  {
     "name": "qByteArray",
     "type": "QByteArray",
-    "value": "\"0xADDR \"Hello World!\"\""
+    "value": "\"Hello World!\""
   },
   {
     "name": "qRect",
@@ -27,6 +12,6 @@
   {
     "name": "qString",
     "type": "QString",
-    "value": "0xADDR u\"Hello World!\""
+    "value": "\"Hello World!\""
   }
 ]

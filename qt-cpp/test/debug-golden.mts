@@ -21,18 +21,110 @@ export function stripUnstable(s: string): string {
 }
 
 export type SnapVar = {
-  name?: string;
-  type?: string;
-  value?: string;
-  children?: SnapVar[];
+  name?: string | undefined;
+  type?: string | undefined;
+  value?: string | undefined;
+  children?: SnapVar[] | undefined;
 };
 
+/**
+ * Normalize debugger-specific value representations (cross-platform).
+ *
+ * The same Qt NatVis description produces different string formats depending on
+ * the debugger backend:
+ *
+ *   • Windows (cppvsdbg):      0x123ABC u"Hello World!"
+ *   • macOS LLDB (cppdbg):     "Hello World!"
+ *   • Linux GDB (cppdbg):      0x123ABC "Hello World!"
+ *
+ * These differences are NOT due to NatVis itself but due to differences in:
+ *   – MI/Lldb/VSDbg value formatting
+ *   – pointer prefix printing
+ *   – encoding prefixes (u"…")
+ *   – QByteArray quoting rules
+ *
+ * Our golden files must remain debugger-agnostic, so we collapse these backend
+ * differences into a single canonical representation:
+ *
+ *   • All pointer prefixes normalized to   "0xADDR "
+ *   • Leading pointer prefixes stripped for QString/QByteArray
+ *   • u"…" -> "…"   (drop encoding marker)
+ *   • QByteArray values normalized to exactly:  "Hello World!"
+ *   • QString values normalized to exactly:     "Hello World!"
+ *
+ * Only *actual* NatVis-derived content is preserved. Backend noise is removed.
+ *
+ * IMPORTANT:
+ *   – This normalization occurs inside `toSnapshot()`, so golden files and
+ *     comparisons are always stable across Windows, macOS, and Linux.
+ *   – This function must remain narrow: normalize debugger noise only.
+ *     Do NOT normalize NatVis logic (that is what the golden verifies).
+ */
 /**
  * Convert raw DAP variables into a sorted, minimal, stable snapshot:
  * - Sorted deterministically by name then type
  * - Values normalized via stripUnstable
  * - Optional recursion into children if the array is already populated
  */
+/**
+ * Normalize debugger values for cross-platform comparison.
+ *
+ * For QString / QByteArray we:
+ *  - Strip leading pointer/address (0x..., 0xADDR, quoted or not)
+ *  - Extract the last quoted payload -> "Hello World!"
+ *  - Enforce clean quotes
+ *
+ * For all other types we only normalize the leading pointer prefix.
+ */
+export function normalizeValue(type: string | undefined, raw: string): string {
+  let value = raw.trim();
+
+  const isQtStringLike = type === 'QString' || type === 'QByteArray';
+
+  if (!isQtStringLike) {
+    // Non-Qt types: just normalize pointer prefix, let stripUnstable do the rest.
+    return value
+      .replace(/^0x[0-9A-Fa-f]+(\s+)?/, '0xADDR ')
+      .replace(/^0xADDR\s+/, '0xADDR ');
+  }
+
+  // ---------- QString / QByteArray normalization ----------
+
+  // 1) If the whole thing is quoted, drop the leading quote
+  //    so we can match pointer prefixes like 0x... or 0xADDR.
+  if (value.startsWith('"')) {
+    value = value.slice(1);
+  }
+
+  // 2) Strip pointer-like prefixes (quoted or not):
+  //    0x1234..., 0xADDR, with optional spaces.
+  value = value.replace(/^0x[0-9A-Fa-f]+(\s+)?/, '');
+  value = value.replace(/^0xADDR(\s+)?/, '');
+  value = value.trim();
+
+  // Now typical forms look like:
+  //   "Hello World!""          (lldb double-quote tail)
+  //   u"Hello World!""         (lldb, with u-prefix)
+  //   "Hello World!"           (gdb/msvc)
+  //   Hello World!
+
+  // 3) Extract the last quoted string, ignoring optional leading 'u'.
+  const quoted = value.match(/u?"([^"]*)"\s*"?$/);
+  if (quoted) {
+    return `"${quoted[1]}"`;
+  }
+
+  // 4) Fallback: if no quotes detected, just wrap what remains.
+  if (!value.startsWith('"')) {
+    value = `"${value}"`;
+  }
+  // Collapse Windows/MSVC trailing double quote:
+  //   "Hello World!""  -> "Hello World!"
+  value = value.replace(/""$/, '"');
+
+  return value;
+}
+
 export function toSnapshot(vars: any[]): SnapVar[] {
   const sorted = [...vars].sort((a, b) => {
     const an = (a.name ?? '').localeCompare(b.name ?? '');
@@ -40,13 +132,24 @@ export function toSnapshot(vars: any[]): SnapVar[] {
   });
 
   return sorted.map((v) => {
+    // Step 1: get the raw string value
+    const rawValue =
+      typeof v.value === 'string'
+        ? v.value
+        : (v.value?.toString?.() ?? undefined);
+    // Step 2: normalize per-type (Qt / debugger differences)
+    const normalized =
+      rawValue !== undefined
+        ? normalizeValue(v.type as string | undefined, rawValue)
+        : undefined;
+
+    const stable =
+      typeof normalized === 'string' ? stripUnstable(normalized) : undefined;
+
     const snap: SnapVar = {
       name: v.name ?? undefined,
       type: v.type ?? undefined,
-      value:
-        typeof v.value === 'string'
-          ? stripUnstable(v.value)
-          : (v.value?.toString?.() ?? undefined)
+      value: stable
     };
 
     // If children are already fetched/populated by the caller, recurse.
@@ -214,18 +317,29 @@ function wildcardToRegex(pat: string): RegExp {
 export function matchNatvisTypePatternsConsideringAlternatives(
   natvis: NatvisTypes,
   seenTypes: Set<string>
-): { missing: string[] } {
+): {
+  missing: string[];
+  coveredTypes: Set<string>;
+} {
   const seen = [...seenTypes];
   const missing: string[] = [];
+  const coveredTypes = new Set<string>();
 
   for (const base of natvis.bases) {
     const candidates = [base, ...(natvis.alts.get(base) ?? [])];
     const anyMatched = candidates.some((pat) => {
       const rx = wildcardToRegex(pat);
-      return seen.some((t) => rx.test(t));
+      return seen.some((t) => {
+        const ok = rx.test(t);
+        if (ok) {
+          // Mark this seen type as covered by some NatVis pattern
+          coveredTypes.add(t);
+        }
+        return ok;
+      });
     });
     if (!anyMatched) missing.push(base);
   }
 
-  return { missing: missing.sort() };
+  return { missing: missing.sort(), coveredTypes };
 }

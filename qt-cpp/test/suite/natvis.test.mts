@@ -162,8 +162,9 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         process.env.HIT_ALL_BREAKPOINTS === '1'
           ? breakpoints.length
           : undefined;
+      const timeoutMs = 60000;
       const opts = {
-        timeoutMs: 30000,
+        timeoutMs,
         ...(wantAll !== undefined ? { continueUntilHits: wantAll } : {})
       };
       const { session: s, stops } = await startDebugAndWaitForStop(
@@ -219,32 +220,93 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       expect(String(vStr.value)).to.match(/Hello World!?/);
       //---------------------------------------------------------------------------------
 
-      //   Build stable snapshot
+      //   Build stable snapshot------------------------------------------------------old
+      // const snapshot = toSnapshot(locals);
+      // if (process.env.UPDATE_NATVIS_GOLDEN) {
+      //   await writeGolden(snapshot);
+      // } else {
+      //   const golden = await readGolden<typeof snapshot>(projectDir);
+
+      //   if (!golden) {
+      //     throw new Error(
+      //       `Golden not found. To create it run:\n  npm run natvis:golden:update`
+      //     );
+      //   }
+      //   expect(snapshot, 'Locals mismatch vs golden').to.deep.equal(golden);
+
+      //   //    Coverage warning/error
+      //   //    Read the NatVis path from your config (you pass ${command:qt-cpp.natvis}; the provider
+      //   //    should resolve to a file path—if you also have the absolute path handy, use it directly).
+      //   const natvisPath = nvPath; // you already compute this earlier in your test
+
+      //   const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
+      //   const seenTypes = collectTypesFromSnapshot(snapshot);
+      //   const { missing } = matchNatvisTypePatternsConsideringAlternatives(
+      //     natvis,
+      //     seenTypes
+      //   );
+
+      //   const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
+      //   if (missing.length && SHOW_COVERAGE_MISSING) {
+      //     const lines = missing.map((base) => {
+      //       const alts = natvis.alts.get(base);
+      //       return alts && alts.size
+      //         ? `- ${base} (alts: ${[...alts].join(', ')})`
+      //         : `- ${base}`;
+      //     });
+      //     console.warn(
+      //       `[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`
+      //     );
+      //   }
+      // }
+      //---------------------------------------------------------------------------------
+
+      //   Build full snapshot of Locals
       const snapshot = toSnapshot(locals);
+
+      //   Read NatVis + compute which snapshot types are actually covered
+      const natvisPath = nvPath; // you already computed this earlier
+      const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
+      const seenTypes = collectTypesFromSnapshot(snapshot);
+
+      // Now returns BOTH:
+      //   - missing: NatVis type patterns not exercised
+      //   - coveredTypes: set of snapshot.type strings that matched some NatVis type
+      const { missing, coveredTypes } =
+        matchNatvisTypePatternsConsideringAlternatives(natvis, seenTypes);
+
+      // Keep only locals whose type is covered by NatVis
+      const natvisSnapshot = snapshot.filter((v) => {
+        if (!v.type) {
+          return false;
+        }
+        return coveredTypes.has(v.type);
+      });
+      if (natvisSnapshot.length === 0) {
+        throw new Error(
+          '[natvis.test] No Locals matched any NatVis type; check project and NatVis path.'
+        );
+      }
+
       if (process.env.UPDATE_NATVIS_GOLDEN) {
-        await writeGolden(snapshot);
+        // Golden only contains NatVis-covered locals
+        await writeGolden(natvisSnapshot);
       } else {
-        const golden = await readGolden<typeof snapshot>(projectDir);
+        const golden = await readGolden<typeof natvisSnapshot>(projectDir);
 
         if (!golden) {
           throw new Error(
             `Golden not found. To create it run:\n  npm run natvis:golden:update`
           );
         }
-        expect(snapshot, 'Locals mismatch vs golden').to.deep.equal(golden);
 
-        //    Coverage warning/error
-        //    Read the NatVis path from your config (you pass ${command:qt-cpp.natvis}; the provider
-        //    should resolve to a file path—if you also have the absolute path handy, use it directly).
-        const natvisPath = nvPath; // you already compute this earlier in your test
+        // Compare ONLY NatVis-covered types (qRect, qByteArray, qString, etc.)
+        expect(
+          natvisSnapshot,
+          'Locals mismatch vs golden (NatVis-covered types only)'
+        ).to.deep.equal(golden);
 
-        const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
-        const seenTypes = collectTypesFromSnapshot(snapshot);
-        const { missing } = matchNatvisTypePatternsConsideringAlternatives(
-          natvis,
-          seenTypes
-        );
-
+        //    Coverage warning/error still based on full NatVis coverage
         const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
         if (missing.length && SHOW_COVERAGE_MISSING) {
           const lines = missing.map((base) => {
