@@ -37,12 +37,8 @@ export class PySideCommandRunner {
 
     logger.info('Running command');
     logger.info(`- shell: ${cmd.shellPath}`);
+    logger.info(`- venv activation: ${options?.useVenv ?? false}`);
     logger.info(`- command: ${cmd.commandLine}`);
-    logger.info(
-      '- venv activation: ' +
-        `${options?.useVenv ?? false}, ` +
-        cmd.venvActivationCommand
-    );
 
     const proc = childProcess.spawn(cmd.commandLine, { shell: cmd.shellPath });
     const outPromise = streamToLines(proc.stdout, this._onStdout);
