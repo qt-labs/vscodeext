@@ -1,7 +1,6 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as fs from 'fs';
 import * as path from 'path';
 import * as childProcess from 'child_process';
 
@@ -10,7 +9,6 @@ import { IsWindows } from 'qt-lib';
 export interface PySideCommandBuildOutput {
   shellPath: string;
   shellArgs: string[];
-  venvActivationCommand: string;
   commandLine: string;
 }
 
@@ -41,16 +39,13 @@ export class PySideCommandBuilder {
       all.unshift(`cd ${enclosePath(this._cwd)}`);
     }
 
-    const activation =
-      this._venvBinPath && resolveVenvActivationCommand(this._venvBinPath);
-    if (this._useVenv && activation) {
-      all.unshift(activation);
+    if (this._useVenv) {
+      all.unshift(makeVenvActivationCommand(this._venvBinPath ?? '<no-venv>'));
     }
 
     return {
       shellPath: resolveShellPath(),
       shellArgs: [IsWindows ? '/c' : '-c'],
-      venvActivationCommand: activation,
       commandLine: all.join(' && ')
     };
   }
@@ -67,11 +62,7 @@ function resolveShellPath(): string {
   return result.status === 0 && found ? found : '/bin/bash';
 }
 
-function resolveVenvActivationCommand(venvBinPath: string): string {
-  if (!venvBinPath || !fs.existsSync(venvBinPath)) {
-    return '';
-  }
-
+function makeVenvActivationCommand(venvBinPath: string): string {
   const script = enclosePath(
     path.join(venvBinPath, IsWindows ? 'activate.bat' : 'activate')
   );
