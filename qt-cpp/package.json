@@ -286,7 +286,7 @@
     "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,mts,json,mjs,cjs}\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,mts,json,mjs,cjs}\"",
     "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata",
-    "package": "vsce package --out out"
+    "package": "vsce package --out out && rm commit"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",

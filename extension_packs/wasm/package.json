@@ -47,6 +47,6 @@
   ],
   "scripts": {
     "vscode:prepublish": "git rev-parse HEAD > commit",
-    "package": "vsce package"
+    "package": "vsce package && rm commit"
   }
 }
