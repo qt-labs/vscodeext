@@ -120,7 +120,7 @@ async function resolveEnv(pyapi: PyApi | undefined, folder: Folder) {
   const envs = pyapi.environments;
   const envPath = envs.getActiveEnvironmentPath(folder);
   const resolved = await envs.resolveEnvironment(envPath);
-  return resolved ? new PySideEnv(resolved) : undefined;
+  return resolved ? new PySideEnv(folder, resolved) : undefined;
 }
 
 function parseToml(absPath: string): PySideProjectInfo | undefined {

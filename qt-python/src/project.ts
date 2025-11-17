@@ -22,6 +22,7 @@ export class PySideProject implements Project {
 
   dispose() {
     logger.info(`Dispose: "${this._folder.uri.fsPath}"`);
+    this._env?.dispose();
   }
 
   get env() {
