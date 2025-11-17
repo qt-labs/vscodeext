@@ -4,7 +4,6 @@
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { program } from 'commander';
-import * as fs from 'fs';
 
 import * as common from './common';
 
@@ -38,8 +37,6 @@ function main() {
     cwd: targetExtensionPackRoot,
     stdio: 'inherit'
   });
-  // Remove the generated `commit` file
-  fs.unlinkSync(path.join(targetExtensionPackRoot, 'commit'));
 
   common.pushTag(targetExtensionPackRoot, targetExtensionPack, version, remote);
 

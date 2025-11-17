@@ -4,7 +4,6 @@
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { program } from 'commander';
-import * as fs from 'fs';
 
 function main() {
   program.option('--extension <string>', 'Extension to generate package');
@@ -18,8 +17,6 @@ function main() {
     cwd: targetExtensionRoot,
     stdio: 'inherit'
   });
-  // Remove the generated `commit` file
-  fs.unlinkSync(path.join(targetExtensionRoot, 'commit'));
 }
 
 main();

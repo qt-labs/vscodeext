@@ -100,8 +100,6 @@ function main() {
     cwd: targetExtensionRoot,
     stdio: 'inherit'
   });
-  // Remove the generated `commit` file
-  fs.unlinkSync(path.join(targetExtension, 'commit'));
 
   common.pushTag(extensionRoot, targetExtension, version, remote);
 
