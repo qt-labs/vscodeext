@@ -220,47 +220,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       expect(String(vStr.value)).to.match(/Hello World!?/);
       //---------------------------------------------------------------------------------
 
-      //   Build stable snapshot------------------------------------------------------old
-      // const snapshot = toSnapshot(locals);
-      // if (process.env.UPDATE_NATVIS_GOLDEN) {
-      //   await writeGolden(snapshot);
-      // } else {
-      //   const golden = await readGolden<typeof snapshot>(projectDir);
-
-      //   if (!golden) {
-      //     throw new Error(
-      //       `Golden not found. To create it run:\n  npm run natvis:golden:update`
-      //     );
-      //   }
-      //   expect(snapshot, 'Locals mismatch vs golden').to.deep.equal(golden);
-
-      //   //    Coverage warning/error
-      //   //    Read the NatVis path from your config (you pass ${command:qt-cpp.natvis}; the provider
-      //   //    should resolve to a file path—if you also have the absolute path handy, use it directly).
-      //   const natvisPath = nvPath; // you already compute this earlier in your test
-
-      //   const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
-      //   const seenTypes = collectTypesFromSnapshot(snapshot);
-      //   const { missing } = matchNatvisTypePatternsConsideringAlternatives(
-      //     natvis,
-      //     seenTypes
-      //   );
-
-      //   const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
-      //   if (missing.length && SHOW_COVERAGE_MISSING) {
-      //     const lines = missing.map((base) => {
-      //       const alts = natvis.alts.get(base);
-      //       return alts && alts.size
-      //         ? `- ${base} (alts: ${[...alts].join(', ')})`
-      //         : `- ${base}`;
-      //     });
-      //     console.warn(
-      //       `[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`
-      //     );
-      //   }
-      // }
-      //---------------------------------------------------------------------------------
-
       //   Build full snapshot of Locals
       const snapshot = toSnapshot(locals);
 
