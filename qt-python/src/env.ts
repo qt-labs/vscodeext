@@ -2,19 +2,68 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { Environment } from '@vscode/python-extension';
 
-import { isError } from 'qt-lib';
+import { isError, OSExeSuffix } from 'qt-lib';
 import { PySidePackageInfo } from './types';
 import { PySideCommandRunner } from './runner';
+import { pyApi } from './extension';
 import * as utils from './utils';
 import * as consts from './constants';
 
 export class PySideEnv {
-  private readonly _pyEnv: Environment | undefined;
+  private _disposables: vscode.Disposable[] = [];
 
-  constructor(pyenv?: Environment) {
-    this._pyEnv = pyenv;
+  constructor(
+    private readonly _folder: vscode.WorkspaceFolder,
+    private _pyEnv?: Environment
+  ) {
+    const folder = this._folder;
+    const isVenv = this._pyEnv?.environment?.type === 'VirtualEnvironment';
+
+    if (isVenv) {
+      const sysPrefix = this._pyEnv?.executable.sysPrefix;
+      if (sysPrefix) {
+        const pattern = new vscode.RelativePattern(
+          vscode.Uri.file(sysPrefix),
+          '/'
+        );
+        const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+        watcher.onDidDelete(() => {
+          watcher.dispose();
+          this._pyEnv = undefined;
+          if (pyApi) {
+            void pyApi.environments.updateActiveEnvironmentPath('', folder);
+          }
+        });
+        this._disposables.push(watcher);
+      }
+      return;
+    }
+
+    const pythonPathRel = path.join(
+      '.venv',
+      consts.VENV_BIN_DIR,
+      'python' + OSExeSuffix
+    );
+    const pattern = new vscode.RelativePattern(folder.uri, pythonPathRel);
+    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+    watcher.onDidCreate(() => {
+      watcher.dispose();
+      if (pyApi) {
+        const pythonPath = path.join(folder.uri.fsPath, pythonPathRel);
+        void pyApi.environments.updateActiveEnvironmentPath(pythonPath, folder);
+      }
+    });
+    this._disposables.push(watcher);
+  }
+
+  public dispose() {
+    this._disposables.forEach((w) => {
+      w.dispose();
+    });
+    this._disposables = [];
   }
 
   public isVenv(): boolean {
