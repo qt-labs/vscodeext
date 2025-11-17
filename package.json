@@ -131,7 +131,7 @@
     "@types/node": "^20.2.5",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
-    "@vscode/vsce": "^3.6.0",
+    "@vscode/vsce": "^3.3.2",
     "concurrently": "^8.2.2",
     "dotenv": "^16.5.0",
     "eslint": "^8.57.1",
