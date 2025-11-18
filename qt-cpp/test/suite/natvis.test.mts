@@ -34,6 +34,45 @@ import {
 } from '../debug-golden.mts';
 import { selectAndApplyQtKit } from '../qt-kits-helper.mts';
 
+function getRequiredQtMajorFromCMake(projectDir: string): number {
+  const cmakeListsPath = path.join(projectDir, 'CMakeLists.txt');
+
+  if (!fs.existsSync(cmakeListsPath)) {
+    const message =
+      `[natvis.test] CMakeLists.txt not found at ${cmakeListsPath}; ` +
+      'cannot detect required Qt major version.';
+    throw new Error(message);
+  }
+
+  const content = fs.readFileSync(cmakeListsPath, 'utf8');
+
+  // Match e.g.:
+  //   find_package(Qt6 REQUIRED COMPONENTS Core)
+  //   find_package ( Qt5 CONFIG REQUIRED ... )
+  const regex = /find_package\s*\(\s*Qt(\d+)\b[^)]*\)/i;
+  const match = regex.exec(content);
+
+  if (!match || !match[1]) {
+    const message =
+      '[natvis.test] Could not find a line like ' +
+      '"find_package(Qt<major> ...)" in CMakeLists.txt; ' +
+      'cannot determine required Qt major version.';
+    throw new Error(message);
+  }
+
+  const majorStr = match[1];
+  const major = Number.parseInt(majorStr, 10);
+
+  if (Number.isNaN(major)) {
+    const message =
+      `[natvis.test] Could not parse Qt major version from '${majorStr}' ` +
+      'in CMakeLists.txt.';
+    throw new Error(message);
+  }
+
+  return major;
+}
+
 describe('natvis: minimal Qt project debug (index-natvis)', function () {
   this.timeout(150_000);
 
@@ -79,9 +118,18 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
     await waitForVSCodeIdle();
 
-    const kit = await selectAndApplyQtKit(wsFolder);
+    const requiredQtMajor = getRequiredQtMajorFromCMake(projectDir);
+
+    const kit = await selectAndApplyQtKit(wsFolder, requiredQtMajor);
+
     if (!kit) {
-      throw new Error('[natvis.test] No Qt kit available on this machine. ');
+      const message = '[natvis.test] No Qt kit available on this machine. ';
+      if (process.env.CI) {
+        // On CI: fail hard so we notice misconfiguration
+        throw new Error(message);
+      }
+      // Local dev: skip this test cleanly
+      this.skip();
     }
     dlog('Selected Qt kit:', kit);
 
