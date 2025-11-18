@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 
 type KitLike = {
   name?: string; // CMake Tools kit name
+  qtVersionMajor?: number;
   label?: string; // sometimes used instead of name
   toolchainFile?: string; // Qt6 toolchain path -> strong Qt signal
   environmentVariables?: Record<string, string | undefined>; // VSCODE_QT_INSTALLATION, etc.
@@ -20,7 +21,8 @@ function hasAnyQtKit(kits: KitLike[]): boolean {
 }
 /** Call the qt-cpp scan and then select+apply a Qt kit. Returns the chosen kit name or undefined. */
 export async function selectAndApplyQtKit(
-  wsFolder?: vscode.WorkspaceFolder
+  wsFolder?: vscode.WorkspaceFolder,
+  requiredQtMajor?: number
 ): Promise<string | undefined> {
   // Read kits from disk (workspace and global)
   let kits = readQtKitsFromDisk(wsFolder);
@@ -31,6 +33,11 @@ export async function selectAndApplyQtKit(
     kits = readQtKitsFromDisk(wsFolder);
   }
 
+  // If caller cares about a specific major (e.g. 6), filter down to that
+  if (typeof requiredQtMajor === 'number') {
+    kits = filterQtKitsByMajor(kits, requiredQtMajor);
+  }
+
   // Filter to Qt kits and pick one appropriate for this machine
   const kitName = pickQtKit(kits);
 
@@ -38,6 +45,11 @@ export async function selectAndApplyQtKit(
   if (kitName) {
     await vscode.commands.executeCommand('cmake.setKitByName', kitName);
     console.log('[qt-kits-helper] Selected Qt Kit:', kitName);
+  } else if (typeof requiredQtMajor === 'number') {
+    console.warn(
+      `[qt-kits-helper] No Qt${requiredQtMajor} kit found; ` +
+        'CMake may prompt interactively or fail later.'
+    );
   } else {
     console.warn(
       '[qt-kits-helper] No suitable Qt kit found; CMake may prompt interactively.'
@@ -45,6 +57,31 @@ export async function selectAndApplyQtKit(
   }
 
   return kitName;
+}
+
+// helper – keep it in the same module as the other kit helpers
+function filterQtKitsByMajor(
+  kits: KitLike[],
+  requiredQtMajor: number
+): KitLike[] {
+  const majorPrefix = `Qt-${requiredQtMajor}.`;
+
+  return kits.filter((kit) => {
+    // Case 1: Structured major version available
+    if (typeof kit.qtVersionMajor === 'number') {
+      return kit.qtVersionMajor === requiredQtMajor;
+    }
+
+    // Case 2: No structured major → fallback to name matching
+    const name = kit.name;
+    if (!name) {
+      return false;
+    }
+
+    return (
+      name.startsWith(majorPrefix) || name.includes(`Qt ${requiredQtMajor}`)
+    );
+  });
 }
 
 /** Determine likely kit file paths (workspace + platform-global). */
