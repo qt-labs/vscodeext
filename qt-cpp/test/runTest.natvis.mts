@@ -2,51 +2,27 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
-import * as fs from 'fs';
 import * as os from 'os';
 import * as fsp from 'fs/promises';
 
-const QT_INS_ROOT_CONFIG_NAME = 'qtInstallationRoot';
+import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron';
+
+import { getQuietVSCodeArgs } from '../../qt-lib/src/test-constants.js';
 
 import {
-  downloadAndUnzipVSCode,
-  resolveCliArgsFromVSCodeExecutablePath,
-  runTests
-} from '@vscode/test-electron';
-
-import {
-  getLocalQtCore,
-  getQuietVSCodeArgs
-} from '../../qt-lib/src/test-constants.js';
-
-import {
-  parseVSCodeDirs,
   installExtensionWithRetry,
   debugListExtensions,
-  assertExtensionsInstalled,
-  getDebugLevel
+  assertExtensionsInstalled
 } from '../../qt-lib/src/test-vscode-install.js';
+
+import {
+  setupVSCodeSettings,
+  setupTestInfrastructure,
+  installRequiredExtensions
+} from './runTestHelper.mjs';
 
 import { installStdioFilter } from './util/stdioFilter.mts';
 const uninstallStdio = installStdioFilter();
-
-// --- CLI arg parsing (no deps) ---------------------------------------------
-function getCliArg(name: string): string | undefined {
-  const flag = `--${name}`;
-  const argv = process.argv.slice(2);
-
-  for (let i = 0; i < argv.length; i++) {
-    const a: string = argv[i]!;
-    if (a === flag) {
-      const next = argv[i + 1];
-      return next ? next.trim() : undefined;
-    }
-    if (a.startsWith(flag + '=')) {
-      return a.slice(flag.length + 1).trim();
-    }
-  }
-  return undefined;
-}
 
 async function main() {
   try {
@@ -57,98 +33,27 @@ async function main() {
     // The path to the extension test script
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index-natvis');
-    // Path to the local qt-core extension to be used during testing
-    const localQtCoreVsix = path.normalize(
-      path.resolve(__dirname, getLocalQtCore())
-    );
-    // Check that qt-core .vsix exists
-    if (!fs.existsSync(localQtCoreVsix)) {
-      console.error(`Required extension not found: ${localQtCoreVsix}`);
-      process.exit(1); // Fail early
-    }
+
+    // Download VS Code and resolve CLI/dirs using shared helper
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
-    // const [cli, ...args] =
-    //   resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    const { qtRoot, localQtCoreVsix, cli, args, userDataDir } =
+      await setupTestInfrastructure(vscodeExecutablePath);
 
-    const parts = resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
-    if (!parts.length || !parts[0]) {
-      throw new Error(
-        'Could not resolve VS Code CLI path from vscodeExecutablePath'
-      );
-    }
-    const [cli, ...args] = parts as [string, ...string[]];
-
-    //--------------------
-    // Read from env (set this when launching tests)
-    // Prefer CLI over env
-    const cliQtRoot = getCliArg('qt-root');
-    const envQtRoot = process.env.QT_TEST_QT_ROOT?.trim();
-    const qtRoot = (cliQtRoot ?? envQtRoot)?.trim();
-
-    if (!qtRoot) {
-      console.error(
-        [
-          'Qt root is required. Provide either:',
-          '  1) CLI:   --qt-root /absolute/path/to/Qt',
-          '  2) ENV:   QT_TEST_QT_ROOT=/absolute/path/to/Qt',
-          '',
-          'Examples:',
-          '  npm run test -- --qt-root=/Users/me/Qt',
-          '  QT_TEST_QT_ROOT=/Users/me/Qt npm run test'
-        ].join('\n')
-      );
-      process.exit(1);
-    }
-
-    // Reuse the dirs that @vscode/test-electron already configured
-    const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
-    if (getDebugLevel() >= 1) {
-      console.log('[runTest][qt-cpp] CLI:', cli, 'args:', args.join(' '));
-      console.log('[runTest][qt-cpp] userDataDir:', userDataDir);
-      console.log('[runTest][qt-cpp] extensionsDir:', extensionsDir);
-    }
-
-    // Seed VS Code settings in that SAME user-data-dir
-    if (!userDataDir) {
-      console.error(
-        '[runTest] Could not determine userDataDir from VS Code args.'
-      );
-      process.exit(1);
-    }
-    const userDir = path.join(userDataDir, 'User');
-    fs.mkdirSync(userDir, { recursive: true });
-
-    const settingsPath = path.join(userDir, 'settings.json');
-    const settings = {
-      // VS Code setting key that qt-core reads:
-      [`qt-core.${QT_INS_ROOT_CONFIG_NAME}`]: qtRoot,
-      // Silence CMake Tools logs (trace/debug/info/warn → only errors)
-      'cmake.loggingLevel': 'error',
+    // Seed VS Code settings (shared helper + natvis-specific tweaks)
+    setupVSCodeSettings(userDataDir, qtRoot, {
+      // Extra natvis-specific setting
       'cmake.configureOnOpen': false
-    };
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
-    console.log('[runTest] Wrote settings to:', settingsPath);
+    });
+
+    // Install core required extensions (CMake Tools + qt-core) via helper
+    installRequiredExtensions(cli, args, localQtCoreVsix);
 
     const quietArgs = [...args, ...getQuietVSCodeArgs()];
-    const required = [
-      'ms-vscode.cpptools',
-      'ms-vscode.cmake-tools',
-      localQtCoreVsix
-    ];
-    const requiredIds = [
-      'ms-vscode.cpptools',
-      'ms-vscode.cmake-tools',
-      'theqtcompany.qt-core'
-    ];
-    console.log('[runTest] Installing required extensions:', requiredIds);
-    // Install required extensions into the SAME profile/dir combo
-    for (const ext of required) {
-      installExtensionWithRetry(cli as string, quietArgs, ext);
-    }
-    //debugListExtensions(cli as string, args);
-    //assertExtensionsInstalled(cli as string, args, requiredIds);
-    debugListExtensions(cli as string, quietArgs);
-    assertExtensionsInstalled(cli as string, quietArgs, requiredIds);
+    installExtensionWithRetry(cli, quietArgs, 'ms-vscode.cpptools');
+
+    // Final extension check: ensure cpptools is present
+    debugListExtensions(cli, quietArgs);
+    assertExtensionsInstalled(cli, quietArgs, ['ms-vscode.cpptools']);
 
     // The workspace folder we want to open
     const projectDir = path.resolve(
