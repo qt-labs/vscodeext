@@ -56,7 +56,7 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
     const env = await resolveEnv(pyApi, folder);
     const pyside = env && (await env.readPySide6PackageInfo(logIndented));
     const qmlImportPath = pyside?.location
-      ? path.normalize(path.join(pyside.location, 'PySide6/qml'))
+      ? path.normalize(path.join(pyside.location, consts.QML_IMPORT_SUBDIR))
       : '';
 
     project.env = env;
