@@ -3,67 +3,27 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { Environment } from '@vscode/python-extension';
+import {
+  PythonExtension as PyApi,
+  ResolvedEnvironment as PyEnv
+} from '@vscode/python-extension';
 
-import { isError, OSExeSuffix } from 'qt-lib';
+import { isError, OSExeSuffix, createLogger } from 'qt-lib';
 import { PySidePackageInfo } from './types';
 import { PySideCommandRunner } from './runner';
-import { pyApi } from './extension';
 import * as utils from './utils';
 import * as consts from './constants';
 
+const logger = createLogger('env');
+
 export class PySideEnv {
-  private _disposables: vscode.Disposable[] = [];
+  private _pyEnv?: PyEnv | undefined;
+  private _activeFSWatcher: vscode.FileSystemWatcher | undefined;
 
-  constructor(
-    private readonly _folder: vscode.WorkspaceFolder,
-    private _pyEnv?: Environment
-  ) {
-    const folder = this._folder;
-    const isVenv = this._pyEnv?.environment?.type === 'VirtualEnvironment';
-
-    if (isVenv) {
-      const sysPrefix = this._pyEnv?.executable.sysPrefix;
-      if (sysPrefix) {
-        const pattern = new vscode.RelativePattern(
-          vscode.Uri.file(sysPrefix),
-          '/'
-        );
-        const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-        watcher.onDidDelete(() => {
-          watcher.dispose();
-          this._pyEnv = undefined;
-          if (pyApi) {
-            void pyApi.environments.updateActiveEnvironmentPath('', folder);
-          }
-        });
-        this._disposables.push(watcher);
-      }
-      return;
-    }
-
-    const pythonPathRel = path.join(
-      '.venv',
-      consts.VENV_BIN_DIR,
-      'python' + OSExeSuffix
-    );
-    const pattern = new vscode.RelativePattern(folder.uri, pythonPathRel);
-    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-    watcher.onDidCreate(() => {
-      watcher.dispose();
-      if (pyApi) {
-        const pythonPath = path.join(folder.uri.fsPath, pythonPathRel);
-        void pyApi.environments.updateActiveEnvironmentPath(pythonPath, folder);
-      }
-    });
-    this._disposables.push(watcher);
-  }
+  constructor(private readonly _folder: vscode.WorkspaceFolder) {}
 
   public dispose() {
-    this._disposables.forEach((w) => {
-      w.dispose();
-    });
-    this._disposables = [];
+    this._disposeActiveFSWatcher();
   }
 
   public isVenv(): boolean {
@@ -85,7 +45,14 @@ export class PySideEnv {
     return this._pyEnv?.executable.uri?.fsPath;
   }
 
-  public async readPySide6PackageInfo(outputHandler?: (line: string) => void) {
+  public async refresh(pyApi: PyApi) {
+    const allEnvs = pyApi.environments;
+    const activeEnvPath = allEnvs.getActiveEnvironmentPath(this._folder);
+    this._pyEnv = await allEnvs.resolveEnvironment(activeEnvPath);
+    this._setupWatcher(pyApi);
+  }
+
+  public async readPySide6PackageInfo() {
     const parsedOutput: Record<string, string> = {};
 
     try {
@@ -101,9 +68,13 @@ export class PySideEnv {
       // Requires: PySide6_Essentials, PySide6_Addons, shiboken6
       // Required-by:
 
+      const logIndented = (line: string) => {
+        logger.info(' ', line);
+      };
+
       const runner = new PySideCommandRunner(this);
-      runner.onStdout(outputHandler);
-      runner.onStderr(outputHandler);
+      runner.onStdout(logIndented);
+      runner.onStderr(logIndented);
 
       const lines = await runner.run(`pip show PySide6`, { useVenv: true });
       lines.forEach((line) => {
@@ -113,7 +84,7 @@ export class PySideEnv {
         }
       });
     } catch (e) {
-      outputHandler?.(isError(e) ? e.message : String(e));
+      logger.error(' ', isError(e) ? e.message : String(e));
       return undefined;
     }
 
@@ -121,5 +92,53 @@ export class PySideEnv {
       version: parsedOutput.Version ?? '',
       location: parsedOutput.Location ?? ''
     } as PySidePackageInfo;
+  }
+
+  private _setupWatcher(pyApi: PyApi) {
+    const folder = this._folder;
+    const isVenv = this._pyEnv?.environment?.type === 'VirtualEnvironment';
+
+    this._disposeActiveFSWatcher();
+
+    if (isVenv) {
+      const sysPrefix = this._pyEnv?.executable.sysPrefix;
+      if (sysPrefix) {
+        const pattern = new vscode.RelativePattern(
+          vscode.Uri.file(sysPrefix),
+          '/'
+        );
+        const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+        watcher.onDidDelete(() => {
+          void pyApi.environments.updateActiveEnvironmentPath('', folder);
+          this._pyEnv = undefined;
+          this._disposeActiveFSWatcher();
+        });
+
+        this._activeFSWatcher = watcher;
+      }
+      return;
+    }
+
+    const pythonPathRel = path.join(
+      '.venv',
+      consts.VENV_BIN_DIR,
+      'python' + OSExeSuffix
+    );
+    const pattern = new vscode.RelativePattern(folder.uri, pythonPathRel);
+    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+    watcher.onDidCreate(() => {
+      const pythonPath = path.join(folder.uri.fsPath, pythonPathRel);
+      void pyApi.environments.updateActiveEnvironmentPath(pythonPath, folder);
+      this._disposeActiveFSWatcher();
+    });
+
+    this._activeFSWatcher = watcher;
+  }
+
+  private _disposeActiveFSWatcher() {
+    if (this._activeFSWatcher) {
+      this._activeFSWatcher.dispose();
+      this._activeFSWatcher = undefined;
+    }
   }
 }
