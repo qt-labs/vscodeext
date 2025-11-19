@@ -29,7 +29,7 @@ export class PySideProjectManager extends ProjectManager<PySideProject> {
   }
 
   private static readonly _onProjectAdded = async (p: PySideProject) => {
-    p.refreshInfo();
+    await p.refreshInfo();
     await p.refreshEnv();
   };
 }

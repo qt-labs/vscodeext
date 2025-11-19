@@ -30,3 +30,6 @@ export const TOML_KEY_PROJECT_FILES = 'tool.pyside6-project.files';
 
 export const PYSIDE_PROJECT_TOOL = 'pyside6-project';
 export const MAINT_WHEEL_DIR_NAME = 'QtForPython';
+
+// contributes > configruation
+export const CONFIG_DO_NOT_WARN_OLD_PROJECTS = 'doNotWarnAboutOldStyleProjects';
