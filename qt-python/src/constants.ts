@@ -22,6 +22,7 @@ export const DEBUG_DELEGATE_TYPE = 'debugpy';
 export const DEBUG_DEFAULT_ENTRY_POINT = 'main.py';
 
 export const VENV_BIN_DIR = IsWindows ? 'Scripts' : 'bin';
+export const QML_IMPORT_SUBDIR = 'PySide6/' + (IsWindows ? 'qml' : 'Qt/qml');
 
 export const TOML_PROJECT_FILE_NAME = 'pyproject.toml';
 export const TOML_KEY_PROJECT_NAME = 'project.name';
