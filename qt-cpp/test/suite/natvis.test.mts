@@ -109,7 +109,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     if (DEBUG) console.log(...args);
   };
 
-  it('configures, builds, and stops at a breakpoint', async function () {
+  it('reaches the breakpoint after configure+build and shows Locals formatted by our NatVis rules', async function () {
     const wsFolder = getWorkspaceFolderOrThrow();
     const projectDir = wsFolder.uri.fsPath;
     dlog('Using projectDir:', projectDir);
