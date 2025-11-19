@@ -30,6 +30,7 @@
   "pricing": "Free",
   "activationEvents": [
     "workspaceContains:pyproject.toml",
+    "workspaceContains:*.pyproject",
     "onDebugInitialConfigurations",
     "onDebugResolve:python"
   ],
@@ -38,7 +39,14 @@
   "contributes": {
     "configuration": {
       "title": "Qt Python Configuration",
-      "properties": {}
+      "properties": {
+        "qt-python.doNotWarnAboutOldStyleProjects": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not warn about old-style projects",
+          "scope": "machine-overridable"
+        }
+      }
     },
     "commands": [
       {
@@ -152,6 +160,7 @@
     "@vscode/l10n": "^0.0.16",
     "@vscode/python-extension": "^1.0.5",
     "command-exists": "^1.2.9",
+    "glob": "^12.0.0",
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
