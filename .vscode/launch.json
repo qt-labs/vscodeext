@@ -109,20 +109,20 @@
       "postDebugTask": "qt-cpp: natvis test clean"
     },
     {
-  "name": "Run Extension Tests qt-cpp natvis (via runTest)",
-  "type": "node",
-  "request": "launch",
-  "program": "${workspaceFolder}/qt-cpp/out/test/runTest.natvis.js",
-  "args": [
-    "--qt-root=${config:qt-core.qtInstallationRoot}"
-  ],
-  "cwd": "${workspaceFolder}/qt-cpp/out/test",
-  "outputCapture": "std",
-  "console": "integratedTerminal",
-  "env": {
-    "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
-  }
-},
+      "name": "Run Extension Tests qt-cpp natvis (via runTest)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/qt-cpp/out/test/runTest.natvis.js",
+      "args": [
+        "--qt-root=${config:qt-core.qtInstallationRoot}"
+      ],
+      "cwd": "${workspaceFolder}/qt-cpp/out/test",
+      "outputCapture": "std",
+      "console": "integratedTerminal",
+      "env": {
+        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
+      }
+    },
     {
       "name": "Run qt-qml Extension",
       "type": "extensionHost",
