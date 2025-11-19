@@ -69,7 +69,7 @@ function createTask(project: PySideProject, taskId: TaskId) {
   const folder = project.folder;
   const action = findProjectToolAction(taskId);
   const taskName = findTaskName(taskId);
-  if (!env || !action || !taskName) {
+  if (!action || !taskName) {
     logger.info(`Cannot create: task = ${taskName}, folder = ${folder.name}`);
     return undefined;
   }

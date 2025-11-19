@@ -104,7 +104,7 @@ const onPyApiEnvChanged = async (e: PyApiEnvChanged) => {
   const folder = e.resource;
   if (folder) {
     logger.info(`Active environment changed: ${folder.uri.fsPath}`);
-    await projectManager.refreshEnv(folder);
+    await projectManager.refreshProjectEnv(folder);
   }
 };
 

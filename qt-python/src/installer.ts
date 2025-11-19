@@ -86,14 +86,11 @@ async function selectTargetProject() {
 async function checkInstallation(project: PySideProject): Promise<CheckResult> {
   const env = project.env;
   const folder = project.folder;
-  if (!env || !env.isVenv()) {
+  if (!env.isVenv()) {
     return { status: 'noVenv', folder };
   }
 
-  const logIndented = (line: string) => {
-    logger.info(' ', line);
-  };
-  const pyside = await env.readPySide6PackageInfo(logIndented);
+  const pyside = await env.readPySide6PackageInfo();
   if (!pyside) {
     return { status: 'noPySide', folder, env };
   }
@@ -194,12 +191,13 @@ async function tryInstallPySide(
         return;
       }
 
-      const pyside = await env.readPySide6PackageInfo(logIndented);
+      const pyside = await env.readPySide6PackageInfo();
       if (!pyside) {
         throw new Error('Cannot read PySide6 package information');
       }
 
-      await projectManager.refreshEnv(folder);
+      await projectManager.refreshProjectEnv(folder);
+
       void vscode.window.showInformationMessage(
         texts.install.popup.installed(
           folder.name,
