@@ -1,5 +1,22 @@
 # Change Log
 
+## 1.11.0 (Nov 24, 2025)
+
+🎉 **Added**
+
+- Introduce full CMakePresets support
+  - Automatic detection of project configuration type (kit vs presets)
+  - Qt path resolution from CMake cache and vcpkg toolchain files
+  - Support custom vendor parameters in CMakePresets
+  - Mixed workspace support with different configuration types per folder
+- Add version check for CMake Tools extension
+  - Detect outdated versions and prompt for update to 1.22.16 or later
+  - Introduce `qt-cpp.doNotWarnOutdatedCMakeTools` setting to disable warning
+
+🐞 **Fixed**
+
+- Fix handling of invalid or missing `cmake-tools-kits.json` files
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**

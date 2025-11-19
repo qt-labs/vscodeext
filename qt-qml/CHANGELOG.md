@@ -1,5 +1,22 @@
 # Change Log
 
+## 1.11.0 (Nov 24, 2025)
+
+🎉 **Added**
+
+- Add support for PySide projects with QML Language Server
+- Add PySide debug configuration snippet for integrated debugging
+- Support user-supplied QRC files in the QML debugger
+  - Works with non-CMake projects (PySide, custom C++ projects)
+  - Compatible with `qt_add_resource()` CMake command
+- Add qmldir file icons
+
+🐞 **Fixed**
+
+- Fix file finding in QML/JS debugger on Windows
+- Fix QML Language Server documentation path issues
+- Fix QML Language Server not restarting properly when installing updates
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**

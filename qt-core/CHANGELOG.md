@@ -1,5 +1,32 @@
 # Change Log
 
+## 1.11.0 (Nov 24, 2025)
+
+🎉 **Added**
+
+- Introduce `Report an Issue` command to report bugs directly from VS Code
+- Add support for opening Qt Linguist from PySide6 projects
+- Add support for opening Qt for Python online documentation from `.py` files
+- Introduce new language support for Qt translation (`.ts`) files
+  - Auto-detection of Qt translation files
+  - Custom icons for light and dark themes
+  - Editor title button to open files in Qt Linguist
+
+🐞 **Fixed**
+
+- Fix Qt Linguist not opening on Windows
+
+⚠️ **Changed**
+
+- Remove CMake presets disable from recommended settings
+- Rename file types for consistency: 'Qdoc' → 'QDoc', 'Qrc' → 'QRC'
+
+### New Item Wizard
+
+🐞 **Fixed**
+
+- Improve startup reliability and performance
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**
