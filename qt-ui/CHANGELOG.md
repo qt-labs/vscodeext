@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.11.0 (Nov 24, 2025)
+
+🎉 **Added**
+
+- Add support for opening Qt Widgets Designer from PySide6 installations
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**
