@@ -179,10 +179,7 @@ export async function readGolden<T = unknown>(
 /**
  * Write pretty-printed JSON to disk, creating parent directories as needed.
  */
-export async function writeGolden(
-  //projectDir: string,
-  snapshot: unknown
-): Promise<void> {
+export async function writeGolden(snapshot: unknown): Promise<void> {
   console.log(
     '[natvis.test] writing golden snapshot without checkout out dir...'
   );
