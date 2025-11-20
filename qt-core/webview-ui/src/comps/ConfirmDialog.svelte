@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Modal, Button, P } from 'flowbite-svelte';
+  import { Button, P } from 'flowbite-svelte';
 
   let {
     open = $bindable(true),
@@ -26,27 +26,30 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   }
 </script>
 
-<Modal
-  bind:open
-  color="none"
-  class="qt-popup"
-  size="sm"
-  classBackdrop="qt-popup-backdrop"
-  bodyClass="p-4"
-  outsideclose
-  on:close={() => {
-    onRejected();
+<button
+  class="qt-popup-backdrop fixed inset-0 flex items-center justify-center"
+  onclick={(e) => {
+    if (e.target === e.currentTarget) {
+      onRejectClicked();
+    }
   }}
 >
-  <P class="qt-label dialog pb-3">{text}</P>
+  <div
+    class="qt-popup w-[450px] absolute flex flex-col p-4"
+    onclose={() => {
+      onRejectClicked();
+    }}
+  >
+    <P class="qt-label dialog pb-3">{text}</P>
 
-  <div class="flex flex-row gap-2 mt-5">
-    <div class="grow"></div>
-    <Button class="qt-button" on:click={onRejectClicked}>
-      {rejectText}
-    </Button>
-    <Button class="qt-button" on:click={onAcceptClicked}>
-      {acceptText}
-    </Button>
+    <div class="flex flex-row gap-2 mt-5">
+      <div class="grow"></div>
+      <Button class="qt-button" on:click={onRejectClicked}>
+        {rejectText}
+      </Button>
+      <Button class="qt-button" on:click={onAcceptClicked}>
+        {acceptText}
+      </Button>
+    </div>
   </div>
-</Modal>
+</button>
