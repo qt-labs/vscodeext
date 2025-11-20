@@ -127,7 +127,7 @@
         \li Run \QMLLS when activating an extension
         \li Turns on \QMLLS when you activate an extension.
     \row
-        \li Handle LSP trace
+        \li Handle LSP Trace
         \li Collects trace output from \QMLLS.
     \row
         \li Use No CMake Calls
@@ -140,6 +140,25 @@
     \row
         \li Verbose Output
         \li Shows verbose output from \QMLLS.
+    \endtable
+
+    \section1 Qt Python settings
+
+    \image {vscodeext-qt-settings-python.webp} {Qt Python Configuration}
+
+    Settings for developing with Qt for Python. For more information, see
+    \l{Python development}.
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li Do Not Warn About Old Style Projects
+        \li Hides the warning about using \c .pyproject configuration files
+            instead of \c pyproject.toml files in your projects. TOML-based
+            configuration files are recommended for new projects. For more
+            information, see \l{Qt for Python: pyside6-project}.
     \endtable
 
     \section1 Qt UI settings
