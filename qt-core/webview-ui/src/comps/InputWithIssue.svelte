@@ -41,7 +41,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <Alert
       border
       color="none"
-      class={`qt-alert-${level} absolute w-full z-1
+      class={`qt-alert-${level} absolute w-full z-1 text-left
         ${alertPosition === 'top' ? 'bottom-full -mb-0.5' : 'top-full -mt-0.5'}
       `}
     >

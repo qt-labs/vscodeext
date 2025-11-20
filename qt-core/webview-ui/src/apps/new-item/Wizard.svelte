@@ -4,8 +4,6 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Modal } from 'flowbite-svelte';
-
   import * as texts from '@/apps/texts';
   import LoadingMask from '@/comps/LoadingMask.svelte';
   import { ui } from './states.svelte';
@@ -15,22 +13,17 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import WizardSectionPresets from './WizardSectionPresets.svelte';
 </script>
 
-<Modal
-  open
-  dismissable={false}
-  size="lg"
-  color="none"
-  class="qt-panel w-[80vw] h-[90vh] min-w-[500px] min-h-[500px]"
-  backdropClass="hidden"
+<div
+  class="qt-panel w-[80vw] h-[90vh] min-w-[500px] min-h-[500px] flex flex-col"
   on:close={onModalClosed}
 >
-  <svelte:fragment slot="header">
+  <div class="border-b p-4">
     <div class="qt-panel-header">
       {texts.wizard.title}
     </div>
-  </svelte:fragment>
+  </div>
 
-  <div class="w-full h-full flex flex-col gap-4">
+  <div class="w-full h-full flex flex-col gap-4 p-4">
     <WizardSectionPresets />
     <WizardSectionInput />
     <LoadingMask
@@ -40,4 +33,4 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     />
     <WizardAllDialogs />
   </div>
-</Modal>
+</div>
