@@ -21,10 +21,11 @@ export function resetCommand() {
 
 export function registerOpenSettingsCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
+    const extensions = ['qt-cpp', 'qt-qml', 'qt-ui', 'qt-python', EXTENSION_ID];
     telemetry.sendAction('openSettings');
     void vscode.commands.executeCommand(
       'workbench.action.openSettings',
-      `@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.${EXTENSION_ID}`
+      extensions.map((e) => `@ext:theqtcompany.${e}`).join(' ')
     );
   });
 }

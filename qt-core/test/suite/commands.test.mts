@@ -267,7 +267,7 @@ describe('command: openSettings', () => {
   it('leads to vscode workbench action openSettings', async () => {
     const commandArgs = [
       'workbench.action.openSettings',
-      '@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.qt-core'
+      '@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.qt-python @ext:theqtcompany.qt-core'
     ] as [string, ...unknown[]];
     const openSettingsSpy = stubExecuteCommandWithSpy(sb, commandArgs);
     await runOpenSettingsCommand();
