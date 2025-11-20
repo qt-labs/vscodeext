@@ -58,7 +58,7 @@
         \li \c {QT_PACKAGES_PREFIX_PATH}
         \li \c {Qt_ROOT}
         \li \c {QTDIR}
-    \endtable
+    \endlist
 
     \section1 CMake configure presets
 
