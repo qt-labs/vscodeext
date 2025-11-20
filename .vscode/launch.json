@@ -47,7 +47,7 @@
       "preLaunchTask": "npm qt-python watch"
     },
     {
-      "name": "Test qt-core",
+      "name": "Run Extension Tests qt-core",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
@@ -59,7 +59,7 @@
       "preLaunchTask": "npm qt-core watch and test"
     },
     {
-      "name": "Test qt-cpp",
+      "name": "Run Extension Tests qt-cpp",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
@@ -71,7 +71,7 @@
       "preLaunchTask": "npm qt-cpp watch and test"
     },
     {
-      "name": "Test qt-cpp build",
+      "name": "Run Extension Tests qt-cpp build",
       "type": "extensionHost",
       "request": "launch",
       "env": {
@@ -124,14 +124,6 @@
       }
     },
     {
-      "name": "Run qt-qml Extension",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-qml"],
-      "outFiles": ["${workspaceFolder}/qt-qml/out/**/*.js"],
-      "preLaunchTask": "npm qt-qml watch"
-    },
-    {
       "name": "Run Extension Tests qt-qml",
       "type": "extensionHost",
       "request": "launch",
@@ -144,7 +136,7 @@
       "preLaunchTask": "npm qt-qml watch and test"
     },
     {
-      "name": "Test qt-ui",
+      "name": "Run Extension Tests qt-ui",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
