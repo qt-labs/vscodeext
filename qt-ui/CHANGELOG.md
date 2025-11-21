@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.10.0 (Nov 24, 2025)
+
+The same as `1.9.0`
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**
