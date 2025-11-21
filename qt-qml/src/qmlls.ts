@@ -199,9 +199,12 @@ export class Qmlls {
       this._folder
     );
     if (this._client?.isRunning()) {
+      logger.info('QML Language Server is already running');
       return;
     }
     if (!configs.get<boolean>('enabled', false)) {
+      telemetry.sendConfig('QmllsDisabled');
+      logger.info('QML Language Server is disabled in the settings');
       return;
     }
 

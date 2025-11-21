@@ -39,6 +39,7 @@ export function checkVcpkg() {
     const doNotShowAgain = 'Do not show again';
     const currentQtPaths = getCurrentGlobalAdditionalQtPaths();
     if (containsQtPath(qtPath, currentQtPaths)) {
+      telemetry.sendEvent('vcpkgQtPathUsed');
       logger.info('Qt path already exists in the settings');
       return;
     }
