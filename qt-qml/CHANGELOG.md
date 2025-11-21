@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.10.0 (Nov 24, 2025)
+
+🐞 **Fixed**
+
+- Fix QML Language Server not restarting properly when installing updates
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**

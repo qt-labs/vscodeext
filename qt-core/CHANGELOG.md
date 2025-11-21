@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.10.0 (Nov 24, 2025)
+
+🐞 **Fixed**
+
+- Fix keyboard shortcuts (Cmd+A, Cmd+C, etc.) not working on macOS in the New Item Wizard dialog
+
+### New Item Wizard
+
+🐞 **Fixed**
+
+- Improve startup reliability and performance
+
 ## 1.9.0 (Sep 11, 2025)
 
 🎉 **Added**
