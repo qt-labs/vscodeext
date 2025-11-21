@@ -89,11 +89,15 @@ export function deactivate() {
 }
 
 export function initCoreValues() {
+  const currentGlobalQtInstallationRoot = getCurrentGlobalQtInstallationRoot();
   coreAPI?.setValue(
     CoreKey.GLOBAL_WORKSPACE,
     CoreKey.QT_INSTALLATION_ROOT,
-    getCurrentGlobalQtInstallationRoot()
+    currentGlobalQtInstallationRoot
   );
+  if (currentGlobalQtInstallationRoot) {
+    telemetry.sendEvent('qtInstallationRootUsedGlobal');
+  }
   const currentAdditionalQtPaths = getCurrentGlobalAdditionalQtPaths();
   coreAPI?.setValue(
     CoreKey.GLOBAL_WORKSPACE,
