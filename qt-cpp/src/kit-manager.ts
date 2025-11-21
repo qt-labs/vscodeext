@@ -634,7 +634,7 @@ export class KitManager {
     qtInstallationRoot: string,
     qtInstallations: string[]
   ) {
-    logger.info(`qtInstallationRoot: "${qtInstallationRoot}"`);
+    logger.info(`${CoreKey.QT_INSTALLATION_ROOT}: "${qtInstallationRoot}"`);
     const kitsFromCMakeExtension = await KitManager.getKitsByCMakeExtension();
     logger.info(
       `Kits from CMake extension: ${JSON.stringify(kitsFromCMakeExtension)}`
