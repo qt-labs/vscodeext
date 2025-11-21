@@ -1408,7 +1408,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-axios 1.9.0 - MIT
+axios 1.13.2 - MIT
 https://github.com/axios/axios#readme
 
 # Copyright (c) 2014-present Matt Zabriskie & Collaborators
