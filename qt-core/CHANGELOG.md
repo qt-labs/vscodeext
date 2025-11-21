@@ -21,6 +21,12 @@
 - Remove CMake presets disable from recommended settings
 - Rename file types for consistency: 'Qdoc' → 'QDoc', 'Qrc' → 'QRC'
 
+## 1.10.0 (Nov 24, 2025)
+
+🐞 **Fixed**
+
+- Fix keyboard shortcuts (Cmd+A, Cmd+C, etc.) not working on macOS in the New Item Wizard dialog
+
 ### New Item Wizard
 
 🐞 **Fixed**
