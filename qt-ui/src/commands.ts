@@ -31,7 +31,7 @@ export async function openWidgetDesigner() {
 
   const globalQtInstallationRoot = coreAPI?.getValue<string>(
     CoreKey.GLOBAL_WORKSPACE,
-    'qtInstallationRoot'
+    CoreKey.QT_INSTALLATION_ROOT
   );
   if (globalQtInstallationRoot) {
     qtInsRoots.push(globalQtInstallationRoot);
@@ -39,7 +39,7 @@ export async function openWidgetDesigner() {
   for (const project of projectManager.getProjects()) {
     const qtInsRoot = coreAPI?.getValue<string>(
       project.folder,
-      'qtInstallationRoot'
+      CoreKey.QT_INSTALLATION_ROOT
     );
     if (qtInsRoot) {
       qtInsRoots.push(qtInsRoot);
