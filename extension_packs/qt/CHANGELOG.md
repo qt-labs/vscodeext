@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.3.0
+
+- Fix the version problem and override the `1.2.0` version.
+
 ## 1.1.0
 
 - Added the `qt-python` extension.
