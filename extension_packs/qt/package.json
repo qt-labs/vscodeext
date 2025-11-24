@@ -28,7 +28,8 @@
     "C++",
     "CMake",
     "Qml",
-    "scan"
+    "scan",
+    "Python"
   ],
   "qna": "marketplace",
   "pricing": "Free",
