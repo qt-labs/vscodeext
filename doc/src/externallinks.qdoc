@@ -72,3 +72,8 @@
 \externalpage https://cmake.org/cmake/help/v3.24/manual/cmake-presets.7.html
 \title CMake: cmake-presets(7)
 */
+
+/*!
+\externalpage https://qt-project.atlassian.net/secure/CreateIssue.jspa
+\title Qt project bug tracker
+*/
