@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.0
+
+- Added the `qt-python` extension.
+
 ## 1.0.2
 
 - Changed the display name to "Qt Extension Pack".
