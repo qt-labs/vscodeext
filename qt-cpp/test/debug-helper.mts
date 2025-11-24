@@ -260,3 +260,123 @@ export async function getLocals(session: vscode.DebugSession, frameId: number) {
   });
   return variables ?? [];
 }
+
+interface DebugConfigurationSnippet {
+  label?: string;
+  description?: string;
+  body?: vscode.DebugConfiguration;
+}
+
+interface QtCppDebuggerContribution {
+  type?: string;
+  configurationSnippets?: DebugConfigurationSnippet[];
+}
+
+interface QtCppPackageJson {
+  contributes?: {
+    debuggers?: QtCppDebuggerContribution[];
+  };
+}
+
+function unescapeSnippetString(input: string): string {
+  let s = input;
+
+  if (s.startsWith('^"') && s.endsWith('"') && s.length >= 3) {
+    s = s.slice(2, -1);
+  }
+
+  s = s.replace(/\^"/g, '"');
+  return s;
+}
+
+function normalizeSnippetDebugConfiguration(
+  body: vscode.DebugConfiguration
+): vscode.DebugConfiguration {
+  const visit = (value: unknown): unknown => {
+    if (typeof value === 'string') {
+      return unescapeSnippetString(value);
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => visit(v));
+    }
+    if (value && typeof value === 'object') {
+      const src = value as Record<string, unknown>;
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(src)) {
+        out[k] = visit(v);
+      }
+      return out;
+    }
+    return value;
+  };
+
+  const cloned = visit(body) as vscode.DebugConfiguration;
+  return cloned;
+}
+
+/**
+ * Pick the debug configuration snippet to test:
+ *
+ *   - Windows → the cppvsdbg snippet (body.type === 'cppvsdbg')
+ *   - Others (Linux/macOS) → the "Qt: Debug with cppdbg" snippet
+ *     (body.type === 'cppdbg', prefer label not containing "lldb")
+ */
+export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
+  const ext = vscode.extensions.getExtension('theqtcompany.qt-cpp');
+  if (!ext) {
+    throw new Error(
+      "[qt-cpp] Extension 'theqtcompany.qt-cpp' not found when looking up debug snippets"
+    );
+  }
+
+  const pkg = ext.packageJSON as QtCppPackageJson;
+  const debuggers = pkg.contributes?.debuggers ?? [];
+
+  const allSnippets: DebugConfigurationSnippet[] = [];
+  for (const dbg of debuggers) {
+    if (Array.isArray(dbg.configurationSnippets)) {
+      allSnippets.push(...dbg.configurationSnippets);
+    }
+  }
+
+  if (allSnippets.length === 0) {
+    throw new Error(
+      '[qt-cpp] No configurationSnippets found in contributes.debuggers'
+    );
+  }
+
+  const isWin = process.platform === 'win32';
+
+  let snippet: DebugConfigurationSnippet | undefined;
+
+  if (isWin) {
+    // Windows: use the Visual Studio debugger snippet
+    snippet = allSnippets.find((s) => s.body?.type === 'cppvsdbg');
+  } else {
+    // Non-Windows: use the cppdbg snippet (but *not* the lldb variant)
+    snippet =
+      allSnippets.find(
+        (s) =>
+          s.body?.type === 'cppdbg' &&
+          !(s.label ?? '').toLowerCase().includes('lldb')
+      ) || allSnippets.find((s) => s.body?.type === 'cppdbg');
+  }
+
+  if (!snippet || !snippet.body) {
+    const details = allSnippets.map((s) => s.label ?? '<no-label>').join(', ');
+    throw new Error(
+      `[qt-cpp] Could not find a suitable configuration snippet for platform. ` +
+        `Available snippet labels: [${details}]`
+    );
+  }
+
+  const normalized = normalizeSnippetDebugConfiguration(snippet.body);
+
+  if (!normalized.name) {
+    normalized.name =
+      snippet.label ??
+      (isWin ? 'Qt snippet (cppvsdbg)' : 'Qt snippet (cppdbg)');
+  }
+
+  return normalized;
+}
