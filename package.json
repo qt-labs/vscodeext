@@ -92,6 +92,7 @@
     "checkChangelog:qt-all-pack": "ts-node ./scripts/check_changelog.ts --dir=\"extension_packs/qt\"",
     "checkChangelog:qt-wasm-pack": "ts-node ./scripts/check_changelog.ts --dir=\"extension_packs/wasm\"",
     "checkChangelog:qt-cpp-pack": "ts-node ./scripts/check_changelog.ts --dir=\"extension_packs/cpp\"",
+    "checkChangelog:qt-python-pack": "ts-node ./scripts/check_changelog.ts --dir=\"extension_packs/python\"",
     "checkUnused:qt-core": "ts-node ./scripts/check_unused.ts --dir=\"qt-core\"",
     "checkUnused:qt-cpp": "ts-node ./scripts/check_unused.ts --dir=\"qt-cpp\"",
     "checkUnused:qt-qml": "ts-node ./scripts/check_unused.ts --dir=\"qt-qml\"",
