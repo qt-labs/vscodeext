@@ -24,10 +24,10 @@
         \li Variable
         \li Description
     \row
-        \li ${userHome}
+        \li \c ${userHome}
         \li Expands to the user's home directory.
     \row
-        \li ${workspaceFolder}
+        \li \c ${workspaceFolder}
         \li Expands to the full path to the root directory of the current
             workspace.
 
@@ -48,11 +48,11 @@
         \li Setting
         \li Description
     \row
-        \li Do Not Ask for CMake Path
+        \li \uicontrol {Do Not Ask for CMake Path}
         \li Lets CMake Tools search the PATH environment variable and make some
             educated guesses on where to find CMake.
     \row
-        \li Do Not Warn Missing Source Dir
+        \li \uicontrol {Do Not Warn Missing Source Dir}
         \li Hides a warning about not being able to detect the source directory
             from a kit. This might happen if you installed Qt with vcpkg, for
             example. For more information, see \l{Debug Qt Applications}.
@@ -69,27 +69,27 @@
         \li Setting
         \li Description
     \row
-        \li Additional Qt Paths
+        \li \uicontrol {Additional Qt Paths}
         \li Adds paths to the qtpaths or qmake executable to find Qt
             installations. For more information, see \l {Other installations}.
     \row
-        \li Default Project Directory
+        \li \uicontrol {Default Project Directory}
         \li Sets the path to the folder that is shown by default when you create
             new projects. For more information, see \l {Create Qt projects}.
     \row
-        \li Do Not Ask for Default Qt Installation Root
+        \li \uicontrol {Do Not Ask for Default Qt Installation Root}
         \li Hides the prompt about setting the value of
             \uicontrol {Qt Installation Root}.
     \row
-        \li Do Not Ask for VCPKG
+        \li \uicontrol {Do Not Ask for VCPKG}
         \li Hides the prompt about creating a CMake kit for \c vcpkg. For more
             information, see \l {Automatic registration}.
     \row
-        \li Open Online Documentation in External Browser
+        \li \uicontrol {Open Online Documentation in External Browser}
         \li Opens Qt documentation in the default browser. For more information,
             see \l {Read Qt documentation}.
     \row
-        \li Qt Installation Root
+        \li \uicontrol {Qt Installation Root}
         \li Path to the folder where you installed Qt. For more information, see
             \l {Automatic registration}.
     \endtable
@@ -105,40 +105,40 @@
         \li Setting
         \li Description
     \row
-        \li Do Not Ask for Qmlls Download
+        \li \uicontrol {Do Not Ask for Qmlls Download}
         \li Hides the prompt about downloading \QMLLS.
     \row
-        \li Additional Import Paths
+        \li \uicontrol {Additional Import Paths}
         \li Looks for QML modules in the specified folders, and uses the \c {-I}
             command to add import statements for them when you start \QMLLS.
             Select \uicontrol {Add Item} to add import paths.
     \row
-        \li Custom Args
+        \li \uicontrol {Custom Args}
         \li Select \uicontrol {Add Item} to set custom \QMLLS arguments instead
             of using the default arguments.
     \row
-        \li Custom Docs Path
+        \li \uicontrol {Custom Docs Path}
         \li Path to the folder where you installed \QMLLS documentation.
             For more information, see \l {Read Qt documentation}.
     \row
-        \li Custom Exe Path
+        \li \uicontrol {Custom Exe Path}
         \li Path to the folder where you installed \QMLLS.
     \row
-        \li Run \QMLLS when activating an extension
+        \li \uicontrol {Run \QMLLS when activating an extension}
         \li Turns on \QMLLS when you activate an extension.
     \row
-        \li Handle LSP Trace
+        \li \uicontrol {Handle LSP Trace}
         \li Collects trace output from \QMLLS.
     \row
-        \li Use No CMake Calls
+        \li \uicontrol {Use No CMake Calls}
         \li Uses the \c {--no-cmake-calls} option to disable automatic CMake
             builds you start \QMLLS.
     \row
-        \li Use QML Import Path Env Var
+        \li \uicontrol {Use QML Import Path Env Var}
         \li Uses the \c {QML_IMPORT_PATH} option to look for QML modules. Turn on
             this setting to add the \c {-E} argument when you start \QMLLS.
     \row
-        \li Verbose Output
+        \li \uicontrol {Verbose Output}
         \li Shows verbose output from \QMLLS.
     \endtable
 
@@ -154,7 +154,7 @@
         \li Setting
         \li Description
     \row
-        \li Do Not Warn About Old Style Projects
+        \li \uicontrol {Do Not Warn About Old Style Projects}
         \li Hides the warning about using \c .pyproject configuration files
             instead of \c pyproject.toml files in your projects. TOML-based
             configuration files are recommended for new projects. For more
@@ -173,7 +173,7 @@
         \li Setting
         \li Description
     \row
-        \li Custom Widgets Designer Exe Path
+        \li \uicontrol {Custom Widgets Designer Exe Path}
         \li Path to the folder where you installed \QD.
     \endtable
 */
