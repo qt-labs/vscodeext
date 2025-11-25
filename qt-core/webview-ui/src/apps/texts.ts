@@ -34,6 +34,7 @@ export const wizard = {
   workingDir: 'Create in',
   workingDirTooltip: 'Browse',
   workingDirSaveCheckbox: 'Use as default project directory',
+  openInNewWindow: 'Open in a new window',
 
   enterNewPresetName: 'Enter a new name for the custom preset',
   confirmDeletePreset: 'Delete the preset?',

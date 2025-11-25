@@ -64,6 +64,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       >
         {texts.wizard.workingDirSaveCheckbox}
       </Checkbox>
+      <Checkbox
+        class="self-middle qt-checkbox mr-2"
+        bind:checked={input.openInNewWindow}
+      >
+        {texts.wizard.openInNewWindow}
+      </Checkbox>
     {:else}
       <div class="grow"></div>
     {/if}

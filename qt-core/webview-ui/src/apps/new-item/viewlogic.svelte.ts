@@ -119,7 +119,8 @@ export async function createItemFromSelectedPreset() {
       workingDir: input.workingDir,
       presetId: data.selected.preset?.id,
       options: $state.snapshot(ui.unsavedOptionChanges),
-      saveProjectDir: input.saveProjectDir
+      saveProjectDir: input.saveProjectDir,
+      openInNewWindow: input.openInNewWindow
     });
   } catch (e) {
     reportUiError('Error creating item', e);
@@ -265,7 +266,7 @@ async function loadPresets() {
 }
 
 function loadDefautInputs() {
-  let candidate = data.selected.type === 'file'
+  const candidate = data.selected.type === 'file'
     ? data.configs.newFileBaseDir
     : data.configs.newProjectBaseDir;
 

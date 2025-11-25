@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 import { createLogger } from 'qt-lib';
 import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
-import { openFilesUnder, openUri } from '@/qtcli/common';
+import { findPrimaryFileUnder } from '@/qtcli/common';
 import { getNewProjectBaseDir, setDefaultProjectDir } from '@/qtcli/commands';
 import { WebviewChannel } from '@/webview/channel';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
@@ -79,20 +79,27 @@ export class NewItemDispatcher {
 
   private readonly onUiItemCreationRequested = async (cmd: Command) => {
     try {
-      const data = await this._qtcliRest.call({
+      const out = await this._qtcliRest.call({
         method: 'post',
         url: '/items',
         data: cmd.payload
       });
 
-      openItemsFromQtcliResponseData(data);
+      const outType = _.get(out, 'type', '') as string;
+      const outFilesDir = path.normalize(_.get(out, 'filesDir', '') as string);
 
-      const type = _.get(cmd.payload, 'type', '') as string;
-      const save = _.get(cmd.payload, 'saveProjectDir', false) as boolean;
-      const workingDir = _.get(data, 'workingDir', '') as string;
+      if (outType !== 'project') {
+        openFiles(outFilesDir, _.get(out, 'files', []) as string[]);
+      } else {
+        void openFolder(
+          outFilesDir,
+          _.get(cmd.payload, 'openInNewWindow', false) as boolean
+        );
 
-      if (type === 'project' && save && workingDir.length !== 0) {
-        await setDefaultProjectDir(workingDir);
+        trySaveProjectDir(
+          _.get(cmd.payload, 'workingDir', '') as string,
+          _.get(cmd.payload, 'saveProjectDir', false) as boolean
+        );
       }
 
       this._panel?.close();
@@ -212,17 +219,44 @@ export class NewItemDispatcher {
 }
 
 // helpers
-function openItemsFromQtcliResponseData(data: unknown) {
-  const type = _.get(data, 'type', '') as string;
-  const files = _.get(data, 'files', []) as string[];
-  const filesDir = _.get(data, 'filesDir', '') as string;
-  if (type.length === 0 || filesDir.length === 0) {
+function trySaveProjectDir(workingDir: string, save: boolean) {
+  if (save && workingDir) {
+    void setDefaultProjectDir(workingDir);
+  }
+}
+
+function openFiles(baseDir: string, files: string[]) {
+  files.forEach((f: string) => {
+    void execOpen(path.join(baseDir, f));
+  });
+}
+
+async function openFolder(dir: string, useNewWindow: boolean) {
+  if (useNewWindow) {
+    void execOpenFolder(dir);
     return;
   }
 
-  if (type === 'project') {
-    void openUri(vscode.Uri.file(path.normalize(filesDir)));
-  } else {
-    void openFilesUnder(path.normalize(filesDir), files);
+  vscode.workspace.updateWorkspaceFolders(
+    vscode.workspace.workspaceFolders?.length ?? 0,
+    null,
+    { uri: vscode.Uri.file(dir) }
+  );
+
+  const primary = await findPrimaryFileUnder(dir);
+  if (primary) {
+    void execOpen(primary);
   }
+}
+
+async function execOpen(fsPath: string) {
+  await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(fsPath));
+}
+
+async function execOpenFolder(fsPath: string) {
+  await vscode.commands.executeCommand(
+    'vscode.openFolder',
+    vscode.Uri.file(fsPath),
+    true
+  );
 }

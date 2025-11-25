@@ -21,6 +21,7 @@ export const input = $state({
   name: 'untitled',
   workingDir: '',
   saveProjectDir: false,
+  openInNewWindow: false,
 
   issues: {
     name: new InputIssue(),

@@ -44,42 +44,7 @@ export function fallbackWorkingDir(): string {
   return docs;
 }
 
-export async function openUri(uri: vscode.Uri) {
-  try {
-    const stats = await fs.stat(uri.fsPath);
-
-    if (stats.isFile()) {
-      void vscode.commands.executeCommand('vscode.open', uri);
-      return;
-    }
-
-    if (stats.isDirectory()) {
-      vscode.workspace.updateWorkspaceFolders(
-        vscode.workspace.workspaceFolders?.length ?? 0,
-        null,
-        { uri }
-      );
-
-      const fileToOpen = await findPrimaryFileUnder(uri.fsPath);
-      if (fileToOpen) {
-        void vscode.commands.executeCommand(
-          'vscode.open',
-          vscode.Uri.file(fileToOpen)
-        );
-      }
-    }
-  } catch (e) {
-    logger.warn('cannot open:', uri.fsPath);
-  }
-}
-
-export async function openFilesUnder(baseDir: string, names: string[]) {
-  for (const name of names) {
-    await openUri(vscode.Uri.file(path.join(baseDir, name)));
-  }
-}
-
-async function findPrimaryFileUnder(dir: string) {
+export async function findPrimaryFileUnder(dir: string) {
   try {
     const patterns = [
       /main\.qml$/i,
