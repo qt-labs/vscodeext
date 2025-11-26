@@ -30,7 +30,7 @@
   "pricing": "Free",
   "activationEvents": [
     "workspaceContains:*.qml",
-    "workspaceContains:*.qmldir"
+    "workspaceContains:qmldir"
   ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
