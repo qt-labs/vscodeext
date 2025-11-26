@@ -31,7 +31,7 @@
   "qna": "marketplace",
   "pricing": "Free",
   "activationEvents": [
-    "workspaceContains:*.qrc"
+    "workspaceContains:**/*.qrc"
   ],
   "main": "./out/extension.js",
   "contributes": {

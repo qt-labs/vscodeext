@@ -56,10 +56,7 @@
     "onDebugResolve:cmake",
     "onDebugInitialConfigurations",
     "onDebugDynamicConfigurations:cmake",
-    "workspaceContains:CMakeLists.txt",
-    "workspaceContains:*/CMakeLists.txt",
-    "workspaceContains:*/*/CMakeLists.txt",
-    "workspaceContains:*/*/*/CMakeLists.txt",
+    "workspaceContains:**/CMakeLists.txt",
     "workspaceContains:.vscode/cmake-kits.json"
   ],
   "main": "./out/extension.js",

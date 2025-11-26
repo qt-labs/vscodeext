@@ -27,7 +27,7 @@
   "qna": "marketplace",
   "pricing": "Free",
   "activationEvents": [
-    "workspaceContains:*.ui"
+    "workspaceContains:**/*.ui"
   ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
