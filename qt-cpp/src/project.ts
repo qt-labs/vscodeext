@@ -378,7 +378,7 @@ export class CppProject implements Project {
       if (isEmpty(modules)) {
         continue;
       }
-      if (IsMacOS) {
+      if (IsMacOS && this._type === CppProjectType.Kit) {
         const majorVersion = await getMajorQtVersion();
         if (majorVersion) {
           modules = modules.map((module) => {
