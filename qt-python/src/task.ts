@@ -1,7 +1,6 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import _ from 'lodash';
 import * as vscode from 'vscode';
 
 import { createLogger } from 'qt-lib';
@@ -12,6 +11,11 @@ import { PySideCommandBuilder } from './builder';
 import * as consts from './constants';
 
 const logger = createLogger('task');
+
+interface PySideDefinition extends vscode.TaskDefinition {
+  type: string;
+  action: string;
+}
 
 export class PySideTaskProvider implements vscode.TaskProvider {
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
@@ -45,17 +49,29 @@ export class PySideTaskProvider implements vscode.TaskProvider {
   resolveTask(
     task: vscode.Task
   ): vscode.ProviderResult<vscode.Task | undefined> {
-    const action = _.get(task.definition, 'action', '') as string;
-    const taskId = findTaskIdFromAction(action);
-    const folder = findFolderForTask(task);
-    const project = folder ? projectManager.getProject(folder) : undefined;
+    const exec = task.execution;
+    if (!exec) {
+      const def = task.definition as PySideDefinition;
+      const folder = task.scope as vscode.WorkspaceFolder;
+      const taskId = findTaskIdFromAction(def.action);
+      const taskName = taskId && findTaskName(taskId);
+      if (!taskId || !taskName) {
+        return undefined;
+      }
 
-    if (!taskId || !folder || !project) {
-      logger.info(`Cannot resolve task: name = ${task.name}, id = ${taskId}`);
-      return undefined;
+      const shellExec = createShellExecution(folder, taskId);
+      if (shellExec) {
+        return new vscode.Task(
+          def,
+          folder,
+          taskName,
+          consts.TASK_SOURCE,
+          shellExec
+        );
+      }
     }
 
-    return createTask(project, taskId);
+    return undefined;
   }
 }
 
@@ -65,11 +81,46 @@ export function findTaskFullName(id: TaskId): string {
 
 // helpers
 function createTask(project: PySideProject, taskId: TaskId) {
-  const env = project.env;
   const folder = project.folder;
   const action = findProjectToolAction(taskId);
   const taskName = findTaskName(taskId);
-  if (!action || !taskName) {
+  if (action === undefined || !taskName) {
+    logger.info(`Cannot create: task = ${taskName}, folder = ${folder.name}`);
+    return undefined;
+  }
+
+  const def: PySideDefinition = {
+    type: consts.TASK_TYPE,
+    action // contributes > taskDefinitions
+  };
+
+  const exec = createShellExecution(folder, taskId);
+  if (!exec) {
+    return undefined;
+  }
+
+  const task = new vscode.Task(def, folder, taskName, consts.TASK_SOURCE);
+  task.detail = `${consts.PYSIDE_PROJECT_TOOL} ${action}`;
+  task.execution = exec;
+  task.presentationOptions = { clear: true };
+
+  const group = findTaskGroup(taskId);
+  if (group) {
+    task.group = group;
+  }
+
+  return task;
+}
+
+function createShellExecution(
+  folder: vscode.WorkspaceFolder,
+  taskId: TaskId
+): vscode.ShellExecution | undefined {
+  const project = projectManager.getProject(folder);
+  const env = project?.env;
+  const action = findProjectToolAction(taskId);
+  const taskName = findTaskName(taskId);
+  if (!action || !taskName || !env) {
     logger.info(`Cannot create: task = ${taskName}, folder = ${folder.name}`);
     return undefined;
   }
@@ -85,22 +136,7 @@ function createTask(project: PySideProject, taskId: TaskId) {
     shellArgs: cmd.shellArgs
   };
 
-  const def = {
-    type: consts.TASK_TYPE,
-    action // contributes > taskDefinitions
-  };
-
-  const task = new vscode.Task(def, folder, taskName, consts.TASK_SOURCE);
-  task.detail = `${consts.PYSIDE_PROJECT_TOOL} ${action}`;
-  task.execution = new vscode.ShellExecution(cmd.commandLine, shellOptions);
-  task.presentationOptions = { clear: true };
-
-  const group = findTaskGroup(taskId);
-  if (group) {
-    task.group = group;
-  }
-
-  return task;
+  return new vscode.ShellExecution(cmd.commandLine, shellOptions);
 }
 
 function createProjectToolCommand(taskId: TaskId) {
@@ -129,22 +165,6 @@ function findTaskIdFromAction(action: string): TaskId | undefined {
   }
 
   return undefined;
-}
-
-function findFolderForTask(task: vscode.Task) {
-  if (task.scope && typeof task.scope !== 'number') {
-    return task.scope;
-  }
-
-  const active = vscode.window.activeTextEditor?.document.uri;
-  if (active) {
-    const folder = vscode.workspace.getWorkspaceFolder(active);
-    if (folder) {
-      return folder;
-    }
-  }
-
-  return vscode.workspace.workspaceFolders?.[0];
 }
 
 const allTasksInfo = [
