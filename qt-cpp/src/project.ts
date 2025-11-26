@@ -550,13 +550,6 @@ export class CppProject implements Project {
     if (installationPath) {
       return installationPath;
     }
-    // const qtPathsExe = getQtPathsExe(kit);
-    // if (qtPathsExe) {
-    //   const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
-    //   if (qtInfo) {
-    //     return qtInfo.get('QT_INSTALL_PREFIX');
-    //   }
-    // }
     return undefined;
   }
   async getInstallationPath() {
