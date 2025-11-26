@@ -1,16 +1,16 @@
 [
   {
-    "name": "qByteArray",
+    "name": "coreTypes.qByteArray",
     "type": "QByteArray",
     "value": "\"Hello World!\""
   },
   {
-    "name": "qRect",
+    "name": "coreTypes.qRect",
     "type": "QRect",
     "value": "{ x = 5, y = 5, width = 42, height = 42 }"
   },
   {
-    "name": "qString",
+    "name": "coreTypes.qString",
     "type": "QString",
     "value": "\"Hello World!\""
   }

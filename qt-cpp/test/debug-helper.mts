@@ -380,3 +380,65 @@ export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
 
   return normalized;
 }
+
+export interface DebugVariable {
+  name: string;
+  type?: string;
+  value?: string;
+}
+
+/**
+ * Returns a flat list of Locals, including children, using dotted names:
+ *   core           -> "core"
+ *   core.qRect     -> "core.qRect"
+ *   core.qByteArray -> "core.qByteArray"
+ *
+ * It builds on top of getLocals(session, frameId) and uses the DAP
+ * "variables" request to walk into children, up to maxDepth.
+ */
+export async function getFlattenedLocals(
+  session: vscode.DebugSession | undefined,
+  frameId: number,
+  maxDepth = 3
+): Promise<DebugVariable[]> {
+  if (!session) {
+    throw new Error('[natvis.test] No active debug session');
+  }
+
+  // Reuse existing helper that returns top-level Locals
+  const roots = await getLocals(session, frameId);
+
+  const acc: DebugVariable[] = [];
+
+  async function walkVar(v: any, prefix: string, depth: number): Promise<void> {
+    const fullName = prefix ? `${prefix}.${v.name}` : v.name;
+
+    acc.push({
+      name: fullName,
+      type: v.type,
+      value: typeof v.value === 'string' ? v.value : String(v.value ?? '')
+    });
+
+    if (
+      !v.variablesReference ||
+      v.variablesReference <= 0 ||
+      depth >= maxDepth
+    ) {
+      return;
+    }
+
+    const varsResponse = (await session!.customRequest('variables', {
+      variablesReference: v.variablesReference
+    })) as { variables: any[] };
+
+    for (const child of varsResponse.variables) {
+      await walkVar(child, fullName, depth + 1);
+    }
+  }
+
+  for (const root of roots) {
+    await walkVar(root, '', 0);
+  }
+
+  return acc;
+}
