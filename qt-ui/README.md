@@ -7,7 +7,6 @@ using `.ui` files.
 ## Features
 
 - Design Qt widgets-based UIs with Qt Widgets Designer
-- Read Qt documentation
 
 ## Documentation
 
