@@ -395,6 +395,10 @@ export interface DebugVariable {
  *
  * It builds on top of getLocals(session, frameId) and uses the DAP
  * "variables" request to walk into children, up to maxDepth.
+ *
+ * NOTE: we currently **skip** debugger-synthetic "[Raw View]" nodes (and their
+ * children) so that the snapshot stays OS/backend-agnostic. If we ever want
+ * to test Raw View explicitly, this is the place to change.
  */
 export async function getFlattenedLocals(
   session: vscode.DebugSession | undefined,
@@ -411,6 +415,10 @@ export async function getFlattenedLocals(
   const acc: DebugVariable[] = [];
 
   async function walkVar(v: any, prefix: string, depth: number): Promise<void> {
+    // Skip debugger "[Raw View]" synthetic nodes (Windows-only detail)
+    if (v.name === '[Raw View]') {
+      return;
+    }
     const fullName = prefix ? `${prefix}.${v.name}` : v.name;
 
     acc.push({
