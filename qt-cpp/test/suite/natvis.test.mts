@@ -416,7 +416,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
   this.timeout(150_000);
 
-  it('launches via Qt debug snippet and shows Locals formatted by our NatVis rules (lightweight sanity test test)', async function () {
+  it('launches via Qt debug snippet and shows Locals formatted by our NatVis rules (lightweight sanity test)', async function () {
     const {
       wsFolder,
       projectDir,
