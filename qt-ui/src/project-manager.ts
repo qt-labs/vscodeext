@@ -60,12 +60,6 @@ export class UIProjectManager extends ProjectManager<UIProject> {
     }
 
     for (const key of msg.config.keys()) {
-      if (key === CoreKey.INSTALLATION_PATH) {
-        const value = coreAPI?.getValue<string>(folder, key);
-        await project.setSelectedKitPath(value);
-        continue;
-      }
-
       if (key === CoreKey.SELECTED_QT_PATHS) {
         const value = coreAPI?.getValue<string>(folder, key);
         await project.setSelectedQtPaths(value);

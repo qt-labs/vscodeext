@@ -113,17 +113,6 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     }
     let updateQmlls = false;
     for (const key of message.config.keys()) {
-      if (key === CoreKey.INSTALLATION_PATH) {
-        const selectedKitPath = coreAPI?.getValue<string>(
-          message.workspaceFolder,
-          CoreKey.INSTALLATION_PATH
-        );
-        if (selectedKitPath !== project.kitPath) {
-          updateQmlls = true;
-          project.kitPath = selectedKitPath;
-        }
-        continue;
-      }
       if (key === CoreKey.SELECTED_QT_PATHS) {
         const selectedQtPaths = coreAPI?.getValue<string>(
           message.workspaceFolder,

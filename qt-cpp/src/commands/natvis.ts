@@ -55,9 +55,7 @@ export function registerNatvisCommand() {
         return '';
       }
       if (project.type === CppProjectType.Presets) {
-        const qtpaths = await project.getQtPaths({
-          includeInstallationPathSearch: true
-        });
+        const qtpaths = await project.getQtPaths();
         if (!qtpaths) {
           const error = 'Cannot find Qt Paths in the project presets';
           throw new Error(error);

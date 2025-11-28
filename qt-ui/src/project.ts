@@ -17,7 +17,6 @@ import { coreAPI } from '@/extension';
 import { DesignerClient } from '@/designer-client';
 import { DesignerServer } from '@/designer-server';
 import {
-  locateDesignerFromKit,
   locateDesignerFromQtPaths,
   locateDesignerFromVenvBinPaths
 } from '@/util';
@@ -44,7 +43,6 @@ export async function createUIProject(
 export class UIProject implements Project {
   private _customExePath: string | undefined;
   private _workspaceFeatures: QtWorkspaceFeatures | undefined;
-  private _selectedKitPath: string | undefined;
   private _selectedQtPaths: string | undefined;
   private _pythonEnvData: PySideEnvData | undefined;
 
@@ -90,10 +88,6 @@ export class UIProject implements Project {
       this._folder,
       CoreKey.WORKSPACE_FEATURES
     );
-    this._selectedKitPath = read<string>(
-      this._folder,
-      CoreKey.INSTALLATION_PATH
-    );
     this._selectedQtPaths = read<string>(
       this._folder,
       CoreKey.SELECTED_QT_PATHS
@@ -119,13 +113,6 @@ export class UIProject implements Project {
     if (this._workspaceFeatures !== features) {
       this._workspaceFeatures = features;
       await this._updateClient('workspaceFeatureChanged');
-    }
-  }
-
-  public async setSelectedKitPath(selectedKitPath: string | undefined) {
-    if (this._selectedKitPath !== selectedKitPath) {
-      this._selectedKitPath = selectedKitPath;
-      await this._updateClient('selectedKitPathChanged');
     }
   }
 
@@ -164,8 +151,6 @@ export class UIProject implements Project {
     // clean up
     if (reason === 'selectedKitPathChanged') {
       this._selectedQtPaths = undefined;
-    } else if (reason === 'selectedQtPathsChanged') {
-      this._selectedKitPath = undefined;
     }
   }
 
@@ -196,10 +181,6 @@ export class UIProject implements Project {
     }
 
     if (this._workspaceFeatures?.projectTypes.cmake) {
-      if (this._selectedKitPath) {
-        return locateDesignerFromKit(this._selectedKitPath);
-      }
-
       if (this._selectedQtPaths) {
         return locateDesignerFromQtPaths(this._selectedQtPaths);
       }
