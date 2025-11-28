@@ -614,15 +614,6 @@ export class CppProject implements Project {
         return qtpaths;
       }
     }
-    // Check VCPKG_ROOT in environment variables and cache variables
-    // const vcpkgRoot =
-    //   presets.environment?.VCPKG_ROOT ?? presets.cacheVariables?.VCPKG_ROOT;
-    // if (isValidAndString(vcpkgRoot)) {
-    //   const qtPaths = searchForQtPathsInVCPKG(vcpkgRoot);
-    //   if (qtPaths) {
-    //     return qtPaths;
-    //   }
-    // }
     const vcpkgToolchain = await this.getToolchainFile();
     if (
       isValidAndString(vcpkgToolchain) &&
