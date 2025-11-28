@@ -10,7 +10,6 @@ export const CoreKey = {
   QT_INSTALLATION_ROOT: 'qtInstallationRoot',
   PYSIDE_ENV_DATA: 'pysideEnvData',
   WORKSPACE_FEATURES: 'workspaceFeatures',
-  INSTALLATION_PATH: 'installationPath',
   SELECTED_QT_PATHS: 'selectedQtPaths',
   BUILD_DIR: 'buildDir',
   GLOBAL_WORKSPACE: 'global'

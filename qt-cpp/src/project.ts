@@ -170,7 +170,6 @@ export class CppProject implements Project {
     }
     const message = new QtWorkspaceConfigMessage(this.folder);
     const configEntries: [string, string | undefined][] = [
-      [CoreKey.INSTALLATION_PATH, await this.getInstallationPathFromPreset()],
       [CoreKey.SELECTED_QT_PATHS, await this.getQtPathsExeFromPreset()],
       [CoreKey.BUILD_DIR, await this._cmakeProject.getBuildDirectory()]
     ];
@@ -300,10 +299,7 @@ export class CppProject implements Project {
     if (vscode.env.isTelemetryEnabled && kit) {
       analyzeKit(kit);
     }
-    const installationPath = await this.getInstallationPathFromKit();
     const message = new QtWorkspaceConfigMessage(this.folder);
-    coreAPI?.setValue(this.folder, CoreKey.INSTALLATION_PATH, installationPath);
-    message.config.add(CoreKey.INSTALLATION_PATH);
 
     const selectedQtPaths = await this.getQtPaths();
     coreAPI?.setValue(this.folder, CoreKey.SELECTED_QT_PATHS, selectedQtPaths);
@@ -585,9 +581,7 @@ export class CppProject implements Project {
     }
     return undefined;
   }
-  async getQtPathsExeFromPreset({
-    includeInstallationPathSearch = false
-  } = {}) {
+  async getQtPathsExeFromPreset() {
     const presets = this._cmakeProject?.configurePreset;
     if (!presets) {
       return undefined;
@@ -613,13 +607,11 @@ export class CppProject implements Project {
       }
     }
     // Try to find Qt paths from cacheVariables and environment variables
-    if (includeInstallationPathSearch) {
-      const installationPath = await this.getInstallationPathFromPreset();
-      if (installationPath) {
-        const qtpaths = findQtPathsInInstallationPath(installationPath);
-        if (qtpaths) {
-          return qtpaths;
-        }
+    const installationPath = await this.getInstallationPathFromPreset();
+    if (installationPath) {
+      const qtpaths = findQtPathsInInstallationPath(installationPath);
+      if (qtpaths) {
+        return qtpaths;
       }
     }
     // Check VCPKG_ROOT in environment variables and cache variables
@@ -652,16 +644,21 @@ export class CppProject implements Project {
     }
     return undefined;
   }
-  async getQtPaths({ includeInstallationPathSearch = false } = {}) {
+  async getQtPaths() {
     if (this._type === CppProjectType.Kit) {
       const qtPathsExe = await this.getQtPathsExeFromKit();
       if (qtPathsExe) {
         return qtPathsExe;
       }
+      const installationPath = await this.getInstallationPathFromKit();
+      if (installationPath) {
+        const qtpaths = findQtPathsInInstallationPath(installationPath);
+        if (qtpaths) {
+          return qtpaths;
+        }
+      }
     } else if (this._type === CppProjectType.Presets) {
-      const qtPathsExe = await this.getQtPathsExeFromPreset({
-        includeInstallationPathSearch
-      });
+      const qtPathsExe = await this.getQtPathsExeFromPreset();
       if (qtPathsExe) {
         return qtPathsExe;
       }
@@ -686,7 +683,6 @@ export class CppProject implements Project {
     const message = new QtWorkspaceConfigMessage(this.folder);
     const configEntries: [string, string | undefined | QtWorkspaceFeatures][] =
       [
-        [CoreKey.INSTALLATION_PATH, await this.getInstallationPath()],
         [CoreKey.SELECTED_QT_PATHS, await this.getQtPaths()],
         [CoreKey.BUILD_DIR, await this._cmakeProject.getBuildDirectory()],
         [CoreKey.WORKSPACE_FEATURES, features]

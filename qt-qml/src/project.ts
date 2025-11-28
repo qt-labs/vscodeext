@@ -2,15 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import path from 'path';
 
-import {
-  CoreKey,
-  Project,
-  ProjectManager,
-  createLogger,
-  findQtPathsInInstallationPath
-} from 'qt-lib';
+import { CoreKey, Project, ProjectManager, createLogger } from 'qt-lib';
 import { Qmlls } from '@/qmlls';
 import { coreAPI } from '@/extension';
 
@@ -90,12 +83,6 @@ export class QMLProject implements Project {
   async startQmlls() {
     return this.qmlls.start();
   }
-  get kitPath() {
-    return this._kitPath;
-  }
-  set kitPath(kitPath: string | undefined) {
-    this._kitPath = kitPath;
-  }
   get qtpathsExe() {
     return this._qtpathsExe;
   }
@@ -104,39 +91,17 @@ export class QMLProject implements Project {
   }
 
   getConfigValues() {
-    this.kitPath = coreAPI?.getValue<string>(
-      this.folder,
-      CoreKey.INSTALLATION_PATH
-    );
     this.qtpathsExe = coreAPI?.getValue<string>(
       this.folder,
       CoreKey.SELECTED_QT_PATHS
     );
     this.buildDir = coreAPI?.getValue<string>(this.folder, CoreKey.BUILD_DIR);
   }
-  getDocsPathFromKitDir(kitDir: string) {
-    const qtpaths = findQtPathsInInstallationPath(kitDir);
-    if (!qtpaths) {
-      logger.error(`Cannot find qtpaths in: ${this.kitPath}`);
-      return undefined;
-    }
-    const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
-    if (!qtInfo) {
-      logger.error('Cannot find qtInfo');
-      return undefined;
-    }
-    return qtInfo.get('QT_INSTALL_DOCS');
-  }
 
   updateQmllsParams() {
     this.qmlls.clearImportPaths();
     this.qmlls.docsPath = undefined;
-    if (this.kitPath) {
-      this.qmlls.addImportPath(path.join(this.kitPath, 'qml'));
-      const docsPath = this.getDocsPathFromKitDir(this.kitPath);
-      logger.info('Setting docs path:', docsPath ?? 'undefined');
-      this.qmlls.docsPath = docsPath;
-    } else if (this.qtpathsExe) {
+    if (this.qtpathsExe) {
       const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe);
       if (!info) {
         throw new Error('Cannot find Qt info');

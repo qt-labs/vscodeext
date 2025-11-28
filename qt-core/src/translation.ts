@@ -9,7 +9,6 @@ import {
   CoreKey,
   createLogger,
   exists,
-  findQtPathsInInstallationPath,
   IsMacOS,
   IsWindows,
   OSExeSuffix,
@@ -50,10 +49,6 @@ export async function openInLinguistCommand() {
     project.folder,
     CoreKey.PYSIDE_ENV_DATA
   );
-  const selectedKitPath = coreAPI?.getValue<string>(
-    project.folder,
-    CoreKey.INSTALLATION_PATH
-  );
   const selectedQtPaths = coreAPI?.getValue<string>(
     project.folder,
     CoreKey.SELECTED_QT_PATHS
@@ -69,10 +64,8 @@ export async function openInLinguistCommand() {
   }
 
   if (workspaceFeatures?.projectTypes.cmake) {
-    if (selectedKitPath) {
-      linguistPath = await locateLinguist(selectedKitPath);
-    } else if (selectedQtPaths) {
-      linguistPath = await locateLinguistFromQtPaths(selectedQtPaths);
+    if (selectedQtPaths) {
+      linguistPath = await locateLinguist(selectedQtPaths);
     }
   }
 
@@ -129,12 +122,7 @@ async function locateLinguistFromQtPaths(selectedQtPaths: string) {
   return searchForExeInQtInfo(qtInfo, getLinguistExePath);
 }
 
-async function locateLinguist(selectedKitPath: string) {
-  let linguistExePath = getLinguistExePath(path.join(selectedKitPath, 'bin'));
-  if (await exists(linguistExePath)) {
-    return linguistExePath;
-  }
-  const qtPaths = findQtPathsInInstallationPath(selectedKitPath);
+async function locateLinguist(qtPaths: string) {
   if (qtPaths) {
     const linguistPath = await locateLinguistFromQtPaths(qtPaths);
     if (linguistPath) {
@@ -143,7 +131,7 @@ async function locateLinguist(selectedKitPath: string) {
   }
 
   if (!IsWindows) {
-    linguistExePath = '/usr/bin/linguist';
+    const linguistExePath = '/usr/bin/linguist';
     if (await exists(linguistExePath)) {
       return linguistExePath;
     }
