@@ -35,6 +35,11 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc": "default"
+      }
+    },
     "commands": [
       {
         "command": "qt-core.documentationHomepage",
