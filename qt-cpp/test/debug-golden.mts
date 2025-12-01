@@ -28,100 +28,90 @@ export type SnapVar = {
 };
 
 /**
- * Normalize debugger-specific value representations (cross-platform).
+ * Normalizes floating-point artifacts produced by GDB/LLDB/cppvsdbg.
+ * Converts things like:
+ *   5.0999999999999996 → 5.1
+ *   4.2000000000000002 → 4.2
+ *   3.1415926535897931 → 3.141593
+ */
+function normalizeFloatsInStruct(raw: string): string {
+  // Match things like 5.1, 5.0999999999999996, 4.2000000000000002, -3.14, etc.
+  return raw.replace(/-?\d+\.\d+(?:\d+)?/g, (match) => {
+    const n = Number(match);
+    if (!Number.isFinite(n)) {
+      return match;
+    }
+
+    // Round to 6 decimal places (tweak if needed)
+    let rounded = n.toFixed(6);
+
+    // Strip trailing zeros and optional trailing dot
+    rounded = rounded.replace(/(\.\d*?[1-9])0+$/u, '$1'); // 1.230000 -> 1.23
+    rounded = rounded.replace(/\.0+$/u, ''); // 5.000000 -> 5
+
+    return rounded;
+  });
+}
+/**
+ * Normalize debugger-produced string values into a single canonical form.
  *
- * The same Qt NatVis description produces different string formats depending on
- * the debugger backend:
+ * Debug adapters (GDB, LLDB, cppvsdbg) print values differently:
+ *   - QString / QByteArray may appear as:           "Hello World!", u"Hello World!""
+ *   - Or preceded by pointer prefixes:              0x123ABC "Hello World!"
+ *   - Struct/geometry types may include float noise: 5.0999999999999996
  *
- *   • Windows (cppvsdbg):      0x123ABC u"Hello World!"
- *   • macOS LLDB (cppdbg):     "Hello World!"
- *   • Linux GDB (cppdbg):      0x123ABC "Hello World!"
+ * This function removes all debugger-specific decorations so golden files
+ * remain stable across platforms:
  *
- * These differences are NOT due to NatVis itself but due to differences in:
- *   – MI/Lldb/VSDbg value formatting
- *   – pointer prefix printing
- *   – encoding prefixes (u"…")
- *   – QByteArray quoting rules
+ *   1) Strips leading pointer prefixes (0x1234..., 0xADDR) even when quoted.
+ *   2) Normalizes floating-point artifacts globally (QRectF, QSizeF, etc.).
+ *   3) Extracts the final quoted payload for quoted types (QString/QByteArray),
+ *      returning the inner text only (no surrounding quotes).
+ *   4) Leaves unquoted structs unchanged:
+ *          "{ x = 5, y = 6, width = 41, height = 42 }"
+ *   5) Does NOT wrap values in quotes — golden files store plain values.
  *
- * Our golden files must remain debugger-agnostic, so we collapse these backend
- * differences into a single canonical representation:
- *
- *   • All pointer prefixes normalized to   "0xADDR "
- *   • Leading pointer prefixes stripped for QString/QByteArray
- *   • u"…" -> "…"   (drop encoding marker)
- *   • QByteArray values normalized to exactly:  "Hello World!"
- *   • QString values normalized to exactly:     "Hello World!"
- *
- * Only *actual* NatVis-derived content is preserved. Backend noise is removed.
+ * The goal is *pure canonicalization*, not type-aware formatting:
+ * normalization is applied uniformly to all values, regardless of their type.
  *
  * IMPORTANT:
- *   – This normalization occurs inside `toSnapshot()`, so golden files and
- *     comparisons are always stable across Windows, macOS, and Linux.
- *   – This function must remain narrow: normalize debugger noise only.
- *     Do NOT normalize NatVis logic (that is what the golden verifies).
+ *   – This must stay narrow: only collapse debugger noise, never reinterpret
+ *     NatVis semantics. NatVis logic itself is verified by the golden.
+ *   – Golden files should remain readable and stable; this function enforces that.
  */
-/**
- * Convert raw DAP variables into a sorted, minimal, stable snapshot:
- * - Sorted deterministically by name then type
- * - Values normalized via stripUnstable
- * - Optional recursion into children if the array is already populated
- */
-/**
- * Normalize debugger values for cross-platform comparison.
- *
- * For QString / QByteArray we:
- *  - Strip leading pointer/address (0x..., 0xADDR, quoted or not)
- *  - Extract the last quoted payload -> "Hello World!"
- *  - Enforce clean quotes
- *
- * For all other types we only normalize the leading pointer prefix.
- */
-export function normalizeValue(type: string | undefined, raw: string): string {
+export function normalizeValue(raw: string): string {
   let value = raw.trim();
 
-  const isQtStringLike = type === 'QString' || type === 'QByteArray';
-
-  if (!isQtStringLike) {
-    // Non-Qt types: just normalize pointer prefix, let stripUnstable do the rest.
-    return value
-      .replace(/^0x[0-9A-Fa-f]+(\s+)?/, '0xADDR ')
-      .replace(/^0xADDR\s+/, '0xADDR ');
-  }
-
-  // ---------- QString / QByteArray normalization ----------
-
-  // 1) If the whole thing is quoted, drop the leading quote
-  //    so we can match pointer prefixes like 0x... or 0xADDR.
-  if (value.startsWith('"')) {
-    value = value.slice(1);
-  }
-
-  // 2) Strip pointer-like prefixes (quoted or not):
-  //    0x1234..., 0xADDR, with optional spaces.
-  value = value.replace(/^0x[0-9A-Fa-f]+(\s+)?/, '');
-  value = value.replace(/^0xADDR(\s+)?/, '');
+  // 1) Strip leading pointer-like prefixes, with optional opening quote:
+  //    "0x1234 "Hello World!""  or  0x1234 "Hello World!"
+  value = value.replace(/^"?(0x[0-9A-Fa-f]+|0xADDR)\s*/u, '');
   value = value.trim();
 
-  // Now typical forms look like:
-  //   "Hello World!""          (lldb double-quote tail)
-  //   u"Hello World!""         (lldb, with u-prefix)
-  //   "Hello World!"           (gdb/msvc)
-  //   Hello World!
+  // 2) Normalize floating-point artifacts everywhere (QRectF, QSizeF, etc.)
+  value = normalizeFloatsInStruct(value);
 
-  // 3) Extract the last quoted string, ignoring optional leading 'u'.
-  const quoted = value.match(/u?"([^"]*)"\s*"?$/);
-  if (quoted) {
-    return `"${quoted[1]}"`;
+  // 3) If there is a final quoted payload (optional leading 'u'), extract it:
+  //
+  //    u"Hello World!""   -> Hello World!
+  //    "Hello World!""    -> Hello World!
+  //    "Hello World!"     -> Hello World!
+  //
+  const quoted = value.match(/u?"([^"]*)"\s*"?$/u);
+  if (quoted && quoted[1] !== undefined) {
+    return quoted[1];
   }
 
-  // 4) Fallback: if no quotes detected, just wrap what remains.
-  if (!value.startsWith('"')) {
-    value = `"${value}"`;
+  // 4) Fallbacks for simpler fully-quoted forms, just in case:
+  if (value.startsWith('"') && value.endsWith('""') && value.length >= 3) {
+    // "Hello World!"" -> Hello World!
+    return value.slice(1, -2);
   }
-  // Collapse Windows/MSVC trailing double quote:
-  //   "Hello World!""  -> "Hello World!"
-  value = value.replace(/""$/, '"');
+  if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
+    // "Hello World!" -> Hello World!
+    return value.slice(1, -1);
+  }
 
+  // 5) No quotes to strip: structs like { x = 5, ... } just pass through.
   return value;
 }
 
@@ -139,9 +129,7 @@ export function toSnapshot(vars: any[]): SnapVar[] {
         : (v.value?.toString?.() ?? undefined);
     // Step 2: normalize per-type (Qt / debugger differences)
     const normalized =
-      rawValue !== undefined
-        ? normalizeValue(v.type as string | undefined, rawValue)
-        : undefined;
+      rawValue !== undefined ? normalizeValue(rawValue) : undefined;
 
     const stable =
       typeof normalized === 'string' ? stripUnstable(normalized) : undefined;
