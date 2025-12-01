@@ -15,6 +15,7 @@ import {
 } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
 import { startQtcliServer } from '@/qtcli/runner';
+import { GlobalStateManager } from '@/state';
 
 // definitions for webview-panel
 const PanelColumn = vscode.ViewColumn.One;
@@ -56,6 +57,7 @@ export class NewItemPanel {
     this._panel = panel;
     this._dispatcher.setPanel(this);
     this._dispatcher.setComm(this._comm);
+    this._dispatcher.setContext(context);
 
     this._disposables = [
       panel.onDidDispose(this.dispose.bind(this)),
@@ -95,9 +97,13 @@ export class NewItemPanel {
 
     void startQtcliServer(context.extensionUri);
 
+    const globalState = new GlobalStateManager(context);
+    const savedOpenIn = globalState.getNewProjectOpenIn();
+
     NewItemPanel.instance._dispatcher.setUiConfigs({
       newFileBaseDir: getNewFileBaseDir(),
-      newProjectBaseDir: getNewProjectBaseDir()
+      newProjectBaseDir: getNewProjectBaseDir(),
+      openIn: savedOpenIn
     });
     NewItemPanel.instance._panel.reveal(PanelColumn);
   }
