@@ -579,11 +579,11 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
       expect(
         String(vRect.value),
         '[snippet-test] qRect.y did not match expected NatVis output'
-      ).to.match(/y\s*=\s*5/i);
+      ).to.match(/y\s*=\s*6/i);
       expect(
         String(vRect.value),
         '[snippet-test] qRect.width did not match expected NatVis output'
-      ).to.match(/width\s*=\s*42/i);
+      ).to.match(/width\s*=\s*41/i);
       expect(
         String(vStr.value),
         '[snippet-test] qString did not contain expected text'

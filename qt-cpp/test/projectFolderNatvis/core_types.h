@@ -2,10 +2,7 @@
 // Minimal QtCore sample types for NatVis coverage
 #pragma once
 
-//#include <QtCore> // brings in all necessary QtCore headers
-#include <QtCore/QCoreApplication>
-#include <QtCore/QString>
-#include <QtCore/QRect>
+#include <QtCore> // brings in all necessary QtCore headers
 
 // Holds one instance of each QtCore-based type we want NatVis to handle
 struct CoreTypes
@@ -41,13 +38,13 @@ struct CoreTypes
     // QJsonDocument qJsonDocument;
 
     // geometry (QtCore types)
-    // QLine     qLine;
-    // QPoint    qPoint;
-    // QPointF   qPointF;
+    QLine     qLine;
+    QPoint    qPoint;
+    QPointF   qPointF;
     QRect     qRect;
-    // QRectF    qRectF;
-    // QSize     qSize;
-    // QSizeF    qSizeF;
+    QRectF    qRectF;
+    QSize     qSize;
+    QSizeF    qSizeF;
 
     // URL / UUID
     // QUrl      qUrl;
@@ -77,13 +74,13 @@ inline CoreTypes::CoreTypes()
     // , qFile(QCoreApplication::applicationFilePath())
     // , qFileInfo(QCoreApplication::applicationFilePath())
     // , qFlags(SelectionFlag::SelectCurrent)
-    // , qLine(0, 0, 42, 42)
-    // , qPoint(24, 48)
-    // , qPointF(24.5, 48.5)
-    , qRect(5, 5, 42, 42)
-    // , qRectF(5.5, 5.5, 4.2, 4.2)
-    // , qSize(42, 42)
-    // , qSizeF(4.2, 4.2)
+    , qLine(0, 1, 42, 43)
+    , qPoint(24, 48)
+    , qPointF(24.5, 48.5)
+    , qRect(5, 6, 41, 42)
+    , qRectF(5.1, 5.5, 4.1, 4.2)
+    , qSize(42, 43)
+    , qSizeF(4.1, 4.2)
     // , qUrl(QStringLiteral("https://github.com/narnaud/natvis4qt"))
     // , qUuid(QUuid::createUuid())
 {
