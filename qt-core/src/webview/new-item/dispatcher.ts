@@ -12,6 +12,7 @@ import { openFilesUnder, openUri } from '@/qtcli/common';
 import { getNewProjectBaseDir, setDefaultProjectDir } from '@/qtcli/commands';
 import { WebviewChannel } from '@/webview/channel';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
+import { GlobalStateManager } from '@/state';
 import type { NewItemPanel } from './panel';
 
 const logger = createLogger('new-item-handler');
@@ -23,6 +24,7 @@ export class NewItemDispatcher {
   private _comm: WebviewChannel | undefined;
   private _panel: NewItemPanel | undefined = undefined;
   private _uiConfigs: unknown = {};
+  private _context: vscode.ExtensionContext | undefined;
 
   public constructor() {
     this._handlers = new Map<CommandId, CommandHandler>([
@@ -35,7 +37,8 @@ export class NewItemDispatcher {
       [CommandId.UiGetPresetById, this.onUiGetPresetById],
       [CommandId.UiValidateInputs, this.onUiValidateInputs],
       [CommandId.UiManageCustomPreset, this.onUiManageCustomPreset],
-      [CommandId.UiSelectWorkingDir, this.onUiSelectWorkingDir]
+      [CommandId.UiSelectWorkingDir, this.onUiSelectWorkingDir],
+      [CommandId.UiSaveOpenInPreference, this.onUiSaveOpenInPreference]
     ]);
   }
 
@@ -53,6 +56,10 @@ export class NewItemDispatcher {
 
   public setUiConfigs(c: unknown) {
     this._uiConfigs = c;
+  }
+
+  public setContext(context: vscode.ExtensionContext) {
+    this._context = context;
   }
 
   public dispatch(cmd: unknown) {
@@ -85,7 +92,10 @@ export class NewItemDispatcher {
         data: cmd.payload
       });
 
-      openItemsFromQtcliResponseData(data);
+      const openIn = _.get(cmd.payload, 'openIn', 'addToWorkspace') as
+        | 'addToWorkspace'
+        | 'newWindow';
+      openItemsFromQtcliResponseData(data, openIn);
 
       const type = _.get(cmd.payload, 'type', '') as string;
       const save = _.get(cmd.payload, 'saveProjectDir', false) as boolean;
@@ -93,6 +103,12 @@ export class NewItemDispatcher {
 
       if (type === 'project' && save && workingDir.length !== 0) {
         await setDefaultProjectDir(workingDir);
+      }
+
+      // Save the openIn preference for projects
+      if (type === 'project' && this._context) {
+        const globalState = new GlobalStateManager(this._context);
+        await globalState.setNewProjectOpenIn(openIn);
       }
 
       this._panel?.close();
@@ -209,10 +225,21 @@ export class NewItemDispatcher {
       this._comm?.postDataReply(cmd, folder);
     }
   };
+
+  private readonly onUiSaveOpenInPreference = async (cmd: Command) => {
+    const value = cmd.payload as 'addToWorkspace' | 'newWindow';
+    if (this._context) {
+      const globalState = new GlobalStateManager(this._context);
+      await globalState.setNewProjectOpenIn(value);
+    }
+  };
 }
 
 // helpers
-function openItemsFromQtcliResponseData(data: unknown) {
+function openItemsFromQtcliResponseData(
+  data: unknown,
+  openIn = 'addToWorkspace'
+) {
   const type = _.get(data, 'type', '') as string;
   const files = _.get(data, 'files', []) as string[];
   const filesDir = _.get(data, 'filesDir', '') as string;
@@ -221,7 +248,12 @@ function openItemsFromQtcliResponseData(data: unknown) {
   }
 
   if (type === 'project') {
-    void openUri(vscode.Uri.file(path.normalize(filesDir)));
+    const uri = vscode.Uri.file(path.normalize(filesDir));
+    if (openIn === 'newWindow') {
+      void vscode.commands.executeCommand('vscode.openFolder', uri, true);
+    } else {
+      void openUri(uri);
+    }
   } else {
     void openFilesUnder(path.normalize(filesDir), files);
   }

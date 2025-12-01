@@ -8,6 +8,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { Check, FolderOpen } from '@lucide/svelte';
 
   import IconButton from '@/comps/IconButton.svelte';
+  import SplitButton from '@/comps/SplitButton.svelte';
   import SectionLabel from '@/comps/SectionLabel.svelte';
   import InputWithIssue from '@/comps/InputWithIssue.svelte';
   import * as texts from '@/apps/texts';
@@ -16,7 +17,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     onWorkingDirBrowseClicked,
     createItemFromSelectedPreset,
     validateInput,
+    onOpenInChanged
   } from './viewlogic.svelte';
+
+  const openInOptions = [
+    { value: 'newWindow', label: texts.wizard.openInOptions.newWindow },
+    { value: 'addToWorkspace', label: texts.wizard.openInOptions.addToWorkspace }
+  ];
 </script>
 
 <div
@@ -68,11 +75,23 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       <div class="grow"></div>
     {/if}
 
-    <IconButton
-      text={texts.wizard.buttons.create}
-      icon={Check}
-      disabled={!ui.canCreate}
-      onClicked={createItemFromSelectedPreset}
-    ></IconButton>
+    {#if data.selected.type === 'project'}
+      <SplitButton
+        text={texts.wizard.buttons.create}
+        icon={Check}
+        disabled={!ui.canCreate}
+        options={openInOptions}
+        bind:selectedValue={input.openIn}
+        onClicked={createItemFromSelectedPreset}
+        onValueChanged={onOpenInChanged}
+      />
+    {:else}
+      <IconButton
+        text={texts.wizard.buttons.create}
+        icon={Check}
+        disabled={!ui.canCreate}
+        onClicked={createItemFromSelectedPreset}
+      />
+    {/if}
   </div>
 </div>

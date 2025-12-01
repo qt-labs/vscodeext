@@ -56,6 +56,18 @@ export class GlobalStateManager extends BaseStateManager {
     return this._update(AdditionalQtPathsName, paths);
   }
 
+  public getNewProjectOpenIn(): 'addToWorkspace' | 'newWindow' {
+    return this._get<'addToWorkspace' | 'newWindow'>(
+      'newProjectOpenIn',
+      'newWindow'
+    );
+  }
+  public setNewProjectOpenIn(
+    value: 'addToWorkspace' | 'newWindow'
+  ): Thenable<void> {
+    return this._update('newProjectOpenIn', value);
+  }
+
   public async reset() {
     await this.setQtInstallationRoot('');
     await this.setAdditionalQtPaths([]);
