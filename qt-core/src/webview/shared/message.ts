@@ -15,6 +15,7 @@ export enum CommandId {
   UiValidateInputs,
   UiManageCustomPreset,
   UiSelectWorkingDir,
+  UiSaveOpenInPreference,
 
   // qrc editor
   QrcDocChanged,
