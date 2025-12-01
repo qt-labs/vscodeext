@@ -57,6 +57,8 @@ export function parseXml(data: string): RccTag | undefined {
 export function generateXml(qrc: RccTag): string {
   const builder = new XMLBuilder({
     format: true,
+    indentBy: '    ', // to be compatible with Qt Creator
+    suppressEmptyNode: true, // to be compatible with Qt Creator
     suppressBooleanAttributes: false,
     ...xmlOptions
   });
@@ -64,18 +66,11 @@ export function generateXml(qrc: RccTag): string {
   const clone = cloneAndClean(qrc);
   const xmlString = builder.build({ RCC: clone });
 
-  return `<!DOCTYPE RCC>\n${xmlString}`;
+  return xmlString;
 }
 
 export function defaultQrcLines() {
-  return [
-    '<!DOCTYPE RCC>',
-    '<RCC version="1.0">',
-    '  <qresource prefix="/">',
-    '  </qresource>',
-    '</RCC>',
-    ''
-  ];
+  return ['<RCC>', '    <qresource prefix="/"/>', '</RCC>', ''];
 }
 
 // helpers
