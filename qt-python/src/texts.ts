@@ -4,6 +4,8 @@
 export const install = {
   popup: {
     installing: 'Installing PySide6...',
+    installingQtPip: 'Installing qtpip...',
+    installingCommercial: 'Installing PySide6 (Commercial)...',
     installed: (folder: string, pysideVersion: string, venv: string) =>
       `PySide ${pysideVersion} is installed for '${folder}' ` +
       `(venv: ${venv})`,
@@ -25,6 +27,7 @@ export const install = {
   },
   sourcePicker: {
     labelOss: 'Latest PySide6 from PyPI',
+    labelCommercial: 'Latest PySide6 (Commercial) by qtpip',
     labelDownload:
       'Go to https://account.qt.io/ ' +
       'to download and install the wheels manually',
