@@ -6,6 +6,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isDeepStrictEqual } from 'util';
 
 import { delay } from 'qt-lib';
 import {
@@ -33,9 +34,11 @@ import {
   collectTypesFromSnapshot,
   matchNatvisTypePatternsConsideringAlternatives,
   writeGolden,
-  readGolden
+  readGolden,
+  knownNatvisProblems
 } from '../debug-golden.mts';
 import { selectAndApplyQtKit } from '../qt-kits-helper.mts';
+import { forEach } from 'lodash';
 
 function getRequiredQtMajorFromCMake(projectDir: string): number {
   const cmakeListsPath = path.join(projectDir, 'CMakeLists.txt');
@@ -217,6 +220,112 @@ async function configureAndBuildMinimalQtProject(
   return { wsFolder, projectDir, buildDir, kit, errSpy };
 }
 
+/**
+ * Compare two NatVis snapshots (actual vs golden) and return only the
+ * *real* mismatches. This comparison is aware of "known NatVis problems":
+ *
+ *   - If a mismatched entry corresponds to a type listed in
+ *     knownNatvisProblems → the mismatch is *ignored* (not returned)
+ *     and a debug message is printed explaining the known issue.
+ *
+ *   - If a known-problem type appears in the actual snapshot but does
+ *     NOT mismatch the golden → a “good news” debug message is printed,
+ *     indicating that the problematic NatVis rule is now fixed.
+ *
+ *   - If a known-problem type does *not* appear in the actual snapshot
+ *     at all → a debug warning is printed to indicate that the sample
+ *     no longer covers that type (possibly accidental).
+ *
+ * Behavior summary:
+ *   1. Unknown mismatches → returned for the test to fail.
+ *   2. Known-problem mismatches → filtered out + logged.
+ *   3. Known-problem matches → logged as “fixed”.
+ *   4. Known-problem missing from snapshot → logged as “no longer present”.
+ *
+ * Output:
+ *   Returns an array of only the real, unexpected mismatches:
+ *     [{ index, actual, expected }, …]
+ *
+ * This allows the test to remain strict while still remaining stable and
+ * informative when NatVis rules are known to be broken on certain types.
+ */
+export function findMismatchedSnapshotEntries(
+  actual: any[],
+  expected: any[]
+): Array<{ index: number; actual: any; expected: any }> {
+  const mismatches: Array<{ index: number; actual: any; expected: any }> = [];
+  const len = Math.max(actual.length, expected.length);
+
+  // Track presence of problematic types
+  const actualTypes = new Set(actual.map((v) => v?.type).filter(Boolean));
+
+  // Track which known-problem types had mismatches
+  const problematicTypesWithMismatch = new Set<string>();
+
+  // ---- Main mismatch detection loop ------------------------------------
+  for (let i = 0; i < len; i++) {
+    const a = actual[i];
+    const e = expected[i];
+
+    // If equal → no issue
+    if (isDeepStrictEqual(a, e)) continue;
+
+    const t = a?.type ?? e?.type ?? undefined;
+
+    const problem = t
+      ? knownNatvisProblems.find((p) => p.type === t)
+      : undefined;
+
+    if (problem) {
+      // Known problem mismatch → ignore but record
+      problematicTypesWithMismatch.add(t!);
+
+      if (process.env.QT_TEST_DEBUG === '1') {
+        console.warn(
+          `[natvis.test][known-problem] '${t}' mismatch ignored — still broken.\n` +
+            `  Reason: ${problem.description}`
+        );
+      }
+      continue;
+    }
+
+    // Unknown mismatch → real failure
+    mismatches.push({ index: i, actual: a, expected: e });
+  }
+
+  // ---- Post-analysis reporting (debug mode only) -----------------------
+  if (process.env.QT_TEST_DEBUG === '1') {
+    for (const prob of knownNatvisProblems) {
+      const t = prob.type;
+
+      const seenInActual = actualTypes.has(t);
+      const hadMismatch = problematicTypesWithMismatch.has(t);
+
+      if (seenInActual && hadMismatch) {
+        // Known problem still broken — already logged above
+        continue;
+      }
+
+      if (seenInActual && !hadMismatch) {
+        // GOOD NEWS → actual contains the type but mismatch did not happen
+        console.warn(
+          `[natvis.test][good-news] Known problem '${t}' no longer mismatches!\n` +
+            `  Description was: ${prob.description}`
+        );
+      }
+
+      if (!seenInActual) {
+        console.warn(
+          `[natvis.test][warning] Known-problem type '${t}' no longer appears in Locals.\n` +
+            `  (Maybe it's no longer constructed or NatVis expansion changed?)`
+        );
+      }
+    }
+  }
+
+  return mismatches;
+}
+
 // ---------------------------------------------------------------------------
 // Main NatVis golden test
 // ---------------------------------------------------------------------------
@@ -381,11 +490,50 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
           );
         }
 
-        // Compare ONLY NatVis-covered types (qRect, qByteArray, qString, etc.)
-        expect(
+        const mismatches = findMismatchedSnapshotEntries(
           natvisSnapshot,
-          'Locals mismatch vs golden (NatVis-covered types only)'
-        ).to.deep.equal(golden);
+          golden
+        );
+        forEach(mismatches, (m) => {
+          console.error(
+            `[natvis.test] Mismatch at index ${m.index}:\n` +
+              `  Actual:   ${JSON.stringify(m.actual)}\n` +
+              `  Expected: ${JSON.stringify(m.expected)}`
+          );
+        });
+        if (mismatches.length > 0) {
+          // Build a human-readable header like you have now
+          const headerLines: string[] = [];
+          headerLines.push(
+            'NatVis mismatch (after filtering known-problem types):',
+            ''
+          );
+
+          for (const m of mismatches) {
+            headerLines.push(
+              `Index ${m.index}:`,
+              `  Actual:   ${JSON.stringify(m.actual, null, 2)}`,
+              `  Expected: ${JSON.stringify(m.expected, null, 2)}`,
+              ''
+            );
+          }
+
+          const message = headerLines.join('\n');
+
+          // Take the *first* mismatch and let Chai show a full colored diff
+          const first = mismatches[0]!;
+
+          expect(
+            first.actual,
+            `${message}\nFirst mismatched snapshot vs golden (see diff below):`
+          ).to.deep.equal(first.expected);
+        }
+
+        //Compare ONLY NatVis-covered types (qRect, qByteArray, qString, etc.)
+        // expect(
+        //   natvisSnapshot,
+        //   'Locals mismatch vs golden (NatVis-covered types only)'
+        // ).to.deep.equal(golden);
 
         //    Coverage warning/error still based on full NatVis coverage
         const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';

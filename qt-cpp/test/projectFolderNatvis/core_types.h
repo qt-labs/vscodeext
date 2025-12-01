@@ -9,9 +9,9 @@ struct CoreTypes
 {
     // text / bytes
     QByteArray   qByteArray;
-    //QChar        qChar;
+    QChar        qChar;
     QString      qString;
-    //QStringView  qStringView;
+    QStringView  qStringView;
 
     // date/time
     // QDate        qDate;
@@ -56,9 +56,9 @@ struct CoreTypes
 
 inline CoreTypes::CoreTypes()
     : qByteArray("Hello World!")
-    //, qChar(u'c')
-    , qString(QStringLiteral("Hello World!"))
-    //, qStringView(qString)
+    , qChar(u'c')
+    , qString(QStringLiteral("Hello World! Again."))
+    , qStringView(qString)
     // , qDate(QDate::currentDate())
     // , qDateTimeLocal(QDateTime::currentDateTime())
     // , qDateTimeUtc(QDateTime::currentDateTimeUtc())

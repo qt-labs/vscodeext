@@ -28,6 +28,41 @@ export type SnapVar = {
 };
 
 /**
+ * Describes a NatVis type that is known to be broken or unstable.
+ *
+ * - `type`: the Qt type name reported by the debugger (e.g. "QStringView").
+ * - `description`: short human description of the known issue.
+ * - `variableNames` (optional): restrict the problem to specific variable
+ *   names (e.g. only "coreTypes.qStringView"). If omitted, problem applies
+ *   to *all* variables of that type.
+ */
+export interface KnownNatvisProblem {
+  readonly type: string;
+  readonly description: string;
+  readonly variableNames?: readonly string[];
+}
+/**
+ * Central registry of known NatVis issues.
+ *
+ * These types:
+ *   - DO NOT cause the test to fail when they differ from golden.
+ *   - ARE still compared and recorded.
+ *   - Emit diagnostics in debug mode.
+ *
+ * If a known-problem type starts matching golden again, we log a
+ * "seems fixed" message so you can remove it from this list.
+ */
+export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
+  {
+    type: 'QStringView',
+    description:
+      'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
+    // variableNames: ['coreTypes.qStringView'], // optional filter if needed
+  }
+  // Add more entries here as you discover issues.
+];
+
+/**
  * Normalizes floating-point artifacts produced by GDB/LLDB/cppvsdbg.
  * Converts things like:
  *   5.0999999999999996 → 5.1
@@ -82,15 +117,25 @@ function normalizeFloatsInStruct(raw: string): string {
 export function normalizeValue(raw: string): string {
   let value = raw.trim();
 
-  // 1) Strip leading pointer-like prefixes, with optional opening quote:
+  // Strip leading pointer-like prefixes, with optional opening quote:
   //    "0x1234 "Hello World!""  or  0x1234 "Hello World!"
   value = value.replace(/^"?(0x[0-9A-Fa-f]+|0xADDR)\s*/u, '');
   value = value.trim();
 
-  // 2) Normalize floating-point artifacts everywhere (QRectF, QSizeF, etc.)
+  // Normalize floating-point artifacts everywhere (QRectF, QSizeF, etc.)
   value = normalizeFloatsInStruct(value);
 
-  // 3) If there is a final quoted payload (optional leading 'u'), extract it:
+  // Special case: QChar-style representation
+  //    Windows: "99 u'c'"
+  //    Other OSes: "99 'c'"
+  //    → normalize both to "99 'c'"
+  const qCharLike = value.match(/^(\d+)\s+u'([^']*)'$/u);
+  if (qCharLike) {
+    const [, code, ch] = qCharLike;
+    return `${code} '${ch}'`;
+  }
+
+  // If there is a final quoted payload (optional leading 'u'), extract it:
   //
   //    u"Hello World!""   -> Hello World!
   //    "Hello World!""    -> Hello World!
@@ -101,7 +146,7 @@ export function normalizeValue(raw: string): string {
     return quoted[1];
   }
 
-  // 4) Fallbacks for simpler fully-quoted forms, just in case:
+  // Fallbacks for simpler fully-quoted forms, just in case:
   if (value.startsWith('"') && value.endsWith('""') && value.length >= 3) {
     // "Hello World!"" -> Hello World!
     return value.slice(1, -2);
