@@ -7,7 +7,8 @@ export const data = $state({
   serverReady: false,
   configs: {
     newFileBaseDir: '',
-    newProjectBaseDir: ''
+    newProjectBaseDir: '',
+    openIn: 'addToWorkspace' as 'addToWorkspace' | 'newWindow'
   },
   presets: [] as Preset[],
   selected: {
@@ -21,6 +22,7 @@ export const input = $state({
   name: 'untitled',
   workingDir: '',
   saveProjectDir: false,
+  openIn: 'newWindow' as 'addToWorkspace' | 'newWindow',
 
   issues: {
     name: new InputIssue(),

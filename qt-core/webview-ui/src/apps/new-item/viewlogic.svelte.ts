@@ -36,7 +36,7 @@ export function onModalClosed() {
   void vscode.post(CommandId.UiClosed);
 }
 
-export function onWorkingDirBrowseClicked() {
+export async function onWorkingDirBrowseClicked() {
   const timeout = -1;
   void vscode
     .post(CommandId.UiSelectWorkingDir, input.workingDir, timeout)
@@ -49,6 +49,14 @@ export function onWorkingDirBrowseClicked() {
     .catch((e) => {
       reportUiError('Error selecting working dir', e);
     });
+}
+
+export async function onOpenInChanged(value: 'addToWorkspace' | 'newWindow') {
+  try {
+    await vscode.post(CommandId.UiSaveOpenInPreference, value);
+  } catch (e) {
+    reportUiError('Error saving openIn preference', e);
+  }
 }
 
 export async function setPresetType(type: string) {
@@ -119,7 +127,8 @@ export async function createItemFromSelectedPreset() {
       workingDir: input.workingDir,
       presetId: data.selected.preset?.id,
       options: $state.snapshot(ui.unsavedOptionChanges),
-      saveProjectDir: input.saveProjectDir
+      saveProjectDir: input.saveProjectDir,
+      openIn: input.openIn
     });
   } catch (e) {
     reportUiError('Error creating item', e);
@@ -245,6 +254,14 @@ async function loadConfigsAndInitInputs() {
       };
 
       loadDefautInputs();
+      
+      // Load the saved openIn preference if it exists
+      if ('openIn' in data.configs && data.configs.openIn) {
+        const savedValue = data.configs.openIn as 'addToWorkspace' | 'newWindow';
+        if (savedValue === 'addToWorkspace' || savedValue === 'newWindow') {
+          input.openIn = savedValue;
+        }
+      }
     }
   } catch (e) {
     reportUiError('Error loading configs', e);
