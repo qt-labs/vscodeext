@@ -383,6 +383,14 @@ export class CppProject implements Project {
           });
         }
       }
+
+      const qtModules = modules.filter((module) => module.startsWith('Qt'));
+      if (qtModules.length > 0) {
+        telemetry.sendConfig('CppProjectUsedQtModules', {
+          qtmodules: qtModules.join(',')
+        });
+      }
+
       const prevModules = this.getStateManager().getModules();
       const targetModules = prevModules.get(t.name);
       // First time setting modules or modules changed
