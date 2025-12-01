@@ -13,7 +13,10 @@ import {
 } from 'qt-lib';
 import { PySideEnv } from './env';
 import { PySideProject } from './project';
-import { PySideCommandRunner } from './runner';
+import {
+  PySideCommandRunner,
+  PySideCommandRunOptions as RunOptions
+} from './runner';
 import { coreApi, projectManager } from './extension';
 import { normalizeDriveLetter } from './utils';
 import * as texts from './texts';
@@ -26,7 +29,7 @@ interface TargetProjectItem extends vscode.QuickPickItem {
 }
 
 interface InstallSourceItem extends vscode.QuickPickItem {
-  source?: 'oss' | 'local' | 'download';
+  source?: 'oss' | 'commercial' | 'local' | 'download';
   env?: PySideEnv;
   localPath?: string;
 }
@@ -163,32 +166,56 @@ async function tryInstallPySide(
   const logIndented = (line: string) => {
     info(folder, ' ', line);
   };
+  const runner = new PySideCommandRunner(env);
+  runner.onStdout(logIndented);
+  runner.onStderr(logIndented);
 
   const linkText = texts.install.popup.linkShowLog;
   const linkCommand = `${consts.COMMAND_PREFIX}.${consts.COMMAND_SHOW_LOG}`;
   const linkShowLogs = `[${linkText}](command:${linkCommand})`;
 
+  const popups = texts.install.popup;
   const options = {
-    title: texts.install.popup.installing + ` (${linkShowLogs})`,
     location: vscode.ProgressLocation.Notification,
     cancellable: false
   };
 
-  await vscode.window.withProgress(options, async () => {
-    const runner = new PySideCommandRunner(env);
-    runner.onStdout(logIndented);
-    runner.onStderr(logIndented);
+  await vscode.window.withProgress(options, async (progress) => {
+    async function run(command: string, message: string, opts?: RunOptions) {
+      progress.report({ message: `${message} (${linkShowLogs})` });
+      await runner.run(command, {
+        useVenv: true,
+        ...opts
+      });
+    }
 
     try {
-      if (source.source === 'oss') {
-        await runner.run('pip install PySide6', { useVenv: true });
-      } else if (source.source === 'local' && source.localPath) {
-        await runner.run('pip install -r requirements.txt', {
-          useVenv: true,
-          cwd: source.localPath
-        });
-      } else {
-        return;
+      switch (source.source) {
+        case 'oss':
+          await run('pip install PySide6', popups.installing);
+          break;
+
+        case 'commercial': {
+          const qtpip = await env.readPackageInfo('qtpip');
+          if (!qtpip) {
+            await run('pip install qtpip', popups.installingQtPip);
+          }
+
+          await run('qtpip install PySide6', popups.installingCommercial);
+          break;
+        }
+
+        case 'local':
+          if (source.localPath) {
+            await run('pip install -r requirements.txt', popups.installing, {
+              cwd: source.localPath
+            });
+            break;
+          }
+          return;
+
+        default:
+          return;
       }
 
       const pyside = await env.readPySide6PackageInfo();
@@ -237,15 +264,21 @@ async function selectInstallSource(env: PySideEnv) {
     }
   }
 
-  items.push({
-    kind: vscode.QuickPickItemKind.Separator,
-    label: ''
-  });
-
-  items.push({
-    source: 'download',
-    label: texts.install.sourcePicker.labelDownload + ' $(globe)'
-  });
+  items.push(
+    {
+      kind: vscode.QuickPickItemKind.Separator,
+      label: ''
+    },
+    {
+      source: 'commercial',
+      label: texts.install.sourcePicker.labelCommercial,
+      env
+    },
+    {
+      source: 'download',
+      label: texts.install.sourcePicker.labelDownload + ' $(globe)'
+    }
+  );
 
   const placeHolder = texts.install.placeHolder.selectVersion;
   return vscode.window.showQuickPick(items, { placeHolder });

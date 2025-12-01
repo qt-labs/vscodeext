@@ -15,7 +15,7 @@ export interface PySideProjectInfo {
   files: string[];
 }
 
-export interface PySidePackageInfo {
+export interface PipPackageInfo {
   version: string;
   location: string;
 }
