@@ -9,7 +9,7 @@ import {
 } from '@vscode/python-extension';
 
 import { isError, OSExeSuffix, createLogger } from 'qt-lib';
-import { PySidePackageInfo } from './types';
+import { PipPackageInfo } from './types';
 import { PySideCommandRunner } from './runner';
 import * as utils from './utils';
 import * as consts from './constants';
@@ -52,46 +52,12 @@ export class PySideEnv {
     this._setupWatcher(pyApi);
   }
 
+  public async readPackageInfo(name: string) {
+    return runPipShowAndParseInfo(this, name);
+  }
+
   public async readPySide6PackageInfo() {
-    const parsedOutput: Record<string, string> = {};
-
-    try {
-      // expected output from 'pip show <package>'
-      //
-      // Version: 6.10.0
-      // Summary: Python bindings for the Qt cross-platform application and UI framework
-      // Home-page:
-      // Author:
-      // Author-email: Qt for Python Team <pyside@qt-project.org>
-      // License: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-      // Location: /Users/bencho/ws_temp/myenv/lib/python3.9/site-packages
-      // Requires: PySide6_Essentials, PySide6_Addons, shiboken6
-      // Required-by:
-
-      const logIndented = (line: string) => {
-        logger.info(' ', line);
-      };
-
-      const runner = new PySideCommandRunner(this);
-      runner.onStdout(logIndented);
-      runner.onStderr(logIndented);
-
-      const lines = await runner.run(`pip show PySide6`, { useVenv: true });
-      lines.forEach((line) => {
-        const [key, value] = line.split(': ');
-        if (key && value) {
-          parsedOutput[key.trim()] = value.trim();
-        }
-      });
-    } catch (e) {
-      logger.error(' ', isError(e) ? e.message : String(e));
-      return undefined;
-    }
-
-    return {
-      version: parsedOutput.Version ?? '',
-      location: parsedOutput.Location ?? ''
-    } as PySidePackageInfo;
+    return runPipShowAndParseInfo(this, 'PySide6');
   }
 
   private _setupWatcher(pyApi: PyApi) {
@@ -141,4 +107,47 @@ export class PySideEnv {
       this._activeFSWatcher = undefined;
     }
   }
+}
+
+// helper
+async function runPipShowAndParseInfo(env: PySideEnv, name: string) {
+  const parsedOutput: Record<string, string> = {};
+
+  try {
+    // expected output from 'pip show <package>'
+    //
+    // Version: 6.10.0
+    // Summary: Python bindings for the Qt cross-platform application and UI framework
+    // Home-page:
+    // Author:
+    // Author-email: Qt for Python Team <pyside@qt-project.org>
+    // License: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+    // Location: /Users/bencho/ws_temp/myenv/lib/python3.9/site-packages
+    // Requires: PySide6_Essentials, PySide6_Addons, shiboken6
+    // Required-by:
+
+    const logIndented = (line: string) => {
+      logger.info(' ', line);
+    };
+
+    const runner = new PySideCommandRunner(env);
+    runner.onStdout(logIndented);
+    runner.onStderr(logIndented);
+
+    const lines = await runner.run(`pip show ${name}`, { useVenv: true });
+    lines.forEach((line) => {
+      const [key, value] = line.split(': ');
+      if (key && value) {
+        parsedOutput[key.trim()] = value.trim();
+      }
+    });
+  } catch (e) {
+    logger.error(' ', isError(e) ? e.message : String(e));
+    return undefined;
+  }
+
+  return {
+    version: parsedOutput.Version ?? '',
+    location: parsedOutput.Location ?? ''
+  } as PipPackageInfo;
 }
