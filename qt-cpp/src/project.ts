@@ -130,8 +130,8 @@ export class CppProject implements Project {
       logger.info('Build directory changed:', currentBuildDir ?? 'undefined');
       this._buildDir = currentBuildDir;
       const message = new QtWorkspaceConfigMessage(this.folder);
-      coreAPI?.setValue(this.folder, 'buildDir', currentBuildDir);
-      message.config.add('buildDir');
+      coreAPI?.setValue(this.folder, CoreKey.BUILD_DIR, currentBuildDir);
+      message.config.add(CoreKey.BUILD_DIR);
       logger.info(`Notifying coreAPI with message: ${message.toString()}`);
       coreAPI?.notify(message);
     }
