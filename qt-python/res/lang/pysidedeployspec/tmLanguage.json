@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Qt PySide6 Deploy Spec file",
+  "scopeName": "source.qt-pysidedeployspec",
+  "patterns": [
+    {
+      "include": "source.ini"
+    }
+  ]
+}
