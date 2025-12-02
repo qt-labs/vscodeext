@@ -157,8 +157,9 @@ export async function startDebugAndWaitForStop(
     );
 
     const trackerDisp = vscode.debug.registerDebugAdapterTrackerFactory('*', {
-      createDebugAdapterTracker: (s) => ({
-        onDidSendMessage: async (m: any) => {
+      createDebugAdapterTracker: (s) => {
+        session = s;
+        const onMessageSend = async (m: any) => {
           if (m?.event === 'stopped') {
             const reason: string | undefined = m?.body?.reason;
             let tid: number | undefined = m?.body?.threadId;
@@ -214,15 +215,15 @@ export async function startDebugAndWaitForStop(
               new Error('Debug session terminated before hitting a breakpoint')
             );
           }
-        }
-      })
+        };
+        return { onDidSendMessage: onMessageSend };
+      }
     });
   });
 
   const started = await vscode.debug.startDebugging(wsFolder, cfg);
   if (!started) throw new Error('Failed to start debug session');
 
-  session = vscode.debug.activeDebugSession!;
   await done;
   return { session, stops };
 }
