@@ -31,6 +31,7 @@
   "activationEvents": [
     "workspaceContains:pyproject.toml",
     "workspaceContains:*.pyproject",
+    "workspaceContains:**/pysidedeploy.spec",
     "onDebugInitialConfigurations",
     "onDebugResolve:python"
   ],
@@ -118,6 +119,29 @@
             }
           }
         ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "qt-pysidedeployspec",
+        "configuration": "./res/lang/pysidedeployspec/language-configuration.json",
+        "filenames": [
+          "pysidedeploy.spec"
+        ],
+        "aliases": [
+          "Qt PySide6 Deploy Spec"
+        ],
+        "icon": {
+          "light": "res/icons/pysidedeployspec-light.svg",
+          "dark": "res/icons/pysidedeployspec-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qt-pysidedeployspec",
+        "scopeName": "source.qt-pysidedeployspec",
+        "path": "./res/lang/pysidedeployspec/tmLanguage.json"
       }
     ]
   },
