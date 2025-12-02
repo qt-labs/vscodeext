@@ -48,9 +48,6 @@
       {
         "viewType": "qt-ui.uiEditor",
         "displayName": "Qt UI Editor",
-        "extensions": [
-          ".ui"
-        ],
         "priority": "default",
         "selector": [
           {

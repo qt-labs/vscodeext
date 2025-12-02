@@ -96,9 +96,6 @@
       {
         "viewType": "qt-core.qrcEditor",
         "displayName": "QRC editor",
-        "extensions": [
-          ".qrc"
-        ],
         "priority": "default",
         "selector": [
           {
