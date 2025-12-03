@@ -15,7 +15,8 @@ import {
   prepareCMakeQtEnvWithVersion,
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
-  setCMakeGeneratorForPlatform,
+  cmakeConfigForWorkspace,
+  getPlatformCMakeGenerator,
   prepareStandardCMakeArgs,
   readCMakeCacheVar,
   selectAndApplyKit
@@ -33,11 +34,12 @@ describe('build: minimal Qt project (index-build)', function () {
 
   it('configures and builds a tiny Qt app', async function () {
     const wsFolder = getWorkspaceFolderOrThrow();
+    const cmakeConfigurator = cmakeConfigForWorkspace(wsFolder);
     const projectDir = wsFolder.uri.fsPath;
     console.log('Using projectDir:', projectDir);
     const buildDir = await cleanBuildDir(projectDir);
 
-    await setCMakeGeneratorForPlatform(wsFolder);
+    await cmakeConfigurator.set('generator', getPlatformCMakeGenerator());
 
     await selectAndApplyKit();
 
@@ -85,5 +87,7 @@ describe('build: minimal Qt project (index-build)', function () {
     expect(fs.existsSync(outPath), `Expected build artifact at ${outPath}`).to
       .be.true;
     expect(errSpy.called, 'Unexpected error popups during build').to.be.false;
+
+    await cmakeConfigurator.resetAll();
   });
 });
