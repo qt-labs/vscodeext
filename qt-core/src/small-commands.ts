@@ -31,7 +31,7 @@ export function registerOpenSettingsCommand() {
 }
 
 const issueReportLink =
-  'https://bugreports.qt.io/secure/CreateIssue.jspa?pid=13641';
+  'https://qt-project.atlassian.net/secure/CreateIssue.jspa?pid=10233';
 
 export function reportIssueCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.reportIssue`, () => {
