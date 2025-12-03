@@ -40,6 +40,14 @@ export interface KnownNatvisProblem {
   readonly type: string;
   readonly description: string;
   readonly variableNames?: readonly string[];
+  /**
+   * Optional platform restriction.
+   *
+   * - If omitted → applies to all platforms.
+   * - If a single value → applies only to that platform.
+   * - If an array → applies to any of those platforms.
+   */
+  readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
 }
 /**
  * Central registry of known NatVis issues.
@@ -58,6 +66,33 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
     description:
       'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
     // variableNames: ['coreTypes.qStringView'], // optional filter if needed
+  },
+  {
+    type: 'QDir',
+    description:
+      'QDir NatVis fails differently by platform: ' +
+      '- macOS/Linux: natvis expressions reference Windows-only modules (Qt6Core[d].dll), so LLDB/GDB cannot resolve the intrinsic “d()”. ' +
+      '- Windows CI: natvis loads, but DisplayString fails due to missing or incompatible private symbols (QDirPrivate) or incomplete PDBs, causing fallback to raw {d_ptr={...}} output.',
+    variableNames: ['coreTypes.qDir'],
+    platform: ['darwin', 'linux', 'win32']
+  },
+  {
+    type: 'QFile',
+    description:
+      'QFile NatVis fails differently by platform: ' +
+      '- macOS/Linux: natvis expressions depend on Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot evaluate “d()”. ' +
+      '- Windows CI: natvis is loaded, but DisplayString evaluation fails (likely due to absent private symbols or reduced PDBs), leading to fallback raw formatting.',
+    variableNames: ['coreTypes.qFile'],
+    platform: ['darwin', 'linux', 'win32']
+  },
+  {
+    type: 'QFileInfo',
+    description:
+      'QFileInfo NatVis fails differently by platform: ' +
+      '- macOS/Linux: natvis rules reference Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot compute the “d()” intrinsic. ' +
+      '- Windows CI: natvis loads, but DisplayString fails because required private types or fields (QFileInfoPrivate) are not available in the CI Qt build, forcing the debugger to show raw {d_ptr={...}} output.',
+    variableNames: ['coreTypes.qFileInfo'],
+    platform: ['darwin', 'linux', 'win32']
   }
   // Add more entries here as you discover issues.
 ];
