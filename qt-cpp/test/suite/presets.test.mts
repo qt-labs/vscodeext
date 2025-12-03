@@ -21,7 +21,7 @@ import {
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
   readCMakeCacheVar,
-  setCMakeConfigurationForPlatform
+  cmakeConfigForWorkspace
 } from '../helper.mts';
 
 // Test timing constants
@@ -40,11 +40,8 @@ describe('presets: CMake Presets integration', function () {
 
   it('configures and builds a tiny Qt app with CMake Presets', async function () {
     const wsFolder = getWorkspaceFolderOrThrow();
-    await setCMakeConfigurationForPlatform(
-      wsFolder,
-      'useCMakePresets',
-      'always'
-    );
+    const cmakeConfigurator = cmakeConfigForWorkspace(wsFolder);
+    await cmakeConfigurator.set('useCMakePresets', 'always');
     await waitForVSCodeIdle();
     const projectDir = wsFolder.uri.fsPath;
     const buildDir = await cleanBuildDir(projectDir, 'build-presets');
@@ -93,12 +90,8 @@ describe('presets: CMake Presets integration', function () {
     // Disable automatic configuration to have precise control over test flow
     // configureOnOpen would trigger configure before we can set the preset
     // automaticReconfigure would interfere with our explicit configure call
-    await setCMakeConfigurationForPlatform(wsFolder, 'configureOnOpen', false);
-    await setCMakeConfigurationForPlatform(
-      wsFolder,
-      'automaticReconfigure',
-      false
-    );
+    await cmakeConfigurator.set('configureOnOpen', false);
+    await cmakeConfigurator.set('automaticReconfigure', false);
 
     // spy on error messages
     const errSpy = sb.spy(vscode.window, 'showErrorMessage');
@@ -171,11 +164,7 @@ describe('presets: CMake Presets integration', function () {
       if (fs.existsSync(presetsPath)) {
         fs.unlinkSync(presetsPath);
       }
-      await setCMakeConfigurationForPlatform(
-        wsFolder,
-        'useCMakePresets',
-        undefined
-      );
+      await cmakeConfigurator.resetAll();
       await waitForVSCodeIdle();
     } catch (e) {
       console.warn('Cleanup warning:', e);
