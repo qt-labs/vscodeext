@@ -2,4 +2,4 @@
 name = "PySide Widgets Project"
 
 [tool.pyside6-project]
-files = ["{{ .fileNameBase }}.py"{{ if .useForm }}, "form.ui"{{ end }}]
+files = ["main.py"{{ if .useForm }}, "form.ui"{{ end }}]

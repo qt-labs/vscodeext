@@ -11,9 +11,7 @@ meta:
 files:
   - in: pyproject.toml
   - in: requirements.txt
-
   - in: main.py
-    out: '{{ .fileNameBase }}'
 
   - in: form.ui
     when: '{{ .useForm }}'
@@ -27,12 +25,6 @@ fields:
       {{ if eq .baseClass "QMainWindow" }}MainWindow
       {{ else if eq .baseClass "QDialog"}}Dialog
       {{ else }}Widget
-      {{ end }}
-
-  - fileNameBase: |
-      {{ if eq .baseClass "QMainWindow" }}mainwindow
-      {{ else if eq .baseClass "QDialog"}}dialog
-      {{ else }}widget
       {{ end }}
 
 options:
