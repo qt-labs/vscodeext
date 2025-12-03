@@ -169,7 +169,7 @@ For more information about developing the Qt CLI tool, see [Development.md](Deve
 ## Issues
 
 If you encounter any issues with the Qt CLI, please [report the
-issues](https://bugreports.qt.io/projects/VSCODEEXT).
+issues](https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues).
 
 ## License
 

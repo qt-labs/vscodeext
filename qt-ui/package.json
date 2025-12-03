@@ -11,7 +11,7 @@
     "url": "https://github.com/qt-labs/vscodeext"
   },
   "bugs": {
-    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+    "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
   },
   "engines": {
     "vscode": "^1.94.0"
