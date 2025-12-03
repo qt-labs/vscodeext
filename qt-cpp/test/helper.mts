@@ -299,6 +299,46 @@ export async function cleanBuildDir(
   return buildDir;
 }
 
+class CMakeConfigrator {
+  private ws: vscode.WorkspaceFolder;
+  private resetValues: Map<string, unknown> = new Map();
+
+  constructor(ws: vscode.WorkspaceFolder) {
+    this.ws = ws;
+  }
+
+  async set(
+    settingName: string,
+    value: unknown,
+    resetValue?: unknown
+  ): Promise<void> {
+    if (!this.resetValues.has(settingName)) {
+      this.resetValues.set(settingName, resetValue);
+    }
+    await vscode.workspace
+      .getConfiguration('cmake', this.ws.uri)
+      .update(settingName, value, vscode.ConfigurationTarget.Workspace);
+  }
+  resetAll() {
+    const resets: Promise<void>[] = [];
+    for (const [settingName, value] of this.resetValues.entries()) {
+      resets.push(
+        Promise.resolve(
+          vscode.workspace
+            .getConfiguration('cmake', this.ws.uri)
+            .update(settingName, value, vscode.ConfigurationTarget.Workspace)
+        )
+      );
+    }
+    this.resetValues.clear();
+    return Promise.all(resets);
+  }
+}
+
+export function cmakeConfigForWorkspace(ws: vscode.WorkspaceFolder) {
+  return new CMakeConfigrator(ws);
+}
+
 export async function setCMakeConfigurationForPlatform(
   ws: vscode.WorkspaceFolder,
   settingName: string,
