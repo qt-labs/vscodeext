@@ -27,9 +27,9 @@ struct CoreTypes
     // QTime        qTime;
 
     // file/path
-    // QDir         qDir;
-    // QFile        qFile;
-    // QFileInfo    qFileInfo;
+    QDir         qDir;
+    QFile        qFile;
+    QFileInfo    qFileInfo;
 
     // flags
     // SelectionFlags qFlags;
@@ -70,9 +70,9 @@ inline CoreTypes::CoreTypes()
     // , qDateTimeSecOffset(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone(12 * 3600 + 34 * 60 + 56)))
     // , qDateTimeDefault()
     // , qTime(QTime::currentTime())
-    // , qDir(QDir::currentPath())
-    // , qFile(QCoreApplication::applicationFilePath())
-    // , qFileInfo(QCoreApplication::applicationFilePath())
+    , qDir(QDir::currentPath())
+    , qFile(QCoreApplication::applicationFilePath())
+    , qFileInfo(QCoreApplication::applicationFilePath())
     // , qFlags(SelectionFlag::SelectCurrent)
     , qLine(0, 1, 42, 43)
     , qPoint(24, 48)

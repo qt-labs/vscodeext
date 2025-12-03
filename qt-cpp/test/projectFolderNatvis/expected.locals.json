@@ -10,6 +10,21 @@
     "value": "99 'c'"
   },
   {
+    "name": "coreTypes.qDir",
+    "type": "QDir",
+    "value": "\"/path/to/test/projectFolderNatvis\""
+  },
+  {
+    "name": "coreTypes.qFile",
+    "type": "QFile",
+    "value": "\"/path/to/test/projectFolderNatvis/projectFolderNatvis\""
+  },
+  {
+    "name": "coreTypes.qFileInfo",
+    "type": "QFileInfo",
+    "value": "\"/path/to/test/projectFolderNatvis/projectFolderNatvis\""
+  },
+  {
     "name": "coreTypes.qLine",
     "type": "QLine",
     "value": "{ start point = { x = 0, y = 1 }, end point = { x = 42, y = 43 } }"
