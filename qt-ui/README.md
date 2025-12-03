@@ -19,7 +19,7 @@ For pre-release versions, go to
 ## Issues
 
 If you encounter any issues with the extension, please [report the
-issues](https://bugreports.qt.io/projects/VSCODEEXT).
+issues](https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues).
 
 ## License
 

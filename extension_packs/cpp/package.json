@@ -11,7 +11,7 @@
     "directory": "extension_packs/cpp"
   },
   "bugs": {
-    "url": "https://bugreports.qt.io/projects/VSCODEEXT"
+    "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
   },
   "version": "1.0.1",
   "engines": {
