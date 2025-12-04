@@ -14,7 +14,7 @@ struct CoreTypes
     QStringView  qStringView;
 
     // date/time
-    // QDate        qDate;
+    QDate        qDate;
     // QDateTime    qDateTimeLocal;
     // QDateTime    qDateTimeUtc;
     // QDateTime    qDateTimeBrunei;
@@ -59,7 +59,7 @@ inline CoreTypes::CoreTypes()
     , qChar(u'c')
     , qString(QStringLiteral("Hello World! Again."))
     , qStringView(qString)
-    // , qDate(QDate::currentDate())
+    , qDate(2024,06,15)
     // , qDateTimeLocal(QDateTime::currentDateTime())
     // , qDateTimeUtc(QDateTime::currentDateTimeUtc())
     // , qDateTimeBrunei(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Asia/Brunei")))

@@ -10,6 +10,11 @@
     "value": "99 'c'"
   },
   {
+    "name": "coreTypes.qDate",
+    "type": "QDate",
+    "value": "2024-06-15"
+  },
+  {
     "name": "coreTypes.qDir",
     "type": "QDir",
     "value": "\"/path/to/test/projectFolderNatvis\""

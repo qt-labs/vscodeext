@@ -69,6 +69,12 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
     platform: ['darwin', 'linux']
   },
   {
+    type: 'QDate',
+    description:
+       'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
+    platform: ['darwin', 'linux']
+  },
+  {
     type: 'QDir',
     description:
       'QDir NatVis fails differently by platform: ' +
