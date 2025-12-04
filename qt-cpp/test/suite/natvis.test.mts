@@ -291,9 +291,16 @@ export function findMismatchedSnapshotEntries(
     const t = a?.type ?? e?.type ?? undefined;
 
     const problem = t
-      ? knownNatvisProblems.find(
-          (p) => p.type === t && matchesPlatform(p, process.platform)
-        )
+      ? knownNatvisProblems.find((p) => {
+          if (p.type !== t) return false;
+          if (!matchesPlatform(p, process.platform)) return false;
+
+          // If p.variableNames exists, match by name, else match all variables of that type.
+          if (p.variableNames) {
+            return a?.name && p.variableNames.includes(a.name);
+          }
+          return true;
+        })
       : undefined;
 
     if (problem) {
