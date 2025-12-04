@@ -537,29 +537,63 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         });
 
         if (mismatches.length > 0) {
-          // Optional: detailed logs to the console only
-          forEach(mismatches, (m) => {
-            console.error(
-              `[natvis.test] Mismatch at index ${m.index}:\n` +
-                `  Actual:   ${JSON.stringify(m.actual)}\n` +
-                `  Expected: ${JSON.stringify(m.expected)}`
-            );
+          const MAX_VALUE_PREVIEW = 200;
+
+          const preview = (v: unknown): string => {
+            const raw =
+              typeof v === 'string'
+                ? v
+                : v === undefined
+                  ? 'undefined'
+                  : JSON.stringify(v);
+
+            if (raw.length <= MAX_VALUE_PREVIEW) {
+              return raw;
+            }
+            return `${raw.slice(0, MAX_VALUE_PREVIEW)}… [truncated, len=${raw.length}]`;
+          };
+
+          const compactActual = mismatches.map((m) => {
+            const actual = m.actual ?? {};
+            const expected = m.expected ?? {};
+
+            return {
+              index: m.index,
+              name:
+                (actual as any).name ??
+                (expected as any).name ??
+                `<index ${m.index}>`,
+              type:
+                (actual as any).type ?? (expected as any).type ?? '<unknown>',
+              value: preview((actual as any).value)
+            };
           });
 
-          // What Chai will show as the assertion message
-          const summaryMessage =
-            `NatVis mismatch (after filtering known-problem types).\n` +
-            `Mismatches at indices: ${mismatches.map((m) => m.index).join(', ')}`;
+          const compactExpected = mismatches.map((m) => {
+            const actual = m.actual ?? {};
+            const expected = m.expected ?? {};
 
-          const actualValues = mismatches.map((m) => m.actual);
-          const expectedValues = mismatches.map((m) => m.expected);
+            return {
+              index: m.index,
+              name:
+                (actual as any).name ??
+                (expected as any).name ??
+                `<index ${m.index}>`,
+              type:
+                (actual as any).type ?? (expected as any).type ?? '<unknown>',
+              value: preview((expected as any).value)
+            };
+          });
+
+          const indices = mismatches.map((m) => m.index).join(', ');
 
           expect(
-            actualValues,
-            `${summaryMessage}\nMismatched snapshot entries (actual vs expected):`
-          ).to.deep.equal(expectedValues);
+            compactActual,
+            `NatVis mismatch (after filtering known-problem types).\n` +
+              `Mismatches at indices: ${indices}\n` +
+              `Values are truncated to ${MAX_VALUE_PREVIEW} characters for display.`
+          ).to.deep.equal(compactExpected);
         }
-
         //    Coverage warning/error still based on full NatVis coverage
         const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
         if (missing.length && SHOW_COVERAGE_MISSING) {
