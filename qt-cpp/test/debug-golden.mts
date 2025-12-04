@@ -64,8 +64,9 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
   {
     type: 'QStringView',
     description:
-      'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
+      'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.',
     // variableNames: ['coreTypes.qStringView'], // optional filter if needed
+    platform: ['darwin', 'linux']
   },
   {
     type: 'QDir',
