@@ -15,19 +15,64 @@
     "value": "2024-06-15"
   },
   {
+    "name": "coreTypes.qDateTimeBrunei",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeDefault",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeLocal",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeMarquesas",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeSecOffset",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeShouldFail",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeSouthPole",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeUtc",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
+    "name": "coreTypes.qDateTimeYukon",
+    "type": "QDateTime",
+    "value": "error"
+  },
+  {
     "name": "coreTypes.qDir",
     "type": "QDir",
-    "value": "\"/path/to/test/projectFolderNatvis\""
+    "value": "\"/path/to/normalize/projectFolderNatvis\""
   },
   {
     "name": "coreTypes.qFile",
     "type": "QFile",
-    "value": "\"/path/to/test/projectFolderNatvis/projectFolderNatvis\""
+    "value": "\"/path/to/normalize/projectFolderNatvis\""
   },
   {
     "name": "coreTypes.qFileInfo",
     "type": "QFileInfo",
-    "value": "\"/path/to/test/projectFolderNatvis/projectFolderNatvis\""
+    "value": "\"/path/to/normalize/projectFolderNatvis\""
   },
   {
     "name": "coreTypes.qLine",
@@ -63,5 +108,10 @@
     "name": "coreTypes.qStringView",
     "type": "QStringView",
     "value": "Hello World! Again."
+  },
+  {
+    "name": "coreTypes.qTime",
+    "type": "QTime",
+    "value": "{ milliseconds = 45296000 }"
   }
 ]

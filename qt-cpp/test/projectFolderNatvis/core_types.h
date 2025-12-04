@@ -15,16 +15,16 @@ struct CoreTypes
 
     // date/time
     QDate        qDate;
-    // QDateTime    qDateTimeLocal;
-    // QDateTime    qDateTimeUtc;
-    // QDateTime    qDateTimeBrunei;
-    // QDateTime    qDateTimeSouthPole;
-    // QDateTime    qDateTimeYukon;
-    // QDateTime    qDateTimeMarquesas;
-    // QDateTime    qDateTimeShouldFail;
-    // QDateTime    qDateTimeSecOffset;
-    // QDateTime    qDateTimeDefault;
-    // QTime        qTime;
+    QDateTime    qDateTimeLocal;
+    QDateTime    qDateTimeUtc;
+    QDateTime    qDateTimeBrunei;
+    QDateTime    qDateTimeSouthPole;
+    QDateTime    qDateTimeYukon;
+    QDateTime    qDateTimeMarquesas;
+    QDateTime    qDateTimeShouldFail;
+    QDateTime    qDateTimeSecOffset;
+    QDateTime    qDateTimeDefault;
+    QTime        qTime;
 
     // file/path
     QDir         qDir;
@@ -60,16 +60,35 @@ inline CoreTypes::CoreTypes()
     , qString(QStringLiteral("Hello World! Again."))
     , qStringView(qString)
     , qDate(2024,06,15)
-    // , qDateTimeLocal(QDateTime::currentDateTime())
-    // , qDateTimeUtc(QDateTime::currentDateTimeUtc())
-    // , qDateTimeBrunei(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Asia/Brunei")))
-    // , qDateTimeSouthPole(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Antarctica/South_Pole")))
-    // , qDateTimeYukon(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Canada/Yukon")))
-    // , qDateTimeMarquesas(QDateTime::currentDateTimeUtc().toTimeTimeZone(QTimeZone("Pacific/Marquesas")))
-    // , qDateTimeShouldFail(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Antarctica/Troll")))
-    // , qDateTimeSecOffset(QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone(12 * 3600 + 34 * 60 + 56)))
-    // , qDateTimeDefault()
-    // , qTime(QTime::currentTime())
+    // deterministic date-times built from a fixed base date/time
+    , qDateTimeLocal(QDateTime(QDate(2024, 6, 15),
+                               QTime(12, 34, 56),
+                               QTimeZone::systemTimeZone()))
+    , qDateTimeUtc(QDateTime(QDate(2024, 6, 15),
+                             QTime(12, 34, 56),
+                             Qt::UTC))
+    , qDateTimeBrunei(QDateTime(QDate(2024, 6, 15),
+                                QTime(12, 34, 56),
+                                QTimeZone("Asia/Brunei")))
+    , qDateTimeSouthPole(QDateTime(QDate(2024, 6, 15),
+                                   QTime(12, 34, 56),
+                                   QTimeZone("Antarctica/South_Pole")))
+    , qDateTimeYukon(QDateTime(QDate(2024, 6, 15),
+                               QTime(12, 34, 56),
+                               QTimeZone("Canada/Yukon")))
+    , qDateTimeMarquesas(QDateTime(QDate(2024, 6, 15),
+                                   QTime(12, 34, 56),
+                                   QTimeZone("Pacific/Marquesas")))
+    // expected to be invalid timezone – useful for NatVis “error” behaviour
+    , qDateTimeShouldFail(QDateTime(QDate(2024, 6, 15),
+                                    QTime(12, 34, 56),
+                                    QTimeZone("Antarctica/Troll")))
+    // fixed offset timezone: +12:34:56
+    , qDateTimeSecOffset(QDateTime(QDate(2024, 6, 15),
+                                   QTime(12, 34, 56),
+                                   QTimeZone(12 * 3600 + 34 * 60 + 56)))
+    , qDateTimeDefault() // default-constructed
+    , qTime(12, 34, 56)
     , qDir(QDir::currentPath())
     , qFile(QCoreApplication::applicationFilePath())
     , qFileInfo(QCoreApplication::applicationFilePath())

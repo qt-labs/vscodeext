@@ -71,8 +71,31 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
   {
     type: 'QDate',
     description:
-       'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
+      'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
     platform: ['darwin', 'linux']
+  },
+  {
+    type: 'QDateTime',
+    description:
+      'QDateTime NatVis fails differently by platform: ' +
+      '- macOS/Linux: NatVis expressions reference Windows-only private symbols ' +
+      '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+      '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ' +
+      '- Windows CI: NatVis loads, but required private symbols/fields are not available ' +
+      '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+      'falls back to a raw "{d={...}}" representation instead of a formatted date-time.',
+    variableNames: [
+      'coreTypes.qDateTimeBrunei',
+      'coreTypes.qDateTimeDefault',
+      'coreTypes.qDateTimeLocal',
+      'coreTypes.qDateTimeMarquesas',
+      'coreTypes.qDateTimeSecOffset',
+      'coreTypes.qDateTimeShouldFail',
+      'coreTypes.qDateTimeSouthPole',
+      'coreTypes.qDateTimeUtc',
+      'coreTypes.qDateTimeYukon'
+    ],
+    platform: ['darwin', 'linux', 'win32']
   },
   {
     type: 'QDir',
