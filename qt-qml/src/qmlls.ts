@@ -211,15 +211,15 @@ export class Qmlls {
     try {
       if (configs.get<string>('customExePath')) {
         const customPath = configs.get<string>('customExePath') ?? '';
-        const untildifiedCustomPath = resolveConfiguration(customPath);
-        const res = spawnSync(untildifiedCustomPath, ['--help'], {
+        const resolvedCustomPath = resolveConfiguration(customPath);
+        const res = spawnSync(resolvedCustomPath, ['--help'], {
           timeout: 1000
         });
         if (res.status !== 0) {
           throw res.error ?? new Error(res.stderr.toString());
         }
         telemetry.sendAction('customQmllsUsage');
-        this.startLanguageClient(customPath);
+        this.startLanguageClient(resolvedCustomPath);
       } else {
         const installed = installer.getExpectedQmllsPath();
         if (await exists(installed)) {
