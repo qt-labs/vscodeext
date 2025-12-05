@@ -5,5 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 add_executable(hello main.cpp)
+# Copy pass1.json next to the generated executable
+configure_file(pass1.json pass1.json COPYONLY)
 target_link_libraries(hello PRIVATE Qt6::Core)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

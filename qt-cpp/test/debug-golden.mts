@@ -147,7 +147,16 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
       'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; ' +
       'LLDB/GDB fall back to a raw value, so flag names are not shown.',
     platform: ['darwin', 'linux']
-  }
+  },
+  {
+  type: 'QJsonDocument',
+  variableNames: [
+    'coreTypes.qJsonDocumentEmpty'
+  ],
+  platform: ['darwin', 'linux'],
+  description:
+    'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB/GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.'
+}
 
   // Add more entries here as you discover issues.
 ];
