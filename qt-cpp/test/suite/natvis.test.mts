@@ -603,9 +603,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         }
 
         // ---- NatVis summary: which types worked, which NatVis types are unused ----
-        const SHOW_SUMMARY =
-          process.env.NATVIS_SHOW_SUMMARY === '1' ||
-          process.env.NATVIS_SHOW_MISSING === '1'; // legacy alias
+        const SHOW_SUMMARY = process.env.NATVIS_SHOW_SUMMARY === '1';
 
         if (SHOW_SUMMARY) {
           // All types that *did* match some NatVis pattern and made it into the
