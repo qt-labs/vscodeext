@@ -257,6 +257,45 @@ export function normalizeValue(raw: string): string {
   return value;
 }
 
+export function normalizeValueWithType(
+  raw: string,
+  type?: string,
+  name?: string
+): string {
+  // First apply the generic normalization (pointers, floats, QChar, quotes)
+  let value = normalizeValue(raw);
+
+  if (type === 'QJsonDocument') {
+    const trimmed = value.trim();
+
+    // Empty document (our dedicated CoreTypes field)
+    if (name === 'coreTypes.qJsonDocumentEmpty') {
+      // Treat any "empty"-ish representation as "{empty}"
+      if (!trimmed || trimmed === '{}' || /empty/i.test(trimmed)) {
+        return '{empty}';
+      }
+      return trimmed;
+    }
+
+    // Non-empty QJsonDocument:
+    //   - macOS: "{...}"
+    //   - Windows: "{d=unique_ptr {...} }"
+    //   - Linux: "" (no DisplayString)
+    if (
+      !trimmed || // Linux: empty string
+      trimmed === '{...}' ||
+      /unique_ptr/i.test(trimmed)
+    ) {
+      return '{...}';
+    }
+
+    return trimmed;
+  }
+
+  // All other types unchanged
+  return value;
+}
+
 export function toSnapshot(vars: any[]): SnapVar[] {
   const sorted = [...vars].sort((a, b) => {
     const an = (a.name ?? '').localeCompare(b.name ?? '');
@@ -271,7 +310,9 @@ export function toSnapshot(vars: any[]): SnapVar[] {
         : (v.value?.toString?.() ?? undefined);
     // Step 2: normalize per-type (Qt / debugger differences)
     const normalized =
-      rawValue !== undefined ? normalizeValue(rawValue) : undefined;
+      rawValue !== undefined
+        ? normalizeValueWithType(rawValue, v.type, v.name)
+        : undefined;
 
     const stable =
       typeof normalized === 'string' ? stripUnstable(normalized) : undefined;
