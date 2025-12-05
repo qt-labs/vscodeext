@@ -125,13 +125,13 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
     platform: ['darwin', 'linux', 'win32']
   },
   {
-  type: 'QUrl',
-  description:
-    'QUrl NatVis fails differently by platform: ' +
-    '- macOS/Linux: LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific' +
-    '- Windows CI: natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.',
-  variableNames: ['coreTypes.qUrl'],
-  platform: ['darwin', 'linux', 'win32']
+    type: 'QUrl',
+    description:
+      'QUrl NatVis fails differently by platform: ' +
+      '- macOS/Linux: LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific' +
+      '- Windows CI: natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.',
+    variableNames: ['coreTypes.qUrl'],
+    platform: ['darwin', 'linux', 'win32']
   },
   {
     type: 'QUuid',
@@ -139,7 +139,16 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
     description:
       'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.',
     platform: ['darwin', 'linux']
+  },
+  {
+    type: 'SelectionFlags',
+    variableNames: ['coreTypes.qFlags'],
+    description:
+      'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; ' +
+      'LLDB/GDB fall back to a raw value, so flag names are not shown.',
+    platform: ['darwin', 'linux']
   }
+
   // Add more entries here as you discover issues.
 ];
 
@@ -421,6 +430,13 @@ function wildcardToRegex(pat: string): RegExp {
   return new RegExp(rx);
 }
 
+// Extra aliases for types whose *real* NatVis rule is more generic.
+// Here: SelectionFlags is a typedef / Q_DECLARE_FLAGS wrapper around QFlags<SelectionFlag>,
+// but the debugger reports the typedef name "SelectionFlags".
+const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
+  // NatVis pattern       // Snapshot types to treat as covered by that pattern
+  'QFlags<*>': ['SelectionFlags']
+};
 /**
  * A base is covered if base OR ANY of its alternatives matches a seen type.
  * Returns missing base names (not each alt).
@@ -451,6 +467,13 @@ export function matchNatvisTypePatternsConsideringAlternatives(
     });
     if (!anyMatched) missing.push(base);
   }
-
+  // --- Alias typedef-like types to their underlying NatVis patterns ----
+  for (const aliases of Object.values(EXTRA_NATVIS_TYPE_ALIASES)) {
+    for (const alias of aliases) {
+      if (seenTypes.has(alias)) {
+        coveredTypes.add(alias);
+      }
+    }
+  }
   return { missing: missing.sort(), coveredTypes };
 }
