@@ -123,6 +123,22 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
       '- Windows CI: natvis loads, but DisplayString fails because required private types or fields (QFileInfoPrivate) are not available in the CI Qt build, forcing the debugger to show raw {d_ptr={...}} output.',
     variableNames: ['coreTypes.qFileInfo'],
     platform: ['darwin', 'linux', 'win32']
+  },
+  {
+  type: 'QUrl',
+  description:
+    'QUrl NatVis fails differently by platform: ' +
+    '- macOS/Linux: LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific' +
+    '- Windows CI: natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.',
+  variableNames: ['coreTypes.qUrl'],
+  platform: ['darwin', 'linux', 'win32']
+  },
+  {
+    type: 'QUuid',
+    variableNames: ['coreTypes.qUuid'],
+    description:
+      'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.',
+    platform: ['darwin', 'linux']
   }
   // Add more entries here as you discover issues.
 ];

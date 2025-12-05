@@ -47,8 +47,8 @@ struct CoreTypes
     QSizeF    qSizeF;
 
     // URL / UUID
-    // QUrl      qUrl;
-    // QUuid     qUuid;
+    QUrl      qUrl;
+    QUuid     qUuid;
 
     // Constructor
     CoreTypes();
@@ -100,8 +100,8 @@ inline CoreTypes::CoreTypes()
     , qRectF(5.1, 5.5, 4.1, 4.2)
     , qSize(42, 43)
     , qSizeF(4.1, 4.2)
-    // , qUrl(QStringLiteral("https://github.com/narnaud/natvis4qt"))
-    // , qUuid(QUuid::createUuid())
+    , qUrl(QStringLiteral("https://github.com/narnaud/natvis4qt"))
+    , qUuid("{12345678-1234-1234-1234-1234567890ab}")
 {
     // // Load JSON resource (same as the example you shared)
     // QFile jsonFile(QStringLiteral(":/pass1.json"));
