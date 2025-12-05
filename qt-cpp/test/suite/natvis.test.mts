@@ -602,17 +602,133 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
           ).to.deep.equal(compactExpected);
         }
         //    Coverage warning/error still based on full NatVis coverage
-        const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
-        if (missing.length && SHOW_COVERAGE_MISSING) {
-          const lines = missing.map((base) => {
+        // const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
+
+        // if (missing.length && SHOW_COVERAGE_MISSING) {
+        //   const lines = missing.map((base) => {
+        //     const alts = natvis.alts.get(base);
+        //     return alts && alts.size
+        //       ? `- ${base} (alts: ${[...alts].join(', ')})`
+        //       : `- ${base}`;
+        //   });
+        //   console.warn(
+        //     `[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`
+        //   );
+        // }
+
+        // ---- NatVis summary: which types worked, which NatVis types are unused ----
+        const SHOW_SUMMARY =
+          process.env.NATVIS_SHOW_SUMMARY === '1' ||
+          process.env.NATVIS_SHOW_MISSING === '1'; // legacy alias
+
+        if (SHOW_SUMMARY) {
+          // All types that *did* match some NatVis pattern and made it into the
+          // NatVis-filtered snapshot.
+          const allCoveredTypes = new Set<string>(
+            natvisSnapshot
+              .map((v) => v.type)
+              .filter((t): t is string => Boolean(t))
+          );
+
+          // Types that had *unexpected* mismatches (i.e. not ignored as known problems).
+          const mismatchedTypes = new Set<string>();
+          for (const m of mismatches) {
+            const t =
+              (m.actual && (m.actual as any).type) ??
+              (m.expected && (m.expected as any).type);
+            if (typeof t === 'string') {
+              mismatchedTypes.add(t);
+            }
+          }
+
+          // Types that are knownNatvisProblems *on this platform* and that actually
+          // occurred in the NatVis-filtered snapshot (respecting variableNames).
+          const problematicTypesOnThisPlatform = new Set<string>();
+
+          for (const prob of knownNatvisProblems) {
+            if (!matchesPlatform(prob, process.platform)) {
+              continue;
+            }
+
+            const typeName = prob.type;
+
+            const seenForThisProblem = natvisSnapshot.some((v) => {
+              if (v.type !== typeName) {
+                return false;
+              }
+
+              if (prob.variableNames && prob.variableNames.length > 0) {
+                const name = v.name;
+                return (
+                  typeof name === 'string' && prob.variableNames.includes(name)
+                );
+              }
+
+              // No variableNames restriction → any variable of this type counts.
+              return true;
+            });
+
+            if (seenForThisProblem) {
+              problematicTypesOnThisPlatform.add(typeName);
+            }
+          }
+
+          // "Successful" types = covered by NatVis AND not mismatching AND not in
+          // the known-problem list for this platform.
+          const successfulTypes = [...allCoveredTypes]
+            .filter(
+              (t) =>
+                !mismatchedTypes.has(t) &&
+                !problematicTypesOnThisPlatform.has(t)
+            )
+            .sort((a, b) => a.localeCompare(b));
+
+          // Show natvis file path relative to the workspace root
+          let natvisFileLabel = natvisPath ?? '<unknown>';
+
+          if (typeof natvisFileLabel === 'string') {
+            try {
+              const rel = path.relative(wsFolder.uri.fsPath, natvisFileLabel);
+
+              // Normalize to forward slashes for clean display
+              natvisFileLabel = rel.replace(/\\/g, '/');
+            } catch {
+              // Fallback to raw if path.relative fails (shouldn't happen)
+            }
+          }
+
+          console.log(
+            `[natvis.summary] Tested Qt Types successfully covered by NatVis file ${natvisFileLabel} on ${process.platform}:`
+          );
+
+          if (successfulTypes.length === 0) {
+            console.log('  (none)');
+          } else {
+            for (const t of successfulTypes) {
+              console.log(`  ${t}`);
+            }
+          }
+
+          // Now show NatVis patterns that are defined but not exercised
+          const missingLines = missing.map((base) => {
             const alts = natvis.alts.get(base);
             return alts && alts.size
-              ? `- ${base} (alts: ${[...alts].join(', ')})`
-              : `- ${base}`;
+              ? `${base} (alts: ${[...alts].join(', ')})`
+              : base;
           });
-          console.warn(
-            `[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`
-          );
+
+          if (missingLines.length > 0) {
+            console.log(
+              '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
+            );
+            for (const line of missingLines) {
+              console.log(`  ${line}`);
+            }
+          } else {
+            console.log(
+              '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
+            );
+          }
         }
       }
     } finally {
