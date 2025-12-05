@@ -113,5 +113,15 @@
     "name": "coreTypes.qTime",
     "type": "QTime",
     "value": "{ milliseconds = 45296000 }"
+  },
+  {
+    "name": "coreTypes.qUrl",
+    "type": "QUrl",
+    "value": "https://github.com/narnaud/natvis4qt"
+  },
+  {
+    "name": "coreTypes.qUuid",
+    "type": "QUuid",
+    "value": "{12345678-1234-1234-1234-1234567890AB}"
   }
 ]
