@@ -75,6 +75,11 @@
     "value": "\"/path/to/normalize/projectFolderNatvis\""
   },
   {
+    "name": "coreTypes.qFlags",
+    "type": "SelectionFlags",
+    "value": "SelectCurrent | SelectAll (3)"
+  },
+  {
     "name": "coreTypes.qLine",
     "type": "QLine",
     "value": "{ start point = { x = 0, y = 1 }, end point = { x = 42, y = 43 } }"

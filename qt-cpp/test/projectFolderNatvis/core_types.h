@@ -4,6 +4,14 @@
 
 #include <QtCore> // brings in all necessary QtCore headers
 
+enum class SelectionFlag {
+    None          = 0x0,
+    SelectCurrent = 0x1,
+    SelectAll     = 0x2,
+};
+Q_DECLARE_FLAGS(SelectionFlags, SelectionFlag)
+Q_DECLARE_OPERATORS_FOR_FLAGS(SelectionFlags)
+
 // Holds one instance of each QtCore-based type we want NatVis to handle
 struct CoreTypes
 {
@@ -32,7 +40,7 @@ struct CoreTypes
     QFileInfo    qFileInfo;
 
     // flags
-    // SelectionFlags qFlags;
+    SelectionFlags qFlags;
 
     // JSON document
     // QJsonDocument qJsonDocument;
@@ -92,7 +100,7 @@ inline CoreTypes::CoreTypes()
     , qDir(QDir::currentPath())
     , qFile(QCoreApplication::applicationFilePath())
     , qFileInfo(QCoreApplication::applicationFilePath())
-    // , qFlags(SelectionFlag::SelectCurrent)
+    , qFlags(SelectionFlag::SelectCurrent | SelectionFlag::SelectAll)
     , qLine(0, 1, 42, 43)
     , qPoint(24, 48)
     , qPointF(24.5, 48.5)
