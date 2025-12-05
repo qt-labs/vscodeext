@@ -30,7 +30,7 @@ export function registerDebugPort() {
           if (value === openDocumentation) {
             void vscode.env.openExternal(
               vscode.Uri.parse(
-                'https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-how-debug-apps-qml.html#debug-mixed-c-c-and-qml-code'
+                'https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-how-debug-qml-apps.html#debug-mixed-c-c-and-qml-code'
               )
             );
           } else if (value === copyToClipboard) {
