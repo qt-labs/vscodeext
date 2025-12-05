@@ -1,4 +1,3 @@
-// core_types.h
 // Minimal QtCore sample types for NatVis coverage
 #pragma once
 
@@ -43,7 +42,8 @@ struct CoreTypes
     SelectionFlags qFlags;
 
     // JSON document
-    // QJsonDocument qJsonDocument;
+    QJsonDocument qJsonDocument;
+    QJsonDocument qJsonDocumentEmpty;
 
     // geometry (QtCore types)
     QLine     qLine;
@@ -111,11 +111,15 @@ inline CoreTypes::CoreTypes()
     , qUrl(QStringLiteral("https://github.com/narnaud/natvis4qt"))
     , qUuid("{12345678-1234-1234-1234-1234567890ab}")
 {
-    // // Load JSON resource (same as the example you shared)
-    // QFile jsonFile(QStringLiteral(":/pass1.json"));
-    // if (jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    //     QJsonParseError error;
-    //     qJsonDocument = QJsonDocument::fromJson(jsonFile.readAll(), &error);
-    //     Q_UNUSED(error);
-    // }
+    // Load JSON sample from pass1.json (expected next to the executable).
+    // CMake should copy pass1.json from the source tree (next to core_types.h)
+    // into the runtime directory.
+    const QString jsonPath =
+        QCoreApplication::applicationDirPath() + QLatin1String("/pass1.json");
+    QFile jsonFile(jsonPath);
+    if (jsonFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QJsonParseError error;
+        qJsonDocument = QJsonDocument::fromJson(jsonFile.readAll(), &error);
+        Q_UNUSED(error);
+    }
 }
