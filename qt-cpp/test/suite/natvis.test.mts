@@ -601,20 +601,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
               `Values are truncated to ${MAX_VALUE_PREVIEW} characters for display.`
           ).to.deep.equal(compactExpected);
         }
-        //    Coverage warning/error still based on full NatVis coverage
-        // const SHOW_COVERAGE_MISSING = process.env.NATVIS_SHOW_MISSING === '1';
-
-        // if (missing.length && SHOW_COVERAGE_MISSING) {
-        //   const lines = missing.map((base) => {
-        //     const alts = natvis.alts.get(base);
-        //     return alts && alts.size
-        //       ? `- ${base} (alts: ${[...alts].join(', ')})`
-        //       : `- ${base}`;
-        //   });
-        //   console.warn(
-        //     `[natvis.coverage] Missing types not exercised:\n${lines.join('\n')}`
-        //   );
-        // }
 
         // ---- NatVis summary: which types worked, which NatVis types are unused ----
         const SHOW_SUMMARY =
@@ -707,6 +693,19 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
             for (const t of successfulTypes) {
               console.log(`  ${t}`);
             }
+          }
+          // --- Known-problem NatVis types on this platform -------------------------
+          if (problematicTypesOnThisPlatform.size > 0) {
+            console.log(
+              `[natvis.summary] Tested Qt Types with unsuccessful NatVis coverage on ${process.platform} (known-problem, ignored mismatches):`
+            );
+            for (const t of [...problematicTypesOnThisPlatform].sort()) {
+              console.log(`  ${t}`);
+            }
+          } else {
+            console.log(
+              `[natvis.summary] No known-problem NatVis types detected on ${process.platform}.`
+            );
           }
 
           // Now show NatVis patterns that are defined but not exercised
