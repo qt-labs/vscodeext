@@ -10,8 +10,8 @@ on:
           description: 'Enable test debug mode (QT_TEST_DEBUG): 0=quiet, 1=extra info, 2=show all'
           required: false
           default: '1'
-        natvis_show_missing:
-          description: 'Show missing NatVis types (NATVIS_SHOW_MISSING=1)'
+        natvis_show_summary:
+          description: 'Show Qt types NatVis coverage summary (NATVIS_SHOW_SUMMARY=1)'
           required: false
           default: '0'
 
@@ -38,7 +38,7 @@ jobs:
       QT_VERSION_FOR_TEST: "6.9.0"
       VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off
       QT_TEST_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
-      NATVIS_SHOW_MISSING: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.natvis_show_missing || '' }}
+      NATVIS_SHOW_SUMMARY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.natvis_show_summary || '' }}
       DBUS_SESSION_BUS_ADDRESS: "disabled:"
       NO_AT_BRIDGE: "1"
 
