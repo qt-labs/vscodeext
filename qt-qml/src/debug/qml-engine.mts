@@ -13,14 +13,14 @@ import {
   DebugMessageClient,
   IMessageType,
   QmlDebugConnectionState
-} from '@debug/debug-connection';
-import { Timer } from '@debug/timer';
+} from '@debug/debug-connection.mjs';
+import { Timer } from '@debug/timer.js';
 import { createLogger } from 'qt-lib';
 import {
   BreakpointState,
   QmlBreakpoint,
   QmlDebugSession
-} from '@debug/debug-adapter';
+} from '@debug/debug-adapter.mjs';
 import {
   BACKTRACE,
   BREAKONSIGNAL,
@@ -56,11 +56,11 @@ import {
   V8MESSAGE,
   V8REQUEST,
   VERSION
-} from '@debug/qmlv8debuggerclientconstants';
-import { Packet } from '@debug/packet';
-import { DebuggerCommand } from '@debug/debugger-command';
-import { FileFinder } from '@debug/file-finder';
-import { QmlEngineUI } from '@debug/ui';
+} from '@debug/qmlv8debuggerclientconstants.js';
+import { Packet } from '@debug/packet.mjs';
+import { DebuggerCommand } from '@debug/debugger-command.js';
+import { FileFinder } from '@debug/file-finder.js';
+import { QmlEngineUI } from '@debug/ui.js';
 
 const logger = createLogger('qml-engine');
 

@@ -4,8 +4,8 @@
 import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
-import { projectManager } from '@/extension';
-import { EXTENSION_ID } from '@/constants';
+import { projectManager } from '@/extension.mjs';
+import { EXTENSION_ID } from '@/constants.js';
 
 export function registerRestartQmllsCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.restartQmlls`, () => {

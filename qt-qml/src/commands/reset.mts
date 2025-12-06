@@ -3,8 +3,8 @@
 
 import * as vscode from 'vscode';
 
-import { projectManager } from '@/extension';
-import { EXTENSION_ID } from '@/constants';
+import { projectManager } from '@/extension.mjs';
+import { EXTENSION_ID } from '@/constants.js';
 
 function reset() {
   void projectManager.restartQmlls();

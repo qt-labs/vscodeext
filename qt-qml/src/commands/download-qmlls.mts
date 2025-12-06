@@ -4,8 +4,8 @@
 import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
-import { EXTENSION_ID } from '@/constants';
-import { DecisionCode, fetchAssetAndDecide, Qmlls } from '@/qmlls';
+import { EXTENSION_ID } from '@/constants.js';
+import { DecisionCode, fetchAssetAndDecide, Qmlls } from '@/qmlls.mjs';
 
 export function registerDownloadQmllsCommand() {
   return vscode.commands.registerCommand(

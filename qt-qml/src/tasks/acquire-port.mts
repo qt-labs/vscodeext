@@ -3,7 +3,6 @@
 
 import * as vscode from 'vscode';
 import getPort from 'get-port';
-
 import { telemetry } from 'qt-lib';
 
 interface AcquirePortTaskDefinition extends vscode.TaskDefinition {

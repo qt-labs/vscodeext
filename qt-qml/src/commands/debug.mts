@@ -3,8 +3,8 @@
 
 import * as vscode from 'vscode';
 
-import { EXTENSION_ID } from '@/constants';
-import { compoundPort } from '@/tasks/acquire-port';
+import { EXTENSION_ID } from '@/constants.js';
+import { compoundPort } from '@/tasks/acquire-port.mjs';
 
 // This function is used when a compound launch is used. The main idea is to
 // return the same port number for the first and second call.
