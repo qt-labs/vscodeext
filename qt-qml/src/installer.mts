@@ -13,9 +13,9 @@ import {
   fetchWithAbort,
   createLogger
 } from 'qt-lib';
-import * as unzipper from '@/unzipper';
-import * as downloader from '@/downloader';
-import { setDoNotAskForDownloadingQmlls } from '@/qmlls';
+import * as unzipper from '@/unzipper.js';
+import * as downloader from '@/downloader.js';
+import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
 
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;

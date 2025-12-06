@@ -19,9 +19,9 @@ import {
   QmlDebugConnectionState,
   Server,
   ServerScheme
-} from '@debug/debug-connection';
-import { QmlEngine, StepAction } from '@debug/qml-engine';
-import { projectManager } from '@/extension';
+} from '@debug/debug-connection.mjs';
+import { QmlEngine, StepAction } from '@debug/qml-engine.mjs';
+import { projectManager } from '@/extension.mjs';
 
 const logger = createLogger('debug-adapter');
 

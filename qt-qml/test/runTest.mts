@@ -13,7 +13,7 @@ import {
 import {
   getLocalQtCore,
   getQuietVSCodeArgs
-} from '../../qt-lib/src/test-constants';
+} from '../../qt-lib/src/test-constants.js';
 import {
   parseVSCodeDirs,
   installExtensionWithRetry,

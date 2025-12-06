@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { PromiseSocket } from 'promise-socket';
 import { Socket } from 'net';
 
-import { DataStream } from '@debug/datastream';
+import { DataStream } from '@debug/datastream.js';
 import { createLogger } from 'qt-lib';
 
 type PacketSocket = PromiseSocket<Socket>;

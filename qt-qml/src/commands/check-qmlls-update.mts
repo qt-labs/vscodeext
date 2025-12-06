@@ -3,8 +3,8 @@
 
 import * as vscode from 'vscode';
 
-import { EXTENSION_ID } from '@/constants';
-import { DecisionCode, fetchAssetAndDecide, Qmlls } from '@/qmlls';
+import { EXTENSION_ID } from '@/constants.js';
+import { DecisionCode, fetchAssetAndDecide, Qmlls } from '@/qmlls.mjs';
 import { showAutoDismissNotification, telemetry } from 'qt-lib';
 
 export function registerCheckQmllsUpdateCommand() {

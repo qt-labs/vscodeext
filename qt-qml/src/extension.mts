@@ -13,19 +13,23 @@ import {
   createColorProvider,
   CoreKey
 } from 'qt-lib';
-import { registerRestartQmllsCommand } from '@cmd/restart-qmlls';
-import { registerDownloadQmllsCommand } from '@cmd/download-qmlls';
-import { registerDebugPort } from '@cmd/debug';
-import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update';
-import { getDoNotAskForDownloadingQmlls, Qmlls, QmllsStatus } from '@/qmlls';
-import * as consts from '@/constants';
-import { QMLProjectManager, createQMLProject } from '@/project';
-import { registerResetCommand } from '@cmd/reset';
-import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter';
+import { registerRestartQmllsCommand } from '@cmd/restart-qmlls.mjs';
+import { registerDownloadQmllsCommand } from '@cmd/download-qmlls.mjs';
+import { registerDebugPort } from '@cmd/debug.mjs';
+import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update.mjs';
+import {
+  getDoNotAskForDownloadingQmlls,
+  Qmlls,
+  QmllsStatus
+} from '@/qmlls.mjs';
+import * as consts from '@/constants.js';
+import { QMLProjectManager, createQMLProject } from '@/project.mjs';
+import { registerResetCommand } from '@cmd/reset.mjs';
+import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter.mjs';
 import {
   acquirePortTaskProvider,
   AcquirePortTaskProvider
-} from './tasks/acquire-port';
+} from './tasks/acquire-port.mjs';
 
 export let projectManager: QMLProjectManager;
 export let coreAPI: CoreAPI | undefined;

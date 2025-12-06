@@ -5,8 +5,8 @@ import * as vscode from 'vscode';
 import { Socket } from 'net';
 
 import { createLogger } from 'qt-lib';
-import { Packet, PacketProtocol } from '@debug/packet';
-import { Timer } from '@debug/timer';
+import { Packet, PacketProtocol } from '@debug/packet.mjs';
+import { Timer } from '@debug/timer.js';
 
 const logger = createLogger('debug-connection');
 

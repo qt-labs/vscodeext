@@ -4,8 +4,8 @@
 import * as vscode from 'vscode';
 
 import { CoreKey, Project, ProjectManager, createLogger } from 'qt-lib';
-import { Qmlls } from '@/qmlls';
-import { coreAPI } from '@/extension';
+import { Qmlls } from '@/qmlls.mjs';
+import { coreAPI } from '@/extension.mjs';
 
 const logger = createLogger('project');
 

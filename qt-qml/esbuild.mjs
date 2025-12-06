@@ -19,7 +19,7 @@ const extensionConfig = {
   mainFields: ['module', 'main'],
   tsconfig: './tsconfig.json',
   format: 'cjs',
-  entryPoints: ['./src/extension.ts'],
+  entryPoints: ['./src/extension.mts'],
   outfile: './out/extension.js',
   external: ['vscode']
 };
@@ -33,9 +33,9 @@ const extensionTestConfig = {
   tsconfig: './tsconfig.json',
   format: 'cjs',
   entryPoints: [
-    './test/runTest.ts',
-    './test/suite/index.ts',
-    './test/suite/extension.test.ts'
+    './test/runTest.mts',
+    './test/suite/index.mts',
+    './test/suite/extension.test.mts'
   ],
   outdir: './out/test/',
   external: ['vscode', './reporters/parallel-buffered', './worker.js']

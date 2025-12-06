@@ -9,7 +9,7 @@ import {
   ServerOptions,
   LanguageClient,
   LanguageClientOptions
-} from 'vscode-languageclient/node';
+} from 'vscode-languageclient/node.js';
 
 import {
   createLogger,
@@ -24,9 +24,9 @@ import {
   PySideEnvData,
   QtWorkspaceFeatures
 } from 'qt-lib';
-import { coreAPI, projectManager } from '@/extension';
-import { EXTENSION_ID } from '@/constants';
-import * as installer from '@/installer';
+import { coreAPI, projectManager } from '@/extension.mjs';
+import { EXTENSION_ID } from '@/constants.js';
+import * as installer from '@/installer.mjs';
 
 const logger = createLogger('qmlls');
 const QMLLS_CONFIG = `${EXTENSION_ID}.qmlls`;
@@ -399,7 +399,7 @@ export class Qmlls {
           .then(() => {
             logger.info(`QML Language Server stopped: "${this._folder.name}"`);
           })
-          .catch((e) => {
+          .catch((e: unknown) => {
             logger.error(
               `QML Language Server stop failed: "${this._folder.name}", ${String(e)}`
             );
