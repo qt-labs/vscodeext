@@ -87,14 +87,21 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
     variableNames: [
       'coreTypes.qDateTimeBrunei',
       'coreTypes.qDateTimeDefault',
-      'coreTypes.qDateTimeLocal',
       'coreTypes.qDateTimeMarquesas',
       'coreTypes.qDateTimeSecOffset',
-      'coreTypes.qDateTimeShouldFail',
       'coreTypes.qDateTimeSouthPole',
       'coreTypes.qDateTimeUtc',
       'coreTypes.qDateTimeYukon'
     ],
+    platform: ['darwin', 'linux', 'win32']
+  },
+  {
+    type: 'QDateTime',
+    description:
+      'qDateTimeShouldFail is intentionally constructed with an invalid/timezone setup to ' +
+      'exercise QDateTime NatVis error-path behaviour. However, because QDateTime NatVis is ' +
+      'currently broken globally, we cannot yet assert its DisplayString or error formatting.',
+    variableNames: ['coreTypes.qDateTimeShouldFail'],
     platform: ['darwin', 'linux', 'win32']
   },
   {

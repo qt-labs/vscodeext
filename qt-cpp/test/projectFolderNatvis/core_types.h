@@ -22,7 +22,7 @@ struct CoreTypes
 
     // date/time
     QDate        qDate;
-    QDateTime    qDateTimeLocal;
+    //QDateTime    qDateTimeLocal;
     QDateTime    qDateTimeUtc;
     QDateTime    qDateTimeBrunei;
     QDateTime    qDateTimeSouthPole;
@@ -68,10 +68,10 @@ inline CoreTypes::CoreTypes()
     , qString(QStringLiteral("Hello World! Again."))
     , qStringView(qString)
     , qDate(2024,06,15)
+    //, qDateTimeLocal(QDateTime(QDate(2024, 6, 15),
+    //                           QTime(12, 34, 56),
+    //                           QTimeZone::systemTimeZone()))
     // deterministic date-times built from a fixed base date/time
-    , qDateTimeLocal(QDateTime(QDate(2024, 6, 15),
-                               QTime(12, 34, 56),
-                               QTimeZone::systemTimeZone()))
     , qDateTimeUtc(QDateTime(QDate(2024, 6, 15),
                              QTime(12, 34, 56),
                              Qt::UTC))

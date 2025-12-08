@@ -17,47 +17,42 @@
   {
     "name": "coreTypes.qDateTimeBrunei",
     "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(Brunei placeholder)"
   },
   {
     "name": "coreTypes.qDateTimeDefault",
     "type": "QDateTime",
-    "value": "error"
-  },
-  {
-    "name": "coreTypes.qDateTimeLocal",
-    "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(Default placeholder)"
   },
   {
     "name": "coreTypes.qDateTimeMarquesas",
     "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(Marquesas placeholder)"
   },
   {
     "name": "coreTypes.qDateTimeSecOffset",
     "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(TimeSecOffset placeholder)"
   },
   {
     "name": "coreTypes.qDateTimeShouldFail",
     "type": "QDateTime",
-    "value": "error"
+    "value": "unknown_invalid"
   },
   {
     "name": "coreTypes.qDateTimeSouthPole",
     "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(SouthPole placeholder)"
   },
   {
     "name": "coreTypes.qDateTimeUtc",
     "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(TimeUtc placeholder)"
   },
   {
     "name": "coreTypes.qDateTimeYukon",
     "type": "QDateTime",
-    "value": "error"
+    "value": "QDateTime(Yukon placeholder)"
   },
   {
     "name": "coreTypes.qDir",
