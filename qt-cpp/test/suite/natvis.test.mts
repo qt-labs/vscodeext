@@ -238,6 +238,35 @@ function matchesPlatform(
 
   return p === current;
 }
+
+/**
+ * Returns a short, human-readable preview of any debugger value.
+ * - Strings are kept as-is (truncated if long).
+ * - Non-strings are JSON-stringified.
+ * - Undefined becomes the literal "undefined".
+ * - Long values are truncated with an indicator.
+ */
+function formatValuePreview(v: unknown, max: number = 200): string {
+  let raw: string;
+
+  if (typeof v === 'string') {
+    raw = v;
+  } else if (v === undefined) {
+    raw = 'undefined';
+  } else {
+    try {
+      raw = JSON.stringify(v);
+    } catch {
+      raw = String(v);
+    }
+  }
+
+  if (raw.length <= max) {
+    return raw;
+  }
+
+  return `${raw.slice(0, max)}… [truncated, len=${raw.length}]`;
+}
 /**
  * Compare two NatVis snapshots (actual vs golden) and return only the
  * *real* mismatches. This comparison is aware of "known NatVis problems":
@@ -308,10 +337,16 @@ export function findMismatchedSnapshotEntries(
       problematicTypesWithMismatch.add(t!);
 
       if (process.env.QT_TEST_DEBUG === '1') {
+        const varName = a?.name ?? e?.name ?? '<unknown>';
+        const expectedVal = e?.value;
+        const actualVal = formatValuePreview(a?.value);
+
         console.warn(
-          `[natvis.test][known-problem] '${t}' mismatch ignored — still broken.\n` +
-            `  Reason: ${problem.description}`
+          `[natvis.test][known-problem] '${t}' ${varName} mismatch ignored — still broken.\n` +
+            `  expected: ${JSON.stringify(expectedVal)}\n` +
+            `  actual:   ${JSON.stringify(actualVal)}`
         );
+        console.log(`  Reason: ${problem.description}\n`);
       }
       continue;
     }
@@ -546,19 +581,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         if (mismatches.length > 0) {
           const MAX_VALUE_PREVIEW = 200;
 
-          const preview = (v: unknown): string => {
-            const raw =
-              typeof v === 'string'
-                ? v
-                : v === undefined
-                  ? 'undefined'
-                  : JSON.stringify(v);
-
-            if (raw.length <= MAX_VALUE_PREVIEW) {
-              return raw;
-            }
-            return `${raw.slice(0, MAX_VALUE_PREVIEW)}… [truncated, len=${raw.length}]`;
-          };
+          const preview = (v: unknown) => formatValuePreview(v);
 
           const compactActual = mismatches.map((m) => {
             const actual = m.actual ?? {};
