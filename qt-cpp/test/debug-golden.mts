@@ -1,3 +1,6 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -264,45 +267,6 @@ export function normalizeValue(raw: string): string {
   return value;
 }
 
-export function normalizeValueWithType(
-  raw: string,
-  type?: string,
-  name?: string
-): string {
-  // First apply the generic normalization (pointers, floats, QChar, quotes)
-  let value = normalizeValue(raw);
-
-  if (type === 'QJsonDocument') {
-    const trimmed = value.trim();
-
-    // Empty document (our dedicated CoreTypes field)
-    if (name === 'coreTypes.qJsonDocumentEmpty') {
-      // Treat any "empty"-ish representation as "{empty}"
-      if (!trimmed || trimmed === '{}' || /empty/i.test(trimmed)) {
-        return '{empty}';
-      }
-      return trimmed;
-    }
-
-    // Non-empty QJsonDocument:
-    //   - macOS: "{...}"
-    //   - Windows: "{d=unique_ptr {...} }"
-    //   - Linux: "" (no DisplayString)
-    if (
-      !trimmed || // Linux: empty string
-      trimmed === '{...}' ||
-      /unique_ptr/i.test(trimmed)
-    ) {
-      return '{...}';
-    }
-
-    return trimmed;
-  }
-
-  // All other types unchanged
-  return value;
-}
-
 export function toSnapshot(vars: any[]): SnapVar[] {
   const sorted = [...vars].sort((a, b) => {
     const an = (a.name ?? '').localeCompare(b.name ?? '');
@@ -318,7 +282,7 @@ export function toSnapshot(vars: any[]): SnapVar[] {
     // Step 2: normalize per-type (Qt / debugger differences)
     const normalized =
       rawValue !== undefined
-        ? normalizeValueWithType(rawValue, v.type, v.name)
+        ? normalizeValue(rawValue)
         : undefined;
 
     const stable =
@@ -531,4 +495,235 @@ export function matchNatvisTypePatternsConsideringAlternatives(
     }
   }
   return { missing: missing.sort(), coveredTypes };
+}
+
+// ---------------------------------------------------------------------------
+// Golden entries: logical expectations with per-platform values
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-platform value selector for a single variable.
+ *
+ * - all   → default for every platform, unless overridden
+ * - darwin / linux / win32 → override for that specific platform
+ */
+export interface GoldenValueByPlatform {
+  readonly all?: string;
+  readonly darwin?: string;
+  readonly linux?: string;
+  readonly win32?: string;
+}
+
+/**
+ * Logical description of a golden entry (one Local variable or child).
+ *
+ * - name      → dotted debugger name, e.g. "coreTypes.qRect" or "containerTypes.qPairStringInt.first"
+ * - type      → debugger type name, e.g. "QRect"
+ * - value     → either a single string (same everywhere), or per-platform values
+ * - platform  → if present, this *entire* entry only exists on those platforms
+ * - children  → nested golden entries for expanded children (ready for later)
+ */
+export interface GoldenEntryBase {
+  readonly name: string;
+  readonly type?: string;
+  readonly value?: string | GoldenValueByPlatform;
+  readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
+  readonly children?: readonly GoldenEntryBase[];
+}
+
+type PlatformTag = NodeJS.Platform | readonly NodeJS.Platform[] | undefined;
+
+/**
+ * Does this tag apply to the given platform?
+ *
+ * - undefined → applies everywhere
+ * - string    → only that platform
+ * - array     → any of those platforms
+ */
+export function matchesPlatformTag(
+  tag: PlatformTag,
+  current: NodeJS.Platform
+): boolean {
+  if (!tag) {
+    return true; // no restriction
+  }
+  if (Array.isArray(tag)) {
+    return tag.includes(current);
+  }
+  return tag === current;
+}
+
+/**
+ * GoldenEntry
+ *
+ * This class represents a *fully materialized logical golden entry*:
+ *   - it receives a GoldenEntryBase (the human-edited shape),
+ *   - normalizes it,
+ *   - and later converts it into a SnapVar for a specific platform.
+ *
+ * We DO NOT `implements GoldenEntryBase` because:
+ *   - exactOptionalPropertyTypes=true makes interfaces with optional fields
+ *     (`type?: string`) incompatible with class fields typed as
+ *     `string | undefined`.
+ *   - It’s simpler and safer to accept GoldenEntryBase in the constructor and
+ *     internally maintain the normalized representation.
+ */
+export class GoldenEntry {
+  /** Fully-qualified variable name (e.g. "coreTypes.qRect") */
+  readonly name: string;
+
+  /**
+   * Optional type name.
+   *
+   * We store this as `string | undefined`, not as an optional field, so the
+   * class has a stable internal shape.
+   */
+  readonly type: string | undefined;
+
+  /**
+   * Value specification:
+   *   - A single string → same value for all platforms.
+   *   - A GoldenValueByPlatform → per-OS overrides.
+   *   - undefined → this entry does not check a value at all.
+   */
+  readonly value: string | GoldenValueByPlatform | undefined;
+
+  /**
+   * Platform restriction for the entire entry:
+   *   - undefined → entry exists on all platforms
+   *   - "darwin"  → exists only on macOS
+   *   - ["linux","win32"] → exists only on Linux & Windows
+   */
+  readonly platform:
+    | NodeJS.Platform
+    | readonly NodeJS.Platform[]
+    | undefined;
+
+  /**
+   * Child entries (nested golden entries for Expand logic).
+   *
+   * Stored as GoldenEntry[] so transformation logic stays uniform.
+   * The array itself is readonly to prevent mutation after construction.
+   */
+  readonly children: readonly GoldenEntry[] | undefined;
+
+  /**
+   * Construct a GoldenEntry from a GoldenEntryBase.
+   * We normalize the shape so everything downstream becomes simpler.
+   */
+  constructor(init: GoldenEntryBase) {
+    this.name = init.name;
+    this.type = init.type;
+    this.value = init.value;
+    this.platform = init.platform;
+
+    // Convert any GoldenEntryBase children into proper GoldenEntry instances.
+    this.children = init.children
+      ? init.children.map((c) => new GoldenEntry(c))
+      : undefined;
+  }
+
+  /**
+   * Resolve the correct value for a specific platform.
+   *
+   * Precedence:
+   *   1) platform-specific override (darwin/linux/win32)
+   *   2) all
+   *   3) undefined (meaning this golden entry makes no value assertion)
+   */
+  private resolveValueForPlatform(
+    platform: NodeJS.Platform
+  ): string | undefined {
+    const spec = this.value;
+
+    if (spec === undefined) {
+      return undefined; // no value assertion
+    }
+
+    if (typeof spec === "string") {
+      return spec; // same on all platforms
+    }
+
+    // Per-platform overrides
+    switch (platform) {
+      case "darwin":
+        return spec.darwin ?? spec.all;
+      case "linux":
+        return spec.linux ?? spec.all;
+      case "win32":
+        return spec.win32 ?? spec.all;
+      default:
+        // Should not happen, but fallback to "all"
+        return spec.all;
+    }
+  }
+
+  /**
+   * Convert this golden entry into a SnapVar for the given platform.
+   *
+   * Returns:
+   *   - SnapVar if this entry applies on the platform
+   *   - undefined if the entry is excluded by its platform tag
+   */
+  toSnapVar(platform: NodeJS.Platform): SnapVar | undefined {
+    // Skip if whole entry restricted away
+    if (!matchesPlatformTag(this.platform, platform)) {
+      return undefined;
+    }
+
+    const resolvedValue = this.resolveValueForPlatform(platform);
+
+    // Recursively materialize children
+    const childrenSnap = this.children
+      ?.map((child) => child.toSnapVar(platform))
+      .filter((v): v is SnapVar => Boolean(v));
+
+    // Build SnapVar
+    const snap: SnapVar = {
+      name: this.name,
+      ...(this.type ? { type: this.type } : {}),
+      ...(resolvedValue !== undefined ? { value: resolvedValue } : {}),
+      ...(childrenSnap && childrenSnap.length
+        ? { children: sortSnapshotEntries(childrenSnap) }
+        : {}),
+    };
+
+    return snap;
+  }
+}
+/**
+ * Sort snapshot entries in a stable way:
+ *   1) by name (lexicographically)
+ *   2) then by type
+ * Children are *not* automatically sorted here; callers may sort them too.
+ */
+export function sortSnapshotEntries<
+  T extends { name?: string | undefined; type?: string | undefined }
+>(entries: readonly T[]): T[] {
+  return [...entries].sort((a, b) => {
+    const an = (a.name ?? '').localeCompare(b.name ?? '');
+    if (an !== 0) {
+      return an;
+    }
+    return (a.type ?? '').localeCompare(b.type ?? '');
+  });
+}
+
+/**
+ * Public entry point: given a list of GoldenEntry (your curated list),
+ * materialize a SnapVar[] for the current platform, sorted in a stable way.
+ *
+ * Later the test will do:
+ *   const golden = materializeGoldenSnapshot(GOLDEN_ENTRIES, process.platform);
+ */
+export function materializeGoldenSnapshot(
+  entries: readonly GoldenEntry[],
+  platform: NodeJS.Platform
+): SnapVar[] {
+  const snaps = entries
+    .map((e) => e.toSnapVar(platform))
+    .filter((v): v is SnapVar => Boolean(v));
+
+  // Top-level sort; children are sorted in toSnapVar
+  return sortSnapshotEntries(snaps);
 }
