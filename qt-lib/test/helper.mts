@@ -253,7 +253,7 @@ export async function cleanBuildDir(
   return buildDir;
 }
 
-export class CMakeConfigrator {
+export class CMakeConfigurator {
   private ws: vscode.WorkspaceFolder;
   private resetValues: Map<string, unknown> = new Map();
 
@@ -290,7 +290,7 @@ export class CMakeConfigrator {
 }
 
 export function cmakeConfigForWorkspace(ws: vscode.WorkspaceFolder) {
-  return new CMakeConfigrator(ws);
+  return new CMakeConfigurator(ws);
 }
 
 export function getPlatformCMakeGenerator(): string {
