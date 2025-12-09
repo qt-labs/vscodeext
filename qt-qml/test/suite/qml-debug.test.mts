@@ -17,7 +17,7 @@ import {
   cleanBuildDir,
   cmakeConfigForWorkspace,
   waitForVSCodeIdle,
-  CMakeConfigrator
+  CMakeConfigurator
 } from '../helper.mts';
 import {
   prepareQmlBreakpointsFromMarkers,
@@ -59,7 +59,7 @@ const dlog = (...args: unknown[]) => {
 describe('QML Debugger integration', function () {
   this.timeout(150_000); // QML debugging can take longer
   let sb: sinon.SinonSandbox;
-  let cmakeConfigurator: CMakeConfigrator = undefined!;
+  let cmakeConfigurator: CMakeConfigurator = undefined!;
 
   setupSandboxLifecycleHooks(
     (_sb) => (sb = _sb),
