@@ -34,10 +34,12 @@ import {
   collectTypesFromSnapshot,
   matchNatvisTypePatternsConsideringAlternatives,
   writeGolden,
-  readGolden,
+  //readGolden,
   knownNatvisProblems,
-  KnownNatvisProblem
+  KnownNatvisProblem,
+  materializeGoldenSnapshot
 } from '../debug-golden.mts';
+import { GOLDEN_ENTRIES } from '../debug-golden-entries.mts';
 import { selectAndApplyQtKit } from '../qt-kits-helper.mts';
 import { forEach } from 'lodash';
 
@@ -552,7 +554,9 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         // Golden only contains NatVis-covered locals
         await writeGolden(natvisSnapshot);
       } else {
-        const golden = await readGolden<typeof natvisSnapshot>(projectDir);
+        //const golden = await readGolden<typeof natvisSnapshot>(projectDir);
+
+        const golden = materializeGoldenSnapshot(GOLDEN_ENTRIES, process.platform);
 
         if (!golden) {
           throw new Error(
