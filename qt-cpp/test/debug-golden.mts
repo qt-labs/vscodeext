@@ -23,12 +23,6 @@ export function stripUnstable(s: string): string {
   );
 }
 
-export type SnapVar = {
-  name?: string | undefined;
-  type?: string | undefined;
-  value?: string | undefined;
-  children?: SnapVar[] | undefined;
-};
 
 /**
  * Describes a NatVis type that is known to be broken or unstable.
@@ -46,9 +40,9 @@ export interface KnownNatvisProblem {
   /**
    * Optional platform restriction.
    *
-   * - If omitted → applies to all platforms.
-   * - If a single value → applies only to that platform.
-   * - If an array → applies to any of those platforms.
+   * - If omitted : applies to all platforms.
+   * - If a single value : applies only to that platform.
+   * - If an array : applies to any of those platforms.
    */
   readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
 }
@@ -172,9 +166,9 @@ export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
 /**
  * Normalizes floating-point artifacts produced by GDB/LLDB/cppvsdbg.
  * Converts things like:
- *   5.0999999999999996 → 5.1
- *   4.2000000000000002 → 4.2
- *   3.1415926535897931 → 3.141593
+ *   5.0999999999999996 : 5.1
+ *   4.2000000000000002 : 4.2
+ *   3.1415926535897931 : 3.141593
  */
 function normalizeFloatsInStruct(raw: string): string {
   // Match things like 5.1, 5.0999999999999996, 4.2000000000000002, -3.14, etc.
@@ -235,7 +229,7 @@ export function normalizeValue(raw: string): string {
   // Special case: QChar-style representation
   //    Windows: "99 u'c'"
   //    Other OSes: "99 'c'"
-  //    → normalize both to "99 'c'"
+  //    normalize both to "99 'c'"
   const qCharLike = value.match(/^(\d+)\s+u'([^']*)'$/u);
   if (qCharLike) {
     const [, code, ch] = qCharLike;
@@ -267,7 +261,7 @@ export function normalizeValue(raw: string): string {
   return value;
 }
 
-export function toSnapshot(vars: any[]): SnapVar[] {
+function toSnapshot(vars: any[]): LocalSnapshot[] {
   const sorted = [...vars].sort((a, b) => {
     const an = (a.name ?? '').localeCompare(b.name ?? '');
     return an !== 0 ? an : (a.type ?? '').localeCompare(b.type ?? '');
@@ -278,44 +272,40 @@ export function toSnapshot(vars: any[]): SnapVar[] {
     const rawValue =
       typeof v.value === 'string'
         ? v.value
-        : (v.value?.toString?.() ?? undefined);
-    // Step 2: normalize per-type (Qt / debugger differences)
+        : v.value?.toString?.();
+
+    // Step 2: normalize
     const normalized =
-      rawValue !== undefined
-        ? normalizeValue(rawValue)
-        : undefined;
+      typeof rawValue === 'string' ? normalizeValue(rawValue) : undefined;
 
     const stable =
       typeof normalized === 'string' ? stripUnstable(normalized) : undefined;
 
-    const snap: SnapVar = {
-      name: v.name ?? undefined,
-      type: v.type ?? undefined,
-      value: stable
-    };
+    // Recurse into children (if already materialized by the caller)
+    const childrenSnap =
+      v.variablesReference && Array.isArray(v.children)
+        ? toSnapshot(v.children)
+        : undefined;
 
-    // If children are already fetched/populated by the caller, recurse.
-    if (v.variablesReference && Array.isArray(v.children)) {
-      snap.children = toSnapshot(v.children);
-    }
+    const snap: LocalSnapshot = {
+      // ensure name is always a string; empty string for nameless entries
+      name: v.name ?? '',
+      ...(v.type ? { type: v.type } : {}),
+      // only add `value` if we actually have one, so we never assign `undefined`
+      ...(stable !== undefined ? { value: stable } : {}),
+      // same for children: only add if present
+      ...(childrenSnap && childrenSnap.length
+        ? { children: childrenSnap }
+        : {})
+    };
 
     return snap;
   });
 }
-
-/**
- * Read and parse JSON from disk. Returns undefined on any error.
- */
-export async function readGolden<T = unknown>(
-  projectDir: string
-): Promise<T | undefined> {
-  const runtime = path.join(projectDir, GOLDEN_FILE_NAME); //getGoldenPaths(projectDir);
-  try {
-    const txt = await fs.readFile(runtime, 'utf8');
-    return JSON.parse(txt) as T;
-  } catch {
-    return undefined;
-  }
+export function materializeLocalSnapshot(
+  vars: readonly any[]
+): readonly LocalSnapshot[] {
+  return toSnapshot(vars as any[]);
 }
 
 /**
@@ -346,14 +336,22 @@ export async function writeGolden(snapshot: unknown): Promise<void> {
  * Collect a set of type names found in a snapshot tree (including children).
  * Used to compute NatVis coverage warnings.
  */
-export function collectTypesFromSnapshot(s: SnapVar[]): Set<string> {
+export function collectTypesFromSnapshot(
+  s: readonly LocalSnapshot[]
+): Set<string> {
   const out = new Set<string>();
-  const visit = (xs: SnapVar[]) => {
+
+  const visit = (xs: readonly LocalSnapshot[]): void => {
     for (const v of xs) {
-      if (v.type) out.add(v.type);
-      if (v.children) visit(v.children);
+      if (v.type) {
+        out.add(v.type);
+      }
+      if (v.children) {
+        visit(v.children);
+      }
     }
   };
+
   visit(s);
   return out;
 }
@@ -501,44 +499,14 @@ export function matchNatvisTypePatternsConsideringAlternatives(
 // Golden entries: logical expectations with per-platform values
 // ---------------------------------------------------------------------------
 
-/**
- * Per-platform value selector for a single variable.
- *
- * - all   → default for every platform, unless overridden
- * - darwin / linux / win32 → override for that specific platform
- */
-export interface GoldenValueByPlatform {
-  readonly all?: string;
-  readonly darwin?: string;
-  readonly linux?: string;
-  readonly win32?: string;
-}
-
-/**
- * Logical description of a golden entry (one Local variable or child).
- *
- * - name      → dotted debugger name, e.g. "coreTypes.qRect" or "containerTypes.qPairStringInt.first"
- * - type      → debugger type name, e.g. "QRect"
- * - value     → either a single string (same everywhere), or per-platform values
- * - platform  → if present, this *entire* entry only exists on those platforms
- * - children  → nested golden entries for expanded children (ready for later)
- */
-export interface GoldenEntryBase {
-  readonly name: string;
-  readonly type?: string;
-  readonly value?: string | GoldenValueByPlatform;
-  readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
-  readonly children?: readonly GoldenEntryBase[];
-}
-
 type PlatformTag = NodeJS.Platform | readonly NodeJS.Platform[] | undefined;
 
 /**
  * Does this tag apply to the given platform?
  *
- * - undefined → applies everywhere
- * - string    → only that platform
- * - array     → any of those platforms
+ * - undefined : applies everywhere
+ * - string    : only that platform
+ * - array     : any of those platforms
  */
 export function matchesPlatformTag(
   tag: PlatformTag,
@@ -553,177 +521,211 @@ export function matchesPlatformTag(
   return tag === current;
 }
 
+// ---------------------------------------------------------------------------
+// Snapshot types (config-time: platform-aware, runtime: platform-resolved)
+// ---------------------------------------------------------------------------
+
 /**
- * GoldenEntry
+ * Per-platform value (value, known problem...).
  *
- * This class represents a *fully materialized logical golden entry*:
- *   - it receives a GoldenEntryBase (the human-edited shape),
- *   - normalizes it,
- *   - and later converts it into a SnapVar for a specific platform.
- *
- * We DO NOT `implements GoldenEntryBase` because:
- *   - exactOptionalPropertyTypes=true makes interfaces with optional fields
- *     (`type?: string`) incompatible with class fields typed as
- *     `string | undefined`.
- *   - It’s simpler and safer to accept GoldenEntryBase in the constructor and
- *     internally maintain the normalized representation.
+ * - all   : default for every platform, unless overridden
+ * - darwin / linux / win32 : override for that specific platform
  */
-export class GoldenEntry {
-  /** Fully-qualified variable name (e.g. "coreTypes.qRect") */
+export interface ValueByPlatform {
+  readonly all?: string;
+  readonly darwin?: string;
+  readonly linux?: string;
+  readonly win32?: string;
+}
+
+/**
+ * Platform-aware snapshot config.
+ *
+ * Used as a base for both:
+ *   - golden snapshot config (per-platform values and problems)
+ *   - runtime locals config (if we ever need that)
+ *
+ * At this level, `value` can be either:
+ *   - a plain string, or
+ *   - an ValueByPlatform (per-platform overrides).
+ */
+export interface SnapshotBase<TChildConfig> {
   readonly name: string;
+  readonly type?: string;
+  readonly value?: string | ValueByPlatform;
+  readonly children?: readonly TChildConfig[];
+}
 
-  /**
-   * Optional type name.
-   *
-   * We store this as `string | undefined`, not as an optional field, so the
-   * class has a stable internal shape.
-   */
+/**
+ * Runtime snapshot (locals or materialized golden) where:
+ *   - platform has been resolved and removed,
+ *   - value is a single string,
+ *   - children are also platform-resolved Snapshot values.
+ */
+export interface Snapshot
+  extends Omit<SnapshotBase<Snapshot>, 'value' | 'children'> {
+  readonly value?: string;
+  readonly children?: readonly Snapshot[];
+}
+
+/**
+ * Concrete snapshot shape for "actual" locals from the debugger.
+ * For now this is just an alias of Snapshot, to keep existing naming.
+ */
+export type LocalSnapshot = Snapshot;
+
+// Keep this alias for now so existing code using SnapVar compiles.
+export type SnapVar = Snapshot;
+
+// ---------------------------------------------------------------------------
+// Golden snapshot config vs runtime golden snapshot
+// ---------------------------------------------------------------------------
+
+export interface GoldenEntryElement
+  extends SnapshotBase<GoldenEntryElement>  {
+}
+
+/**
+ * Platform-aware golden snapshot config.
+ *
+ * Extends the generic SnapshotConfigBase by adding an optional per-platform
+ * knownProblem. Both `value` and `knownProblem` are described in a
+ * per-platform way using ValueByPlatform.
+ */
+export interface GoldenEntryInput//<TChildConfig>
+  extends SnapshotBase<GoldenEntryElement>{//<TChildConfig> {
+  readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
+  readonly knownProblem?: ValueByPlatform;
+}
+
+/**
+ * Runtime golden snapshot:
+ *   - platform-specific parts (value, knownProblem) are already resolved
+ *   - platform field is gone
+ *   - children are also GoldenSnapshot values
+ */
+export interface GoldenSnapshot
+  extends Omit<GoldenEntryInput, 'platform' | 'value' | 'children' | 'knownProblem'> {
+  readonly value?: string;
+  readonly children?: readonly Snapshot[];
+  readonly knownProblem?: string;
+}
+
+export class GoldenEntry {
+  readonly name: string;
   readonly type: string | undefined;
+  readonly value: string | ValueByPlatform | undefined;
+  readonly platform: PlatformTag;
+  readonly knownProblem: ValueByPlatform | undefined;
+  readonly children: readonly GoldenEntryElement[] | undefined;
 
-  /**
-   * Value specification:
-   *   - A single string → same value for all platforms.
-   *   - A GoldenValueByPlatform → per-OS overrides.
-   *   - undefined → this entry does not check a value at all.
-   */
-  readonly value: string | GoldenValueByPlatform | undefined;
-
-  /**
-   * Platform restriction for the entire entry:
-   *   - undefined → entry exists on all platforms
-   *   - "darwin"  → exists only on macOS
-   *   - ["linux","win32"] → exists only on Linux & Windows
-   */
-  readonly platform:
-    | NodeJS.Platform
-    | readonly NodeJS.Platform[]
-    | undefined;
-
-  /**
-   * Child entries (nested golden entries for Expand logic).
-   *
-   * Stored as GoldenEntry[] so transformation logic stays uniform.
-   * The array itself is readonly to prevent mutation after construction.
-   */
-  readonly children: readonly GoldenEntry[] | undefined;
-
-  /**
-   * Construct a GoldenEntry from a GoldenEntryBase.
-   * We normalize the shape so everything downstream becomes simpler.
-   */
-  constructor(init: GoldenEntryBase) {
+  constructor(init: GoldenEntryInput) {
     this.name = init.name;
     this.type = init.type;
     this.value = init.value;
     this.platform = init.platform;
-
-    // Convert any GoldenEntryBase children into proper GoldenEntry instances.
-    this.children = init.children
-      ? init.children.map((c) => new GoldenEntry(c))
-      : undefined;
+    this.knownProblem = init.knownProblem;
+    this.children = init.children;
   }
 
   /**
-   * Resolve the correct value for a specific platform.
+   * Resolve a string | ValueByPlatform based on the current platform.
    *
-   * Precedence:
-   *   1) platform-specific override (darwin/linux/win32)
-   *   2) all
-   *   3) undefined (meaning this golden entry makes no value assertion)
+   * Used for BOTH:
+   *   - the value
+   *   - the knownProblem
    */
-  private resolveValueForPlatform(
+  private resolveForPlatform(
+    spec: string | ValueByPlatform | undefined,
     platform: NodeJS.Platform
   ): string | undefined {
-    const spec = this.value;
+    if (spec === undefined) return undefined;
 
-    if (spec === undefined) {
-      return undefined; // no value assertion
-    }
+    if (typeof spec === "string") return spec;
 
-    if (typeof spec === "string") {
-      return spec; // same on all platforms
-    }
-
-    // Per-platform overrides
     switch (platform) {
-      case "darwin":
-        return spec.darwin ?? spec.all;
-      case "linux":
-        return spec.linux ?? spec.all;
-      case "win32":
-        return spec.win32 ?? spec.all;
-      default:
-        // Should not happen, but fallback to "all"
-        return spec.all;
+      case "darwin": return spec.darwin ?? spec.all;
+      case "linux":  return spec.linux  ?? spec.all;
+      case "win32":  return spec.win32 ?? spec.all;
+      default:       return spec.all;
     }
   }
+
+private materializeTree(
+  cfg: GoldenEntryElement,
+  platform: NodeJS.Platform
+): Snapshot {
+  const resolvedValue = this.resolveForPlatform(cfg.value, platform);
+
+  const childSnaps =
+    cfg.children && cfg.children.length
+      ? cfg.children.map((c) => this.materializeTree(c, platform))
+      : undefined;
+
+  return {
+    name: cfg.name,
+    ...(cfg.type ? { type: cfg.type } : {}),
+    ...(resolvedValue !== undefined ? { value: resolvedValue } : {}),
+    ...(childSnaps && childSnaps.length
+      ? { children: sortSnapshotEntries(childSnaps) }
+      : {})
+  };
+}
+  /**
+   *
+   * Convert this entry into a GoldenSnapshot for `platform`.
+   * Returns undefined if the entry is excluded by a platform tag.
+   */
+  toGoldenSnapshot(platform: NodeJS.Platform): GoldenSnapshot | undefined {
+  if (!matchesPlatformTag(this.platform, platform)) {
+    return undefined;
+  }
+
+  // Build a GoldenEntryElement-compatible root config,
+  // omitting optional fields when they are undefined.
+  const rootCfg: GoldenEntryElement = {
+    name: this.name,
+    ...(this.type ? { type: this.type } : {}),
+    ...(this.value !== undefined ? { value: this.value } : {}),
+    ...(this.children && this.children.length
+      ? { children: this.children }
+      : {})
+  };
+
+  // Reuse the same logic as for children, but start from the root fields.
+  const baseSnap = this.materializeTree(rootCfg, platform);
+
+  const resolvedProblem = this.resolveForPlatform(this.knownProblem, platform);
+
+  return {
+    ...baseSnap,
+    ...(resolvedProblem !== undefined ? { knownProblem: resolvedProblem } : {})
+  };
+}
+
+}
 
   /**
-   * Convert this golden entry into a SnapVar for the given platform.
-   *
-   * Returns:
-   *   - SnapVar if this entry applies on the platform
-   *   - undefined if the entry is excluded by its platform tag
+   * Materialize a whole list of GoldenEntryInit into a sorted GoldenSnapshot[]
    */
-  toSnapVar(platform: NodeJS.Platform): SnapVar | undefined {
-    // Skip if whole entry restricted away
-    if (!matchesPlatformTag(this.platform, platform)) {
-      return undefined;
-    }
-
-    const resolvedValue = this.resolveValueForPlatform(platform);
-
-    // Recursively materialize children
-    const childrenSnap = this.children
-      ?.map((child) => child.toSnapVar(platform))
-      .filter((v): v is SnapVar => Boolean(v));
-
-    // Build SnapVar
-    const snap: SnapVar = {
-      name: this.name,
-      ...(this.type ? { type: this.type } : {}),
-      ...(resolvedValue !== undefined ? { value: resolvedValue } : {}),
-      ...(childrenSnap && childrenSnap.length
-        ? { children: sortSnapshotEntries(childrenSnap) }
-        : {}),
-    };
-
-    return snap;
-  }
-}
-/**
- * Sort snapshot entries in a stable way:
- *   1) by name (lexicographically)
- *   2) then by type
- * Children are *not* automatically sorted here; callers may sort them too.
- */
-export function sortSnapshotEntries<
-  T extends { name?: string | undefined; type?: string | undefined }
->(entries: readonly T[]): T[] {
-  return [...entries].sort((a, b) => {
-    const an = (a.name ?? '').localeCompare(b.name ?? '');
-    if (an !== 0) {
-      return an;
-    }
-    return (a.type ?? '').localeCompare(b.type ?? '');
-  });
-}
-
-/**
- * Public entry point: given a list of GoldenEntry (your curated list),
- * materialize a SnapVar[] for the current platform, sorted in a stable way.
- *
- * Later the test will do:
- *   const golden = materializeGoldenSnapshot(GOLDEN_ENTRIES, process.platform);
- */
 export function materializeGoldenSnapshot(
   entries: readonly GoldenEntry[],
   platform: NodeJS.Platform
-): SnapVar[] {
+): readonly Snapshot[] {
   const snaps = entries
-    .map((e) => e.toSnapVar(platform))
-    .filter((v): v is SnapVar => Boolean(v));
+    .map((e) => e.toGoldenSnapshot(platform))
+    .filter((s): s is Snapshot => s !== undefined);
 
-  // Top-level sort; children are sorted in toSnapVar
   return sortSnapshotEntries(snaps);
+}
+export function sortSnapshotEntries<
+  T extends { name?: string; type?: string }
+>(entries: readonly T[]): readonly T[] {
+  return [...entries].sort((a, b) => {
+    const an = (a.name ?? "").localeCompare(b.name ?? "");
+    if (an !== 0) {
+      return an;
+    }
+    return (a.type ?? "").localeCompare(b.type ?? "");
+  });
 }

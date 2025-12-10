@@ -29,15 +29,15 @@ import {
 } from '../debug-helper.mts';
 import type { DebugVariable } from '../debug-helper.mts';
 import {
-  toSnapshot,
+  Snapshot,
   parseNatvisTypesWithAlternatives,
   collectTypesFromSnapshot,
   matchNatvisTypePatternsConsideringAlternatives,
   writeGolden,
-  //readGolden,
   knownNatvisProblems,
   KnownNatvisProblem,
-  materializeGoldenSnapshot
+  materializeGoldenSnapshot,
+  materializeLocalSnapshot
 } from '../debug-golden.mts';
 import { GOLDEN_ENTRIES } from '../debug-golden-entries.mts';
 import { selectAndApplyQtKit } from '../qt-kits-helper.mts';
@@ -299,8 +299,8 @@ function formatValuePreview(v: unknown, max: number = 200): string {
  * informative when NatVis rules are known to be broken on certain types.
  */
 export function findMismatchedSnapshotEntries(
-  actual: any[],
-  expected: any[]
+  actual: readonly Snapshot[],
+  expected: readonly Snapshot[]
 ): Array<{ index: number; actual: any; expected: any }> {
   const mismatches: Array<{ index: number; actual: any; expected: any }> = [];
   const len = Math.max(actual.length, expected.length);
@@ -508,7 +508,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       // Drop debugger noise we don't care about in the golden
       // (app / argc / argv are about process setup, not NatVis coverage)
       const noiseTopLevel = new Set(['app', 'argc', 'argv']);
-      const snapshot = toSnapshot(flatLocals).filter((v) => {
+      const snapshot = materializeLocalSnapshot(flatLocals).filter((v) => {
         const name = v.name;
 
         // Ignore anything without a proper name

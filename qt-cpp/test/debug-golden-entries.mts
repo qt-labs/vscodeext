@@ -3,9 +3,9 @@
 
 // Central, hand-curated list of golden expectations for the NatVis test.
 
-import { GoldenEntry, type GoldenEntryBase } from './debug-golden.mts';
+import { GoldenEntry, type GoldenEntryInput } from './debug-golden.mts';
 
-const GOLDEN_ENTRY_DEFS: readonly GoldenEntryBase[] = [
+const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qByteArray',
     type: 'QByteArray',
