@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as fs from 'fs/promises';
-import * as path from 'path';
 
-const GOLDEN_FILE_NAME = 'expected.locals.json';
+import type { DebugVariable } from './debug-helper.mts';
 
 /**
  * Normalize unstable parts of debugger values (e.g., pointers, spacing)
@@ -22,146 +21,6 @@ export function stripUnstable(s: string): string {
       .trim()
   );
 }
-
-
-/**
- * Describes a NatVis type that is known to be broken or unstable.
- *
- * - `type`: the Qt type name reported by the debugger (e.g. "QStringView").
- * - `description`: short human description of the known issue.
- * - `variableNames` (optional): restrict the problem to specific variable
- *   names (e.g. only "coreTypes.qStringView"). If omitted, problem applies
- *   to *all* variables of that type.
- */
-export interface KnownNatvisProblem {
-  readonly type: string;
-  readonly description: string;
-  readonly variableNames?: readonly string[];
-  /**
-   * Optional platform restriction.
-   *
-   * - If omitted : applies to all platforms.
-   * - If a single value : applies only to that platform.
-   * - If an array : applies to any of those platforms.
-   */
-  readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
-}
-/**
- * Central registry of known NatVis issues.
- *
- * These types:
- *   - DO NOT cause the test to fail when they differ from golden.
- *   - ARE still compared and recorded.
- *   - Emit diagnostics in debug mode.
- *
- * If a known-problem type starts matching golden again, we log a
- * "seems fixed" message so you can remove it from this list.
- */
-export const knownNatvisProblems: readonly KnownNatvisProblem[] = [
-  {
-    type: 'QStringView',
-    description:
-      'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.',
-    // variableNames: ['coreTypes.qStringView'], // optional filter if needed
-    platform: ['darwin', 'linux']
-  },
-  {
-    type: 'QDate',
-    description:
-      'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
-    platform: ['darwin', 'linux']
-  },
-  {
-    type: 'QDateTime',
-    description:
-      'QDateTime NatVis fails differently by platform: ' +
-      '- macOS/Linux: NatVis expressions reference Windows-only private symbols ' +
-      '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-      '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ' +
-      '- Windows CI: NatVis loads, but required private symbols/fields are not available ' +
-      '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-      'falls back to a raw "{d={...}}" representation instead of a formatted date-time.',
-    variableNames: [
-      'coreTypes.qDateTimeBrunei',
-      'coreTypes.qDateTimeDefault',
-      'coreTypes.qDateTimeMarquesas',
-      'coreTypes.qDateTimeSecOffset',
-      'coreTypes.qDateTimeSouthPole',
-      'coreTypes.qDateTimeUtc',
-      'coreTypes.qDateTimeYukon'
-    ],
-    platform: ['darwin', 'linux', 'win32']
-  },
-  {
-    type: 'QDateTime',
-    description:
-      'qDateTimeShouldFail is intentionally constructed with an invalid/timezone setup to ' +
-      'exercise QDateTime NatVis error-path behaviour. However, because QDateTime NatVis is ' +
-      'currently broken globally, we cannot yet assert its DisplayString or error formatting.',
-    variableNames: ['coreTypes.qDateTimeShouldFail'],
-    platform: ['darwin', 'linux', 'win32']
-  },
-  {
-    type: 'QDir',
-    description:
-      'QDir NatVis fails differently by platform: ' +
-      '- macOS/Linux: natvis expressions reference Windows-only modules (Qt6Core[d].dll), so LLDB/GDB cannot resolve the intrinsic “d()”. ' +
-      '- Windows CI: natvis loads, but DisplayString fails due to missing or incompatible private symbols (QDirPrivate) or incomplete PDBs, causing fallback to raw {d_ptr={...}} output.',
-    variableNames: ['coreTypes.qDir'],
-    platform: ['darwin', 'linux', 'win32']
-  },
-  {
-    type: 'QFile',
-    description:
-      'QFile NatVis fails differently by platform: ' +
-      '- macOS/Linux: natvis expressions depend on Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot evaluate “d()”. ' +
-      '- Windows CI: natvis is loaded, but DisplayString evaluation fails (likely due to absent private symbols or reduced PDBs), leading to fallback raw formatting.',
-    variableNames: ['coreTypes.qFile'],
-    platform: ['darwin', 'linux', 'win32']
-  },
-  {
-    type: 'QFileInfo',
-    description:
-      'QFileInfo NatVis fails differently by platform: ' +
-      '- macOS/Linux: natvis rules reference Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot compute the “d()” intrinsic. ' +
-      '- Windows CI: natvis loads, but DisplayString fails because required private types or fields (QFileInfoPrivate) are not available in the CI Qt build, forcing the debugger to show raw {d_ptr={...}} output.',
-    variableNames: ['coreTypes.qFileInfo'],
-    platform: ['darwin', 'linux', 'win32']
-  },
-  {
-    type: 'QUrl',
-    description:
-      'QUrl NatVis fails differently by platform: ' +
-      '- macOS/Linux: LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific' +
-      '- Windows CI: natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.',
-    variableNames: ['coreTypes.qUrl'],
-    platform: ['darwin', 'linux', 'win32']
-  },
-  {
-    type: 'QUuid',
-    variableNames: ['coreTypes.qUuid'],
-    description:
-      'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.',
-    platform: ['darwin', 'linux']
-  },
-  {
-    type: 'SelectionFlags',
-    variableNames: ['coreTypes.qFlags'],
-    description:
-      'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; ' +
-      'LLDB/GDB fall back to a raw value, so flag names are not shown.',
-    platform: ['darwin', 'linux']
-  },
-  {
-    type: 'QJsonDocument',
-    variableNames: ['coreTypes.qJsonDocumentEmpty'],
-    platform: ['darwin', 'linux'],
-    description:
-      'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB/GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.'
-  }
-
-  // Add more entries here as you discover issues.
-];
 
 /**
  * Normalizes floating-point artifacts produced by GDB/LLDB/cppvsdbg.
@@ -261,18 +120,17 @@ export function normalizeValue(raw: string): string {
   return value;
 }
 
-function toSnapshot(vars: any[]): LocalSnapshot[] {
+export function materializeLocalSnapshot(
+  vars: readonly DebugVariable[]
+): readonly LocalSnapshot[] {
   const sorted = [...vars].sort((a, b) => {
     const an = (a.name ?? '').localeCompare(b.name ?? '');
     return an !== 0 ? an : (a.type ?? '').localeCompare(b.type ?? '');
   });
 
   return sorted.map((v) => {
-    // Step 1: get the raw string value
-    const rawValue =
-      typeof v.value === 'string'
-        ? v.value
-        : v.value?.toString?.();
+    // Step 1: get the raw string value (already a string or undefined)
+    const rawValue = v.value;
 
     // Step 2: normalize
     const normalized =
@@ -281,55 +139,14 @@ function toSnapshot(vars: any[]): LocalSnapshot[] {
     const stable =
       typeof normalized === 'string' ? stripUnstable(normalized) : undefined;
 
-    // Recurse into children (if already materialized by the caller)
-    const childrenSnap =
-      v.variablesReference && Array.isArray(v.children)
-        ? toSnapshot(v.children)
-        : undefined;
-
     const snap: LocalSnapshot = {
-      // ensure name is always a string; empty string for nameless entries
       name: v.name ?? '',
       ...(v.type ? { type: v.type } : {}),
-      // only add `value` if we actually have one, so we never assign `undefined`
-      ...(stable !== undefined ? { value: stable } : {}),
-      // same for children: only add if present
-      ...(childrenSnap && childrenSnap.length
-        ? { children: childrenSnap }
-        : {})
+      ...(stable !== undefined ? { value: stable } : {})
     };
 
     return snap;
   });
-}
-export function materializeLocalSnapshot(
-  vars: readonly any[]
-): readonly LocalSnapshot[] {
-  return toSnapshot(vars as any[]);
-}
-
-/**
- * Write pretty-printed JSON to disk, creating parent directories as needed.
- */
-export async function writeGolden(snapshot: unknown): Promise<void> {
-  console.log(
-    '[natvis.test] writing golden snapshot without checkout out dir...'
-  );
-  const source = path.join(
-    __dirname,
-    '../../../test/projectFolderNatvis',
-    GOLDEN_FILE_NAME
-  );
-  console.log('[natvis.test] source golden path:', source);
-  const data = JSON.stringify(snapshot, null, 2) + '\n';
-
-  // If updating is requested, also update the canonical source in the repo
-  if (
-    process.env.UPDATE_NATVIS_GOLDEN === '1' ||
-    process.env.UPDATE_NATVIS_GOLDEN?.toLowerCase() === 'true'
-  ) {
-    await fs.writeFile(source, data, 'utf8');
-  }
 }
 
 /**
@@ -368,7 +185,7 @@ function decodeXmlEntities(input: string): string {
   return input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
 }
 
-type NatvisTypes = {
+export type NatvisTypes = {
   all: Set<string>;
   bases: Set<string>;
   alts: Map<string, Set<string>>;
@@ -581,9 +398,7 @@ export type SnapVar = Snapshot;
 // Golden snapshot config vs runtime golden snapshot
 // ---------------------------------------------------------------------------
 
-export interface GoldenEntryElement
-  extends SnapshotBase<GoldenEntryElement>  {
-}
+export interface GoldenEntryElement extends SnapshotBase<GoldenEntryElement> {}
 
 /**
  * Platform-aware golden snapshot config.
@@ -592,8 +407,9 @@ export interface GoldenEntryElement
  * knownProblem. Both `value` and `knownProblem` are described in a
  * per-platform way using ValueByPlatform.
  */
-export interface GoldenEntryInput//<TChildConfig>
-  extends SnapshotBase<GoldenEntryElement>{//<TChildConfig> {
+export interface GoldenEntryInput //<TChildConfig>
+  extends SnapshotBase<GoldenEntryElement> {
+  //<TChildConfig> {
   readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
   readonly knownProblem?: ValueByPlatform;
 }
@@ -605,7 +421,10 @@ export interface GoldenEntryInput//<TChildConfig>
  *   - children are also GoldenSnapshot values
  */
 export interface GoldenSnapshot
-  extends Omit<GoldenEntryInput, 'platform' | 'value' | 'children' | 'knownProblem'> {
+  extends Omit<
+    GoldenEntryInput,
+    'platform' | 'value' | 'children' | 'knownProblem'
+  > {
   readonly value?: string;
   readonly children?: readonly Snapshot[];
   readonly knownProblem?: string;
@@ -641,73 +460,81 @@ export class GoldenEntry {
   ): string | undefined {
     if (spec === undefined) return undefined;
 
-    if (typeof spec === "string") return spec;
+    if (typeof spec === 'string') return spec;
 
     switch (platform) {
-      case "darwin": return spec.darwin ?? spec.all;
-      case "linux":  return spec.linux  ?? spec.all;
-      case "win32":  return spec.win32 ?? spec.all;
-      default:       return spec.all;
+      case 'darwin':
+        return spec.darwin ?? spec.all;
+      case 'linux':
+        return spec.linux ?? spec.all;
+      case 'win32':
+        return spec.win32 ?? spec.all;
+      default:
+        return spec.all;
     }
   }
 
-private materializeTree(
-  cfg: GoldenEntryElement,
-  platform: NodeJS.Platform
-): Snapshot {
-  const resolvedValue = this.resolveForPlatform(cfg.value, platform);
+  private materializeTree(
+    cfg: GoldenEntryElement,
+    platform: NodeJS.Platform
+  ): Snapshot {
+    const resolvedValue = this.resolveForPlatform(cfg.value, platform);
 
-  const childSnaps =
-    cfg.children && cfg.children.length
-      ? cfg.children.map((c) => this.materializeTree(c, platform))
-      : undefined;
+    const childSnaps =
+      cfg.children && cfg.children.length
+        ? cfg.children.map((c) => this.materializeTree(c, platform))
+        : undefined;
 
-  return {
-    name: cfg.name,
-    ...(cfg.type ? { type: cfg.type } : {}),
-    ...(resolvedValue !== undefined ? { value: resolvedValue } : {}),
-    ...(childSnaps && childSnaps.length
-      ? { children: sortSnapshotEntries(childSnaps) }
-      : {})
-  };
-}
+    return {
+      name: cfg.name,
+      ...(cfg.type ? { type: cfg.type } : {}),
+      ...(resolvedValue !== undefined ? { value: resolvedValue } : {}),
+      ...(childSnaps && childSnaps.length
+        ? { children: sortSnapshotEntries(childSnaps) }
+        : {})
+    };
+  }
   /**
    *
    * Convert this entry into a GoldenSnapshot for `platform`.
    * Returns undefined if the entry is excluded by a platform tag.
    */
   toGoldenSnapshot(platform: NodeJS.Platform): GoldenSnapshot | undefined {
-  if (!matchesPlatformTag(this.platform, platform)) {
-    return undefined;
+    if (!matchesPlatformTag(this.platform, platform)) {
+      return undefined;
+    }
+
+    // Build a GoldenEntryElement-compatible root config,
+    // omitting optional fields when they are undefined.
+    const rootCfg: GoldenEntryElement = {
+      name: this.name,
+      ...(this.type ? { type: this.type } : {}),
+      ...(this.value !== undefined ? { value: this.value } : {}),
+      ...(this.children && this.children.length
+        ? { children: this.children }
+        : {})
+    };
+
+    // Reuse the same logic as for children, but start from the root fields.
+    const baseSnap = this.materializeTree(rootCfg, platform);
+
+    const resolvedProblem = this.resolveForPlatform(
+      this.knownProblem,
+      platform
+    );
+
+    return {
+      ...baseSnap,
+      ...(resolvedProblem !== undefined
+        ? { knownProblem: resolvedProblem }
+        : {})
+    };
   }
-
-  // Build a GoldenEntryElement-compatible root config,
-  // omitting optional fields when they are undefined.
-  const rootCfg: GoldenEntryElement = {
-    name: this.name,
-    ...(this.type ? { type: this.type } : {}),
-    ...(this.value !== undefined ? { value: this.value } : {}),
-    ...(this.children && this.children.length
-      ? { children: this.children }
-      : {})
-  };
-
-  // Reuse the same logic as for children, but start from the root fields.
-  const baseSnap = this.materializeTree(rootCfg, platform);
-
-  const resolvedProblem = this.resolveForPlatform(this.knownProblem, platform);
-
-  return {
-    ...baseSnap,
-    ...(resolvedProblem !== undefined ? { knownProblem: resolvedProblem } : {})
-  };
 }
 
-}
-
-  /**
-   * Materialize a whole list of GoldenEntryInit into a sorted GoldenSnapshot[]
-   */
+/**
+ * Materialize a whole list of GoldenEntryInit into a sorted GoldenSnapshot[]
+ */
 export function materializeGoldenSnapshot(
   entries: readonly GoldenEntry[],
   platform: NodeJS.Platform
@@ -718,14 +545,14 @@ export function materializeGoldenSnapshot(
 
   return sortSnapshotEntries(snaps);
 }
-export function sortSnapshotEntries<
-  T extends { name?: string; type?: string }
->(entries: readonly T[]): readonly T[] {
+export function sortSnapshotEntries<T extends { name?: string; type?: string }>(
+  entries: readonly T[]
+): readonly T[] {
   return [...entries].sort((a, b) => {
-    const an = (a.name ?? "").localeCompare(b.name ?? "");
+    const an = (a.name ?? '').localeCompare(b.name ?? '');
     if (an !== 0) {
       return an;
     }
-    return (a.type ?? "").localeCompare(b.type ?? "");
+    return (a.type ?? '').localeCompare(b.type ?? '');
   });
 }

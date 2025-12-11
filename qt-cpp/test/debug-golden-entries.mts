@@ -19,91 +19,237 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qDate',
     type: 'QDate',
-    value: '2024-06-15'
+    value: '2024-06-15',
+    knownProblem: {
+      darwin:
+        'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
+      linux:
+        'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeBrunei',
     type: 'QDateTime',
-    value: 'QDateTime(Brunei placeholder)'
+    value: 'QDateTime(Brunei placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeDefault',
     type: 'QDateTime',
-    value: 'QDateTime(Default placeholder)'
+    value: 'QDateTime(Default placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeMarquesas',
     type: 'QDateTime',
-    value: 'QDateTime(Marquesas placeholder)'
+    value: 'QDateTime(Marquesas placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeSecOffset',
     type: 'QDateTime',
-    value: 'QDateTime(TimeSecOffset placeholder)'
+    value: 'QDateTime(TimeSecOffset placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeShouldFail',
     type: 'QDateTime',
-    value: 'unknown_invalid'
+    value: 'unknown_invalid',
+    knownProblem: {
+      all:
+        'qDateTimeShouldFail is intentionally constructed with an invalid/timezone setup to ' +
+        'exercise QDateTime NatVis error-path behaviour. However, because QDateTime NatVis is ' +
+        'currently broken globally, we cannot yet assert its DisplayString or error formatting.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeSouthPole',
     type: 'QDateTime',
-    value: 'QDateTime(SouthPole placeholder)'
+    value: 'QDateTime(SouthPole placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeUtc',
     type: 'QDateTime',
-    value: 'QDateTime(TimeUtc placeholder)'
+    value: 'QDateTime(TimeUtc placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDateTimeYukon',
     type: 'QDateTime',
-    value: 'QDateTime(Yukon placeholder)'
+    value: 'QDateTime(Yukon placeholder)',
+    knownProblem: {
+      darwin:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      linux:
+        'NatVis expressions reference Windows-only private symbols ' +
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+    }
   },
   {
     name: 'coreTypes.qDir',
     type: 'QDir',
-    value: '"/path/to/normalize/projectFolderNatvis"'
+    value: '"/path/to/normalize/projectFolderNatvis"',
+    knownProblem: {
+      darwin:
+        'natvis expressions reference Windows-only modules (Qt6Core[d].dll), so LLDB/GDB cannot resolve the intrinsic "d()". ',
+      linux:
+        'natvis expressions reference Windows-only modules (Qt6Core[d].dll), so LLDB/GDB cannot resolve the intrinsic "d()". ',
+      win32:
+        'natvis loads, but DisplayString fails due to missing or incompatible private symbols (QDirPrivate) or incomplete PDBs, causing fallback to raw {d_ptr={...}} output.'
+    }
   },
   {
     name: 'coreTypes.qFile',
     type: 'QFile',
-    value: '"/path/to/normalize/projectFolderNatvis"'
+    value: '"/path/to/normalize/projectFolderNatvis"',
+    knownProblem: {
+      darwin:
+        '-natvis expressions depend on Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot evaluate "d()". ',
+      linux:
+        '-natvis expressions depend on Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot evaluate "d()". ',
+      win32:
+        'natvis is loaded, but DisplayString evaluation fails (likely due to absent private symbols or reduced PDBs), leading to fallback raw formatting.'
+    }
   },
   {
     name: 'coreTypes.qFileInfo',
     type: 'QFileInfo',
-    value: '"/path/to/normalize/projectFolderNatvis"'
+    value: '"/path/to/normalize/projectFolderNatvis"',
+    knownProblem: {
+      darwin:
+        'natvis rules reference Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot compute the "d()" intrinsic. ',
+      linux:
+        'natvis rules reference Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot compute the "d()" intrinsic. ',
+      win32:
+        'natvis loads, but DisplayString fails because required private types or fields (QFileInfoPrivate) are not available in the CI Qt build, forcing the debugger to show raw {d_ptr={...}} output.'
+    }
   },
   {
     name: 'coreTypes.qFlags',
     type: 'SelectionFlags',
-    value: 'SelectCurrent | SelectAll (3)'
+    value: 'SelectCurrent | SelectAll (3)',
+    knownProblem: {
+      darwin:
+        'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; LLDB/GDB fall back to a raw value, so flag names are not shown.',
+      linux:
+        'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; LLDB/GDB fall back to a raw value, so flag names are not shown.'
+    }
   },
   {
     name: 'coreTypes.qJsonDocument',
     type: 'QJsonDocument',
     value: {
-    darwin: '{...}',
-    win32: '{d=unique_ptr {...} }',
-    linux: ''
-  }
+      darwin: '{...}',
+      win32: '{d=unique_ptr {...} }',
+      linux: ''
+    }
+    // no knownProblem here: the known problem is only for qJsonDocumentEmpty
   },
   {
     name: 'coreTypes.qJsonDocumentEmpty',
     type: 'QJsonDocument',
     value: {
-    darwin: '{empty}',
-    linux: '{empty}',
-    win32: '{d=empty }'
-  }
+      darwin: '{empty}',
+      linux: '{empty}',
+      win32: '{d=empty }'
+    },
+    knownProblem: {
+      darwin:
+        'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB/GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.',
+      linux:
+        'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB/GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.'
+    }
   },
   {
     name: 'coreTypes.qLine',
     type: 'QLine',
-    value:
-      '{ start point = { x = 0, y = 1 }, end point = { x = 42, y = 43 } }'
+    value: '{ start point = { x = 0, y = 1 }, end point = { x = 42, y = 43 } }'
   },
   {
     name: 'coreTypes.qPoint',
@@ -133,7 +279,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qStringView',
     type: 'QStringView',
-    value: 'Hello World! Again.'
+    value: 'Hello World! Again.',
+    knownProblem: {
+      darwin:
+        'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.',
+      linux:
+        'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
+    }
   },
   {
     name: 'coreTypes.qTime',
@@ -143,21 +295,29 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qUrl',
     type: 'QUrl',
-    value: 'https://github.com/narnaud/natvis4qt'
+    value: 'https://github.com/narnaud/natvis4qt',
+    knownProblem: {
+      darwin:
+        'LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific ',
+      linux:
+        'LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific ',
+      win32:
+        'natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.'
+    }
   },
   {
     name: 'coreTypes.qUuid',
     type: 'QUuid',
-    value: '{12345678-1234-1234-1234-1234567890AB}'
+    value: '{12345678-1234-1234-1234-1234567890AB}',
+    knownProblem: {
+      darwin:
+        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.',
+      linux:
+        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.'
+    }
   }
 ] as const;
 
-/**
- * Concrete GoldenEntry objects derived from the declarative definitions above.
- *
- * Tests should *not* construct GoldenEntry directly; they should always
- * use this exported constant (or a helper that wraps it) so we have a single
- * source of truth for the logical golden expectations.
- */
-export const GOLDEN_ENTRIES: readonly GoldenEntry[] =
-  GOLDEN_ENTRY_DEFS.map((e) => new GoldenEntry(e));
+export const GOLDEN_ENTRIES: readonly GoldenEntry[] = GOLDEN_ENTRY_DEFS.map(
+  (e) => new GoldenEntry(e)
+);
