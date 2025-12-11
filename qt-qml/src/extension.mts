@@ -24,6 +24,15 @@ import { QMLProjectManager, createQMLProject } from '@/project.mjs';
 import { registerResetCommand } from '@cmd/reset.mjs';
 import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter.mjs';
 import {
+  registerStartQmlPreviewCommand,
+  registerStartQmlPreviewForCurrentFileCommand,
+  registerAttachQmlPreviewCommand,
+  registerStopQmlPreviewCommand,
+  registerReloadQmlPreviewCommand,
+  registerClearQmlPreviewCacheCommand,
+  disposePreviewManager
+} from '@/preview/preview.mjs';
+import {
   acquirePortTaskProvider,
   AcquirePortTaskProvider
 } from './tasks/acquire-port.mjs';
@@ -31,7 +40,7 @@ import {
 export let projectManager: QMLProjectManager;
 export let coreAPI: CoreAPI | undefined;
 
-let taskProvider: vscode.Disposable | undefined;
+const taskProviders: vscode.Disposable[] = [];
 
 const logger = createLogger('extension');
 
@@ -71,11 +80,19 @@ export async function activate(context: vscode.ExtensionContext) {
     registerDownloadQmllsCommand(),
     vscode.languages.registerColorProvider('qml', createColorProvider()),
     registerResetCommand(),
-    registerQmlDebugAdapterFactory()
+    registerQmlDebugAdapterFactory(),
+    registerStartQmlPreviewCommand(),
+    registerStartQmlPreviewForCurrentFileCommand(),
+    registerAttachQmlPreviewCommand(),
+    registerStopQmlPreviewCommand(),
+    registerReloadQmlPreviewCommand(),
+    registerClearQmlPreviewCacheCommand()
   );
-  taskProvider = vscode.tasks.registerTaskProvider(
-    AcquirePortTaskProvider.type,
-    acquirePortTaskProvider
+  taskProviders.push(
+    vscode.tasks.registerTaskProvider(
+      AcquirePortTaskProvider.type,
+      acquirePortTaskProvider
+    )
   );
   telemetry.sendEvent(`activated`);
   projectManager.getConfigValues();
@@ -98,8 +115,9 @@ export function deactivate() {
   logger.info(`Deactivating ${consts.EXTENSION_ID}`);
   telemetry.dispose();
   projectManager.dispose();
-  if (taskProvider) {
-    taskProvider.dispose();
+  disposePreviewManager();
+  for (const provider of taskProviders) {
+    provider.dispose();
   }
 }
 

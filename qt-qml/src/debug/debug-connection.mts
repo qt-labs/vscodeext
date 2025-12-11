@@ -50,6 +50,7 @@ export class QmlDebugConnectionManager {
   private _retryInterval = 400; // 200ms??
   private _maximumRetries = 50; // 10??
   private _numRetries = 0;
+  protected readonly _connectionOpened = new vscode.EventEmitter<void>();
   private readonly _connectionClosed = new vscode.EventEmitter<void>();
   private readonly _connectionFailed = new vscode.EventEmitter<void>();
 
@@ -68,12 +69,26 @@ export class QmlDebugConnectionManager {
   get maximumRetries() {
     return this._maximumRetries;
   }
+  get onConnectionOpened() {
+    return this._connectionOpened.event;
+  }
+  get onConnectionClosed() {
+    return this._connectionClosed.event;
+  }
+  get onConnectionFailed() {
+    return this._connectionFailed.event;
+  }
   dispose() {
     this.stopConnectionTimer();
     this._connectionTimer.disconnect();
     if (this._connection) {
       this._connection.dispose();
     }
+  }
+  cancelConnection() {
+    logger.info('Canceling connection attempt');
+    this.stopConnectionTimer();
+    this.destroyConnection();
   }
   disconnectToConnection() {
     if (this._connection) {
@@ -192,13 +207,15 @@ export class QmlDebugConnectionManager {
     }
     logger.info('Connection opened');
     this.stopConnectionTimer();
+    this._connectionOpened.fire();
   }
   qmlDebugConnectionClosed() {
     if (!this._connection?.isConnected()) {
       return;
     }
     logger.info('Connection closed');
-    // this.destroyConnection(); // TODO: Implement
+    this.stopConnectionTimer();
+    this.destroyConnection();
     this._connectionClosed.fire();
   }
   qmlDebugConnectionFailed() {
