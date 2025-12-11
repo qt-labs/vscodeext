@@ -34,24 +34,29 @@ export class QRCParser {
     });
   }
 
-  parseQRCFile(filePath: string) {
+  parseQRCFile(filePath: string, includeAllFiles = false) {
     if (!fs.existsSync(filePath)) {
       throw new Error(`Cannot find file: ${filePath}`);
     }
-    const cachedContent = this._cache.get(filePath);
+    const cacheKey = `${filePath}:${includeAllFiles ? 'all' : 'qml-js'}`;
+    const cachedContent = this._cache.get(cacheKey);
     if (cachedContent) {
       return cachedContent;
     }
     const xmlContent = fs.readFileSync(filePath, 'utf8');
-    const fileMapping = this.parseQRC(xmlContent, path.dirname(filePath));
+    const fileMapping = this.parseQRC(
+      xmlContent,
+      path.dirname(filePath),
+      includeAllFiles
+    );
     if (!fileMapping) {
       return undefined;
     }
-    this._cache.set(filePath, fileMapping);
+    this._cache.set(cacheKey, fileMapping);
     return fileMapping;
   }
 
-  parseQRC(xmlContent: string, qrcDir: string) {
+  parseQRC(xmlContent: string, qrcDir: string, includeAllFiles = false) {
     try {
       // Parse the XML content into the defined structure
       const jsonObj = this.parser.parse(xmlContent) as QRCParsed; // Type assertion to QRCParsed
@@ -77,9 +82,17 @@ export class QRCParser {
           : [resource.file];
 
         files.forEach((file) => {
-          // Only keep .qml and .js files
           const text = file['#text'];
-          if (!text || (!text.endsWith('.qml') && !text.endsWith('.js'))) {
+          if (!text) {
+            return;
+          }
+
+          // Filter files based on includeAllFiles flag
+          if (
+            !includeAllFiles &&
+            !text.endsWith('.qml') &&
+            !text.endsWith('.js')
+          ) {
             return;
           }
 

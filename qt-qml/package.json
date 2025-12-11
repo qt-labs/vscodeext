@@ -28,10 +28,7 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
-  "activationEvents": [
-    "workspaceContains:**/*.qml",
-    "workspaceContains:**/qmldir"
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
@@ -50,8 +47,86 @@
         "command": "qt-qml.downloadQmlls",
         "title": "%qt-qml.command.downloadQmlls.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-qml.startQmlPreview",
+        "title": "%qt-qml.command.startQmlPreview.title%",
+        "category": "Qt",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "qt-qml.startQmlPreviewForCurrentFile",
+        "title": "%qt-qml.command.startQmlPreviewForCurrentFile.title%",
+        "category": "Qt",
+        "icon": "$(play)"
+      },
+      {
+        "command": "qt-qml.attachQmlPreview",
+        "title": "%qt-qml.command.attachQmlPreview.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-qml.stopQmlPreview",
+        "title": "%qt-qml.command.stopQmlPreview.title%",
+        "category": "Qt",
+        "icon": "$(stop-circle)"
+      },
+      {
+        "command": "qt-qml.reloadQmlPreview",
+        "title": "%qt-qml.command.reloadQmlPreview.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-qml.clearQmlPreviewCache",
+        "title": "%qt-qml.command.clearQmlPreviewCache.title%",
+        "category": "Qt"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "qt-qml.stopQmlPreview",
+          "when": "qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.reloadQmlPreview",
+          "when": "qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.clearQmlPreviewCache",
+          "when": "qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.startQmlPreview",
+          "when": "!qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.startQmlPreviewForCurrentFile",
+          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.attachQmlPreview",
+          "when": "!qt-qml.qmlPreviewRunning"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "qt-qml.startQmlPreview",
+          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning",
+          "group": "navigation@1"
+        },
+        {
+          "command": "qt-qml.startQmlPreviewForCurrentFile",
+          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning",
+          "group": "navigation@2"
+        },
+        {
+          "command": "qt-qml.stopQmlPreview",
+          "when": "resourceLangId == qml && qt-qml.qmlPreviewRunning",
+          "group": "navigation@1"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "qml",
@@ -179,6 +254,24 @@
           "default": false,
           "description": "Do not ask for downloading QML Language Server",
           "scope": "machine"
+        },
+        "qt-qml.preview.additionalBuildDirs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional build directories to search for QRC files during QML preview. Useful when the build directory is outside the workspace.",
+          "scope": "machine-overridable"
+        },
+        "qt-qml.preview.args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Default command line arguments to pass to the QML Preview application when started from commands (not used for tasks).",
+          "scope": "machine-overridable"
         }
       }
     },
@@ -391,13 +484,13 @@
           }
         ]
       }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "Qt"
+      }
     ]
   },
-  "taskDefinitions": [
-    {
-      "type": "Qt"
-    }
-  ],
   "extensionDependencies": [
     "theqtcompany.qt-core"
   ],
