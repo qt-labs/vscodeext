@@ -6,7 +6,6 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { isDeepStrictEqual } from 'util';
 
 import { delay } from 'qt-lib';
 import {
@@ -29,19 +28,31 @@ import {
 } from '../debug-helper.mts';
 import type { DebugVariable } from '../debug-helper.mts';
 import {
+  NatvisTypes,
   Snapshot,
+  GoldenSnapshot,
   parseNatvisTypesWithAlternatives,
   collectTypesFromSnapshot,
   matchNatvisTypePatternsConsideringAlternatives,
-  writeGolden,
-  knownNatvisProblems,
-  KnownNatvisProblem,
   materializeGoldenSnapshot,
   materializeLocalSnapshot
 } from '../debug-golden.mts';
 import { GOLDEN_ENTRIES } from '../debug-golden-entries.mts';
 import { selectAndApplyQtKit } from '../qt-kits-helper.mts';
-import { forEach } from 'lodash';
+
+/**
+ * NatVis integration tests for the qt-cpp extension.
+ *
+ * This suite:
+ *   - Configures and builds a minimal Qt CMake project using the selected Qt kit.
+ *   - Launches the C++ debugger, stops on a marker breakpoint, and captures Locals.
+ *   - Normalizes and filters Locals to a stable Snapshot model.
+ *   - Compares the NatVis-formatted Locals against a hand-curated Golden snapshot,
+ *     with per-entry knownProblem annotations for platform-specific breakage.
+ *   - Optionally prints a NatVis coverage summary when NATVIS_SHOW_SUMMARY=1.
+ *   - Runs a second, lighter test that uses the Qt debug configuration snippet
+ *     (Qt: Debug with …) to launch and sanity-check a few key NatVis-formatted values.
+ */
 
 function getRequiredQtMajorFromCMake(projectDir: string): number {
   const cmakeListsPath = path.join(projectDir, 'CMakeLists.txt');
@@ -223,24 +234,6 @@ async function configureAndBuildMinimalQtProject(
   return { wsFolder, projectDir, buildDir, kit, errSpy };
 }
 
-function matchesPlatform(
-  problem: KnownNatvisProblem,
-  current: NodeJS.Platform
-): boolean {
-  const p = problem.platform;
-
-  if (!p) {
-    // No restriction → applies everywhere
-    return true;
-  }
-
-  if (Array.isArray(p)) {
-    return p.includes(current);
-  }
-
-  return p === current;
-}
-
 /**
  * Returns a short, human-readable preview of any debugger value.
  * - Strings are kept as-is (truncated if long).
@@ -269,130 +262,314 @@ function formatValuePreview(v: unknown, max: number = 200): string {
 
   return `${raw.slice(0, max)}… [truncated, len=${raw.length}]`;
 }
+
 /**
- * Compare two NatVis snapshots (actual vs golden) and return only the
- * *real* mismatches. This comparison is aware of "known NatVis problems":
+ * Print a human-readable NatVis coverage summary to the test log.
  *
- *   - If a mismatched entry corresponds to a type listed in
- *     knownNatvisProblems → the mismatch is *ignored* (not returned)
- *     and a debug message is printed explaining the known issue.
+ * This function is purely diagnostic: it does not affect test pass/fail,
+ * it only reports what the current snapshot and golden tell us.
  *
- *   - If a known-problem type appears in the actual snapshot but does
- *     NOT mismatch the golden → a “good news” debug message is printed,
- *     indicating that the problematic NatVis rule is now fixed.
+ * It reports three main things:
  *
- *   - If a known-problem type does *not* appear in the actual snapshot
- *     at all → a debug warning is printed to indicate that the sample
- *     no longer covers that type (possibly accidental).
+ *   1) **Successfully covered types**
+ *      - Starts from `natvisSnapshot` (locals that passed through NatVis
+ *        filtering and normalization).
+ *      - Collects all distinct `type` values that actually appeared.
+ *      - Removes:
+ *          • types that had real mismatches (after filtering knownProblem),
+ *          • types that are marked as `knownProblem` anywhere in the
+ *            `goldenSnapshot` (including nested children).
+ *      - The remaining types are printed as:
+ *          "Tested Qt types successfully covered by NatVis file ..."
  *
- * Behavior summary:
- *   1. Unknown mismatches → returned for the test to fail.
- *   2. Known-problem mismatches → filtered out + logged.
- *   3. Known-problem matches → logged as “fixed”.
- *   4. Known-problem missing from snapshot → logged as “no longer present”.
+ *   2) **Known-problem types (from the golden snapshot)**
+ *      - Walks the entire `goldenSnapshot` tree recursively.
+ *      - Any entry with a non-empty `knownProblem` and a `type` is recorded.
+ *      - These types are printed as:
+ *          "Tested Qt types with unsuccessful NatVis coverage
+ *           (marked as knownProblem in the golden snapshot)"
+ *      - This reflects the new model where problem annotations live in the
+ *        golden rather than a separate global table.
  *
- * Output:
- *   Returns an array of only the real, unexpected mismatches:
- *     [{ index, actual, expected }, …]
+ *   3) **NatVis patterns that were not exercised**
+ *      - Uses `natvis` and `missing` (the coverage result from
+ *        matchNatvisTypePatternsConsideringAlternatives).
+ *      - For each missing base pattern, shows the base name and its
+ *        AlternativeType patterns (if any).
+ *      - This tells you which NatVis rules exist in the .natvis file but
+ *        did not appear in the current test snapshot.
  *
- * This allows the test to remain strict while still remaining stable and
- * informative when NatVis rules are known to be broken on certain types.
+ * Additional details:
+ *   - `natvisPath` and `wsFolder` are used to print the NatVis file path
+ *     relative to the workspace root, for nicer logs.
+ *   - `mismatches` is the final list returned by findMismatchedSnapshotEntries
+ *     (after knownProblem filtering). It is used only to compute the set of
+ *     "real mismatched types".
+ *   - The function is intended to be called once at the end of the NatVis
+ *     test when NATVIS_SHOW_SUMMARY (or similar) is enabled.
+ *
+ * @param params.natvisSnapshot  Platform-normalized locals after NatVis filtering.
+ * @param params.goldenSnapshot  Platform-resolved golden snapshot (with knownProblem).
+ * @param params.mismatches      Real mismatches returned by the comparison logic.
+ * @param params.natvis          Parsed NatVis type information (bases, alts, all).
+ * @param params.missing         NatVis base patterns not exercised by this snapshot.
+ * @param params.natvisPath      Absolute path to the NatVis file, or undefined.
+ * @param params.wsFolder        Workspace folder used to relativize natvisPath.
+ */
+export function printNatvisSummary(params: {
+  natvisSnapshot: readonly Snapshot[];
+  goldenSnapshot: readonly GoldenSnapshot[];
+  mismatches: readonly SnapshotMismatch[];
+  natvis: NatvisTypes;
+  missing: readonly string[];
+  natvisPath: string | undefined;
+  wsFolder: vscode.WorkspaceFolder;
+}): void {
+  const {
+    natvisSnapshot,
+    goldenSnapshot,
+    mismatches,
+    natvis,
+    missing,
+    natvisPath,
+    wsFolder
+  } = params;
+
+  // Collect types that actually appeared in the NatVis-filtered snapshot
+  const allCoveredTypes = new Set<string>(
+    natvisSnapshot.map((v) => v.type).filter((t): t is string => Boolean(t))
+  );
+
+  // Collect types that had real mismatches (after filtering known-problems)
+  const mismatchedTypes = new Set<string>();
+  for (const m of mismatches) {
+    const t = (m.actual && m.actual.type) || (m.expected && m.expected.type);
+
+    if (typeof t === 'string') {
+      mismatchedTypes.add(t);
+    }
+  }
+
+  // Collect types that are marked as "knownProblem" in the golden snapshot
+  const problematicTypesInGolden = new Set<string>();
+  const collectKnownProblemTypes = (
+    entries: readonly GoldenSnapshot[]
+  ): void => {
+    for (const e of entries) {
+      if (e.knownProblem && e.type) {
+        problematicTypesInGolden.add(e.type);
+      }
+      if (e.children && e.children.length > 0) {
+        collectKnownProblemTypes(e.children);
+      }
+    }
+  };
+  collectKnownProblemTypes(goldenSnapshot);
+
+  // Collect "Successful" types = covered by NatVis AND not mismatching AND
+  // not flagged as knownProblem in the golden.
+  const successfulTypes = [...allCoveredTypes]
+    .filter((t) => !mismatchedTypes.has(t) && !problematicTypesInGolden.has(t))
+    .sort((a, b) => a.localeCompare(b));
+
+  // ---------------------------------------------------------------------------
+  // Pretty printing of the summary
+  // ---------------------------------------------------------------------------
+  let natvisFileLabel: string = natvisPath ?? '<unknown>';
+
+  if (natvisPath) {
+    try {
+      const rel = path.relative(wsFolder.uri.fsPath, natvisPath);
+      // Normalize to forward slashes for clean display
+      natvisFileLabel = rel.replace(/\\/g, '/');
+    } catch {
+      // Fallback to raw natvisPath if path.relative fails
+      natvisFileLabel = natvisPath;
+    }
+  }
+  // Print all covered and successful types
+  console.log(
+    `[natvis.summary] Tested Qt types successfully covered by NatVis file ${natvisFileLabel} on ${process.platform}:`
+  );
+
+  if (successfulTypes.length === 0) {
+    console.log('  (none)');
+  } else {
+    for (const t of successfulTypes) {
+      console.log(`  ${t}`);
+    }
+  }
+
+  // Print Known-problem NatVis types (as marked in the golden snapshot)
+  if (problematicTypesInGolden.size > 0) {
+    console.log(
+      `[natvis.summary] Tested Qt types with unsuccessful NatVis coverage on ${process.platform} (marked as knownProblem in the golden snapshot):`
+    );
+    for (const t of [...problematicTypesInGolden].sort()) {
+      console.log(`  ${t}`);
+    }
+  } else {
+    console.log(
+      `[natvis.summary] No golden entries are marked with knownProblem on ${process.platform}.`
+    );
+  }
+
+  // Print types with defined NatVis patterns but not exercised by this test
+  const missingLines = missing.map((base) => {
+    const alts = natvis.alts.get(base);
+    return alts && alts.size ? `${base} (alts: ${[...alts].join(', ')})` : base;
+  });
+
+  if (missingLines.length > 0) {
+    console.log(
+      '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
+    );
+    for (const line of missingLines) {
+      console.log(`  ${line}`);
+    }
+  } else {
+    console.log(
+      '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
+    );
+  }
+}
+
+export interface SnapshotMismatch {
+  readonly name: string;
+  readonly actual?: Snapshot;
+  readonly expected?: GoldenSnapshot;
+}
+
+/**
+ * Compare a runtime NatVis snapshot (`actual`) against the platform-resolved
+ * golden snapshot (`expected`) and return *only the real mismatches*.
+ *
+ * This function performs a **name-based bidirectional comparison**:
+ *
+ *   1) **Pass 1 — iterate ACTUAL locals**
+ *      - For each variable that appears in Locals:
+ *          • If no golden entry exists → report as an extra unexpected variable.
+ *          • If type and value both match → OK.
+ *          • If they differ:
+ *                – If the golden entry has `knownProblem`: mismatch is ignored
+ *                  but logged in debug mode.
+ *                – Otherwise → report as a real mismatch.
+ *      - Additionally, if a golden entry had a knownProblem but now *matches*
+ *        exactly, emit a “[good-news]” message in debug mode.
+ *
+ *   2) **Pass 2 — iterate GOLDEN entries**
+ *      - For each expected variable missing in Locals:
+ *          • If it has `knownProblem`: missing is ignored (optionally logged).
+ *          • Otherwise → report as a real mismatch.
+ *
+ *   3) **Return value**
+ *      - A list of `SnapshotMismatch` describing only the real failures:
+ *          • missing expected entries,
+ *          • extra unexpected entries,
+ *          • mismatched entries not covered by known-problem exemptions.
+ *
+ * Design goals:
+ *   - Per-variable known-problem handling resides *inside the golden snapshot*,
+ *     not in a global table.
+ *   - Full control over name/type/value comparison.
+ *   - No index-based comparisons (stable under reordering).
+ *   - Clear debug output: good-news logs, known-problem logs, real mismatches.
+ *
+ * @param actual   The platform-normalized locals emitted by the debugger.
+ * @param expected The materialized golden snapshot for this platform.
+ * @returns        Array of real mismatches (empty array → test passes).
  */
 export function findMismatchedSnapshotEntries(
   actual: readonly Snapshot[],
-  expected: readonly Snapshot[]
-): Array<{ index: number; actual: any; expected: any }> {
-  const mismatches: Array<{ index: number; actual: any; expected: any }> = [];
-  const len = Math.max(actual.length, expected.length);
+  expected: readonly GoldenSnapshot[]
+): SnapshotMismatch[] {
+  const mismatches: SnapshotMismatch[] = [];
 
-  // Track presence of problematic types
-  const actualTypes = new Set(actual.map((v) => v?.type).filter(Boolean));
+  // Build lookup maps by fully-qualified variable name
+  const actualByName = new Map<string, Snapshot>();
+  for (const a of actual) {
+    if (!a.name) {
+      continue;
+    }
+    actualByName.set(a.name, a);
+  }
 
-  // Track which known-problem types had mismatches
-  const problematicTypesWithMismatch = new Set<string>();
+  const expectedByName = new Map<string, GoldenSnapshot>();
+  for (const e of expected) {
+    if (!e.name) {
+      continue;
+    }
+    expectedByName.set(e.name, e);
+  }
 
-  // ---- Main mismatch detection loop ------------------------------------
-  for (let i = 0; i < len; i++) {
-    const a = actual[i];
-    const e = expected[i];
+  const seenNames = new Set<string>();
 
-    // If equal → no issue
-    if (isDeepStrictEqual(a, e)) continue;
+  // ---------------------------------------------------------
+  // Pass 1: walk ACTUAL locals, compare against golden
+  // ---------------------------------------------------------
+  for (const [name, a] of actualByName) {
+    seenNames.add(name);
 
-    const t = a?.type ?? e?.type ?? undefined;
+    const e = expectedByName.get(name);
+    if (!e) {
+      // Extra variable in Locals (not described by golden)
+      mismatches.push({ name, actual: a });
+      continue;
+    }
 
-    const problem = t
-      ? knownNatvisProblems.find((p) => {
-          if (p.type !== t) return false;
-          if (!matchesPlatform(p, process.platform)) return false;
+    const sameType = a.type === e.type;
+    const sameValue = a.value === e.value;
 
-          // If p.variableNames exists, match by name, else match all variables of that type.
-          if (p.variableNames) {
-            return a?.name && p.variableNames.includes(a.name);
-          }
-          return true;
-        })
-      : undefined;
-
-    if (problem) {
-      // Known problem mismatch → ignore but record
-      problematicTypesWithMismatch.add(t!);
-
-      if (process.env.QT_TEST_DEBUG === '1') {
-        const varName = a?.name ?? e?.name ?? '<unknown>';
-        const expectedVal = e?.value;
-        const actualVal = formatValuePreview(a?.value);
-
+    if (sameType && sameValue) {
+      if (e.knownProblem && process.env.QT_TEST_DEBUG === '1') {
         console.warn(
-          `[natvis.test][known-problem] '${t}' ${varName} mismatch ignored — still broken.\n` +
-            `  expected: ${JSON.stringify(expectedVal)}\n` +
-            `  actual:   ${JSON.stringify(actualVal)}`
+          `[natvis.test][good-news] Known problem for '${e.type ?? '<unknown>'}' ` +
+            `(${name}) no longer mismatches on ${process.platform}.\n` +
+            `  Previous description: ${e.knownProblem}`
         );
-        console.log(`  Reason: ${problem.description}\n`);
       }
       continue;
     }
 
-    // Unknown mismatch → real failure
-    mismatches.push({ index: i, actual: a, expected: e });
+    // Per-entry known problem on the golden side:
+    // mismatch is *expected* and does not fail the test.
+    if (e.knownProblem) {
+      if (process.env.QT_TEST_DEBUG === '1') {
+        console.warn(
+          `[natvis.test][known-problem] '${name}' mismatch ignored.\n` +
+            `  Reason: ${e.knownProblem}\n` +
+            `  expected: ${JSON.stringify({ type: e.type, value: formatValuePreview(e.value) })}\n` +
+            `  actual:   ${JSON.stringify({ type: a.type, value: formatValuePreview(a.value) })}`
+        );
+      }
+      continue;
+    }
+
+    // Real mismatch
+    mismatches.push({ name, actual: a, expected: e });
   }
 
-  // ---- Post-analysis reporting (debug mode only) -----------------------
-  if (process.env.QT_TEST_DEBUG === '1') {
-    for (const prob of knownNatvisProblems) {
-      const t = prob.type;
-
-      // Skip problems that are not relevant on this platform
-      if (!matchesPlatform(prob, process.platform)) {
-        continue;
-      }
-
-      const seenInActual = actualTypes.has(t);
-      const hadMismatch = problematicTypesWithMismatch.has(t);
-
-      if (seenInActual && hadMismatch) {
-        // Known problem still broken — already logged above
-        continue;
-      }
-
-      if (seenInActual && !hadMismatch) {
-        // GOOD NEWS → actual contains the type but mismatch did not happen
-        console.warn(
-          `[natvis.test][good-news] Known problem '${t}' no longer mismatches on ` +
-            `${process.platform}!\n` +
-            `  Description was: ${prob.description}`
-        );
-      }
-
-      if (!seenInActual) {
-        console.warn(
-          `[natvis.test][warning] Known-problem type '${t}' (platform=${String(
-            prob.platform ?? 'all'
-          )}) no longer appears in Locals.\n` +
-            `  (Maybe it's no longer constructed or NatVis expansion changed?)`
-        );
-      }
+  // ---------------------------------------------------------
+  // Pass 2: walk GOLDEN entries, ensure none are missing in locals
+  // ---------------------------------------------------------
+  for (const [name, e] of expectedByName) {
+    if (seenNames.has(name)) {
+      continue;
     }
+
+    // Golden expects a variable that does not exist in Locals
+    if (e.knownProblem) {
+      // Missing-but-known-broken: do not fail, only verbose in debug mode
+      if (process.env.QT_TEST_DEBUG === '1') {
+        console.warn(
+          `[natvis.test][known-problem] '${name}' missing in Locals, ignoring.\n` +
+            `  Reason: ${e.knownProblem}`
+        );
+      }
+      continue;
+    }
+
+    mismatches.push({ name, expected: e });
   }
 
   return mismatches;
@@ -550,210 +727,60 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         );
       }
 
-      if (process.env.UPDATE_NATVIS_GOLDEN) {
-        // Golden only contains NatVis-covered locals
-        await writeGolden(natvisSnapshot);
-      } else {
-        //const golden = await readGolden<typeof natvisSnapshot>(projectDir);
+      const goldenSnapshot = materializeGoldenSnapshot(
+        GOLDEN_ENTRIES,
+        process.platform
+      );
 
-        const golden = materializeGoldenSnapshot(GOLDEN_ENTRIES, process.platform);
-
-        if (!golden) {
-          throw new Error(
-            `Golden not found. To create it run:\n  npm run natvis:golden:update`
-          );
-        }
-
-        //Compare ONLY NatVis-covered types (qRect, qByteArray, qString, etc.)
-        //  expect(
-        //    natvisSnapshot,
-        //    'Locals mismatch vs golden (NatVis-covered types only)'
-        //  ).to.deep.equal(golden);
-
-        const mismatches = findMismatchedSnapshotEntries(
-          natvisSnapshot,
-          golden
+      if (!goldenSnapshot) {
+        throw new Error(
+          `Golden not found. To create it run:\n  npm run natvis:golden:update`
         );
-        forEach(mismatches, (m) => {
-          console.error(
-            `[natvis.test] Mismatch at index ${m.index}:\n` +
-              `  Actual:   ${JSON.stringify(m.actual)}\n` +
-              `  Expected: ${JSON.stringify(m.expected)}`
-          );
+      }
+
+      const mismatches = findMismatchedSnapshotEntries(
+        natvisSnapshot,
+        goldenSnapshot
+      );
+
+      // ---- NatVis summary: which types worked, which NatVis types are unused ----
+      const SHOW_SUMMARY = process.env.NATVIS_SHOW_SUMMARY === '1';
+
+      if (SHOW_SUMMARY) {
+        printNatvisSummary({
+          natvisSnapshot,
+          goldenSnapshot,
+          mismatches,
+          natvis,
+          missing,
+          natvisPath,
+          wsFolder
         });
+      }
+      // ---- Final assertion: fail if any real mismatches remain ----
+      if (mismatches.length > 0) {
+        const MAX_VALUE_PREVIEW = 200;
 
-        if (mismatches.length > 0) {
-          const MAX_VALUE_PREVIEW = 200;
+        const compactActual = mismatches.map((m) => ({
+          name: m.name,
+          type: m.actual?.type ?? m.expected?.type ?? '<unknown>',
+          value: formatValuePreview(m.actual?.value)
+        }));
 
-          const preview = (v: unknown) => formatValuePreview(v);
+        const compactExpected = mismatches.map((m) => ({
+          name: m.name,
+          type: m.actual?.type ?? m.expected?.type ?? '<unknown>',
+          value: formatValuePreview(m.expected?.value)
+        }));
 
-          const compactActual = mismatches.map((m) => {
-            const actual = m.actual ?? {};
-            const expected = m.expected ?? {};
+        const names = mismatches.map((m) => m.name).join(', ');
 
-            return {
-              index: m.index,
-              name:
-                (actual as any).name ??
-                (expected as any).name ??
-                `<index ${m.index}>`,
-              type:
-                (actual as any).type ?? (expected as any).type ?? '<unknown>',
-              value: preview((actual as any).value)
-            };
-          });
-
-          const compactExpected = mismatches.map((m) => {
-            const actual = m.actual ?? {};
-            const expected = m.expected ?? {};
-
-            return {
-              index: m.index,
-              name:
-                (actual as any).name ??
-                (expected as any).name ??
-                `<index ${m.index}>`,
-              type:
-                (actual as any).type ?? (expected as any).type ?? '<unknown>',
-              value: preview((expected as any).value)
-            };
-          });
-
-          const indices = mismatches.map((m) => m.index).join(', ');
-
-          expect(
-            compactActual,
-            `NatVis mismatch (after filtering known-problem types).\n` +
-              `Mismatches at indices: ${indices}\n` +
-              `Values are truncated to ${MAX_VALUE_PREVIEW} characters for display.`
-          ).to.deep.equal(compactExpected);
-        }
-
-        // ---- NatVis summary: which types worked, which NatVis types are unused ----
-        const SHOW_SUMMARY = process.env.NATVIS_SHOW_SUMMARY === '1';
-
-        if (SHOW_SUMMARY) {
-          // All types that *did* match some NatVis pattern and made it into the
-          // NatVis-filtered snapshot.
-          const allCoveredTypes = new Set<string>(
-            natvisSnapshot
-              .map((v) => v.type)
-              .filter((t): t is string => Boolean(t))
-          );
-
-          // Types that had *unexpected* mismatches (i.e. not ignored as known problems).
-          const mismatchedTypes = new Set<string>();
-          for (const m of mismatches) {
-            const t =
-              (m.actual && (m.actual as any).type) ??
-              (m.expected && (m.expected as any).type);
-            if (typeof t === 'string') {
-              mismatchedTypes.add(t);
-            }
-          }
-
-          // Types that are knownNatvisProblems *on this platform* and that actually
-          // occurred in the NatVis-filtered snapshot (respecting variableNames).
-          const problematicTypesOnThisPlatform = new Set<string>();
-
-          for (const prob of knownNatvisProblems) {
-            if (!matchesPlatform(prob, process.platform)) {
-              continue;
-            }
-
-            const typeName = prob.type;
-
-            const seenForThisProblem = natvisSnapshot.some((v) => {
-              if (v.type !== typeName) {
-                return false;
-              }
-
-              if (prob.variableNames && prob.variableNames.length > 0) {
-                const name = v.name;
-                return (
-                  typeof name === 'string' && prob.variableNames.includes(name)
-                );
-              }
-
-              // No variableNames restriction → any variable of this type counts.
-              return true;
-            });
-
-            if (seenForThisProblem) {
-              problematicTypesOnThisPlatform.add(typeName);
-            }
-          }
-
-          // "Successful" types = covered by NatVis AND not mismatching AND not in
-          // the known-problem list for this platform.
-          const successfulTypes = [...allCoveredTypes]
-            .filter(
-              (t) =>
-                !mismatchedTypes.has(t) &&
-                !problematicTypesOnThisPlatform.has(t)
-            )
-            .sort((a, b) => a.localeCompare(b));
-
-          // Show natvis file path relative to the workspace root
-          let natvisFileLabel = natvisPath ?? '<unknown>';
-
-          if (typeof natvisFileLabel === 'string') {
-            try {
-              const rel = path.relative(wsFolder.uri.fsPath, natvisFileLabel);
-
-              // Normalize to forward slashes for clean display
-              natvisFileLabel = rel.replace(/\\/g, '/');
-            } catch {
-              // Fallback to raw if path.relative fails (shouldn't happen)
-            }
-          }
-
-          console.log(
-            `[natvis.summary] Tested Qt Types successfully covered by NatVis file ${natvisFileLabel} on ${process.platform}:`
-          );
-
-          if (successfulTypes.length === 0) {
-            console.log('  (none)');
-          } else {
-            for (const t of successfulTypes) {
-              console.log(`  ${t}`);
-            }
-          }
-          // --- Known-problem NatVis types on this platform -------------------------
-          if (problematicTypesOnThisPlatform.size > 0) {
-            console.log(
-              `[natvis.summary] Tested Qt Types with unsuccessful NatVis coverage on ${process.platform} (known-problem, ignored mismatches):`
-            );
-            for (const t of [...problematicTypesOnThisPlatform].sort()) {
-              console.log(`  ${t}`);
-            }
-          } else {
-            console.log(
-              `[natvis.summary] No known-problem NatVis types detected on ${process.platform}.`
-            );
-          }
-
-          // Now show NatVis patterns that are defined but not exercised
-          const missingLines = missing.map((base) => {
-            const alts = natvis.alts.get(base);
-            return alts && alts.size
-              ? `${base} (alts: ${[...alts].join(', ')})`
-              : base;
-          });
-
-          if (missingLines.length > 0) {
-            console.log(
-              '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
-            );
-            for (const line of missingLines) {
-              console.log(`  ${line}`);
-            }
-          } else {
-            console.log(
-              '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
-            );
-          }
-        }
+        expect(
+          compactActual,
+          `NatVis mismatch (after filtering known-problem entries).\n` +
+            `Variables with mismatches: ${names}\n` +
+            `Values are truncated to ${MAX_VALUE_PREVIEW} characters for display.`
+        ).to.deep.equal(compactExpected);
       }
     } finally {
       // cleanup always

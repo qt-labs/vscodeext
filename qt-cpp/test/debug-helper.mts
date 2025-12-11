@@ -237,20 +237,6 @@ export async function stopDebugSession(session?: vscode.DebugSession) {
   }
 }
 
-export async function getTopFrameId(
-  session: vscode.DebugSession
-): Promise<number> {
-  const { threads } = await session.customRequest('threads');
-  const threadId = threads?.[0]?.id;
-  if (threadId == null) throw new Error('No debug thread found');
-  const { stackFrames } = await session.customRequest('stackTrace', {
-    threadId
-  });
-  const frame = stackFrames?.[0];
-  if (!frame) throw new Error('No stack frame');
-  return frame.id as number;
-}
-
 export async function getLocals(session: vscode.DebugSession, frameId: number) {
   const { scopes } = await session.customRequest('scopes', { frameId });
   const localsScope =
