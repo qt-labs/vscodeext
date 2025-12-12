@@ -375,7 +375,8 @@ function wildcardToRegex(pat: string): RegExp {
 // but the debugger reports the typedef name "SelectionFlags".
 const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
   // NatVis pattern       // Snapshot types to treat as covered by that pattern
-  'QFlags<*>': ['SelectionFlags']
+  'QFlags<*>': ['SelectionFlags'],
+  'QList<*>': ['QByteArrayList', 'qQStringList']
 };
 /**
  * A base is covered if base OR ANY of its alternatives matches a seen type.

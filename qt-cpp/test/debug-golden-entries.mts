@@ -315,7 +315,64 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux:
         'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.'
     }
+  },
+  {
+    name: 'containerTypes.qIntList',
+    type: 'QList<int>',
+    value: '{ size=3 }'
+  },
+  {
+    name: 'containerTypes.qByteArrayList',
+    type: 'QByteArrayList',
+    value: '{ size=2 }',
+    knownProblem: {
+    darwin:
+      'QByteArrayList is a typedef (QList<QByteArray>). On macOS, the NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
   }
+  },
+  {
+    name: 'containerTypes.qByteArrayList',
+    type: 'QByteArrayList',
+    value: '{ size=3 }',
+    knownProblem: {
+    darwin:
+      'QByteArrayList is a typedef (QList<QString>). On macOS, the NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
+  }
+  },
+  {
+    name: 'containerTypes.qPairStringInt',
+    type: 'QPair<QString, int>',
+    value: '(0xADDR u"pair-key", 42)'
+  },
+  {
+    name: 'containerTypes.qPairStringInt.[first]',
+    type: 'QString',
+    value: 'pair-key'
+  },
+  {
+    name: 'containerTypes.qCborArray',
+    type: 'QCborArray',
+    value: '{...}',
+    knownProblem: {
+      all:
+        'QCborArray NatVis output is not stable across platforms/debuggers yet (often raw/opaque forms like "{...}", quoting artifacts, or backend-specific formatting). Keep placeholder until we decide what to assert.'
+    }
+  },
+  {
+    name: 'containerTypes.qCborValueInt',
+    type: 'QCborValue',
+    value: {
+      linux: '42',
+      darwin: '{...}',
+      win32: '{...}'
+    },
+    knownProblem: {
+      darwin:
+        'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque "{...}" form.',
+      win32:
+        'QCborValue NatVis formatting is currently unreliable under cppvsdbg with the current CI Qt debug symbols; value often collapses to an opaque "{...}" form.'
+    }
+  },
 ] as const;
 
 export const GOLDEN_ENTRIES: readonly GoldenEntry[] = GOLDEN_ENTRY_DEFS.map(

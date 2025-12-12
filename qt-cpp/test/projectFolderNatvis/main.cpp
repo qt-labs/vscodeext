@@ -4,13 +4,13 @@
 #include <iostream>
 
 #include "core_types.h"
-//#include "container_types.h"
+#include "container_types.h"
 
 int main(int argc, char** argv) {
   QCoreApplication app(argc, argv);
 
   auto coreTypes = CoreTypes();
-  //auto containerTypes = ContainerTypes();
+  auto containerTypes = ContainerTypes();
   // BREAK_HERE
   return 0;
 }
