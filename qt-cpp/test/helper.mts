@@ -21,6 +21,14 @@ export {
   selectAndApplyKit
 } from '../../qt-lib/test/helper.mjs';
 
+// ---------------------------------------------------------------------------
+// Shared debug logging + sandbox lifecycle for this test file
+// ---------------------------------------------------------------------------
+export const DEBUG = process.env.QT_TEST_DEBUG === '1';
+export const dlog = (...args: unknown[]) => {
+  if (DEBUG) console.log(...args);
+};
+
 /**
  * Mocha lifecycle wiring for a shared Sinon sandbox.
  * - creates a sandbox once

@@ -5,10 +5,43 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 /**
- * Open a source file from a project dir and create breakpoints on the FIRST
- * executable-looking line AFTER every `// BREAK_HERE` marker.
+ * Debug-session utilities for qt-cpp NatVis integration tests.
  *
- * Returns the opened document and the prepared SourceBreakpoints (not yet added).
+ * This module provides small helpers used by natvis.test.mts to:
+ *   - Create and manage breakpoints from inline source markers.
+ *   - Build fully-resolved C++ debug configurations (no ${command:...} left unresolved).
+ *   - Launch a debug session and wait for breakpoint stops via a DAP tracker.
+ *   - Retrieve and flatten Locals into a minimal, stable shape for snapshot testing.
+ *   - Read and normalize qt-cpp’s contributed debug configuration snippets.
+ *
+ * All helpers are test-oriented and may rely on console logging and strict errors.
+ */
+
+/**
+ * Prepare debugger breakpoints by scanning a source file for marker comments.
+ *
+ * This helper looks for lines containing a marker string (by default `BREAK_HERE`)
+ * in the given source file and creates one enabled `SourceBreakpoint` per marker.
+ *
+ * For each marker:
+ *   - The breakpoint is placed on the **next executable line** after the marker.
+ *   - Empty lines and comment-only lines are skipped to avoid invalid locations.
+ *
+ * This pattern allows test fixtures to remain readable and self-documenting:
+ * breakpoints are declared inline in the source code without hard-coding
+ * line numbers in tests.
+ *
+ * Behavior:
+ *   - Opens the source file in the editor to ensure breakpoints are registered.
+ *   - Throws an error if no marker occurrences are found.
+ *
+ * @param projectDir    Absolute path to the project root.
+ * @param relSourcePath Path to the source file relative to `projectDir`.
+ * @param marker        Marker string used to locate breakpoint positions.
+ *
+ * @returns An object containing:
+ *   - `doc`         : The opened TextDocument for the source file.
+ *   - `breakpoints` : Enabled SourceBreakpoints derived from marker locations.
  */
 export async function prepareBreakpointsFromMarkers(
   projectDir: string,
@@ -60,7 +93,37 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
   return () => vscode.debug.removeBreakpoints(bps);
 }
 
-// --- Build a cross-platform C++ debug configuration -------------------------
+/**
+ * Create a fully-resolved C++ debug configuration for NatVis tests.
+ *
+ * This helper constructs a concrete `DebugConfiguration` equivalent to what
+ * VS Code would produce from a `launch.json` using CMake Tools and the qt-cpp
+ * extension — but **without** relying on `${command:...}` indirections.
+ *
+ * The function:
+ *   - Resolves all command-based fields eagerly:
+ *       • `cmake.launchTargetPath`
+ *       • `cmake.getLaunchTargetDirectory`
+ *       • `qt-cpp.natvis`
+ *   - Selects the appropriate debugger type per platform:
+ *       • Windows → `cppvsdbg`
+ *       • macOS/Linux → `cppdbg`
+ *   - Chooses a suitable MI mode (`lldb` or `gdb`) for non-Windows platforms.
+ *   - Applies Linux-specific fixes required on CI (explicit `gdb` path).
+ *
+ * The resulting configuration is:
+ *   - Platform-correct,
+ *   - Fully concrete (no unresolved `${command:...}`),
+ *   - Suitable for programmatic launching via `startDebugging`,
+ *   - Behaviorally equivalent to a user-driven launch.
+ *
+ * Debug logging of the final configuration is enabled when `QT_TEST_DEBUG=1`.
+ *
+ * @returns A resolved `DebugConfiguration` ready to be passed to
+ *          `vscode.debug.startDebugging`.
+ *
+ * @throws Error if required launch paths or the NatVis file cannot be resolved.
+ */
 export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   const isWin = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
@@ -126,8 +189,53 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   return cfg;
 }
 
-// --- Start debugging and resolve on first 'stopped' --------------------------
-// debug-helper.mts
+/**
+ * Start a debug session and wait until one or more `stopped` events occur.
+ *
+ * This helper launches a debug session programmatically and synchronously
+ * waits for the debugger to stop at a breakpoint, mirroring the behavior
+ * of a user-driven debug launch.
+ *
+ * Core behavior:
+ *   - Registers a `DebugAdapterTracker` **before** launching the session
+ *     to reliably observe all DAP events.
+ *   - Starts debugging with the provided workspace folder and fully
+ *     materialized debug configuration.
+ *   - Listens for `stopped` events and records the first stack frame
+ *     (source, line, threadId, frameId) for each relevant stop.
+ *
+ * Stop handling logic:
+ *   - Automatically continues past non-breakpoint stops (entry, signal, etc.).
+ *   - Optionally continues execution until a specified number of breakpoint
+ *     hits has been observed (`continueUntilHits`).
+ *   - Resolves once the desired stop condition is met.
+ *
+ * Failure modes:
+ *   - Rejects if the debug session terminates before any breakpoint is hit.
+ *   - Rejects if no `stopped` event is received within the timeout.
+ *   - Propagates unexpected debugger protocol or request errors.
+ *
+ * Design notes:
+ *   - The debug session is captured immediately when the tracker is created,
+ *     ensuring it is available even if events arrive very early.
+ *   - The helper does not assume a fixed threadId; it queries threads when
+ *     necessary to remain debugger-agnostic.
+ *   - The tracker is disposed deterministically on success or failure.
+ *
+ * @param wsFolder Workspace folder in which to start debugging.
+ * @param cfg      Fully resolved debug configuration (no `${command:...}`).
+ * @param opts     Optional controls:
+ *                   - `timeoutMs`         : maximum wait time (default: 15000ms).
+ *                   - `continueUntilHits`: number of breakpoint stops to observe
+ *                                           before resolving.
+ *
+ * @returns An object containing:
+ *           - `session`: the active `DebugSession`.
+ *           - `stops`  : ordered list of breakpoint stop metadata captured.
+ *
+ * @throws Error if the debug session fails to start, terminates prematurely,
+ *         or does not hit the expected breakpoints within the timeout.
+ */
 export async function startDebugAndWaitForStop(
   wsFolder: vscode.WorkspaceFolder,
   cfg: vscode.DebugConfiguration,
@@ -227,6 +335,7 @@ export async function startDebugAndWaitForStop(
   await done;
   return { session, stops };
 }
+
 // --- Graceful termination ----------------------------------------------------
 export async function stopDebugSession(session?: vscode.DebugSession) {
   if (!session) return;
@@ -237,6 +346,34 @@ export async function stopDebugSession(session?: vscode.DebugSession) {
   }
 }
 
+/**
+ * Retrieve the list of local variables for a given stack frame.
+ *
+ * This helper queries the Debug Adapter Protocol directly to obtain
+ * the contents of the *Locals* scope for a specific frame in an active
+ * debug session.
+ *
+ * Behavior:
+ *   - Requests all scopes for the given `frameId`.
+ *   - Selects the scope whose name matches `/locals?/i` if present,
+ *     otherwise falls back to the first available scope.
+ *   - Requests all variables from the selected scope and returns them
+ *     verbatim as reported by the debugger.
+ *
+ * Design notes:
+ *   - The function is debugger-agnostic and does not assume a fixed
+ *     scope ordering or naming convention.
+ *   - No filtering, flattening, or normalization is performed here;
+ *     callers are expected to apply snapshot materialization separately.
+ *   - Throws early if no scopes are available, as meaningful Locals
+ *     inspection is impossible in that case.
+ *
+ * @param session Active VS Code debug session.
+ * @param frameId Stack frame identifier obtained from a `stopped` event.
+ * @returns       Array of debugger variables belonging to the Locals scope.
+ *
+ * @throws Error if no Locals scope can be identified for the frame.
+ */
 export async function getLocals(session: vscode.DebugSession, frameId: number) {
   const { scopes } = await session.customRequest('scopes', { frameId });
   const localsScope =
@@ -248,23 +385,67 @@ export async function getLocals(session: vscode.DebugSession, frameId: number) {
   return variables ?? [];
 }
 
+/**
+ * Minimal representation of a debugger configuration snippet as declared
+ * in a VS Code extension's package.json.
+ *
+ * This mirrors the structure used under:
+ *   contributes.debuggers[].configurationSnippets[]
+ *
+ * Only the fields relevant for snippet-based NatVis/debug tests are modeled.
+ */
 interface DebugConfigurationSnippet {
+  /** Optional user-visible label shown in the debug configuration picker. */
   label?: string;
+
+  /** Optional descriptive text explaining the snippet. */
   description?: string;
+
+  /** Debug configuration body provided by the snippet. */
   body?: vscode.DebugConfiguration;
 }
 
+/**
+ * Partial representation of a debugger contribution from qt-cpp's package.json.
+ *
+ * This captures only the subset needed to locate and materialize
+ * Qt-provided debug configuration snippets for automated tests.
+ */
 interface QtCppDebuggerContribution {
+  /** Debugger type identifier (e.g. "cppdbg", "cppvsdbg"). */
   type?: string;
+
+  /** Configuration snippets contributed for this debugger type. */
   configurationSnippets?: DebugConfigurationSnippet[];
 }
 
+/**
+ * Minimal shape of qt-cpp's package.json relevant to debugger snippet tests.
+ *
+ * This interface allows tests to:
+ *   - read contributed debugger entries,
+ *   - locate Qt-specific debug configuration snippets,
+ *   - materialize those snippets into concrete DebugConfigurations.
+ *
+ * It intentionally ignores all unrelated package.json fields.
+ */
 interface QtCppPackageJson {
   contributes?: {
+    /** Debugger contributions declared by the extension. */
     debuggers?: QtCppDebuggerContribution[];
   };
 }
 
+/**
+ * Unescape a VS Code snippet-encoded string.
+ *
+ * This helper removes snippet-specific escaping such as `^"` so the
+ * resulting string matches the literal value that would be produced
+ * when the snippet is expanded by VS Code.
+ *
+ * @param input  Raw string taken from a debugger configuration snippet.
+ * @returns      Unescaped, human-readable string.
+ */
 function unescapeSnippetString(input: string): string {
   let s = input;
 
@@ -276,6 +457,19 @@ function unescapeSnippetString(input: string): string {
   return s;
 }
 
+/**
+ * Normalize a debugger configuration taken from a VS Code snippet.
+ *
+ * This helper recursively walks the snippet `body` and unescapes all
+ * snippet-encoded strings (e.g. `^"`), producing a configuration object
+ * that matches what VS Code would generate after snippet expansion.
+ *
+ * The returned object is a deep-cloned, normalized version of the input
+ * and is safe to pass directly to `startDebugging`.
+ *
+ * @param body  DebugConfiguration body taken from a debugger snippet.
+ * @returns     Fully unescaped and normalized DebugConfiguration.
+ */
 function normalizeSnippetDebugConfiguration(
   body: vscode.DebugConfiguration
 ): vscode.DebugConfiguration {
@@ -368,6 +562,17 @@ export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
   return normalized;
 }
 
+/**
+ * Minimal representation of a debugger variable as returned by DAP.
+ *
+ * This interface captures only the fields relevant for NatVis testing:
+ *   - `name`  : fully-qualified variable name.
+ *   - `type`  : debugger-reported type (optional).
+ *   - `value` : raw string value as shown by the debugger (optional).
+ *
+ * It intentionally omits presentation and metadata fields to keep
+ * snapshot materialization focused and stable.
+ */
 export interface DebugVariable {
   name: string;
   type?: string;

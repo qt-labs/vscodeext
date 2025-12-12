@@ -6,6 +6,20 @@ import * as fs from 'fs/promises';
 import type { DebugVariable } from './debug-helper.mts';
 
 /**
+ * NatVis golden + snapshot utilities for qt-cpp integration tests.
+ *
+ * This module contains the core data model and helpers used by natvis tests:
+ *   - Normalize raw debugger values into stable, comparable strings.
+ *   - Materialize a deterministic runtime locals snapshot from flattened Locals.
+ *   - Parse NatVis `.natvis` files (including AlternativeType) and compute coverage.
+ *   - Define and materialize platform-aware golden expectations into snapshots.
+ *   - Provide stable sorting for snapshot entries to keep comparisons deterministic.
+ *
+ * The code here is intentionally test-focused and aims to remove debugger noise
+ * (addresses, float artifacts, formatting differences) without changing NatVis semantics.
+ */
+
+/**
  * Normalize unstable parts of debugger values (e.g., pointers, spacing)
  * so snapshots remain stable across runs/platforms.
  */
@@ -29,7 +43,7 @@ export function stripUnstable(s: string): string {
  *   4.2000000000000002 : 4.2
  *   3.1415926535897931 : 3.141593
  */
-function normalizeFloatsInStruct(raw: string): string {
+function normalizeFloats(raw: string): string {
   // Match things like 5.1, 5.0999999999999996, 4.2000000000000002, -3.14, etc.
   return raw.replace(/-?\d+\.\d+(?:\d+)?/g, (match) => {
     const n = Number(match);
@@ -83,7 +97,7 @@ export function normalizeValue(raw: string): string {
   value = value.trim();
 
   // Normalize floating-point artifacts everywhere (QRectF, QSizeF, etc.)
-  value = normalizeFloatsInStruct(value);
+  value = normalizeFloats(value);
 
   // Special case: QChar-style representation
   //    Windows: "99 u'c'"
@@ -120,6 +134,35 @@ export function normalizeValue(raw: string): string {
   return value;
 }
 
+/**
+ * Convert a list of raw debugger variables into a **stable, comparable
+ * LocalSnapshot** representation.
+ *
+ * This function is the final normalization step on the *runtime* side of
+ * NatVis testing. It takes the flattened Locals returned by the debugger
+ * and transforms them into a form suitable for deterministic comparison
+ * against the golden snapshot.
+ *
+ * Behavior:
+ *   - Sorts variables deterministically by:
+ *       1) fully-qualified variable name,
+ *       2) type (as a tiebreaker).
+ *   - Normalizes string values using `normalizeValue` to remove cosmetic
+ *     differences (whitespace, formatting quirks, etc.).
+ *   - Strips unstable or backend-specific fragments (addresses, IDs,
+ *     transient markers) via `stripUnstable`.
+ *   - Omits `type` and `value` fields when they are undefined, keeping
+ *     the snapshot compact and explicit.
+ *
+ * Design goals:
+ *   - Produce snapshots that are stable across platforms, debugger backends,
+ *     and minor formatting differences.
+ *   - Avoid embedding debugger-specific noise into the golden comparison.
+ *   - Ensure ordering does not influence comparison results.
+ *
+ * @param vars  Flattened debugger variables (as returned by `getFlattenedLocals`).
+ * @returns     A sorted, normalized snapshot ready for golden comparison.
+ */
 export function materializeLocalSnapshot(
   vars: readonly DebugVariable[]
 ): readonly LocalSnapshot[] {
@@ -150,8 +193,18 @@ export function materializeLocalSnapshot(
 }
 
 /**
- * Collect a set of type names found in a snapshot tree (including children).
- * Used to compute NatVis coverage warnings.
+ * Collect all distinct `type` strings appearing in a snapshot tree.
+ *
+ * This helper walks a `LocalSnapshot` hierarchy (including nested children)
+ * and returns the set of debugger-reported type names that actually appeared
+ * in the captured Locals.
+ *
+ * It is primarily used for NatVis coverage analysis, to determine:
+ *   - which NatVis type patterns were exercised by a test run,
+ *   - which snapshot entries should be considered for NatVis filtering.
+ *
+ * @param s  Root snapshot entries to traverse.
+ * @returns  Set of unique type names found in the snapshot.
  */
 export function collectTypesFromSnapshot(
   s: readonly LocalSnapshot[]
@@ -185,6 +238,27 @@ function decodeXmlEntities(input: string): string {
   return input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
 }
 
+/**
+ * Structured representation of NatVis type patterns extracted from a `.natvis` file.
+ *
+ * This type captures the *logical shape* of NatVis coverage rules after parsing,
+ * including base type patterns and their declared alternative forms.
+ *
+ * Fields:
+ *   - `all`   : All type patterns defined in the NatVis file, including bases
+ *               and AlternativeType entries.
+ *   - `bases` : The primary (base) type patterns declared via `<Type Name="...">`.
+ *   - `alts`  : Mapping from a base type pattern to the set of its
+ *               `<AlternativeType>` patterns.
+ *
+ * This structure is used by NatVis tests to:
+ *   - Match runtime snapshot types against NatVis rules,
+ *   - Reason about coverage (which rules were exercised or missed),
+ *   - Correctly handle AlternativeType equivalence during comparison.
+ *
+ * It is a test-oriented abstraction and does not attempt to model the full
+ * NatVis schema or debugger behavior.
+ */
 export type NatvisTypes = {
   all: Set<string>;
   bases: Set<string>;
@@ -192,8 +266,31 @@ export type NatvisTypes = {
 };
 
 /**
- * Parse NatVis file and extract all <Type Name="..."> entries (or alternate type).
- * This is a fast, regex-based approximation sufficient for coverage warnings.
+ * Parse a NatVis (.natvis) file and extract all declared type patterns,
+ * including `<AlternativeType>` relationships.
+ *
+ * This helper scans the NatVis XML and builds three complementary views:
+ *
+ *   - `all`   : every type name that can be matched by NatVis
+ *               (base types + alternative types).
+ *   - `bases` : the primary `<Type Name="...">` entries.
+ *   - `alts`  : a mapping from each base type to its `<AlternativeType>` names.
+ *
+ * XML comments are stripped before parsing, and XML entities
+ * (e.g. `&lt;`, `&gt;`) are decoded so the resulting type patterns are
+ * human-readable and match debugger output.
+ *
+ * The result is used by NatVis tests to:
+ *   - determine which snapshot types are covered by NatVis rules,
+ *   - report NatVis patterns that were not exercised by a test run,
+ *   - correctly account for alternative / alias types.
+ *
+ * Parsing is intentionally tolerant:
+ *   - malformed or unexpected NatVis content does not throw,
+ *   - on error, empty collections are returned.
+ *
+ * @param natvisPath  Absolute path to the NatVis file to parse.
+ * @returns           Collected NatVis type information (bases, alternatives, all).
  */
 export async function parseNatvisTypesWithAlternatives(
   natvisPath: string
@@ -255,6 +352,15 @@ export async function parseNatvisTypesWithAlternatives(
   }
 }
 
+/**
+ * Convert a NatVis-style wildcard pattern (using `*`) into a full RegExp.
+ *
+ * The input pattern is safely regex-escaped, with `*` translated to `.*`,
+ * and anchored so that the resulting RegExp matches the entire string.
+ *
+ * @param pat  Wildcard pattern from a NatVis Type Name or AlternativeType.
+ * @returns    RegExp that matches strings covered by the given pattern.
+ */
 function wildcardToRegex(pat: string): RegExp {
   // Escape regex specials, then turn \* into .*
   const rx =
@@ -430,6 +536,30 @@ export interface GoldenSnapshot
   readonly knownProblem?: string;
 }
 
+/**
+ * Declarative representation of a single golden NatVis entry.
+ *
+ * A `GoldenEntry` describes the *expected* debugger representation of one
+ * variable (and its optional children) in a platform-aware, test-friendly way.
+ * It is the source-of-truth structure used to build concrete
+ * `GoldenSnapshot` objects for comparison against runtime Locals.
+ *
+ * Key characteristics:
+ *   - **Platform-aware**:
+ *       • `value` and `knownProblem` may be specified per-platform
+ *         (`darwin`, `linux`, `win32`) or as a shared `all` fallback.
+ *       • `platform` controls whether this entry applies to the current OS.
+ *   - **Tree-structured**:
+ *       • Supports nested children to model expanded NatVis structures.
+ *       • Children are recursively materialized into snapshot form.
+ *   - **Test-oriented**:
+ *       • `knownProblem` annotations live directly on the golden entry,
+ *         allowing per-variable exemptions without global tables.
+ *
+ * The class is intentionally immutable and lightweight:
+ * it performs no comparison itself, only *materialization* into
+ * platform-resolved `GoldenSnapshot` objects.
+ */
 export class GoldenEntry {
   readonly name: string;
   readonly type: string | undefined;
@@ -533,7 +663,28 @@ export class GoldenEntry {
 }
 
 /**
- * Materialize a whole list of GoldenEntryInit into a sorted GoldenSnapshot[]
+ * Materialize a platform-specific golden snapshot from declarative
+ * `GoldenEntry` definitions.
+ *
+ * This function converts the high-level, platform-agnostic golden entries
+ * into the concrete `Snapshot` form used for comparison against runtime
+ * debugger Locals.
+ *
+ * Behavior:
+ *   - Resolves each `GoldenEntry` for the given platform by:
+ *       • applying platform filters,
+ *       • resolving platform-specific values and known-problem annotations,
+ *       • recursively materializing child entries.
+ *   - Drops entries that do not apply to the current platform.
+ *   - Sorts the resulting snapshot entries to ensure stable ordering
+ *     for deterministic comparisons.
+ *
+ * This is the single entry point that bridges **declarative golden data**
+ * and **runtime snapshot comparison**.
+ *
+ * @param entries   Declarative golden entries describing expected NatVis output.
+ * @param platform  Current platform (`process.platform`) used for resolution.
+ * @returns         A sorted, platform-resolved golden snapshot.
  */
 export function materializeGoldenSnapshot(
   entries: readonly GoldenEntry[],
@@ -545,6 +696,23 @@ export function materializeGoldenSnapshot(
 
   return sortSnapshotEntries(snaps);
 }
+
+/**
+ * Return a stable, deterministic ordering of snapshot-like entries.
+ *
+ * Entries are sorted lexicographically by:
+ *   1) `name`
+ *   2) `type` (as a tie-breaker)
+ *
+ * This helper is used throughout NatVis snapshot and golden materialization
+ * to ensure comparisons are:
+ *   - independent of debugger iteration order,
+ *   - stable across platforms and runs,
+ *   - resilient to internal reordering of children.
+ *
+ * @param entries  Snapshot-like objects to sort.
+ * @returns        A new array containing the sorted entries.
+ */
 export function sortSnapshotEntries<T extends { name?: string; type?: string }>(
   entries: readonly T[]
 ): readonly T[] {
