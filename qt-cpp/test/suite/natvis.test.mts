@@ -211,6 +211,14 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         return !noiseTopLevel.has(top);
       });
 
+      dlog(
+  '[natvis.test] Snapshot after noise filtering (JSON):\n' +
+    JSON.stringify(
+      snapshot.map((v) => ({ name: v.name, type: v.type, value: v.value })),
+      null,
+      2
+    )
+);
       //   Read NatVis + compute which snapshot types are actually covered
       const natvisPath = nvPath; // you already computed this earlier
       const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
@@ -234,7 +242,18 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
           '[natvis.test] No Locals matched any NatVis type; check project and NatVis path.'
         );
       }
-
+dlog(
+  '[natvis.test] natvisSnapshot (JSON):\n' +
+    JSON.stringify(
+      natvisSnapshot.map((v) => ({
+        name: v.name,
+        type: v.type,
+        value: v.value
+      })),
+      null,
+      2
+    )
+);
       const goldenSnapshot = materializeGoldenSnapshot(
         GOLDEN_ENTRIES,
         process.platform
