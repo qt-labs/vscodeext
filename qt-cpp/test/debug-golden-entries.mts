@@ -257,6 +257,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ x = 24, y = 48 }'
   },
   {
+    name: 'coreTypes.qPointF',
+    type: 'QPoint',
+    value: '{ x = 24.5, y = 48.5 }'
+  },
+  {
     name: 'coreTypes.qRect',
     type: 'QRect',
     value: '{ x = 5, y = 6, width = 41, height = 42 }'
@@ -270,6 +275,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qSize',
     type: 'QSize',
     value: '{ width = 42, height = 43 }'
+  },
+  {
+    name: 'coreTypes.qSizeF',
+    type: 'QSize',
+    value: '{ width = 4.1, height = 4.2 }'
   },
   {
     name: 'coreTypes.qString',
@@ -322,57 +332,59 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=3 }'
   },
   {
+    name: 'containerTypes.qStringList',
+    type: 'QStringList',
+    value: '{ size=3 }',
+    knownProblem: {
+      linux:
+        'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
+      darwin:
+        'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+    }
+  },
+  {
     name: 'containerTypes.qByteArrayList',
     type: 'QByteArrayList',
     value: '{ size=2 }',
     knownProblem: {
-    darwin:
-      'QByteArrayList is a typedef (QList<QByteArray>). On macOS, the NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
-  }
-  },
-  {
-    name: 'containerTypes.qByteArrayList',
-    type: 'QByteArrayList',
-    value: '{ size=3 }',
-    knownProblem: {
-    darwin:
-      'QByteArrayList is a typedef (QList<QString>). On macOS, the NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
-  }
+      linux:
+        'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
+      darwin:
+        'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+    }
   },
   {
     name: 'containerTypes.qPairStringInt',
     type: 'QPair<QString, int>',
-    value: '(0xADDR u"pair-key", 42)'
-  },
-  {
-    name: 'containerTypes.qPairStringInt.[first]',
-    type: 'QString',
-    value: 'pair-key'
+    value: {
+      win32: '(pair-key, 42)',
+      darwin: '(0xADDR u"pair-key", 42)',
+      linux: '(pair-key, 42)'
+    },
+    knownProblem: {
+      linux:
+        'Typedef (QPair<QString, int>) ule evaluation fails, so the debugger falls back to "{...}"".',
+    }
   },
   {
     name: 'containerTypes.qCborArray',
     type: 'QCborArray',
-    value: '{...}',
+    value: 'unknown_invalid',
     knownProblem: {
-      all:
-        'QCborArray NatVis output is not stable across platforms/debuggers yet (often raw/opaque forms like "{...}", quoting artifacts, or backend-specific formatting). Keep placeholder until we decide what to assert.'
+      all: 'QCborArray NatVis output is not stable across platforms/debuggers yet (often raw/opaque forms like "{...}", quoting artifacts, or backend-specific formatting). Keep placeholder until we decide what to assert.'
     }
   },
   {
     name: 'containerTypes.qCborValueInt',
     type: 'QCborValue',
-    value: {
-      linux: '42',
-      darwin: '{...}',
-      win32: '{...}'
-    },
+    value: '42',
     knownProblem: {
       darwin:
         'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque "{...}" form.',
       win32:
-        'QCborValue NatVis formatting is currently unreliable under cppvsdbg with the current CI Qt debug symbols; value often collapses to an opaque "{...}" form.'
+        'QCborValue NatVis currently fails. Debugger provides: n=42 container=0xADDR <NULL> t=Integer (0) instead of just "42".'
     }
-  },
+  }
 ] as const;
 
 export const GOLDEN_ENTRIES: readonly GoldenEntry[] = GOLDEN_ENTRY_DEFS.map(

@@ -211,14 +211,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         return !noiseTopLevel.has(top);
       });
 
-      dlog(
-  '[natvis.test] Snapshot after noise filtering (JSON):\n' +
-    JSON.stringify(
-      snapshot.map((v) => ({ name: v.name, type: v.type, value: v.value })),
-      null,
-      2
-    )
-);
       //   Read NatVis + compute which snapshot types are actually covered
       const natvisPath = nvPath; // you already computed this earlier
       const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
@@ -229,31 +221,25 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       //   - coveredTypes: set of snapshot.type strings that matched some NatVis type
       const { missing, coveredTypes } =
         matchNatvisTypePatternsConsideringAlternatives(natvis, seenTypes);
+      void coveredTypes; // review matchNatvisTypePatternsConsideringAlternatives
 
-      // Keep only locals whose type is covered by NatVis
-      const natvisSnapshot = snapshot.filter((v) => {
-        if (!v.type) {
-          return false;
-        }
-        return coveredTypes.has(v.type);
-      });
-      if (natvisSnapshot.length === 0) {
+      if (snapshot.length === 0) {
         throw new Error(
           '[natvis.test] No Locals matched any NatVis type; check project and NatVis path.'
         );
       }
-dlog(
-  '[natvis.test] natvisSnapshot (JSON):\n' +
-    JSON.stringify(
-      natvisSnapshot.map((v) => ({
-        name: v.name,
-        type: v.type,
-        value: v.value
-      })),
-      null,
-      2
-    )
-);
+      dlog(
+        '[natvis.test] snapshot (JSON):\n' +
+          JSON.stringify(
+            snapshot.map((v) => ({
+              name: v.name,
+              type: v.type,
+              value: v.value
+            })),
+            null,
+            2
+          )
+      );
       const goldenSnapshot = materializeGoldenSnapshot(
         GOLDEN_ENTRIES,
         process.platform
@@ -266,7 +252,7 @@ dlog(
       }
 
       const mismatches = findMismatchedSnapshotEntries(
-        natvisSnapshot,
+        snapshot,
         goldenSnapshot
       );
 
@@ -275,7 +261,7 @@ dlog(
 
       if (SHOW_SUMMARY) {
         printNatvisSummary({
-          natvisSnapshot,
+          natvisSnapshot: snapshot,
           goldenSnapshot,
           mismatches,
           natvis,

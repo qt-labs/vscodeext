@@ -242,43 +242,23 @@ export interface SnapshotMismatch {
 }
 
 /**
- * Compare a runtime NatVis snapshot (`actual`) against the platform-resolved
- * golden snapshot (`expected`) and return *only the real mismatches*.
+ * Compare the promoted runtime snapshot entries against the golden snapshot
+ * and return a list of mismatches.
  *
- * This function performs a **name-based bidirectional comparison**:
+ * Current behavior (no child-name normalization):
+ * - Keys are matched by the exact snapshot `name` string.
+ * - Only `type` and `value` are compared (children are ignored).
+ * - Extra actual entries and missing expected entries are reported.
+ * - Entries with `knownProblem` are ignored when mismatching or missing.
  *
- *   1) **Pass 1 — iterate ACTUAL locals**
- *      - For each variable that appears in Locals:
- *          • If no golden entry exists → report as an extra unexpected variable.
- *          • If type and value both match → OK.
- *          • If they differ:
- *                – If the golden entry has `knownProblem`: mismatch is ignored
- *                  but logged in debug mode.
- *                – Otherwise → report as a real mismatch.
- *      - Additionally, if a golden entry had a knownProblem but now *matches*
- *        exactly, emit a “[good-news]” message in debug mode.
+ * Notes:
+ * - This version does NOT canonicalize NatVis synthetic child naming
+ *   (e.g. `.[first]` vs `.first`). We keep exact names so type/name issues
+ *   cannot be hidden.
  *
- *   2) **Pass 2 — iterate GOLDEN entries**
- *      - For each expected variable missing in Locals:
- *          • If it has `knownProblem`: missing is ignored (optionally logged).
- *          • Otherwise → report as a real mismatch.
- *
- *   3) **Return value**
- *      - A list of `SnapshotMismatch` describing only the real failures:
- *          • missing expected entries,
- *          • extra unexpected entries,
- *          • mismatched entries not covered by known-problem exemptions.
- *
- * Design goals:
- *   - Per-variable known-problem handling resides *inside the golden snapshot*,
- *     not in a global table.
- *   - Full control over name/type/value comparison.
- *   - No index-based comparisons (stable under reordering).
- *   - Clear debug output: good-news logs, known-problem logs, real mismatches.
- *
- * @param actual   The platform-normalized locals emitted by the debugger.
- * @param expected The materialized golden snapshot for this platform.
- * @returns        Array of real mismatches (empty array → test passes).
+ * @param actual   Promoted root snapshot entries from `materializeLocalSnapshot`.
+ * @param expected Golden entries for the current platform.
+ * @returns        List of mismatches (empty means the snapshots match).
  */
 export function findMismatchedSnapshotEntries(
   actual: readonly Snapshot[],
@@ -286,35 +266,52 @@ export function findMismatchedSnapshotEntries(
 ): SnapshotMismatch[] {
   const mismatches: SnapshotMismatch[] = [];
 
-  // Build lookup maps by fully-qualified variable name
+  // Build lookup maps by variable name (exact match)
   const actualByName = new Map<string, Snapshot>();
   for (const a of actual) {
-    if (!a.name) {
-      continue;
+    if (!a.name) continue;
+
+    const k = a.name;
+    // Keep first occurrence deterministically; warn in debug if we collide
+    if (!actualByName.has(k)) {
+      actualByName.set(k, a);
+    } else if (process.env.QT_TEST_DEBUG === '1') {
+      const prev = actualByName.get(k)!;
+      if (prev.name !== a.name) {
+        console.warn(
+          `[natvis.test][debug] actual key collision for '${k}': '${prev.name}' vs '${a.name}'`
+        );
+      }
     }
-    actualByName.set(a.name, a);
   }
 
   const expectedByName = new Map<string, GoldenSnapshot>();
   for (const e of expected) {
-    if (!e.name) {
-      continue;
+    if (!e.name) continue;
+
+    const k = e.name;
+    if (!expectedByName.has(k)) {
+      expectedByName.set(k, e);
+    } else if (process.env.QT_TEST_DEBUG === '1') {
+      const prev = expectedByName.get(k)!;
+      if (prev.name !== e.name) {
+        console.warn(
+          `[natvis.test][debug] expected key collision for '${k}': '${prev.name}' vs '${e.name}'`
+        );
+      }
     }
-    expectedByName.set(e.name, e);
   }
 
-  const seenNames = new Set<string>();
+  const seenKeys = new Set<string>();
 
-  // ---------------------------------------------------------
   // Pass 1: walk ACTUAL locals, compare against golden
-  // ---------------------------------------------------------
-  for (const [name, a] of actualByName) {
-    seenNames.add(name);
+  for (const [k, a] of actualByName) {
+    seenKeys.add(k);
 
-    const e = expectedByName.get(name);
+    const e = expectedByName.get(k);
     if (!e) {
       // Extra variable in Locals (not described by golden)
-      mismatches.push({ name, actual: a });
+      mismatches.push({ name: a.name, actual: a });
       continue;
     }
 
@@ -325,19 +322,17 @@ export function findMismatchedSnapshotEntries(
       if (e.knownProblem && process.env.QT_TEST_DEBUG === '1') {
         console.warn(
           `[natvis.test][good-news] Known problem for '${e.type ?? '<unknown>'}' ` +
-            `(${name}) no longer mismatches on ${process.platform}.\n` +
+            `(${e.name}) no longer mismatches on ${process.platform}.\n` +
             `  Previous description: ${e.knownProblem}`
         );
       }
       continue;
     }
 
-    // Per-entry known problem on the golden side:
-    // mismatch is *expected* and does not fail the test.
     if (e.knownProblem) {
       if (process.env.QT_TEST_DEBUG === '1') {
         console.warn(
-          `[natvis.test][known-problem] '${name}' mismatch ignored.\n` +
+          `[natvis.test][known-problem] '${e.name}' mismatch ignored.\n` +
             `  Reason: ${e.knownProblem}\n` +
             `  expected: ${JSON.stringify({ type: e.type, value: formatValuePreview(e.value) })}\n` +
             `  actual:   ${JSON.stringify({ type: a.type, value: formatValuePreview(a.value) })}`
@@ -346,31 +341,24 @@ export function findMismatchedSnapshotEntries(
       continue;
     }
 
-    // Real mismatch
-    mismatches.push({ name, actual: a, expected: e });
+    mismatches.push({ name: e.name, actual: a, expected: e });
   }
 
-  // ---------------------------------------------------------
   // Pass 2: walk GOLDEN entries, ensure none are missing in locals
-  // ---------------------------------------------------------
-  for (const [name, e] of expectedByName) {
-    if (seenNames.has(name)) {
-      continue;
-    }
+  for (const [k, e] of expectedByName) {
+    if (seenKeys.has(k)) continue;
 
-    // Golden expects a variable that does not exist in Locals
     if (e.knownProblem) {
-      // Missing-but-known-broken: do not fail, only verbose in debug mode
       if (process.env.QT_TEST_DEBUG === '1') {
         console.warn(
-          `[natvis.test][known-problem] '${name}' missing in Locals, ignoring.\n` +
+          `[natvis.test][known-problem] '${e.name}' missing in Locals, ignoring.\n` +
             `  Reason: ${e.knownProblem}`
         );
       }
       continue;
     }
 
-    mismatches.push({ name, expected: e });
+    mismatches.push({ name: e.name, expected: e });
   }
 
   return mismatches;
