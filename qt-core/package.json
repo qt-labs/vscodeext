@@ -101,7 +101,7 @@
       {
         "viewType": "qt-core.qrcEditor",
         "displayName": "QRC editor",
-        "priority": "default",
+        "priority": "option",
         "selector": [
           {
             "filenamePattern": "*.qrc"
@@ -238,6 +238,12 @@
           "type": "string",
           "default": "",
           "description": "Specify the default project directory when creating new projects",
+          "scope": "machine-overridable"
+        },
+        "qt-core.enableQrcEditor": {
+          "type": "boolean",
+          "default": true,
+          "description": "Turn off the QRC editor to open .qrc files in the default text editor",
           "scope": "machine-overridable"
         }
       }
