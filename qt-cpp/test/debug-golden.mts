@@ -4,6 +4,7 @@
 import * as fs from 'fs/promises';
 
 import type { DebugVariable } from './debug-helper.mts';
+import { dlog } from './helper.mts';
 
 /**
  * NatVis golden + snapshot utilities for qt-cpp integration tests.
@@ -135,61 +136,144 @@ export function normalizeValue(raw: string): string {
 }
 
 /**
- * Convert a list of raw debugger variables into a **stable, comparable
- * LocalSnapshot** representation.
+ * Reconstructs a hierarchical snapshot tree from the flat list of variables
+ * returned by the debugger (DAP Locals).
  *
- * This function is the final normalization step on the *runtime* side of
- * NatVis testing. It takes the flattened Locals returned by the debugger
- * and transforms them into a form suitable for deterministic comparison
- * against the golden snapshot.
+ * The debugger reports variables as a flat list with dotted names
+ * (e.g. `coreTypes.qPairStringInt.[first].[size]`). This function:
  *
- * Behavior:
- *   - Sorts variables deterministically by:
- *       1) fully-qualified variable name,
- *       2) type (as a tiebreaker).
- *   - Normalizes string values using `normalizeValue` to remove cosmetic
- *     differences (whitespace, formatting quirks, etc.).
- *   - Strips unstable or backend-specific fragments (addresses, IDs,
- *     transient markers) via `stripUnstable`.
- *   - Omits `type` and `value` fields when they are undefined, keeping
- *     the snapshot compact and explicit.
+ * 1. Creates a snapshot node for every variable and ensures all dotted
+ *    ancestors exist.
+ * 2. Rebuilds parent/child relationships based purely on the dotted name
+ *    structure, populating `Snapshot.children` instead of keeping a flat list.
+ * 3. Normalizes and stabilizes values so they are suitable for deterministic
+ *    comparison against golden entries.
+ * 4. Sorts the snapshot deterministically at every level.
+ * 5. Promotes children of top-level “holder” structs (e.g. `coreTypes`,
+ *    `containerTypes`) so that the resulting roots match the golden snapshot
+ *    entries (e.g. `coreTypes.qByteArray`).
  *
- * Design goals:
- *   - Produce snapshots that are stable across platforms, debugger backends,
- *     and minor formatting differences.
- *   - Avoid embedding debugger-specific noise into the golden comparison.
- *   - Ensure ordering does not influence comparison results.
+ * Important design notes:
+ * - Only the promoted root entries are intended to be compared against golden
+ *   snapshots.
+ * - Child entries represent NatVis `Expand` output and are preserved for
+ *   inspection and future validation, but are not compared at the moment.
+ * - This function does **not** filter by NatVis coverage or type; all debugger
+ *   output is materialized so type mismatches cannot be silently hidden.
  *
- * @param vars  Flattened debugger variables (as returned by `getFlattenedLocals`).
- * @returns     A sorted, normalized snapshot ready for golden comparison.
+ * @param vars
+ *   Flat list of debugger variables as returned by the DAP `variables` request,
+ *   where hierarchy is encoded in dotted variable names.
+ *
+ * @returns
+ *   A deterministic, hierarchical snapshot tree whose roots correspond to
+ *   golden snapshot entries and whose children reflect NatVis expansion output.
  */
 export function materializeLocalSnapshot(
   vars: readonly DebugVariable[]
 ): readonly LocalSnapshot[] {
-  const sorted = [...vars].sort((a, b) => {
-    const an = (a.name ?? '').localeCompare(b.name ?? '');
-    return an !== 0 ? an : (a.type ?? '').localeCompare(b.type ?? '');
-  });
+  type MutableSnap = {
+    name: string;
+    type?: string;
+    value?: string;
+    children?: MutableSnap[];
+  };
 
-  return sorted.map((v) => {
-    // Step 1: get the raw string value (already a string or undefined)
-    const rawValue = v.value;
+  const byName = new Map<string, MutableSnap>();
 
-    // Step 2: normalize
-    const normalized =
-      typeof rawValue === 'string' ? normalizeValue(rawValue) : undefined;
+  const getOrCreate = (name: string): MutableSnap => {
+    const existing = byName.get(name);
+    if (existing) return existing;
 
-    const stable =
-      typeof normalized === 'string' ? stripUnstable(normalized) : undefined;
+    const created: MutableSnap = { name };
+    byName.set(name, created);
+    return created;
+  };
 
-    const snap: LocalSnapshot = {
-      name: v.name ?? '',
-      ...(v.type ? { type: v.type } : {}),
-      ...(stable !== undefined ? { value: stable } : {})
-    };
+  const normalizeVarValue = (rawValue: unknown): string | undefined => {
+    if (typeof rawValue !== 'string') return undefined;
 
-    return snap;
-  });
+    const normalized = normalizeValue(rawValue);
+    return stripUnstable(normalized);
+  };
+
+  // 1) Create/update nodes for every flattened variable.
+  for (const v of vars) {
+    const name = v.name ?? '';
+    if (!name) continue;
+
+    const node = getOrCreate(name);
+
+    // Prefer "real" values/types when present.
+    if (v.type) node.type = v.type;
+
+    const stable = normalizeVarValue(v.value);
+    if (stable !== undefined) node.value = stable;
+
+    // Ensure all ancestors exist.
+    const parts = name.split('.');
+    for (let i = 1; i < parts.length; i++) {
+      const parentName = parts.slice(0, i).join('.');
+      getOrCreate(parentName);
+    }
+  }
+
+  // 2) Wire parent/child relationships based on dotted names.
+  const roots: MutableSnap[] = [];
+  for (const [name, node] of byName) {
+    const lastDot = name.lastIndexOf('.');
+    if (lastDot < 0) {
+      roots.push(node);
+      continue;
+    }
+
+    const parentName = name.slice(0, lastDot);
+    const parent = byName.get(parentName);
+    if (!parent) {
+      roots.push(node);
+      continue;
+    }
+
+    if (!parent.children) parent.children = [];
+    parent.children.push(node);
+  }
+
+  // 3) Sort deterministically at every level.
+  const sortTree = (nodes: MutableSnap[]): void => {
+    nodes.sort((a, b) => {
+      const an = (a.name ?? '').localeCompare(b.name ?? '');
+      if (an !== 0) return an;
+      return (a.type ?? '').localeCompare(b.type ?? '');
+    });
+
+    for (const n of nodes) {
+      if (n.children && n.children.length) {
+        sortTree(n.children);
+      }
+    }
+  };
+
+  sortTree(roots);
+
+  // 4) Promote children of remaining top-level "holder" structs (coreTypes, containerTypes, ...).
+  // This matches your golden roots like "coreTypes.qByteArray" instead of "coreTypes".
+  const promoted: MutableSnap[] = [];
+  for (const r of roots) {
+    if (r.children && r.children.length) {
+      promoted.push(...r.children);
+    } else {
+      // If a top-level root has no children, keep it as-is (rare, but safe).
+      promoted.push(r);
+    }
+  }
+
+  sortTree(promoted);
+  dlog(
+    '[natvis.test] Snapshot after noise filtering (JSON):\n' +
+      JSON.stringify(promoted.map(snapshotToJSON), null, 2)
+  );
+
+  return promoted;
 }
 
 /**
@@ -376,7 +460,7 @@ function wildcardToRegex(pat: string): RegExp {
 const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
   // NatVis pattern       // Snapshot types to treat as covered by that pattern
   'QFlags<*>': ['SelectionFlags'],
-  'QList<*>': ['QByteArrayList', 'qQStringList']
+  'QList<*>': ['QByteArrayList', 'QStringList']
 };
 /**
  * A base is covered if base OR ANY of its alternatives matches a seen type.
@@ -724,4 +808,15 @@ export function sortSnapshotEntries<T extends { name?: string; type?: string }>(
     }
     return (a.type ?? '').localeCompare(b.type ?? '');
   });
+}
+
+function snapshotToJSON(s: Snapshot): unknown {
+  return {
+    name: s.name,
+    type: s.type,
+    value: s.value,
+    ...(s.children && s.children.length
+      ? { children: s.children.map(snapshotToJSON) }
+      : {})
+  };
 }

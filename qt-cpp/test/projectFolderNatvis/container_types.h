@@ -10,7 +10,7 @@ struct ContainerTypes
     //QList<QString>          qStringList;
     //QList<QVariant>         qVariantList;
     QByteArrayList          qByteArrayList; //Keep, e.g: Only on Windows
-    QStringList             qQStringList; // Keep, e.g: Only show [0] and [1] missing [2]. Flattening problem
+    QStringList             qStringList; // Keep, e.g: Only show [0] and [1] missing [2]. Flattening problem
     //QVector<int>            qVectorInt;
     //QSpan<int>              qSpanInt;
     //QVector<QPoint>         qVectorPoint;
@@ -54,7 +54,7 @@ inline ContainerTypes::ContainerTypes()
     //, qStringList{QStringLiteral("alpha"), QStringLiteral("beta")}
     //, qVariantList{QVariant(123), QVariant(QStringLiteral("hello"))}
     , qByteArrayList{QByteArray("one"), QByteArray("two")}
-    , qQStringList{QStringLiteral("red"),
+    , qStringList{QStringLiteral("red"),
                    QStringLiteral("green"),
                    QStringLiteral("blue")}
 //     , qVectorInt{10, 20, 30}
