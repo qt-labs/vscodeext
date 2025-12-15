@@ -363,7 +363,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     },
     knownProblem: {
       linux:
-        'Typedef (QPair<QString, int>) ule evaluation fails, so the debugger falls back to "{...}"".',
+        'Typedef (QPair<QString, int>) ule evaluation fails, so the debugger falls back to "{...}"".'
     }
   },
   {
