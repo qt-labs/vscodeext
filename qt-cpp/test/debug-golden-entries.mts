@@ -332,6 +332,16 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=3 }'
   },
   {
+    name: 'containerTypes.qVariantList',
+    type: 'QList<QVariant>',
+    value: '{ size=2 }'
+  },
+  {
+    name: 'containerTypes.qStringListExplicit',
+    type: 'QList<QString>',
+    value: '{ size=2 }'
+  },
+  {
     name: 'containerTypes.qStringList',
     type: 'QStringList',
     value: '{ size=3 }',
@@ -340,6 +350,211 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
       darwin:
         'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+    }
+  },
+  {
+    name: 'containerTypes.qVectorInt',
+    type: 'QVector<int>',
+    value: '{ size=3 }',
+    knownProblem: {
+      linux:
+        'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+    }
+  },
+  {
+    name: 'containerTypes.qSpanInt',
+    type: 'QSpan<int>',
+    value: '{ size=3 }',
+    knownProblem: {
+      darwin:
+        "LLDB NatVis evaluation fails (e.g. 'use of undeclared identifier m_size'), so QSpan<int> isn't reliably visualized on darwin."
+    }
+  },
+  {
+    name: 'containerTypes.qVectorPoint',
+    type: 'QVector<QPoint>',
+    value: '{ size=2 }',
+    knownProblem: {
+      linux:
+        'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+    }
+  },
+  {
+    name: 'containerTypes.qVarLengthArrayInt',
+    type: 'QVarLengthArray<int, 4>',
+    value: '{ size=3 }',
+    knownProblem: {
+      darwin:
+        "LLDB NatVis errors out: expression 's' is not resolvable ('use of undeclared identifier s'), evaluation fails."
+    }
+  },
+  {
+    name: 'containerTypes.qMapStringInt',
+    type: 'QMap<QString, int>',
+    value: '{ size=2 }',
+    knownProblem: {
+      darwin:
+        'LLDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.',
+      linux:
+        'GDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.'
+    }
+  },
+  {
+    name: 'containerTypes.qMultiMapStringInt',
+    type: 'QMultiMap<QString, int>',
+    value: '{ size=2 }',
+    knownProblem: {
+      darwin:
+        'LLDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.',
+      linux:
+        'GDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.'
+    }
+  },
+  {
+    name: 'containerTypes.qHashStringInt',
+    type: 'QHash<QString, int>',
+    value: '{ size=2 }'
+  },
+  {
+    name: 'containerTypes.qMultiHashStringInt',
+    type: 'QMultiHash<QString, int>',
+    value: '{ size=1 }'
+  },
+  {
+    name: 'containerTypes.qSetString',
+    type: 'QSet<QString>',
+    value: '{ size=2 }'
+  },
+  {
+    name: 'containerTypes.qVariantMap',
+    type: 'QVariantMap',
+    value: '{ size=2 }',
+    knownProblem: {
+      darwin:
+        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. ",
+      linux:
+        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. "
+    }
+  },
+  {
+    name: 'containerTypes.qVariantListContainer',
+    type: 'QVariantList',
+    value: '{ size=3 }',
+    knownProblem: {
+      darwin:
+        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. ",
+      linux:
+        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. "
+    }
+  },
+  {
+    name: 'containerTypes.qVariantHash',
+    type: 'QVariantHash',
+    value: '{ size=2 }',
+    knownProblem: {
+      darwin:
+        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. ",
+      linux:
+        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. "
+    }
+  },
+  {
+    name: 'containerTypes.qJsonArray',
+    type: 'QJsonArray',
+    value: {
+      darwin: '{...}',
+      linux: '',
+      win32: '{a={...} }'
+    }
+  },
+  {
+    name: 'containerTypes.qJsonObject',
+    type: 'QJsonObject',
+    value: {
+      darwin: '{...}',
+      linux: '',
+      win32: '{o={...} }'
+    }
+  },
+  {
+    name: 'containerTypes.qJsonValueNull',
+    type: 'QJsonValue',
+    value: {
+      darwin: '{...}',
+      linux: 'null',
+      win32: '{n=0 container=0xADDR <NULL> t=Null (278) }'
+    }
+  },
+  {
+    name: 'containerTypes.qJsonValueInt',
+    type: 'QJsonValue',
+    value: '42',
+    knownProblem: {
+      darwin:
+        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+      win32:
+        "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
+    }
+  },
+  {
+    name: 'containerTypes.qJsonValueString',
+    type: 'QJsonValue',
+    value: 'forty-two',
+    knownProblem: {
+      darwin:
+        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+      linux:
+        'QJsonValue NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object".',
+      win32:
+        "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
+    }
+  },
+  {
+    name: 'containerTypes.qCborMapEmpty',
+    type: 'QCborMap',
+    value: 'empty',
+    knownProblem: {
+      darwin:
+        'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.',
+      linux:
+        'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.',
+      win32:
+        'QCborMap NatVis uses Qt6Cored.dll intrinsics, but intrinsic evaluation is unreliable in VS Code tests, so the "empty" DisplayString is not shown.'
+    }
+  },
+  {
+    name: 'containerTypes.qCborMap',
+    type: 'QCborMap',
+    value: {
+      darwin: '{...}',
+      linux: '',
+      win32: '{d={...} }'
+    }
+  },
+  {
+    name: 'containerTypes.qCborValueNull',
+    type: 'QCborValue',
+    value: 'null',
+    knownProblem: {
+      darwin:
+        'NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+      linux:
+        'NatVis formatting is currently unreliable under GDB; value collapses to "undefined".',
+      win32:
+        "NatVis DisplayString '{value}' is not applied: debugger shows internal QCborValue fields (n/container/t) instead of the scalar value."
+    }
+  },
+  {
+    name: 'containerTypes.qCborValueString',
+    type: 'QCborValue',
+    value: '{...}',
+    knownProblem: {
+      darwin:
+        'NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+      linux:
+        'NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object".',
+      win32:
+        "NatVis DisplayString '{value}' is not applied: debugger shows internal QCborValueString fields (n/container/t) instead of the scalar value."
     }
   },
   {
@@ -371,7 +586,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QCborArray',
     value: 'unknown_invalid',
     knownProblem: {
-      all: 'QCborArray NatVis output is not stable across platforms/debuggers yet (often raw/opaque forms like "{...}", quoting artifacts, or backend-specific formatting). Keep placeholder until we decide what to assert.'
+      win32:
+        'NatVis for QCborArray relies on a Windows-specific intrinsic (Qt6Cored.dll); visualization is fragile and not reliably applied by the debugger.',
+      darwin:
+        'NatVis for QCborArray uses a Windows-only intrinsic (Qt6Cored.dll), so the rule cannot be evaluated on macOS.',
+      linux:
+        'NatVis for QCborArray uses a Windows-only intrinsic (Qt6Cored.dll), so the rule cannot be evaluated on Linux.'
     }
   },
   {
