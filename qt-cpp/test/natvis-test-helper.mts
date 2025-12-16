@@ -242,27 +242,45 @@ export interface SnapshotMismatch {
 }
 
 /**
- * Compare the promoted runtime snapshot entries against the golden snapshot
- * and return a list of mismatches.
+ * Compares a debugger snapshot against a platform-resolved golden snapshot and
+ * returns the list of real NatVis mismatches.
  *
- * Current behavior (no child-name normalization):
- * - Keys are matched by the exact snapshot `name` string.
- * - Only `type` and `value` are compared (children are ignored).
- * - Extra actual entries and missing expected entries are reported.
- * - Entries with `knownProblem` are ignored when mismatching or missing.
+ * Matching is done by variable name (exact match). The comparison proceeds in
+ * two passes:
+ *
+ * 1) Walk actual debugger locals:
+ *    - If a variable is not described by the golden snapshot, it is reported as
+ *      an extra entry.
+ *    - If the variable exists in the golden snapshot:
+ *        - Its type is first checked for semantic compatibility using NatVis
+ *          information (base types and AlternativeType rules).
+ *          Incompatible types indicate a real error (wrong variable or unsupported
+ *          NatVis rule) and cause an immediate test failure.
+ *        - If types are compatible, values are compared.
+ *        - Value mismatches are ignored when the golden entry is marked as a
+ *          platform-specific knownProblem.
+ *        - Otherwise, value mismatches are collected.
+ *
+ * 2) Walk golden entries:
+ *    - Any golden entry missing from the debugger locals is reported as a mismatch,
+ *      unless it is marked as a knownProblem for the current platform.
  *
  * Notes:
- * - This version does NOT canonicalize NatVis synthetic child naming
- *   (e.g. `.[first]` vs `.first`). We keep exact names so type/name issues
- *   cannot be hidden.
+ * - Type strings are not compared for exact equality, as they are debugger-dependent
+ *   and not dictated by NatVis. Instead, a relaxed semantic compatibility check is
+ *   used as a guardrail.
+ * - Known problems are used only to suppress expected NatVis failures; they never
+ *   suppress type incompatibility errors.
  *
- * @param actual   Promoted root snapshot entries from `materializeLocalSnapshot`.
- * @param expected Golden entries for the current platform.
- * @returns        List of mismatches (empty means the snapshots match).
+ * @param actual   Platform-normalized debugger snapshot.
+ * @param expected Platform-resolved golden snapshot (with knownProblem applied).
+ * @param natvis   Parsed NatVis type information (bases and AlternativeType rules).
+ * @returns        List of real mismatches to be asserted by the test.
  */
 export function findMismatchedSnapshotEntries(
   actual: readonly Snapshot[],
-  expected: readonly GoldenSnapshot[]
+  expected: readonly GoldenSnapshot[],
+  natvis: NatvisTypes
 ): SnapshotMismatch[] {
   const mismatches: SnapshotMismatch[] = [];
 
@@ -315,10 +333,18 @@ export function findMismatchedSnapshotEntries(
       continue;
     }
 
-    const sameType = a.type === e.type;
-    const sameValue = a.value === e.value;
+    const typesCompatible = areTypesCompatible(a.type, e.type, natvis);
 
-    if (sameType && sameValue) {
+    if (!typesCompatible) {
+      throw new Error(
+        `[natvis.test] Type incompatibility for '${e.name}' on ${process.platform}.\n` +
+          `  expected type: ${e.type ?? '<none>'}\n` +
+          `  actual type:   ${a.type ?? '<none>'}\n` +
+          `This indicates a real mismatch (wrong variable or unsupported NatVis rule).`
+      );
+    }
+    const sameValue = a.value === e.value;
+    if (sameValue) {
       if (e.knownProblem && process.env.QT_TEST_DEBUG === '1') {
         console.warn(
           `[natvis.test][good-news] Known problem for '${e.type ?? '<unknown>'}' ` +
@@ -362,4 +388,155 @@ export function findMismatchedSnapshotEntries(
   }
 
   return mismatches;
+}
+
+function normalizeType(typeText: string): string {
+  return typeText
+    .replace(/\b(class|struct|enum)\s+/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([<>,*&])\s*/g, '$1')
+    .trim();
+}
+
+// Split only the outermost template.
+// argsText is the exact text inside the outer <...> after normalization.
+// arity counts outer args at depth 0.
+function splitOuterTemplate(typeText: string): {
+  base: string;
+  argsText: string | undefined;
+  arity: number;
+} {
+  const lt = typeText.indexOf('<');
+  if (lt < 0) return { base: typeText.trim(), argsText: undefined, arity: 0 };
+
+  const base = typeText.slice(0, lt).trim();
+
+  let depth = 0;
+  let gt = -1;
+  for (let i = lt; i < typeText.length; i++) {
+    const ch = typeText[i]!;
+    if (ch === '<') depth++;
+    else if (ch === '>') {
+      depth--;
+      if (depth === 0) {
+        gt = i;
+        break;
+      }
+    }
+  }
+  if (gt < 0)
+    return { base, argsText: typeText.slice(lt + 1).trim(), arity: 0 };
+
+  const inside = typeText.slice(lt + 1, gt);
+  const argsText = inside.trim();
+
+  // arity at depth 0
+  depth = 0;
+  let commas = 0;
+  let hasNonWs = false;
+  for (let i = 0; i < inside.length; i++) {
+    const ch = inside[i]!;
+    if (!/\s/.test(ch)) hasNonWs = true;
+    if (ch === '<') depth++;
+    else if (ch === '>') depth--;
+    else if (ch === ',' && depth === 0) commas++;
+  }
+  const arity = hasNonWs ? commas + 1 : 1;
+
+  return { base, argsText, arity };
+}
+
+function wildcard(base: string, arity: number): string {
+  if (arity <= 0) return base;
+  if (arity === 1) return `${base}<*>`;
+  return `${base}<${Array(arity).fill('*').join(',')}>`;
+}
+
+// Accept debugger-expanded templates (extra args beyond what golden asserts).
+// expected: QSpan<int>
+// actual:   QSpan<int,184467...>
+function expandedTemplateCompatible(expected: string, actual: string): boolean {
+  if (expected === actual) return true;
+  if (!expected.endsWith('>')) return false;
+
+  const expectedNoClose = expected.slice(0, -1);
+  if (!actual.startsWith(expectedNoClose)) return false;
+
+  const next = actual[expectedNoClose.length];
+  return next === '>' || next === ',' || next === ' ';
+}
+
+// Canonicalize a base type using NatVis equivalence information.
+// We try:
+// 1) base itself (handles AlternativeType entries that are non-templates),
+// 2) base<wildcard> family (handles patterns like QList<*> having AlternativeType QVector<*>),
+// 3) if NatVis defines base<wildcard>, use that as a stable family key,
+// 4) otherwise keep the base.
+function canonicalBase(
+  base: string,
+  arity: number,
+  natvis: NatvisTypes
+): string {
+  const direct = natvis.altToBase.get(base);
+  if (direct) return direct;
+
+  const w = wildcard(base, arity);
+  const wMapped = natvis.altToBase.get(w);
+  if (wMapped) return wMapped;
+
+  if (natvis.bases.has(w) || natvis.all.has(w)) return w;
+
+  return base;
+}
+
+export function areTypesCompatible(
+  actualType: string | undefined,
+  expectedType: string | undefined,
+  natvis: NatvisTypes
+): boolean {
+  if (!expectedType) return true;
+  if (!actualType) return false;
+
+  const a0 = normalizeType(actualType);
+  const e0 = normalizeType(expectedType);
+
+  if (a0 === e0) return true;
+
+  // Handle QSpan<int> vs QSpan<int,...> before any other reasoning.
+  if (expandedTemplateCompatible(e0, a0)) return true;
+
+  const a = splitOuterTemplate(a0);
+  const e = splitOuterTemplate(e0);
+
+  if (a.argsText === undefined && e.argsText === undefined) {
+    const aBase = canonicalBase(a.base, 0, natvis);
+    const eBase = canonicalBase(e.base, 0, natvis);
+    return aBase === eBase;
+  }
+  // If both have outer args and the args text matches, only compare base equivalence.
+  if (
+    a.argsText !== undefined &&
+    e.argsText !== undefined &&
+    a.argsText === e.argsText
+  ) {
+    const aBase = canonicalBase(a.base, a.arity, natvis);
+    const eBase = canonicalBase(e.base, e.arity, natvis);
+    return aBase === eBase;
+  }
+
+  // If debugger collapsed Type<A> to Type, accept if bases are equivalent.
+  if (a.argsText === undefined && e.argsText !== undefined) {
+    const aBase = canonicalBase(a.base, e.arity, natvis);
+    const eBase = canonicalBase(e.base, e.arity, natvis);
+    return aBase === eBase;
+  }
+  if (e.argsText === undefined && a.argsText !== undefined) {
+    const aBase = canonicalBase(a.base, a.arity, natvis);
+    const eBase = canonicalBase(e.base, a.arity, natvis);
+    return aBase === eBase;
+  }
+
+  // Otherwise, do not treat differing template args as compatible.
+  // Example: QList<int> vs QList<QString> should be incompatible.
+  return false;
 }

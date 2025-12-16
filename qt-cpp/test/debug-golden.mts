@@ -334,6 +334,8 @@ function decodeXmlEntities(input: string): string {
  *   - `bases` : The primary (base) type patterns declared via `<Type Name="...">`.
  *   - `alts`  : Mapping from a base type pattern to the set of its
  *               `<AlternativeType>` patterns.
+ *   - `altToBase`  : Reverse mapping from an `<AlternativeType>` pattern to its
+ *                    base type pattern, derived from the NatVis file.
  *
  * This structure is used by NatVis tests to:
  *   - Match runtime snapshot types against NatVis rules,
@@ -347,34 +349,28 @@ export type NatvisTypes = {
   all: Set<string>;
   bases: Set<string>;
   alts: Map<string, Set<string>>;
+  altToBase: Map<string, string>;
 };
 
 /**
- * Parse a NatVis (.natvis) file and extract all declared type patterns,
- * including `<AlternativeType>` relationships.
+ * Parses a NatVis (.natvis) file and extracts all declared type patterns,
+ * including base <Type Name="..."> entries and their <AlternativeType> mappings.
  *
- * This helper scans the NatVis XML and builds three complementary views:
+ * The returned structure is used for:
+ * - NatVis coverage reporting (which patterns were exercised or not),
+ * - relaxed type compatibility checks in NatVis tests
+ *   (e.g. QPoint ↔ QPointF via AlternativeType),
+ * - avoiding any hard-coded knowledge of Qt type equivalence.
  *
- *   - `all`   : every type name that can be matched by NatVis
- *               (base types + alternative types).
- *   - `bases` : the primary `<Type Name="...">` entries.
- *   - `alts`  : a mapping from each base type to its `<AlternativeType>` names.
+ * Notes:
+ * - `alts` maps a base type to its AlternativeType set as declared in NatVis.
+ * - `altToBase` provides the reverse lookup (AlternativeType → base),
+ *   built deterministically from the NatVis file.
+ * - Stray <AlternativeType> elements outside of a <Type> block (rare) are
+ *   added to `all` for completeness, but cannot be reliably associated to a base
+ *   and therefore do not populate `altToBase`.
  *
- * XML comments are stripped before parsing, and XML entities
- * (e.g. `&lt;`, `&gt;`) are decoded so the resulting type patterns are
- * human-readable and match debugger output.
- *
- * The result is used by NatVis tests to:
- *   - determine which snapshot types are covered by NatVis rules,
- *   - report NatVis patterns that were not exercised by a test run,
- *   - correctly account for alternative / alias types.
- *
- * Parsing is intentionally tolerant:
- *   - malformed or unexpected NatVis content does not throw,
- *   - on error, empty collections are returned.
- *
- * @param natvisPath  Absolute path to the NatVis file to parse.
- * @returns           Collected NatVis type information (bases, alternatives, all).
+ * NatVis is treated as the single source of truth for type equivalence.
  */
 export async function parseNatvisTypesWithAlternatives(
   natvisPath: string
@@ -382,6 +378,25 @@ export async function parseNatvisTypesWithAlternatives(
   const all = new Set<string>();
   const bases = new Set<string>();
   const alts = new Map<string, Set<string>>();
+  const altToBase = new Map<string, string>();
+
+  // Seed reverse aliases from EXTRA_NATVIS_TYPE_ALIASES.
+  // Example:
+  //   'QList<*>' : ['QByteArrayList', 'QStringList']
+  // becomes:
+  //   altToBase['QByteArrayList'] = 'QList<*>'
+  //   altToBase['QStringList']    = 'QList<*>'
+  for (const [pattern, aliasNames] of Object.entries(
+    EXTRA_NATVIS_TYPE_ALIASES
+  )) {
+    for (const alias of aliasNames) {
+      if (!altToBase.has(alias)) {
+        altToBase.set(alias, pattern);
+      }
+    }
+    all.add(pattern);
+    bases.add(pattern);
+  }
 
   try {
     const xml = await fs.readFile(natvisPath, 'utf8');
@@ -414,14 +429,26 @@ export async function parseNatvisTypesWithAlternatives(
         if (!altRaw) continue;
         const alt = decodeXmlEntities(altRaw).trim();
         if (!alt) continue;
+
         all.add(alt);
-        const set = alts.get(base) ?? new Set<string>();
+
+        let set = alts.get(base);
+        if (!set) {
+          set = new Set<string>();
+          alts.set(base, set);
+        }
         set.add(alt);
-        alts.set(base, set);
+
+        // Reverse mapping: AlternativeType → base
+        // (first writer wins deterministically)
+        if (!altToBase.has(alt)) {
+          altToBase.set(alt, base);
+        }
       }
     }
 
-    // Also catch any stray AlternativeType outside blocks (rare)
+    // Also catch any stray AlternativeType outside <Type> blocks (rare).
+    // These are recorded for coverage purposes but cannot be mapped to a base.
     const strayAltRe = /<\s*AlternativeType\b[^>]*\bName\s*=\s*"([^"]+)"/g;
     while ((m = strayAltRe.exec(withoutComments))) {
       const rawAlt = m?.[1];
@@ -430,9 +457,9 @@ export async function parseNatvisTypesWithAlternatives(
       if (alt) all.add(alt);
     }
 
-    return { all, bases, alts };
+    return { all, bases, alts, altToBase };
   } catch {
-    return { all, bases, alts };
+    return { all, bases, alts, altToBase };
   }
 }
 
@@ -457,10 +484,13 @@ function wildcardToRegex(pat: string): RegExp {
 // Extra aliases for types whose *real* NatVis rule is more generic.
 // Here: SelectionFlags is a typedef / Q_DECLARE_FLAGS wrapper around QFlags<SelectionFlag>,
 // but the debugger reports the typedef name "SelectionFlags".
-const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
+export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
   // NatVis pattern       // Snapshot types to treat as covered by that pattern
   'QFlags<*>': ['SelectionFlags'],
-  'QList<*>': ['QByteArrayList', 'QStringList']
+  'QList<*>': ['QByteArrayList', 'QStringList', 'QVariantList'],
+  'QPair<*,*>': ['std::pair'],
+  'QHash<*,*>': ['QVariantHash'],
+  'QMap<*,*>': ['QVariantMap']
 };
 /**
  * A base is covered if base OR ANY of its alternatives matches a seen type.

@@ -241,7 +241,8 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 
       const mismatches = findMismatchedSnapshotEntries(
         snapshot,
-        goldenSnapshot
+        goldenSnapshot,
+        natvis
       );
 
       // ---- NatVis summary: which types worked, which NatVis types are unused ----
@@ -262,6 +263,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       if (mismatches.length > 0) {
         const MAX_VALUE_PREVIEW = 200;
 
+        // type is not dictated by natvis, a perfect match is not expected
         const compactActual = mismatches.map((m) => ({
           name: m.name,
           type: m.actual?.type ?? m.expected?.type ?? '<unknown>',
