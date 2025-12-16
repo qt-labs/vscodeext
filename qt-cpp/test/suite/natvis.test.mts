@@ -228,18 +228,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
           '[natvis.test] No Locals matched any NatVis type; check project and NatVis path.'
         );
       }
-      dlog(
-        '[natvis.test] snapshot (JSON):\n' +
-          JSON.stringify(
-            snapshot.map((v) => ({
-              name: v.name,
-              type: v.type,
-              value: v.value
-            })),
-            null,
-            2
-          )
-      );
       const goldenSnapshot = materializeGoldenSnapshot(
         GOLDEN_ENTRIES,
         process.platform
