@@ -243,7 +243,7 @@
         "qt-core.enableQrcEditor": {
           "type": "boolean",
           "default": true,
-          "description": "Enable or disable the QRC editor. When disabled, .qrc files will open in the default text editor",
+          "description": "Turn off the QRC editor to open .qrc files in the default text editor",
           "scope": "machine-overridable"
         }
       }
