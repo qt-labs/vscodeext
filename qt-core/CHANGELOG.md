@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.11.1 (Dec 18, 2025)
+
+🎉 **Added**
+
+- Add an option to disable QRC editor via the `qt-core.enableQrcEditor` setting
+
+🐞 **Fixed**
+
+- Fix `.qrc` files not using a text editor in Git, Copilot, and other extensions
+  - Configured `workbench.editorAssociations` for proper editor selection
+- Align QRC editor output with Qt Creator
+
+### New Item Wizard
+
+⚠️ **Changed**
+
+- Add the option to choose where to open newly created projects
+
 ## 1.11.0 (Nov 24, 2025)
 
 🎉 **Added**
