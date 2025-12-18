@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.11.1 (Dec 18, 2025)
+
+🐞 **Fixed**
+
+- Fix the documentation link for QML debugging
+- Fix custom QML Language Server path not being resolved
+
 ## 1.11.0 (Nov 24, 2025)
 
 🎉 **Added**

@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.11.1 (Dec 18, 2025)
+
+🎉 **Added**
+
+- Add support for the `pysidedeploy.spec` file
+- Support installing commercial PySide6
+
+🐞 **Fixed**
+
+- Fix task resolution in multi-root workspaces
+- Keep main.py as the entry point for Python QWidget template
+
 ## 1.11.0 (Nov 24, 2025)
 
 🎉 **Our Initial Preview Release** 🎉
