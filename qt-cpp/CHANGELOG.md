@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.11.0 (Dec 18, 2025)
+
+The same as `1.11.0`
+
 ## 1.11.0 (Nov 24, 2025)
 
 🎉 **Added**
