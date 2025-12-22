@@ -125,7 +125,7 @@ inline ContainerTypes::ContainerTypes()
      qCborMap.insert(QStringLiteral("k1"), 1);
      qCborMap.insert(QStringLiteral("k2"), QStringLiteral("two"));
 
-//     // QSpan is a view, so bind it to the QVector storage
+     // QSpan is a view, so bind it to the QVector storage
      qSpanInt = QSpan<int>(qVectorInt.data(),
                            qVectorInt.size());
 }

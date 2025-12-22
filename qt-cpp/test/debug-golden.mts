@@ -277,40 +277,35 @@ export function materializeLocalSnapshot(
 }
 
 /**
- * Collect all distinct `type` strings appearing in a snapshot tree.
+ * Collect all distinct debugger-reported `type` strings from a snapshot.
  *
- * This helper walks a `LocalSnapshot` hierarchy (including nested children)
- * and returns the set of debugger-reported type names that actually appeared
- * in the captured Locals.
+ * Only **top-level snapshot entries** are considered. Types appearing in
+ * NatVis-expanded children are intentionally ignored so that coverage reflects
+ * which NatVis rules were exercised by root variables, not by internal or
+ * expanded implementation details.
  *
- * It is primarily used for NatVis coverage analysis, to determine:
- *   - which NatVis type patterns were exercised by a test run,
- *   - which snapshot entries should be considered for NatVis filtering.
+ * @param s
+ *   Top-level snapshot entries (typically the promoted roots returned by
+ *   `materializeLocalSnapshot`).
  *
- * @param s  Root snapshot entries to traverse.
- * @returns  Set of unique type names found in the snapshot.
+ * @returns
+ *   Set of unique debugger-reported type names found at the top level.
  */
 export function collectTypesFromSnapshot(
   s: readonly LocalSnapshot[]
 ): Set<string> {
   const out = new Set<string>();
 
-  const visit = (xs: readonly LocalSnapshot[]): void => {
-    for (const v of xs) {
-      if (v.type) {
-        out.add(v.type);
-      }
-      if (v.children) {
-        visit(v.children);
-      }
+  for (const v of s) {
+    if (v.type) {
+      out.add(v.type);
     }
-  };
+  }
 
-  visit(s);
   return out;
 }
 
-//decode &lt; &gt; &amp; &quot; &apos; in attribute values
+// Decode &lt; &gt; &amp; &quot; &apos; in attribute values
 function decodeXmlEntities(input: string): string {
   const map: Record<string, string> = {
     '&lt;': '<',
@@ -350,6 +345,18 @@ export type NatvisTypes = {
   bases: Set<string>;
   alts: Map<string, Set<string>>;
   altToBase: Map<string, string>;
+};
+
+// Extra aliases for types whose *real* NatVis rule is more generic.
+// Here: SelectionFlags is a typedef / Q_DECLARE_FLAGS wrapper around QFlags<SelectionFlag>,
+// but the debugger reports the typedef name "SelectionFlags".
+export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
+  // NatVis pattern       // Snapshot types to treat as covered by that pattern
+  'QFlags<*>': ['SelectionFlags'],
+  'QList<*>': ['QByteArrayList', 'QStringList', 'QVariantList'],
+  'QPair<*,*>': ['std::pair'],
+  'QHash<*,*>': ['QVariantHash'],
+  'QMap<*,*>': ['QVariantMap']
 };
 
 /**
@@ -394,8 +401,6 @@ export async function parseNatvisTypesWithAlternatives(
         altToBase.set(alias, pattern);
       }
     }
-    all.add(pattern);
-    bases.add(pattern);
   }
 
   try {
@@ -473,28 +478,40 @@ export async function parseNatvisTypesWithAlternatives(
  * @returns    RegExp that matches strings covered by the given pattern.
  */
 function wildcardToRegex(pat: string): RegExp {
-  // Escape regex specials, then turn \* into .*
-  const rx =
-    '^' +
-    pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\*/g, '.*') +
-    '$';
+  // Escape regex specials except '*', then translate '*' to '.*'
+  const escaped = pat.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  const rx = '^' + escaped.replace(/\*/g, '.*') + '$';
   return new RegExp(rx);
 }
 
-// Extra aliases for types whose *real* NatVis rule is more generic.
-// Here: SelectionFlags is a typedef / Q_DECLARE_FLAGS wrapper around QFlags<SelectionFlag>,
-// but the debugger reports the typedef name "SelectionFlags".
-export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
-  // NatVis pattern       // Snapshot types to treat as covered by that pattern
-  'QFlags<*>': ['SelectionFlags'],
-  'QList<*>': ['QByteArrayList', 'QStringList', 'QVariantList'],
-  'QPair<*,*>': ['std::pair'],
-  'QHash<*,*>': ['QVariantHash'],
-  'QMap<*,*>': ['QVariantMap']
-};
 /**
- * A base is covered if base OR ANY of its alternatives matches a seen type.
- * Returns missing base names (not each alt).
+ * Determine NatVis coverage based on the types observed in a debugger snapshot.
+ *
+ * Coverage is evaluated **per NatVis base pattern** (`<Type Name="...">`), not per
+ * `AlternativeType`. A base is considered covered if either the base pattern itself
+ * or any of its AlternativeType patterns matches at least one observed snapshot type.
+ *
+ * Alias types listed in `EXTRA_NATVIS_TYPE_ALIASES` are treated as *covered snapshot
+ * types* for reporting purposes, but they are **not** NatVis patterns and therefore
+ * never participate in “missing NatVis pattern” reporting.
+ *
+ * @param natvis
+ *   Parsed NatVis type information extracted from the `.natvis` file:
+ *   - `bases` are the primary `<Type Name="...">` patterns that define coverage.
+ *   - `alts` map each base pattern to its declared `<AlternativeType>` patterns.
+ *
+ * @param seenTypes
+ *   Set of snapshot-reported type names (top-level locals only)
+ *   observed at runtime after debugger normalization.
+ *
+ * @returns
+ *   An object with:
+ *   - `missing`:
+ *       Sorted list of NatVis base patterns that were not exercised by the snapshot.
+ *       Alias types are never reported here.
+ *   - `coveredTypes`:
+ *       Set of snapshot-reported type names considered covered by NatVis, including
+ *       both pattern-matched types and explicit alias types.
  */
 export function matchNatvisTypePatternsConsideringAlternatives(
   natvis: NatvisTypes,
@@ -522,7 +539,7 @@ export function matchNatvisTypePatternsConsideringAlternatives(
     });
     if (!anyMatched) missing.push(base);
   }
-  // --- Alias typedef-like types to their underlying NatVis patterns ----
+  // --- Alias snapshot types to their underlying NatVis patterns ----
   for (const aliases of Object.values(EXTRA_NATVIS_TYPE_ALIASES)) {
     for (const alias of aliases) {
       if (seenTypes.has(alias)) {
