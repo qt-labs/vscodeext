@@ -24,7 +24,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
       linux:
-        'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.'
+        'GDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.'
     }
   },
   {
@@ -34,12 +34,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -53,12 +53,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -72,12 +72,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -91,12 +91,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -121,12 +121,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -140,12 +140,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -159,12 +159,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       linux:
         'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB/GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors. ',
+        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
+        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
         'NatVis loads, but required private symbols/fields are not available ' +
         '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
@@ -177,9 +177,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '"/path/to/normalize/projectFolderNatvis"',
     knownProblem: {
       darwin:
-        'natvis expressions reference Windows-only modules (Qt6Core[d].dll), so LLDB/GDB cannot resolve the intrinsic "d()". ',
+        'natvis expressions reference Windows-only modules (Qt6Cored.dll), so LLDB cannot resolve the intrinsic d().',
       linux:
-        'natvis expressions reference Windows-only modules (Qt6Core[d].dll), so LLDB/GDB cannot resolve the intrinsic "d()". ',
+        'natvis expressions reference Windows-only modules (Qt6Cored.dll), so GDB cannot resolve the intrinsic d().',
       win32:
         'natvis loads, but DisplayString fails due to missing or incompatible private symbols (QDirPrivate) or incomplete PDBs, causing fallback to raw {d_ptr={...}} output.'
     }
@@ -190,9 +190,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '"/path/to/normalize/projectFolderNatvis"',
     knownProblem: {
       darwin:
-        '-natvis expressions depend on Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot evaluate "d()". ',
+        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so LLDB cannot evaluate d().',
       linux:
-        '-natvis expressions depend on Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot evaluate "d()". ',
+        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so GDB cannot evaluate d().',
       win32:
         'natvis is loaded, but DisplayString evaluation fails (likely due to absent private symbols or reduced PDBs), leading to fallback raw formatting.'
     }
@@ -203,9 +203,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '"/path/to/normalize/projectFolderNatvis"',
     knownProblem: {
       darwin:
-        'natvis rules reference Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot compute the "d()" intrinsic. ',
+        'natvis rules reference Windows-only Qt6Cored.dll symbols, so LLDB cannot compute the d() intrinsic.',
       linux:
-        'natvis rules reference Windows-only Qt6Core[d].dll symbols, so LLDB/GDB cannot compute the "d()" intrinsic. ',
+        'natvis rules reference Windows-only Qt6Cored.dll symbols, so GDB cannot compute the d() intrinsic.',
       win32:
         'natvis loads, but DisplayString fails because required private types or fields (QFileInfoPrivate) are not available in the CI Qt build, forcing the debugger to show raw {d_ptr={...}} output.'
     }
@@ -216,9 +216,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'SelectCurrent | SelectAll (3)',
     knownProblem: {
       darwin:
-        'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; LLDB/GDB fall back to a raw value, so flag names are not shown.',
+        'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; LLDB falls back to a raw value, so flag names are not shown.',
       linux:
-        'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; LLDB/GDB fall back to a raw value, so flag names are not shown.'
+        'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; GDB falls back to a raw value, so flag names are not shown.'
     }
   },
   {
@@ -241,9 +241,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     },
     knownProblem: {
       darwin:
-        'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB/GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.',
+        'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.',
       linux:
-        'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB/GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.'
+        'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.'
     }
   },
   {
@@ -258,7 +258,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   },
   {
     name: 'coreTypes.qPointF',
-    type: 'QPoint',
+    type: 'QPointF',
     value: '{ x = 24.5, y = 48.5 }'
   },
   {
@@ -278,7 +278,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   },
   {
     name: 'coreTypes.qSizeF',
-    type: 'QSize',
+    type: 'QSizeF',
     value: '{ width = 4.1, height = 4.2 }'
   },
   {
@@ -294,7 +294,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.',
       linux:
-        'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
+        'GDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
     }
   },
   {
@@ -308,9 +308,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'https://github.com/narnaud/natvis4qt',
     knownProblem: {
       darwin:
-        'LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific ',
+        'LLDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.',
       linux:
-        'LLDB/GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific ',
+        'GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.',
       win32:
         'natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.'
     }
@@ -321,9 +321,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{12345678-1234-1234-1234-1234567890AB}',
     knownProblem: {
       darwin:
-        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.',
+        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB, causing evaluation errors on macOS.',
       linux:
-        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB/GDB, causing evaluation errors on macOS/Linux.'
+        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB, causing evaluation errors on Linux.'
     }
   },
   {
@@ -347,9 +347,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=3 }',
     knownProblem: {
       linux:
-        'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
+        'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.',
       darwin:
-        'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+        'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.'
     }
   },
   {
@@ -358,7 +358,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=3 }',
     knownProblem: {
       linux:
-        'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+        'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to {...}.'
     }
   },
   {
@@ -367,7 +367,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=3 }',
     knownProblem: {
       darwin:
-        "LLDB NatVis evaluation fails (e.g. 'use of undeclared identifier m_size'), so QSpan<int> isn't reliably visualized on darwin."
+        "LLDB NatVis evaluation fails (e.g. 'use of undeclared identifier m_size'), so QSpan<int> isn't reliably visualized on macOS."
     }
   },
   {
@@ -376,7 +376,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=2 }',
     knownProblem: {
       linux:
-        'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+        'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to {...}.'
     }
   },
   {
@@ -431,9 +431,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=2 }',
     knownProblem: {
       darwin:
-        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. ",
+        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary.",
       linux:
-        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. "
+        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary."
     }
   },
   {
@@ -442,9 +442,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=3 }',
     knownProblem: {
       darwin:
-        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. ",
+        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary.",
       linux:
-        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. "
+        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary."
     }
   },
   {
@@ -453,9 +453,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=2 }',
     knownProblem: {
       darwin:
-        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. ",
+        "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary.",
       linux:
-        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary. "
+        "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary."
     }
   },
   {
@@ -491,7 +491,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '42',
     knownProblem: {
       darwin:
-        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       win32:
         "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
     }
@@ -502,9 +502,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'forty-two',
     knownProblem: {
       darwin:
-        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       linux:
-        'QJsonValue NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object".',
+        'QJsonValue NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object.',
       win32:
         "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
     }
@@ -537,7 +537,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'null',
     knownProblem: {
       darwin:
-        'NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+        'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       linux:
         'NatVis formatting is currently unreliable under GDB; value collapses to "undefined".',
       win32:
@@ -550,9 +550,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{...}',
     knownProblem: {
       darwin:
-        'NatVis formatting is currently unreliable under LLDB; value collapses to "{...}".',
+        'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       linux:
-        'NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object".',
+        'NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object.',
       win32:
         "NatVis DisplayString '{value}' is not applied: debugger shows internal QCborValueString fields (n/container/t) instead of the scalar value."
     }
@@ -563,9 +563,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=2 }',
     knownProblem: {
       linux:
-        'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".',
+        'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.',
       darwin:
-        'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to "{...}"".'
+        'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.'
     }
   },
   {
@@ -578,7 +578,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     },
     knownProblem: {
       linux:
-        'Typedef (QPair<QString, int>) ule evaluation fails, so the debugger falls back to "{...}"".'
+        'Typedef (QPair<QString, int>) rule evaluation fails, so the debugger falls back to {...}.'
     }
   },
   {
@@ -600,7 +600,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '42',
     knownProblem: {
       darwin:
-        'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque "{...}" form.',
+        'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque {...} form.',
       win32:
         'QCborValue NatVis currently fails. Debugger provides: n=42 container=0xADDR <NULL> t=Integer (0) instead of just "42".'
     }

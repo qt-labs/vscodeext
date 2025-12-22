@@ -144,9 +144,6 @@ export function printNatvisSummary(params: {
       if (e.knownProblem && e.type) {
         problematicTypesInGolden.add(e.type);
       }
-      if (e.children && e.children.length > 0) {
-        collectKnownProblemTypes(e.children);
-      }
     }
   };
   collectKnownProblemTypes(goldenSnapshot);
