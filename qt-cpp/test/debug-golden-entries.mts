@@ -547,7 +547,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qCborValueString',
     type: 'QCborValue',
-    value: '{...}',
+    value: 'forty-two',
     knownProblem: {
       darwin:
         'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
