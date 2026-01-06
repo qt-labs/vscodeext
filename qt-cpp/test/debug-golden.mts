@@ -4,7 +4,6 @@
 import * as fs from 'fs/promises';
 
 import type { DebugVariable } from './debug-helper.mts';
-import { dlog } from './helper.mts';
 
 /**
  * NatVis golden + snapshot utilities for qt-cpp integration tests.
@@ -268,10 +267,12 @@ export function materializeLocalSnapshot(
   }
 
   sortTree(promoted);
-  dlog(
-    '[natvis.test] Snapshot after noise filtering (JSON):\n' +
-      JSON.stringify(promoted.map(snapshotToJSON), null, 2)
-  );
+  if (process.env.NATVIS_VERBOSE === '1') {
+    console.log(
+      '[natvis.test] Snapshot after noise filtering (JSON):\n' +
+        JSON.stringify(promoted.map(snapshotToJSON), null, 2)
+    );
+  }
 
   return promoted;
 }

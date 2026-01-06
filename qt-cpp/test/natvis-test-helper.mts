@@ -105,6 +105,7 @@ export function printNatvisSummary(params: {
   natvisSnapshot: readonly Snapshot[];
   goldenSnapshot: readonly GoldenSnapshot[];
   mismatches: readonly SnapshotMismatch[];
+  goodNewsNames: ReadonlySet<string>;
   natvis: NatvisTypes;
   missing: readonly string[];
   natvisPath: string | undefined;
@@ -114,6 +115,7 @@ export function printNatvisSummary(params: {
     natvisSnapshot,
     goldenSnapshot,
     mismatches,
+    goodNewsNames,
     natvis,
     missing,
     natvisPath,
@@ -158,6 +160,7 @@ export function printNatvisSummary(params: {
   // Pretty printing of the summary
   // ---------------------------------------------------------------------------
   let natvisFileLabel: string = natvisPath ?? '<unknown>';
+  const printOldList = false;
 
   if (natvisPath) {
     try {
@@ -169,32 +172,44 @@ export function printNatvisSummary(params: {
       natvisFileLabel = natvisPath;
     }
   }
-  // Print all covered and successful types
   console.log(
-    `[natvis.summary] Tested Qt types successfully covered by NatVis file ${natvisFileLabel} on ${process.platform}:`
+    `[natvis.summary] Using NatVis file ${natvisFileLabel} on ${process.platform}`
   );
+  if (printOldList) {
+    // Print all covered and successful types
+    console.log(
+      `[natvis.summary] Tested Qt types successfully covered by NatVis file ${natvisFileLabel} on ${process.platform}:`
+    );
 
-  if (successfulTypes.length === 0) {
-    console.log('  (none)');
-  } else {
-    for (const t of successfulTypes) {
-      console.log(`  ${t}`);
+    if (successfulTypes.length === 0) {
+      console.log('  (none)');
+    } else {
+      for (const t of successfulTypes) {
+        console.log(`  ${t}`);
+      }
+    }
+
+    // Print Known-problem NatVis types (as marked in the golden snapshot)
+    if (problematicTypesInGolden.size > 0) {
+      console.log(
+        `[natvis.summary] Tested Qt types with unsuccessful NatVis coverage on ${process.platform} (marked as knownProblem in the golden snapshot):`
+      );
+      for (const t of [...problematicTypesInGolden].sort()) {
+        console.log(`  ${t}`);
+      }
+    } else {
+      console.log(
+        `[natvis.summary] No golden entries are marked with knownProblem on ${process.platform}.`
+      );
     }
   }
-
-  // Print Known-problem NatVis types (as marked in the golden snapshot)
-  if (problematicTypesInGolden.size > 0) {
-    console.log(
-      `[natvis.summary] Tested Qt types with unsuccessful NatVis coverage on ${process.platform} (marked as knownProblem in the golden snapshot):`
-    );
-    for (const t of [...problematicTypesInGolden].sort()) {
-      console.log(`  ${t}`);
-    }
-  } else {
-    console.log(
-      `[natvis.summary] No golden entries are marked with knownProblem on ${process.platform}.`
-    );
-  }
+  printNatvisTypeStatusTable({
+    natvisSnapshot,
+    goldenSnapshot,
+    mismatches,
+    goodNewsNames,
+    natvis
+  });
 
   // Print types with defined NatVis patterns but not exercised by this test
   const missingLines = missing.map((base) => {
@@ -214,6 +229,250 @@ export function printNatvisSummary(params: {
       '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
     );
   }
+}
+//---------------------------------------------------------------------------
+
+type TypeStatus = 'OK' | 'KP' | 'FAIL' | '-';
+type SortMode = 'status' | 'status_grouped';
+
+type NatvisTableRowLike = {
+  natvisType: string;
+  exercisedType: string;
+  varName: string;
+  root: TypeStatus;
+};
+
+const STATUS_ORDER: Readonly<Record<TypeStatus, number>> = {
+  OK: 0,
+  KP: 1,
+  FAIL: 2,
+  '-': 3
+};
+
+function getNatvisTableSortMode(): SortMode {
+  const raw = (process.env.NATVIS_TABLE_SORT ?? '').trim().toLowerCase();
+  return raw === 'status' || raw === 'status_grouped' ? raw : 'status_grouped';
+}
+
+function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
+  rows: readonly T[]
+): ReadonlyMap<string, number> {
+  const bestByNatvis = new Map<string, number>();
+
+  for (const r of rows) {
+    const rank = STATUS_ORDER[r.root];
+    const prev = bestByNatvis.get(r.natvisType);
+
+    if (prev === undefined || rank < prev) {
+      bestByNatvis.set(r.natvisType, rank);
+    }
+  }
+
+  return bestByNatvis;
+}
+
+function sortNatvisRows<T extends NatvisTableRowLike>(rows: T[]): void {
+  const mode = getNatvisTableSortMode();
+
+  if (mode === 'status') {
+    rows.sort((a, b) => {
+      const sa = STATUS_ORDER[a.root];
+      const sb = STATUS_ORDER[b.root];
+      if (sa !== sb) return sa - sb;
+
+      const byNatvis = a.natvisType.localeCompare(b.natvisType);
+      if (byNatvis !== 0) return byNatvis;
+
+      return a.varName.localeCompare(b.varName);
+    });
+    return;
+  }
+
+  // mode === 'status_grouped'
+  const bestByNatvis = buildBestStatusByNatvisType(rows);
+
+  rows.sort((a, b) => {
+    const ga = bestByNatvis.get(a.natvisType) ?? STATUS_ORDER['-'];
+    const gb = bestByNatvis.get(b.natvisType) ?? STATUS_ORDER['-'];
+    if (ga !== gb) return ga - gb;
+
+    const byNatvis = a.natvisType.localeCompare(b.natvisType);
+    if (byNatvis !== 0) return byNatvis;
+
+    const sa = STATUS_ORDER[a.root];
+    const sb = STATUS_ORDER[b.root];
+    if (sa !== sb) return sa - sb;
+
+    return a.varName.localeCompare(b.varName);
+  });
+}
+
+function computeNatvisFamily(
+  exercisedType: string,
+  natvis: NatvisTypes
+): string {
+  const t = normalizeType(exercisedType);
+  const parsed = splitOuterTemplate(t);
+  const base = canonicalBase(parsed.base, parsed.arity, natvis);
+
+  // If canonicalBase already returned a known NatVis base pattern, keep it.
+  if (natvis.bases.has(base)) {
+    return base;
+  }
+
+  // Otherwise, try a wildcard family derived from the concrete type.
+  const w = wildcard(parsed.base, parsed.arity);
+  if (natvis.bases.has(w) || natvis.all.has(w)) {
+    return w;
+  }
+
+  // Fallback: show the base (still useful for non-template types).
+  return parsed.base;
+}
+
+export function printNatvisTypeStatusTable(params: {
+  natvisSnapshot: readonly Snapshot[];
+  goldenSnapshot: readonly GoldenSnapshot[];
+  mismatches: readonly SnapshotMismatch[];
+  goodNewsNames: ReadonlySet<string>;
+  natvis: NatvisTypes;
+}): void {
+  const { natvisSnapshot, goldenSnapshot, mismatches, goodNewsNames, natvis } =
+    params;
+
+  const failNames = new Set<string>(mismatches.map((m) => m.name));
+
+  const goldenByName = new Map<string, GoldenSnapshot>();
+  for (const g of goldenSnapshot) {
+    goldenByName.set(g.name, g);
+  }
+  type Row = {
+    natvisType: string;
+    exercisedType: string;
+    varName: string;
+    root: TypeStatus;
+    children: TypeStatus;
+    kpGoodNews: boolean;
+  };
+
+  const rows: Row[] = [];
+
+  for (const a of natvisSnapshot) {
+    const varName = a.name;
+    const exercisedType = a.type ?? '<none>';
+    const natvisType = computeNatvisFamily(exercisedType, natvis);
+
+    const g = goldenByName.get(varName);
+
+    let root: TypeStatus = 'OK';
+    if (!g) {
+      // Variable present in Locals but missing from golden => real failure
+      root = 'FAIL';
+    } else if (failNames.has(varName)) {
+      root = 'FAIL';
+    } else if (g.knownProblem) {
+      root = 'KP';
+    }
+
+    const children: TypeStatus = '-';
+    const kpGoodNews = root === 'KP' && goodNewsNames.has(varName);
+
+    rows.push({
+      natvisType,
+      exercisedType,
+      varName,
+      root,
+      children,
+      kpGoodNews
+    });
+  }
+
+  const seenNames = new Set<string>(natvisSnapshot.map((s) => s.name));
+
+  for (const g of goldenSnapshot) {
+    if (seenNames.has(g.name)) continue;
+
+    const varName = g.name;
+    const exercisedType = g.type ?? '<none>';
+    const natvisType = computeNatvisFamily(exercisedType, natvis);
+
+    let root: TypeStatus = 'OK';
+    if (failNames.has(varName)) {
+      root = 'FAIL';
+    } else if (g.knownProblem) {
+      root = 'KP';
+    } else {
+      // expected but missing and not knownProblem => FAIL is already in mismatches by name,
+      // but keep this defensive:
+      root = 'FAIL';
+    }
+
+    const children: TypeStatus = '-';
+    const kpGoodNews = root === 'KP' && goodNewsNames.has(varName);
+
+    rows.push({
+      natvisType,
+      exercisedType,
+      varName,
+      root,
+      children,
+      kpGoodNews
+    });
+  }
+  sortNatvisRows(rows);
+  const header = [
+    'NatVis Type',
+    'Exercised type',
+    'Variable name',
+    'Status root',
+    'Status children'
+  ];
+
+  // Simple fixed-width formatting (good enough for logs)
+  const colWidths = [0, 0, 0, 0, 0];
+  const consider = (cols: string[]) => {
+    for (let i = 0; i < cols.length; i++) {
+      colWidths[i] = Math.max(colWidths[i]!, cols[i]!.length);
+    }
+  };
+
+  consider(header);
+  for (const r of rows) {
+    const rootLabel = r.root === 'KP' && r.kpGoodNews ? 'KP*' : r.root;
+    consider([r.natvisType, r.exercisedType, r.varName, rootLabel, r.children]);
+  }
+
+  const pad = (s: string, w: number) =>
+    s + ' '.repeat(Math.max(0, w - s.length));
+  const line = (cols: string[]) =>
+    cols.map((c, i) => pad(c, colWidths[i]!)).join(' | ');
+  console.log(
+    `[natvis.summary] Qt Type natvis status summary (covered types only):`
+  );
+  console.log('  ' + line(header));
+  console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
+  for (const r of rows) {
+    const rootLabel = r.root === 'KP' && r.kpGoodNews ? 'KP*' : r.root;
+    console.log(
+      '  ' +
+        line([r.natvisType, r.exercisedType, r.varName, rootLabel, r.children])
+    );
+  }
+  console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
+  console.log('  Columns:');
+  console.log(
+    '    root     = status of the top-level variable value vs golden'
+  );
+  console.log('    children = status of NatVis Expand children vs golden');
+  console.log('              (not explored yet, so currently always "-")');
+  console.log('  Status codes:');
+  console.log('    OK   = matches golden and not marked knownProblem');
+  console.log(
+    '    KP   = assertion disabled due to knownProblem on this platform'
+  );
+  console.log('    FAIL = mismatches golden (after knownProblem filtering)');
+  console.log('    -    = not explored');
+  console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('---'));
 }
 
 /**
@@ -272,13 +531,18 @@ export interface SnapshotMismatch {
  * @param actual   Platform-normalized debugger snapshot.
  * @param expected Platform-resolved golden snapshot (with knownProblem applied).
  * @param natvis   Parsed NatVis type information (bases and AlternativeType rules).
- * @returns        List of real mismatches to be asserted by the test.
+ * @returns        Object containing:
+ *                 - `mismatches`: list of real NatVis mismatches to be asserted by the test.
+ *                 - `goodNewsNames`: set of Qt types variable whose `knownProblem` entries unexpectedly matched
+ *                   (used for reporting progress, e.g. KP* in summaries).
  */
 export function findMismatchedSnapshotEntries(
   actual: readonly Snapshot[],
   expected: readonly GoldenSnapshot[],
   natvis: NatvisTypes
-): SnapshotMismatch[] {
+): { mismatches: SnapshotMismatch[]; goodNewsNames: ReadonlySet<string> } {
+  const goodNewsNames = new Set<string>();
+
   const mismatches: SnapshotMismatch[] = [];
 
   // Build lookup maps by variable name (exact match)
@@ -342,7 +606,8 @@ export function findMismatchedSnapshotEntries(
     }
     const sameValue = a.value === e.value;
     if (sameValue) {
-      if (e.knownProblem && process.env.QT_TEST_DEBUG === '1') {
+      if (e.knownProblem) {
+        goodNewsNames.add(e.name);
         console.warn(
           `[natvis.test][good-news] Known problem for '${e.type ?? '<unknown>'}' ` +
             `(${e.name}) no longer mismatches on ${process.platform}.\n` +
@@ -353,7 +618,7 @@ export function findMismatchedSnapshotEntries(
     }
 
     if (e.knownProblem) {
-      if (process.env.QT_TEST_DEBUG === '1') {
+      if (process.env.NATVIS_VERBOSE === '1') {
         console.warn(
           `[natvis.test][known-problem] '${e.name}' mismatch ignored.\n` +
             `  Reason: ${e.knownProblem}\n` +
@@ -384,7 +649,7 @@ export function findMismatchedSnapshotEntries(
     mismatches.push({ name: e.name, expected: e });
   }
 
-  return mismatches;
+  return { mismatches, goodNewsNames };
 }
 
 function normalizeType(typeText: string): string {
