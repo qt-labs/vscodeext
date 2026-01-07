@@ -215,7 +215,6 @@ export function printNatvisSummary(params: {
     goodNewsNames,
     natvis
   });
-
 }
 
 /**
@@ -604,7 +603,7 @@ export function printNatvisTypeStatusTable(params: {
   }
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
   console.log(
-  `  (covers variables from snapshot + golden expectations; excludes missing NatVis patterns list)`
+    `  (covers variables from snapshot + golden expectations; excludes missing NatVis patterns list)`
   );
   console.log('  Columns:');
   console.log(
