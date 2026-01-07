@@ -491,4 +491,3 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
     }
   });
 });
-
