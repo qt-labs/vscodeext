@@ -84,6 +84,203 @@ before('cpptools is installed and activated', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// Snippet-based debug: lightweight sanity test using Qt debug snippets
+// ---------------------------------------------------------------------------
+describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
+  this.timeout(150_000);
+
+  it('launches via Qt debug snippet and shows Locals formatted by our NatVis rules (lightweight sanity test)', async function () {
+    const {
+      wsFolder,
+      projectDir,
+      buildDir
+      // kit, errSpy (already asserted in helper)
+    } = await configureAndBuildMinimalQtProject(this, '[snippet-test]', sb);
+
+    let session: vscode.DebugSession | undefined;
+    let removeBps: (() => void) | undefined;
+
+    try {
+      // --- Set breakpoints in source file (same as golden test) --------
+      const { doc, breakpoints } = await prepareBreakpointsFromMarkers(
+        projectDir,
+        'main.cpp',
+        'BREAK_HERE'
+      );
+      removeBps = addBreakpoints(breakpoints);
+
+      await waitForVSCodeIdle();
+
+      const lines = doc.getText().split('\n');
+      const markerIdxs = lines
+        .map((ln, i) => (ln.includes('BREAK_HERE') ? i : -1))
+        .filter((i) => i >= 0);
+
+      expect(
+        markerIdxs.length,
+        '[snippet-test] No // BREAK_HERE markers found in source'
+      ).to.be.greaterThan(0);
+
+      dlog(
+        '[snippet-test] CMAKE_BUILD_TYPE:',
+        readCMakeCacheVar(buildDir, 'CMAKE_BUILD_TYPE')
+      );
+      dlog(
+        '[snippet-test] cmake.buildConfig:',
+        vscode.workspace.getConfiguration('cmake').get('buildConfig')
+      );
+
+      // --- Resolve NatVis and commands used by the snippet -------------
+      const nvPath =
+        await vscode.commands.executeCommand<string>('qt-cpp.natvis');
+      dlog('[snippet-test] visualizer path:', nvPath);
+      expect(
+        nvPath,
+        '[snippet-test] qt-cpp.natvis did not resolve to a path'
+      ).to.be.a('string').and.not.empty;
+
+      const program = await vscode.commands.executeCommand<string>(
+        'cmake.launchTargetPath'
+      );
+      const cwd = await vscode.commands.executeCommand<string>(
+        'cmake.getLaunchTargetDirectory'
+      );
+
+      expect(!!program, '[snippet-test] cmake.launchTargetPath did not resolve')
+        .to.be.true;
+      expect(
+        !!cwd,
+        '[snippet-test] cmake.getLaunchTargetDirectory did not resolve'
+      ).to.be.true;
+
+      // --- Build debug config from package.json snippet -----------------
+      const snippetCfg = getQtCppSnippetDebugConfiguration();
+      const platformCfg =
+        materializeSnippetConfigForCurrentPlatform(snippetCfg);
+
+      const cfg: vscode.DebugConfiguration = {
+        ...platformCfg,
+        // Force concrete paths for the test project, while keeping all
+        // snippet-specific fields (MIMode, environment, sourceFileMap, etc.)
+        program: program!,
+        cwd: cwd!,
+        visualizerFile: nvPath!
+      };
+
+      if (process.env.QT_TEST_DEBUG === '1') {
+        dlog(
+          '[snippet-test] Debug config type:',
+          cfg.type,
+          'MIMode:',
+          (cfg as any).MIMode ?? '<none>',
+          'miDebuggerPath:',
+          (cfg as any).miDebuggerPath ?? '<none>'
+        );
+      }
+
+      console.log(
+        '[snippet-test] Debug config from snippet (after patching):',
+        JSON.stringify(cfg, null, 2)
+      );
+      const fsExists = fs.existsSync(cfg.program ?? '');
+      console.log(
+        '[snippet-test] program exists?',
+        fsExists,
+        'program =',
+        cfg.program
+      );
+      const timeoutMs = 60000;
+      const { session: s, stops } = await startDebugAndWaitForStop(
+        wsFolder,
+        cfg,
+        { timeoutMs }
+      );
+      session = s;
+
+      // --- Inspect backend for sanity ----------------------------------
+      if (session) {
+        const dbgType = session.type;
+        const miMode = (session.configuration as any)?.MIMode;
+
+        dlog('[snippet-test] Debugger backend:', dbgType);
+        if (dbgType === 'cppdbg') {
+          dlog('[snippet-test] MIMode:', miMode);
+        }
+      }
+
+      expect(
+        stops.length,
+        '[snippet-test] Debugger did not stop on a breakpoint'
+      ).to.be.greaterThan(0);
+      dlog(
+        '[snippet-test] stops:',
+        stops.map((st) => `${st.source}:${st.line}`).join(', ')
+      );
+
+      const stop = stops[0]!;
+      const frameId = stop.frameId!;
+      const locals = await getLocals(session, frameId);
+      dlog(
+        '[snippet-test] Locals at top frame:',
+        locals.map((v: any) => v.name).join(', ')
+      );
+      const flatLocals = await getFlattenedLocals(session, frameId);
+      dlog(
+        'Locals at top frame (flattened):',
+        flatLocals.map((v: DebugVariable) => v.name).join(', ')
+      );
+      const vRect =
+        flatLocals.find((v) => v.name === 'coreTypes.qRect') ??
+        flatLocals.find((v) => v.name === 'qRect');
+      const vBA =
+        flatLocals.find((v) => v.name === 'coreTypes.qByteArray') ??
+        flatLocals.find((v) => v.name === 'qByteArray');
+      const vStr =
+        flatLocals.find((v) => v.name === 'coreTypes.qString') ??
+        flatLocals.find((v) => v.name === 'qString');
+
+      expect(vRect, '[snippet-test] qRect not found in Locals').to.exist;
+      expect(vBA, '[snippet-test] qByteArray not found in Locals').to.exist;
+      expect(vStr, '[snippet-test] qString not found in Locals').to.exist;
+
+      // Make TS happy: if any is missing, bail out
+      if (!vRect || !vBA || !vStr) {
+        throw new Error(
+          '[snippet-test] Required locals missing despite existence checks'
+        );
+      }
+
+      // Light NatVis sanity check: same idea as golden, but without golden compare
+      expect(
+        String(vRect.value),
+        '[snippet-test] qRect value does not look NatVis-formatted'
+      ).to.match(/height.*/i);
+
+      expect(
+        String(vRect.value),
+        '[snippet-test] qRect.x did not match expected NatVis output'
+      ).to.match(/x\s*=\s*5/i);
+      expect(
+        String(vRect.value),
+        '[snippet-test] qRect.y did not match expected NatVis output'
+      ).to.match(/y\s*=\s*6/i);
+      expect(
+        String(vRect.value),
+        '[snippet-test] qRect.width did not match expected NatVis output'
+      ).to.match(/width\s*=\s*41/i);
+      expect(
+        String(vStr.value),
+        '[snippet-test] qString did not contain expected text'
+      ).to.match(/Hello World!?/);
+    } finally {
+      removeBps?.();
+      await stopDebugSession(session);
+      await waitForVSCodeIdle();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Main NatVis golden test
 // ---------------------------------------------------------------------------
 describe('natvis: minimal Qt project debug (index-natvis)', function () {
@@ -295,199 +492,3 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Snippet-based debug: lightweight sanity test using Qt debug snippets
-// ---------------------------------------------------------------------------
-describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
-  this.timeout(150_000);
-
-  it('launches via Qt debug snippet and shows Locals formatted by our NatVis rules (lightweight sanity test)', async function () {
-    const {
-      wsFolder,
-      projectDir,
-      buildDir
-      // kit, errSpy (already asserted in helper)
-    } = await configureAndBuildMinimalQtProject(this, '[snippet-test]', sb);
-
-    let session: vscode.DebugSession | undefined;
-    let removeBps: (() => void) | undefined;
-
-    try {
-      // --- Set breakpoints in source file (same as golden test) --------
-      const { doc, breakpoints } = await prepareBreakpointsFromMarkers(
-        projectDir,
-        'main.cpp',
-        'BREAK_HERE'
-      );
-      removeBps = addBreakpoints(breakpoints);
-
-      await waitForVSCodeIdle();
-
-      const lines = doc.getText().split('\n');
-      const markerIdxs = lines
-        .map((ln, i) => (ln.includes('BREAK_HERE') ? i : -1))
-        .filter((i) => i >= 0);
-
-      expect(
-        markerIdxs.length,
-        '[snippet-test] No // BREAK_HERE markers found in source'
-      ).to.be.greaterThan(0);
-
-      dlog(
-        '[snippet-test] CMAKE_BUILD_TYPE:',
-        readCMakeCacheVar(buildDir, 'CMAKE_BUILD_TYPE')
-      );
-      dlog(
-        '[snippet-test] cmake.buildConfig:',
-        vscode.workspace.getConfiguration('cmake').get('buildConfig')
-      );
-
-      // --- Resolve NatVis and commands used by the snippet -------------
-      const nvPath =
-        await vscode.commands.executeCommand<string>('qt-cpp.natvis');
-      dlog('[snippet-test] visualizer path:', nvPath);
-      expect(
-        nvPath,
-        '[snippet-test] qt-cpp.natvis did not resolve to a path'
-      ).to.be.a('string').and.not.empty;
-
-      const program = await vscode.commands.executeCommand<string>(
-        'cmake.launchTargetPath'
-      );
-      const cwd = await vscode.commands.executeCommand<string>(
-        'cmake.getLaunchTargetDirectory'
-      );
-
-      expect(!!program, '[snippet-test] cmake.launchTargetPath did not resolve')
-        .to.be.true;
-      expect(
-        !!cwd,
-        '[snippet-test] cmake.getLaunchTargetDirectory did not resolve'
-      ).to.be.true;
-
-      // --- Build debug config from package.json snippet -----------------
-      const snippetCfg = getQtCppSnippetDebugConfiguration();
-      const platformCfg =
-        materializeSnippetConfigForCurrentPlatform(snippetCfg);
-
-      const cfg: vscode.DebugConfiguration = {
-        ...platformCfg,
-        // Force concrete paths for the test project, while keeping all
-        // snippet-specific fields (MIMode, environment, sourceFileMap, etc.)
-        program: program!,
-        cwd: cwd!,
-        visualizerFile: nvPath!
-      };
-
-      if (process.env.QT_TEST_DEBUG === '1') {
-        dlog(
-          '[snippet-test] Debug config type:',
-          cfg.type,
-          'MIMode:',
-          (cfg as any).MIMode ?? '<none>',
-          'miDebuggerPath:',
-          (cfg as any).miDebuggerPath ?? '<none>'
-        );
-      }
-
-      console.log(
-        '[snippet-test] Debug config from snippet (after patching):',
-        JSON.stringify(cfg, null, 2)
-      );
-      const fsExists = fs.existsSync(cfg.program ?? '');
-      console.log(
-        '[snippet-test] program exists?',
-        fsExists,
-        'program =',
-        cfg.program
-      );
-      const timeoutMs = 60000;
-      const { session: s, stops } = await startDebugAndWaitForStop(
-        wsFolder,
-        cfg,
-        { timeoutMs }
-      );
-      session = s;
-
-      // --- Inspect backend for sanity ----------------------------------
-      if (session) {
-        const dbgType = session.type;
-        const miMode = (session.configuration as any)?.MIMode;
-
-        dlog('[snippet-test] Debugger backend:', dbgType);
-        if (dbgType === 'cppdbg') {
-          dlog('[snippet-test] MIMode:', miMode);
-        }
-      }
-
-      expect(
-        stops.length,
-        '[snippet-test] Debugger did not stop on a breakpoint'
-      ).to.be.greaterThan(0);
-      dlog(
-        '[snippet-test] stops:',
-        stops.map((st) => `${st.source}:${st.line}`).join(', ')
-      );
-
-      const stop = stops[0]!;
-      const frameId = stop.frameId!;
-      const locals = await getLocals(session, frameId);
-      dlog(
-        '[snippet-test] Locals at top frame:',
-        locals.map((v: any) => v.name).join(', ')
-      );
-      const flatLocals = await getFlattenedLocals(session, frameId);
-      dlog(
-        'Locals at top frame (flattened):',
-        flatLocals.map((v: DebugVariable) => v.name).join(', ')
-      );
-      const vRect =
-        flatLocals.find((v) => v.name === 'coreTypes.qRect') ??
-        flatLocals.find((v) => v.name === 'qRect');
-      const vBA =
-        flatLocals.find((v) => v.name === 'coreTypes.qByteArray') ??
-        flatLocals.find((v) => v.name === 'qByteArray');
-      const vStr =
-        flatLocals.find((v) => v.name === 'coreTypes.qString') ??
-        flatLocals.find((v) => v.name === 'qString');
-
-      expect(vRect, '[snippet-test] qRect not found in Locals').to.exist;
-      expect(vBA, '[snippet-test] qByteArray not found in Locals').to.exist;
-      expect(vStr, '[snippet-test] qString not found in Locals').to.exist;
-
-      // Make TS happy: if any is missing, bail out
-      if (!vRect || !vBA || !vStr) {
-        throw new Error(
-          '[snippet-test] Required locals missing despite existence checks'
-        );
-      }
-
-      // Light NatVis sanity check: same idea as golden, but without golden compare
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect value does not look NatVis-formatted'
-      ).to.match(/height.*/i);
-
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect.x did not match expected NatVis output'
-      ).to.match(/x\s*=\s*5/i);
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect.y did not match expected NatVis output'
-      ).to.match(/y\s*=\s*6/i);
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect.width did not match expected NatVis output'
-      ).to.match(/width\s*=\s*41/i);
-      expect(
-        String(vStr.value),
-        '[snippet-test] qString did not contain expected text'
-      ).to.match(/Hello World!?/);
-    } finally {
-      removeBps?.();
-      await stopDebugSession(session);
-      await waitForVSCodeIdle();
-    }
-  });
-});
