@@ -49,53 +49,40 @@ export function formatValuePreview(v: unknown, max: number = 200): string {
 }
 
 /**
- * Print a human-readable NatVis coverage summary to the test log.
+ * Print a human-readable NatVis summary to the test log.
  *
- * This function is purely diagnostic: it does not affect test pass/fail,
- * it only reports what the current snapshot and golden tell us.
+ * This function is purely diagnostic: it does not affect test pass/fail.
+ * It prints:
+ * 1) **NatVis patterns not exercised by this snapshot**
+ *    - Uses `missing` (from matchNatvisTypePatternsConsideringAlternatives) and `natvis`.
+ *    - Prints NatVis base patterns (and their AlternativeType patterns) that did not
+ *      appear in the current snapshot.
  *
- * It reports three main things:
  *
- *   1) **Successfully covered types**
- *      - Starts from `natvisSnapshot` (locals that passed through NatVis
- *        filtering and normalization).
- *      - Collects all distinct `type` values that actually appeared.
- *      - Removes:
- *          • types that had real mismatches (after filtering knownProblem),
- *          • types that are marked as `knownProblem` anywhere in the
- *            `goldenSnapshot` (including nested children).
- *      - The remaining types are printed as:
- *          "Tested Qt types successfully covered by NatVis file ..."
+ * 2) **Status summary table (variable-based)**
+ *    - Produced by `printNatvisTypeStatusTable(...)`.
+ *    - One row per *top-level variable name* (not one row per Qt type), so
+ *      repeated types (e.g. multiple QCborValue variables) appear as separate rows.
+ *    - Concrete types are grouped into a NatVis “family” (e.g. QList<int> and
+ *      QList<double> grouped under QList<*>).
+ *    - Root status codes:
+ *        • OK   = value matches golden and entry is not knownProblem
+ *        • KP   = entry is marked knownProblem on this platform (assertion disabled)
+ *        • KP*  = knownProblem entry that unexpectedly matches (“good news”)
+ *        • FAIL = real mismatch, extra variable, or missing expected variable
+ *      (Children status is reserved for future Expand/child validation.)
  *
- *   2) **Known-problem types (from the golden snapshot)**
- *      - Walks the entire `goldenSnapshot` tree recursively.
- *      - Any entry with a non-empty `knownProblem` and a `type` is recorded.
- *      - These types are printed as:
- *          "Tested Qt types with unsuccessful NatVis coverage
- *           (marked as knownProblem in the golden snapshot)"
- *      - This reflects the new model where problem annotations live in the
- *        golden rather than a separate global table.
- *
- *   3) **NatVis patterns that were not exercised**
- *      - Uses `natvis` and `missing` (the coverage result from
- *        matchNatvisTypePatternsConsideringAlternatives).
- *      - For each missing base pattern, shows the base name and its
- *        AlternativeType patterns (if any).
- *      - This tells you which NatVis rules exist in the .natvis file but
- *        did not appear in the current test snapshot.
- *
- * Additional details:
- *   - `natvisPath` and `wsFolder` are used to print the NatVis file path
- *     relative to the workspace root, for nicer logs.
- *   - `mismatches` is the final list returned by findMismatchedSnapshotEntries
- *     (after knownProblem filtering). It is used only to compute the set of
- *     "real mismatched types".
- *   - The function is intended to be called once at the end of the NatVis
- *     test when NATVIS_SHOW_SUMMARY (or similar) is enabled.
+ * Notes:
+ * - `goodNewsNames` comes from `findMismatchedSnapshotEntries` and is used only for
+ *   reporting KP* progress; it does not change pass/fail behavior.
+ * - `natvisPath` + `wsFolder` are used to print a workspace-relative NatVis path.
+ * - The old “successful types” / “known-problem types” lists are kept behind
+ *   `printOldList` (currently disabled).
  *
  * @param params.natvisSnapshot  Platform-normalized locals after NatVis filtering.
- * @param params.goldenSnapshot  Platform-resolved golden snapshot (with knownProblem).
+ * @param params.goldenSnapshot  Platform-resolved golden snapshot (with knownProblem applied).
  * @param params.mismatches      Real mismatches returned by the comparison logic.
+ * @param params.goodNewsNames   Variable names whose knownProblem unexpectedly matched (KP*).
  * @param params.natvis          Parsed NatVis type information (bases, alts, all).
  * @param params.missing         NatVis base patterns not exercised by this snapshot.
  * @param params.natvisPath      Absolute path to the NatVis file, or undefined.
@@ -162,6 +149,24 @@ export function printNatvisSummary(params: {
   let natvisFileLabel: string = natvisPath ?? '<unknown>';
   const printOldList = false;
 
+  // Print types with defined NatVis patterns but not exercised by this test
+  const missingLines = missing.map((base) => {
+    const alts = natvis.alts.get(base);
+    return alts && alts.size ? `${base} (alts: ${[...alts].join(', ')})` : base;
+  });
+
+  if (missingLines.length > 0) {
+    console.log(
+      '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
+    );
+    for (const line of missingLines) {
+      console.log(`  ${line}`);
+    }
+  } else {
+    console.log(
+      '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
+    );
+  }
   if (natvisPath) {
     try {
       const rel = path.relative(wsFolder.uri.fsPath, natvisPath);
@@ -211,37 +216,58 @@ export function printNatvisSummary(params: {
     natvis
   });
 
-  // Print types with defined NatVis patterns but not exercised by this test
-  const missingLines = missing.map((base) => {
-    const alts = natvis.alts.get(base);
-    return alts && alts.size ? `${base} (alts: ${[...alts].join(', ')})` : base;
-  });
-
-  if (missingLines.length > 0) {
-    console.log(
-      '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
-    );
-    for (const line of missingLines) {
-      console.log(`  ${line}`);
-    }
-  } else {
-    console.log(
-      '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
-    );
-  }
 }
-//---------------------------------------------------------------------------
 
+/**
+ * Status of a NatVis table entry at a given validation level.
+ *
+ * Meanings:
+ *   - 'OK'   : Variable value matches the golden snapshot and is not marked
+ *              as a knownProblem.
+ *   - 'KP'   : Validation is disabled because the golden entry is marked
+ *              as knownProblem on this platform.
+ *   - 'FAIL' : A real mismatch detected after knownProblem filtering
+ *              (value mismatch, extra variable, or missing expected variable).
+ *   - '-'    : Not evaluated yet (reserved for future use, e.g. child/Expand checks).
+ */
 type TypeStatus = 'OK' | 'KP' | 'FAIL' | '-';
+
+/**
+ * Sorting mode for the NatVis status summary table.
+ *
+ *   - 'status'          : Sort rows strictly by status severity (OK → KP → FAIL → '-'),
+ *                         then by NatVis type and variable name.
+ *   - 'status_grouped'  : Group rows by NatVis type, ordered by the *best*
+ *                         status seen for that NatVis type, then sort within
+ *                         each group by variable status and name.
+ */
 type SortMode = 'status' | 'status_grouped';
 
+/**
+ * Minimal shape of a row in the NatVis status summary table.
+ *
+ * This is the common interface used by sorting and grouping helpers.
+ * Each row represents one top-level debugger variable.
+ */
 type NatvisTableRowLike = {
+  /** Canonical NatVis family (e.g. QList<*>, QCborValue) */
   natvisType: string;
+  /** Concrete C++ type reported by the debugger (e.g. QList<int>) */
   exercisedType: string;
+  /** Fully qualified variable name in the debugger snapshot */
   varName: string;
+  /** Root-level validation status for this variable */
   root: TypeStatus;
 };
 
+/**
+ * Numeric ordering for TypeStatus values.
+ *
+ * Lower numbers are "better" and sort first.
+ * Used to:
+ *   - Order rows by severity.
+ *   - Compute the best (least severe) root status for a NatVis type group.
+ */
 const STATUS_ORDER: Readonly<Record<TypeStatus, number>> = {
   OK: 0,
   KP: 1,
@@ -249,11 +275,37 @@ const STATUS_ORDER: Readonly<Record<TypeStatus, number>> = {
   '-': 3
 };
 
+/**
+ * Resolve the NatVis summary table sort mode from the environment.
+ *
+ * Controlled via the NATVIS_TABLE_SORT environment variable.
+ *
+ * Supported values:
+ *   - 'status'          : Sort rows strictly by status severity.
+ *   - 'status_grouped'  : Group rows by NatVis type and order groups by their
+ *                         best (least severe) status.
+ *
+ * Any unset or invalid value defaults to 'status_grouped', which provides
+ * a more compact and NatVis-centric view.
+ */
 function getNatvisTableSortMode(): SortMode {
   const raw = (process.env.NATVIS_TABLE_SORT ?? '').trim().toLowerCase();
   return raw === 'status' || raw === 'status_grouped' ? raw : 'status_grouped';
 }
 
+/**
+ * Compute the best (least severe) root status observed for each NatVis type.
+ *
+ * This helper is used by the 'status_grouped' sort mode to determine
+ * the ordering of NatVis type groups.
+ *
+ * For each NatVis family (e.g. QList<*>), the smallest numeric rank
+ * from STATUS_ORDER is kept:
+ *   OK < KP < FAIL < '-'
+ *
+ * @param rows  Table rows representing individual variables.
+ * @returns     Map from NatVis type to its best (lowest-severity) status rank.
+ */
 function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
   rows: readonly T[]
 ): ReadonlyMap<string, number> {
@@ -271,6 +323,32 @@ function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
   return bestByNatvis;
 }
 
+/**
+ * Sort NatVis summary table rows according to the selected sort mode.
+ *
+ * Two sorting strategies are supported:
+ *
+ * 1) **'status'**
+ *    - Sort rows directly by root status severity (OK < KP < FAIL < '-').
+ *    - Tie-breakers:
+ *        a) NatVis type (alphabetical)
+ *        b) Variable name (alphabetical)
+ *
+ *    This mode emphasizes individual variable failures.
+ *
+ * 2) **'status_grouped'** (default)
+ *    - Group rows by NatVis type (e.g. QList<*>).
+ *    - Order NatVis type groups by their *best* (least severe) status
+ *      observed across all variables in that group.
+ *    - Within each group:
+ *        a) Root status severity
+ *        b) Variable name
+ *
+ *    This mode provides a compact, NatVis-centric overview where related
+ *    concrete types stay visually grouped.
+ *
+ * @param rows  Mutable list of NatVis table rows to be sorted in place.
+ */
 function sortNatvisRows<T extends NatvisTableRowLike>(rows: T[]): void {
   const mode = getNatvisTableSortMode();
 
@@ -307,6 +385,30 @@ function sortNatvisRows<T extends NatvisTableRowLike>(rows: T[]): void {
   });
 }
 
+/**
+ * Compute the "NatVis family" key used to group concrete exercised types into
+ * a single NatVis type bucket for the summary table.
+ *
+ * Examples:
+ * - "QList<int>"      -> "QList<*>"
+ * - "QList<QString>"  -> "QList<*>"
+ * - "QStringList"     -> "QList<*>" (if NatVis declares it as an AlternativeType)
+ * - "QByteArray"      -> "QByteArray" (non-template types stay as-is)
+ *
+ * The algorithm:
+ * 1) Normalize the raw debugger type string (strip class/struct, normalize spaces).
+ * 2) Split only the outermost template to get (base, arity).
+ * 3) Canonicalize the base using NatVis AlternativeType relationships so that
+ *    equivalent types share a stable bucket key.
+ * 4) Prefer returning an *existing* NatVis base pattern when possible.
+ * 5) Otherwise derive a wildcard pattern (e.g. base<*,*>), but only keep it if
+ *    NatVis actually defines that pattern.
+ * 6) Final fallback: return the base name.
+ *
+ * @param exercisedType  Concrete type string as reported by the debugger (may be noisy).
+ * @param natvis         Parsed NatVis type metadata (base patterns and AlternativeType rules).
+ * @returns              A stable grouping key used as the "NatVis Type" column in the table.
+ */
 function computeNatvisFamily(
   exercisedType: string,
   natvis: NatvisTypes
@@ -330,6 +432,48 @@ function computeNatvisFamily(
   return parsed.base;
 }
 
+/**
+ * Print a compact, per-variable NatVis status table to the test log.
+ *
+ * The table is intended as a quick “at a glance” overview of what the current
+ * NatVis run produced, using variable names as the primary key (not types).
+ *
+ * Each row represents one top-level variable, and includes:
+ *  - `natvisType`: the NatVis “family key” derived from the concrete type
+ *    (e.g. QList<int> and QList<double> group under QList<*> when applicable).
+ *  - `exercisedType`: the concrete debugger type for that variable (or "<none>").
+ *  - `varName`: the variable name (matches how snapshots/golden are compared).
+ *  - `root`: status of the top-level DisplayString value vs golden.
+ *  - `children`: status of Expand children vs golden (not implemented yet, so "-").
+ *
+ * Status semantics (root column):
+ *  - OK:  variable exists in both snapshot and golden, is not knownProblem, and
+ *         does not appear in the mismatch list.
+ *  - KP:  golden marks this variable as knownProblem for the current platform
+ *         (assertion disabled even if it mismatches).
+ *  - KP*: same as KP, but the variable unexpectedly matched; the variable name
+ *         is present in `goodNewsNames` (“progress” indicator).
+ *  - FAIL: any real mismatch for this variable (after knownProblem filtering),
+ *          including:
+ *            • variable present in snapshot but missing from golden
+ *            • variable missing from snapshot but present in golden (unless KP)
+ *            • value mismatch with no knownProblem
+ *
+ * Row construction uses two passes:
+ *  1) Iterate `natvisSnapshot` to report observed variables (including
+ *     snapshot-only extras).
+ *  2) Iterate `goldenSnapshot` to add golden-only variables missing from
+ *     the snapshot (so missing expectations are visible as FAIL/KP).
+ *
+ * Sorting is delegated to `sortNatvisRows` and can be influenced via
+ * NATVIS_TABLE_SORT ("status" or "status_grouped").
+ *
+ * @param params.natvisSnapshot Platform-normalized locals after NatVis filtering.
+ * @param params.goldenSnapshot Platform-resolved golden snapshot (with knownProblem).
+ * @param params.mismatches     Real mismatches returned by the comparison logic.
+ * @param params.goodNewsNames  Variable names whose knownProblem entries matched (KP*).
+ * @param params.natvis         Parsed NatVis type information (bases and AlternativeType rules).
+ */
 export function printNatvisTypeStatusTable(params: {
   natvisSnapshot: readonly Snapshot[];
   goldenSnapshot: readonly GoldenSnapshot[];
@@ -459,6 +603,9 @@ export function printNatvisTypeStatusTable(params: {
     );
   }
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
+  console.log(
+  `  (covers variables from snapshot + golden expectations; excludes missing NatVis patterns list)`
+  );
   console.log('  Columns:');
   console.log(
     '    root     = status of the top-level variable value vs golden'
