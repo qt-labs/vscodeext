@@ -151,6 +151,14 @@ export function normalizeValue(raw: string): string {
  * 5. Promotes children of top-level “holder” structs (e.g. `coreTypes`,
  *    `containerTypes`) so that the resulting roots match the golden snapshot
  *    entries (e.g. `coreTypes.qByteArray`).
+ * Skipping support variables:
+ * - Variables whose dotted path contains a segment starting with `support_`
+ *   (e.g. `coreStateTypes.support_atomicTarget`) are intentionally skipped.
+ * - These support variables exist only to back other variables (e.g. as stable
+ *   pointer targets) and are not part of the NatVis coverage surface.
+ * - Skipping happens before the snapshot tree is built so support variables
+ *   cannot appear as promoted roots, mismatches, or rows in the summary table.
+
  *
  * Important design notes:
  * - Only the promoted root entries are intended to be compared against golden
@@ -179,6 +187,12 @@ export function materializeLocalSnapshot(
   };
 
   const byName = new Map<string, MutableSnap>();
+  const shouldSkipSnapshotVar = (fullName: string): boolean => {
+    // Skip any variable whose dotted path contains a "support_" segment.
+    // Example: "coreStateTypes.support_atomicTarget"
+    const parts = fullName.split('.');
+    return parts.some((p) => p.startsWith('support_'));
+  };
 
   const getOrCreate = (name: string): MutableSnap => {
     const existing = byName.get(name);
@@ -200,6 +214,13 @@ export function materializeLocalSnapshot(
   for (const v of vars) {
     const name = v.name ?? '';
     if (!name) continue;
+
+    if (shouldSkipSnapshotVar(name)) {
+      if (process.env.NATVIS_VERBOSE === '1') {
+        console.log(`[natvis.test][skip] Skipping support variable '${name}'`);
+      }
+      continue;
+    }
 
     const node = getOrCreate(name);
 
