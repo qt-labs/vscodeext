@@ -631,7 +631,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '42',
     knownProblem: {
       darwin:
-        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
+      linux:
+        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
     }
   },
   {
@@ -640,7 +642,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'variant-string',
     knownProblem: {
       darwin:
-        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
+      linux:
+        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
     }
   },
   {
@@ -649,7 +653,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'true',
     knownProblem: {
       darwin:
-        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
+      linux:
+        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
     }
   },
   // QFlags (NatVis for QFlags<*> is numeric: {($T1)i})
@@ -659,7 +665,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '0',
     knownProblem: {
       darwin:
-        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.'
+        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
+      linux:
+        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.'
     }
   },
   {
@@ -670,7 +678,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '3',
     knownProblem: {
       darwin:
-        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.'
+        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
+      linux:
+        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.'
     }
   },
   // Atomics
@@ -680,7 +690,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '7',
     knownProblem: {
       darwin:
-        'QBasicAtomicInteger<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.'
+        'QBasicAtomicInteger<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
+      linux:
+        'QBasicAtomicInteger<*> NatVis is not applied under GDB; value falls back to {...} instead of the numeric DisplayString.'
     }
   },
   // Atomic pointers: non-null prints {_q_value} (address-like), null prints "empty"
@@ -690,7 +702,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '0xADDR',
     knownProblem: {
       darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
+      linux:
+        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
     }
   },
   {
@@ -699,7 +713,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '0xADDR',
     knownProblem: {
       darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
+      linux:
+        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
     }
   },
   {
@@ -708,7 +724,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'empty',
     knownProblem: {
       darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
+      linux:
+        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
     }
   },
   {
@@ -717,7 +735,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'empty',
     knownProblem: {
       darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
+      linux:
+        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
     }
   }
 ] as const;
