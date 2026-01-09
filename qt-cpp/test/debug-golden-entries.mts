@@ -604,6 +604,121 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       win32:
         'QCborValue NatVis currently fails. Debugger provides: n=42 container=0xADDR <NULL> t=Integer (0) instead of just "42".'
     }
+  },
+  // ---------------------------------------------------------------------------
+  // core_state_types
+  // ---------------------------------------------------------------------------
+  {
+    name: 'coreStateTypes.qObject',
+    type: 'QObject',
+    value: 'core_state_types.qObject',
+    knownProblem: {
+      darwin:
+        'QObject NatVis relies on Windows-only Qt6Cored.dll intrinsics (QObjectPrivate via d_ptr), so LLDB cannot evaluate objectName DisplayString.',
+      linux:
+        'QObject NatVis relies on Windows-only Qt6Cored.dll intrinsics (QObjectPrivate via d_ptr), so GDB cannot evaluate objectName DisplayString.'
+    }
+  },
+  // QVariant
+  {
+    name: 'coreStateTypes.qVariantNull',
+    type: 'QVariant',
+    value: '(null)',
+  },
+  {
+    name: 'coreStateTypes.qVariantInt',
+    type: 'QVariant',
+    value: '42',
+    knownProblem: {
+      darwin:
+        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+    }
+  },
+  {
+    name: 'coreStateTypes.qVariantString',
+    type: 'QVariant',
+    value: 'variant-string',
+    knownProblem: {
+      darwin:
+        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+    }
+  },
+  {
+    name: 'coreStateTypes.qVariantBool',
+    type: 'QVariant',
+    value: 'true',
+    knownProblem: {
+      darwin:
+        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+    }
+  },
+  // QFlags (NatVis for QFlags<*> is numeric: {($T1)i})
+  {
+    name: 'coreStateTypes.qFlagsNone',
+    type: 'CoreStateFlags',
+    value: '0',
+    knownProblem: {
+      darwin:
+        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.'
+    }
+  },
+  {
+    // This is the typedef created by Q_DECLARE_FLAGS(CoreStateFlags, CoreStateFlag)
+    // NatVis applies via the underlying QFlags<*> rule.
+    name: 'coreStateTypes.qFlags',
+    type: 'CoreStateFlags',
+    value: '3',
+    knownProblem: {
+      darwin:
+        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.'
+    }
+  },
+  // Atomics
+  {
+    name: 'coreStateTypes.qAtomicInt',
+    type: 'QBasicAtomicInteger<int>',
+    value: '7',
+    knownProblem: {
+      darwin:
+        'QBasicAtomicInteger<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.'
+    }
+  },
+  // Atomic pointers: non-null prints {_q_value} (address-like), null prints "empty"
+  {
+    name: 'coreStateTypes.qAtomicPtr',
+    type: 'QBasicAtomicPointer<int>',
+    value: '0xADDR',
+    knownProblem: {
+      darwin:
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+    }
+  },
+  {
+    name: 'coreStateTypes.qAtomicVoidPtr',
+    type: 'QBasicAtomicPointer<void>',
+    value: '0xADDR',
+    knownProblem: {
+      darwin:
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+    }
+  },
+  {
+    name: 'coreStateTypes.qAtomicPtrNull',
+    type: 'QBasicAtomicPointer<int>',
+    value: 'empty',
+    knownProblem: {
+      darwin:
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+    }
+  },
+  {
+    name: 'coreStateTypes.qAtomicVoidPtrNull',
+    type: 'QBasicAtomicPointer<void>',
+    value: 'empty',
+    knownProblem: {
+      darwin:
+        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.'
+    }
   }
 ] as const;
 
