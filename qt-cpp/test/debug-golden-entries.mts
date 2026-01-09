@@ -616,7 +616,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QObject NatVis relies on Windows-only Qt6Cored.dll intrinsics (QObjectPrivate via d_ptr), so LLDB cannot evaluate objectName DisplayString.',
       linux:
-        'QObject NatVis relies on Windows-only Qt6Cored.dll intrinsics (QObjectPrivate via d_ptr), so GDB cannot evaluate objectName DisplayString.'
+        'QObject NatVis relies on Windows-only Qt6Cored.dll intrinsics (QObjectPrivate via d_ptr), so GDB cannot evaluate objectName DisplayString.',
+      win32:
+        'NatVis loads, but required private symbols/fields are not available ' +
+        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
+        'falls back to a raw "{d_ptr={...}}" representation instead of objectName.'
     }
   },
   // QVariant
@@ -624,6 +628,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreStateTypes.qVariantNull',
     type: 'QVariant',
     value: '(null)',
+    knownProblem: {
+      win32:
+        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
+    }
   },
   {
     name: 'coreStateTypes.qVariantInt',
@@ -633,7 +641,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       linux:
-        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
+      win32:
+        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
     }
   },
   {
@@ -644,7 +654,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       linux:
-        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
+      win32:
+        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
     }
   },
   {
@@ -655,7 +667,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       linux:
-        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'."
+        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
+      win32:
+        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
     }
   },
   // QFlags (NatVis for QFlags<*> is numeric: {($T1)i})
@@ -667,7 +681,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
       linux:
-        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.'
+        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.',
+      win32:
+        'QFlags<*> NatVis is not applied on win32; value falls back to "None (0)" instead of the numeric DisplayString.'
     }
   },
   {
@@ -680,7 +696,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
       linux:
-        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.'
+        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.',
+      win32:
+        'QFlags<*> NatVis is not applied on win32; value falls back to "Read | Write (3)" instead of the numeric DisplayString.'
     }
   },
   // Atomics
@@ -704,7 +722,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
       linux:
-        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
+        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.',
+      win32:
+        'On win32 CI, atomic pointer formatting differs (shows "{123}" / raw) instead of address-like DisplayString.'
     }
   },
   {
@@ -715,7 +735,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
       linux:
-        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
+        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.',
+      win32:
+        'On win32 CI, atomic pointer formatting differs (shows empty string / raw) instead of address-like DisplayString.'
     }
   },
   {
