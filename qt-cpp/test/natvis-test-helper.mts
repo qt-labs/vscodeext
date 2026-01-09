@@ -910,6 +910,20 @@ export function areTypesCompatible(
 
   if (a0 === e0) return true;
 
+  // Allow explicit aliases (typedef vs expanded template spelling, etc.).
+  // Example: expected "CoreStateFlags" vs actual "QFlags<CoreStateFlag>" on win32.
+  const expectedAliases = natvis.extraAliases?.get(e0);
+  if (expectedAliases) {
+    for (const alias of expectedAliases) {
+      const aliasNorm = normalizeType(alias);
+
+      if (aliasNorm === a0) return true;
+
+      // Also allow expanded-template variants if the alias is the shorter form.
+      if (expandedTemplateCompatible(aliasNorm, a0)) return true;
+    }
+  }
+
   // Handle QSpan<int> vs QSpan<int,...> before any other reasoning.
   if (expandedTemplateCompatible(e0, a0)) return true;
 

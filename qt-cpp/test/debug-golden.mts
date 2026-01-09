@@ -346,6 +346,7 @@ export type NatvisTypes = {
   bases: Set<string>;
   alts: Map<string, Set<string>>;
   altToBase: Map<string, string>;
+  extraAliases?: ReadonlyMap<string, readonly string[]>;
 };
 
 // Extra aliases for types whose *real* NatVis rule is more generic.
@@ -357,7 +358,8 @@ export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
   'QList<*>': ['QByteArrayList', 'QStringList', 'QVariantList'],
   'QPair<*,*>': ['std::pair'],
   'QHash<*,*>': ['QVariantHash'],
-  'QMap<*,*>': ['QVariantMap']
+  'QMap<*,*>': ['QVariantMap'],
+  CoreStateFlags: ['QFlags<CoreStateFlag>']
 };
 
 /**
@@ -387,6 +389,11 @@ export async function parseNatvisTypesWithAlternatives(
   const bases = new Set<string>();
   const alts = new Map<string, Set<string>>();
   const altToBase = new Map<string, string>();
+  // keep the forward alias table around for type-compatibility checks
+  // (typedef vs expanded template spelling, etc.)
+  const extraAliases = new Map<string, readonly string[]>(
+    Object.entries(EXTRA_NATVIS_TYPE_ALIASES)
+  );
 
   // Seed reverse aliases from EXTRA_NATVIS_TYPE_ALIASES.
   // Example:
@@ -463,9 +470,9 @@ export async function parseNatvisTypesWithAlternatives(
       if (alt) all.add(alt);
     }
 
-    return { all, bases, alts, altToBase };
+    return { all, bases, alts, altToBase, extraAliases };
   } catch {
-    return { all, bases, alts, altToBase };
+    return { all, bases, alts, altToBase, extraAliases };
   }
 }
 
