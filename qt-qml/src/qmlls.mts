@@ -120,6 +120,7 @@ export async function fetchAssetAndDecide(options?: {
 }
 
 export class Qmlls {
+  private static _isInstalling = false;
   private _docsPath: string | undefined;
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _importPaths = new Set<string>();
@@ -169,6 +170,17 @@ export class Qmlls {
   }
 
   public static async install(asset: installer.AssetWithTag) {
+    // Prevent concurrent installations
+    if (Qmlls._isInstalling) {
+      logger.info('Installation already in progress, skipping');
+      void vscode.window.showWarningMessage(
+        'QML language server installation is already in progress. Please wait for it to complete.'
+      );
+      return QmllsStatus.stopped;
+    }
+
+    Qmlls._isInstalling = true;
+
     try {
       logger.info('Stopping QML language server to install new version');
       await projectManager.stopQmlls();
@@ -178,6 +190,8 @@ export class Qmlls {
       logger.info('Installation done');
     } catch (error) {
       logger.warn(isError(error) ? error.message : String(error));
+    } finally {
+      Qmlls._isInstalling = false;
     }
 
     void projectManager.startQmlls();
