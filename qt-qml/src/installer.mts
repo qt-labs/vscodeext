@@ -25,7 +25,7 @@ const ExtractDir = path.join(InstallDir, 'files');
 const QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
 const ReleaseJsonPath = path.join(InstallDir, 'release.json');
 
-const logger = createLogger('installer.ts');
+const logger = createLogger('installer');
 
 interface Asset {
   id: string;
@@ -142,6 +142,8 @@ export async function fetchAssetToInstall(controller: AbortController) {
   if (!res.ok) {
     throw new Error(`Unexpected HTTP status, code = ${res.status.toFixed(0)}`);
   }
+
+  logger.info(`Fetched release info from: ${ReleaseInfoUrl}`);
 
   const json = (await res.json()) as {
     tag_name: string;

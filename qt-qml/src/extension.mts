@@ -17,11 +17,7 @@ import { registerRestartQmllsCommand } from '@cmd/restart-qmlls.mjs';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls.mjs';
 import { registerDebugPort } from '@cmd/debug.mjs';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update.mjs';
-import {
-  getDoNotAskForDownloadingQmlls,
-  Qmlls,
-  QmllsStatus
-} from '@/qmlls.mjs';
+import { getDoNotAskForDownloadingQmlls, Qmlls } from '@/qmlls.mjs';
 import * as consts from '@/constants.js';
 import { QMLProjectManager, createQMLProject } from '@/project.mjs';
 import { registerResetCommand } from '@cmd/reset.mjs';
@@ -80,17 +76,17 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.sendEvent(`activated`);
   projectManager.getConfigValues();
   projectManager.updateQmllsParams();
-  void startQmlls();
+  startQmlls();
 }
 
-async function startQmlls() {
+function startQmlls() {
+  // Start qmlls immediately without waiting for the release check
+  void projectManager.startQmlls();
+
+  // Perform the release check asynchronously in the background
   const shouldCheck = !getDoNotAskForDownloadingQmlls();
-  let result: QmllsStatus | undefined;
   if (shouldCheck) {
-    result = await Qmlls.checkAssetAndDecide();
-  }
-  if (!shouldCheck || result === QmllsStatus.stopped) {
-    void projectManager.startQmlls();
+    void Qmlls.checkAssetAndDecide();
   }
 }
 
