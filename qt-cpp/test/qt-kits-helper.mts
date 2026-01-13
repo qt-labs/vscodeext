@@ -33,10 +33,9 @@ export async function selectAndApplyQtKit(
     kits = readQtKitsFromDisk(wsFolder);
   }
 
-  // If caller cares about a specific major (e.g. 6), filter down to that
-  if (typeof requiredQtMajor === 'number') {
-    kits = filterQtKitsByMajor(kits, requiredQtMajor);
-  }
+  kits = filterQtKitsByQtTestQtRoot(kits);
+  kits = filterQtKitsByQtVersionForTest(kits);
+  kits = filterQtKitsForHostDesktop(kits);
 
   // Filter to Qt kits and pick one appropriate for this machine
   const kitName = pickQtKit(kits);
@@ -59,29 +58,133 @@ export async function selectAndApplyQtKit(
   return kitName;
 }
 
-// helper – keep it in the same module as the other kit helpers
-function filterQtKitsByMajor(
-  kits: KitLike[],
-  requiredQtMajor: number
-): KitLike[] {
-  const majorPrefix = `Qt-${requiredQtMajor}.`;
+export function filterQtKitsByQtVersionForTest(kits: KitLike[]): KitLike[] {
+  const wanted = (process.env.QT_VERSION_FOR_TEST ?? '').trim();
+  if (!wanted) return kits;
 
-  return kits.filter((kit) => {
-    // Case 1: Structured major version available
-    if (typeof kit.qtVersionMajor === 'number') {
-      return kit.qtVersionMajor === requiredQtMajor;
-    }
+  // Accept "6", "6.9", "6.9.0", "6.10.1"
+  const m = wanted.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?$/);
+  if (!m) return kits;
 
-    // Case 2: No structured major → fallback to name matching
-    const name = kit.name;
-    if (!name) {
+  const wantMajor = Number(m[1]);
+  const wantMinor = m[2] !== undefined ? Number(m[2]) : undefined;
+  const wantPatch = m[3] !== undefined ? Number(m[3]) : undefined;
+
+  const parsedFromInstallPath = (
+    k: KitLike
+  ): { major: number; minor: number; patch: number } | undefined => {
+    const inst = k.environmentVariables?.VSCODE_QT_INSTALLATION;
+    if (!inst) return undefined;
+
+    // Typical: /Users/lucie/Qt/6.10.1/macos
+    const mm = inst.match(/[\/\\](\d+)\.(\d+)\.(\d+)(?:[\/\\]|$)/);
+    if (!mm) return undefined;
+
+    return { major: Number(mm[1]), minor: Number(mm[2]), patch: Number(mm[3]) };
+  };
+
+  const matchesWanted = (k: KitLike): boolean => {
+    // Prefer explicit kit metadata if present
+    if (typeof k.qtVersionMajor === 'number' && k.qtVersionMajor !== wantMajor)
       return false;
+
+    const v = parsedFromInstallPath(k);
+    if (v) {
+      if (v.major !== wantMajor) return false;
+      if (wantMinor !== undefined && v.minor !== wantMinor) return false;
+      if (wantPatch !== undefined && v.patch !== wantPatch) return false;
+      return true;
     }
 
-    return (
-      name.startsWith(majorPrefix) || name.includes(`Qt ${requiredQtMajor}`)
+    // If we only asked for major, and kit has qtVersionMajor, accept it.
+    if (
+      wantMinor === undefined &&
+      wantPatch === undefined &&
+      k.qtVersionMajor === wantMajor
+    )
+      return true;
+
+    // Otherwise we can't verify this kit matches.
+    return false;
+  };
+
+  const filtered = kits.filter(matchesWanted);
+
+  if (filtered.length === 0) {
+    console.warn(
+      `[qt-kits-helper] QT_VERSION_FOR_TEST is set (${wanted}) but no kits could be matched ` +
+        'via VSCODE_QT_INSTALLATION or qtVersionMajor. Falling back.'
     );
+    return kits;
+  }
+
+  return filtered;
+}
+
+export function filterQtKitsByQtTestQtRoot(kits: KitLike[]): KitLike[] {
+  const qtRoot = process.env.QT_TEST_QT_ROOT;
+  if (!qtRoot) return kits;
+
+  const root = path.normalize(qtRoot) + path.sep;
+
+  const inQtRoot = (k: KitLike): boolean => {
+    const inst = k.environmentVariables?.VSCODE_QT_INSTALLATION;
+    if (!inst) return false;
+    return path.normalize(inst).startsWith(root);
+  };
+
+  const filtered = kits.filter(inQtRoot);
+
+  if (filtered.length === 0) {
+    console.warn(
+      `[qt-kits-helper] QT_TEST_QT_ROOT is set (${qtRoot}) but no kits had ` +
+        'environmentVariables.VSCODE_QT_INSTALLATION under it. Falling back.'
+    );
+    return kits;
+  }
+
+  return filtered;
+}
+
+function filterQtKitsForHostDesktop(kits: KitLike[]): KitLike[] {
+  const instOf = (k: KitLike): string =>
+    path.normalize(k.environmentVariables?.VSCODE_QT_INSTALLATION ?? '');
+
+  const isBadTarget = (p: string): boolean => {
+    const s = p.toLowerCase();
+    return (
+      s.includes(`${path.sep}android_`) ||
+      s.includes(`${path.sep}ios`) ||
+      s.includes(`${path.sep}wasm_`)
+    );
+  };
+
+  const isHostDesktop = (p: string): boolean => {
+    const s = p.toLowerCase();
+
+    if (process.platform === 'darwin') return s.endsWith(`${path.sep}macos`);
+    if (process.platform === 'win32')
+      return s.includes(`${path.sep}msvc`) || s.includes(`${path.sep}mingw`);
+    // linux
+    return s.endsWith(`${path.sep}gcc_64`) || s.endsWith(`${path.sep}clang_64`);
+  };
+
+  const filtered = kits.filter((k) => {
+    const p = instOf(k);
+    if (!p) return false;
+    if (isBadTarget(p)) return false;
+    return isHostDesktop(p);
   });
+
+  // If nothing matched (layout differs), fall back to just “not bad targets”
+  if (filtered.length > 0) return filtered;
+
+  const fallback = kits.filter((k) => {
+    const p = instOf(k);
+    return p && !isBadTarget(p);
+  });
+
+  return fallback.length > 0 ? fallback : kits;
 }
 
 /** Determine likely kit file paths (workspace + platform-global). */
