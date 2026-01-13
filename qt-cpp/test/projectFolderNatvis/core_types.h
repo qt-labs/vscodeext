@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QtCore> // brings in all necessary QtCore headers
+#include <QtNetwork/QHostAddress>
 
 enum class SelectionFlag {
     None          = 0x0,
@@ -58,6 +59,10 @@ struct CoreTypes
     QUrl      qUrl;
     QUuid     qUuid;
 
+    // QHostAddress (QtNetwork, but QtCore-adjacent and very common)
+    QHostAddress qHostAddressIpv4;
+    QHostAddress qHostAddressIpv6;
+
     // Constructor
     CoreTypes();
 };
@@ -110,6 +115,8 @@ inline CoreTypes::CoreTypes()
     , qSizeF(4.1, 4.2)
     , qUrl(QStringLiteral("https://github.com/narnaud/natvis4qt"))
     , qUuid("{12345678-1234-1234-1234-1234567890ab}")
+    , qHostAddressIpv4(QStringLiteral("127.0.0.1"))
+    , qHostAddressIpv6(QHostAddress(QStringLiteral("::1")))
 {
     // Load JSON sample from pass1.json (expected next to the executable).
     // CMake should copy pass1.json from the source tree (next to core_types.h)
