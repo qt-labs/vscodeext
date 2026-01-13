@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.2
+
+- Removed the `twxs.cmake` extension from the extension pack.
+
 ## 1.0.1
 
 - Removed the `pre-release` tag.
