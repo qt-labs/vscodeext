@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "engines": {
     "vscode": "^1.94.0"
   },
@@ -38,8 +38,7 @@
     "theqtcompany.qt-core",
     "theqtcompany.qt-ui",
     "ms-vscode.cmake-tools",
-    "ms-vscode.cpptools",
-    "twxs.cmake"
+    "ms-vscode.cpptools"
   ],
   "scripts": {
     "vscode:prepublish": "git rev-parse HEAD > commit",
