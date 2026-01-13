@@ -761,6 +761,32 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux:
         'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
     }
+  },
+  {
+    name: 'coreTypes.qHostAddressIpv4',
+    type: 'QHostAddress',
+    value: 'undefined',
+    knownProblem: {
+      darwin:
+        'QHostAddress NatVis does not provide a DisplayString under LLDB; value is reported as undefined.',
+      linux:
+        'QHostAddress NatVis does not provide a DisplayString under GDB; value is reported as undefined.',
+      win32:
+        'QHostAddress NatVis has no DisplayString; debugger reports undefined.'
+    }
+  },
+  {
+    name: 'coreTypes.qHostAddressIpv6',
+    type: 'QHostAddress',
+    value: 'undefined',
+    knownProblem: {
+      darwin:
+        'QHostAddress NatVis does not provide a DisplayString under LLDB; value is reported as undefined.',
+      linux:
+        'QHostAddress NatVis does not provide a DisplayString under GDB; value is reported as undefined.',
+      win32:
+        'QHostAddress NatVis has no DisplayString; debugger reports undefined.'
+    }
   }
 ] as const;
 
