@@ -298,35 +298,6 @@ export function materializeLocalSnapshot(
   return promoted;
 }
 
-/**
- * Collect all distinct debugger-reported `type` strings from a snapshot.
- *
- * Only **top-level snapshot entries** are considered. Types appearing in
- * NatVis-expanded children are intentionally ignored so that coverage reflects
- * which NatVis rules were exercised by root variables, not by internal or
- * expanded implementation details.
- *
- * @param s
- *   Top-level snapshot entries (typically the promoted roots returned by
- *   `materializeLocalSnapshot`).
- *
- * @returns
- *   Set of unique debugger-reported type names found at the top level.
- */
-export function collectTypesFromSnapshot(
-  s: readonly LocalSnapshot[]
-): Set<string> {
-  const out = new Set<string>();
-
-  for (const v of s) {
-    if (v.type) {
-      out.add(v.type);
-    }
-  }
-
-  return out;
-}
-
 // Decode &lt; &gt; &amp; &quot; &apos; in attribute values
 function decodeXmlEntities(input: string): string {
   const map: Record<string, string> = {
@@ -495,88 +466,6 @@ export async function parseNatvisTypesWithAlternatives(
   } catch {
     return { all, bases, alts, altToBase, extraAliases };
   }
-}
-
-/**
- * Convert a NatVis-style wildcard pattern (using `*`) into a full RegExp.
- *
- * The input pattern is safely regex-escaped, with `*` translated to `.*`,
- * and anchored so that the resulting RegExp matches the entire string.
- *
- * @param pat  Wildcard pattern from a NatVis Type Name or AlternativeType.
- * @returns    RegExp that matches strings covered by the given pattern.
- */
-function wildcardToRegex(pat: string): RegExp {
-  // Escape regex specials except '*', then translate '*' to '.*'
-  const escaped = pat.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-  const rx = '^' + escaped.replace(/\*/g, '.*') + '$';
-  return new RegExp(rx);
-}
-
-/**
- * Determine NatVis coverage based on the types observed in a debugger snapshot.
- *
- * Coverage is evaluated **per NatVis base pattern** (`<Type Name="...">`), not per
- * `AlternativeType`. A base is considered covered if either the base pattern itself
- * or any of its AlternativeType patterns matches at least one observed snapshot type.
- *
- * Alias types listed in `EXTRA_NATVIS_TYPE_ALIASES` are treated as *covered snapshot
- * types* for reporting purposes, but they are **not** NatVis patterns and therefore
- * never participate in “missing NatVis pattern” reporting.
- *
- * @param natvis
- *   Parsed NatVis type information extracted from the `.natvis` file:
- *   - `bases` are the primary `<Type Name="...">` patterns that define coverage.
- *   - `alts` map each base pattern to its declared `<AlternativeType>` patterns.
- *
- * @param seenTypes
- *   Set of snapshot-reported type names (top-level locals only)
- *   observed at runtime after debugger normalization.
- *
- * @returns
- *   An object with:
- *   - `missing`:
- *       Sorted list of NatVis base patterns that were not exercised by the snapshot.
- *       Alias types are never reported here.
- *   - `coveredTypes`:
- *       Set of snapshot-reported type names considered covered by NatVis, including
- *       both pattern-matched types and explicit alias types.
- */
-export function matchNatvisTypePatternsConsideringAlternatives(
-  natvis: NatvisTypes,
-  seenTypes: Set<string>
-): {
-  missing: string[];
-  coveredTypes: Set<string>;
-} {
-  const seen = [...seenTypes];
-  const missing: string[] = [];
-  const coveredTypes = new Set<string>();
-
-  for (const base of natvis.bases) {
-    const candidates = [base, ...(natvis.alts.get(base) ?? [])];
-    const anyMatched = candidates.some((pat) => {
-      const rx = wildcardToRegex(pat);
-      return seen.some((t) => {
-        const ok = rx.test(t);
-        if (ok) {
-          // Mark this seen type as covered by some NatVis pattern
-          coveredTypes.add(t);
-        }
-        return ok;
-      });
-    });
-    if (!anyMatched) missing.push(base);
-  }
-  // --- Alias snapshot types to their underlying NatVis patterns ----
-  for (const aliases of Object.values(EXTRA_NATVIS_TYPE_ALIASES)) {
-    for (const alias of aliases) {
-      if (seenTypes.has(alias)) {
-        coveredTypes.add(alias);
-      }
-    }
-  }
-  return { missing: missing.sort(), coveredTypes };
 }
 
 // ---------------------------------------------------------------------------
