@@ -26,8 +26,6 @@ import {
 import type { DebugVariable } from '../debug-helper.mts';
 import {
   parseNatvisTypesWithAlternatives,
-  collectTypesFromSnapshot,
-  matchNatvisTypePatternsConsideringAlternatives,
   materializeGoldenSnapshot,
   materializeLocalSnapshot
 } from '../debug-golden.mts';
@@ -411,14 +409,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       //   Read NatVis + compute which snapshot types are actually covered
       const natvisPath = nvPath; // you already computed this earlier
       const natvis = await parseNatvisTypesWithAlternatives(natvisPath);
-      const seenTypes = collectTypesFromSnapshot(snapshot);
-
-      // Now returns BOTH:
-      //   - missing: NatVis type patterns not exercised
-      //   - coveredTypes: set of snapshot.type strings that matched some NatVis type
-      const { missing, coveredTypes } =
-        matchNatvisTypePatternsConsideringAlternatives(natvis, seenTypes);
-      void coveredTypes; // review matchNatvisTypePatternsConsideringAlternatives
 
       if (snapshot.length === 0) {
         throw new Error(
@@ -452,7 +442,6 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
           mismatches,
           goodNewsNames,
           natvis,
-          missing,
           natvisPath,
           wsFolder
         });

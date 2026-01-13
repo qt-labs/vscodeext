@@ -49,44 +49,52 @@ export function formatValuePreview(v: unknown, max: number = 200): string {
 }
 
 /**
+ * Print NatVis base patterns that were not exercised by the current snapshot.
+ *
+ * Coverage is derived from the set of NatVis family keys that the status table
+ * computed from snapshot entries (via `computeNatvisFamily(...)`).
+ *
+ * Note: This does not perform wildcard matching against concrete snapshot types.
+ * It only checks whether a NatVis base pattern appears in the computed family set.
+ */
+export function printUncoveredNatvisBases(params: {
+  natvis: NatvisTypes;
+  coveredNatvisFamilies: ReadonlySet<string>;
+}): void {
+  const { natvis, coveredNatvisFamilies } = params;
+
+  const uncoveredBases = [...natvis.bases]
+    .filter((base) => !coveredNatvisFamilies.has(base))
+    .sort((a, b) => a.localeCompare(b));
+
+  const uncoveredLines = uncoveredBases.map((base) => {
+    const alts = natvis.alts.get(base);
+    return alts && alts.size ? `${base} (alts: ${[...alts].join(', ')})` : base;
+  });
+
+  if (uncoveredLines.length > 0) {
+    console.log(
+      '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
+    );
+    for (const lineText of uncoveredLines) {
+      console.log(`  ${lineText}`);
+    }
+  } else {
+    console.log(
+      '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
+    );
+  }
+}
+
+/**
  * Print a human-readable NatVis summary to the test log.
  *
  * This function is purely diagnostic: it does not affect test pass/fail.
+ *
  * It prints:
- * 1) **NatVis patterns not exercised by this snapshot**
- *    - Uses `missing` (from matchNatvisTypePatternsConsideringAlternatives) and `natvis`.
- *    - Prints NatVis base patterns (and their AlternativeType patterns) that did not
- *      appear in the current snapshot.
- *
- *
- * 2) **Status summary table (variable-based)**
- *    - Produced by `printNatvisTypeStatusTable(...)`.
- *    - One row per *top-level variable name* (not one row per Qt type), so
- *      repeated types (e.g. multiple QCborValue variables) appear as separate rows.
- *    - Concrete types are grouped into a NatVis “family” (e.g. QList<int> and
- *      QList<double> grouped under QList<*>).
- *    - Root status codes:
- *        • OK   = value matches golden and entry is not knownProblem
- *        • KP   = entry is marked knownProblem on this platform (assertion disabled)
- *        • KP*  = knownProblem entry that unexpectedly matches (“good news”)
- *        • FAIL = real mismatch, extra variable, or missing expected variable
- *      (Children status is reserved for future Expand/child validation.)
- *
- * Notes:
- * - `goodNewsNames` comes from `findMismatchedSnapshotEntries` and is used only for
- *   reporting KP* progress; it does not change pass/fail behavior.
- * - `natvisPath` + `wsFolder` are used to print a workspace-relative NatVis path.
- * - The old “successful types” / “known-problem types” lists are kept behind
- *   `printOldList` (currently disabled).
- *
- * @param params.natvisSnapshot  Platform-normalized locals after NatVis filtering.
- * @param params.goldenSnapshot  Platform-resolved golden snapshot (with knownProblem applied).
- * @param params.mismatches      Real mismatches returned by the comparison logic.
- * @param params.goodNewsNames   Variable names whose knownProblem unexpectedly matched (KP*).
- * @param params.natvis          Parsed NatVis type information (bases, alts, all).
- * @param params.missing         NatVis base patterns not exercised by this snapshot.
- * @param params.natvisPath      Absolute path to the NatVis file, or undefined.
- * @param params.wsFolder        Workspace folder used to relativize natvisPath.
+ *  - The NatVis file label (workspace-relative if possible)
+ *  - The NatVis status summary table (and the "uncovered NatVis base patterns" list),
+ *    both produced by `printNatvisTypeStatusTable(...)`.
  */
 export function printNatvisSummary(params: {
   natvisSnapshot: readonly Snapshot[];
@@ -94,7 +102,6 @@ export function printNatvisSummary(params: {
   mismatches: readonly SnapshotMismatch[];
   goodNewsNames: ReadonlySet<string>;
   natvis: NatvisTypes;
-  missing: readonly string[];
   natvisPath: string | undefined;
   wsFolder: vscode.WorkspaceFolder;
 }): void {
@@ -104,110 +111,24 @@ export function printNatvisSummary(params: {
     mismatches,
     goodNewsNames,
     natvis,
-    missing,
     natvisPath,
     wsFolder
   } = params;
 
-  // Collect types that actually appeared in the NatVis-filtered snapshot
-  const allCoveredTypes = new Set<string>(
-    natvisSnapshot.map((v) => v.type).filter((t): t is string => Boolean(t))
-  );
-
-  // Collect types that had real mismatches (after filtering known-problems)
-  const mismatchedTypes = new Set<string>();
-  for (const m of mismatches) {
-    const t = (m.actual && m.actual.type) || (m.expected && m.expected.type);
-
-    if (typeof t === 'string') {
-      mismatchedTypes.add(t);
-    }
-  }
-
-  // Collect types that are marked as "knownProblem" in the golden snapshot
-  const problematicTypesInGolden = new Set<string>();
-  const collectKnownProblemTypes = (
-    entries: readonly GoldenSnapshot[]
-  ): void => {
-    for (const e of entries) {
-      if (e.knownProblem && e.type) {
-        problematicTypesInGolden.add(e.type);
-      }
-    }
-  };
-  collectKnownProblemTypes(goldenSnapshot);
-
-  // Collect "Successful" types = covered by NatVis AND not mismatching AND
-  // not flagged as knownProblem in the golden.
-  const successfulTypes = [...allCoveredTypes]
-    .filter((t) => !mismatchedTypes.has(t) && !problematicTypesInGolden.has(t))
-    .sort((a, b) => a.localeCompare(b));
-
-  // ---------------------------------------------------------------------------
-  // Pretty printing of the summary
-  // ---------------------------------------------------------------------------
   let natvisFileLabel: string = natvisPath ?? '<unknown>';
-  const printOldList = false;
-
-  // Print types with defined NatVis patterns but not exercised by this test
-  const missingLines = missing.map((base) => {
-    const alts = natvis.alts.get(base);
-    return alts && alts.size ? `${base} (alts: ${[...alts].join(', ')})` : base;
-  });
-
-  if (missingLines.length > 0) {
-    console.log(
-      '[natvis.summary] Qt types defined in NatVis file but not covered by this test snapshot:'
-    );
-    for (const line of missingLines) {
-      console.log(`  ${line}`);
-    }
-  } else {
-    console.log(
-      '[natvis.summary] All NatVis type patterns in this file were exercised by the current snapshot.'
-    );
-  }
   if (natvisPath) {
     try {
       const rel = path.relative(wsFolder.uri.fsPath, natvisPath);
-      // Normalize to forward slashes for clean display
       natvisFileLabel = rel.replace(/\\/g, '/');
     } catch {
-      // Fallback to raw natvisPath if path.relative fails
       natvisFileLabel = natvisPath;
     }
   }
+
   console.log(
     `[natvis.summary] Using NatVis file ${natvisFileLabel} on ${process.platform}`
   );
-  if (printOldList) {
-    // Print all covered and successful types
-    console.log(
-      `[natvis.summary] Tested Qt types successfully covered by NatVis file ${natvisFileLabel} on ${process.platform}:`
-    );
 
-    if (successfulTypes.length === 0) {
-      console.log('  (none)');
-    } else {
-      for (const t of successfulTypes) {
-        console.log(`  ${t}`);
-      }
-    }
-
-    // Print Known-problem NatVis types (as marked in the golden snapshot)
-    if (problematicTypesInGolden.size > 0) {
-      console.log(
-        `[natvis.summary] Tested Qt types with unsuccessful NatVis coverage on ${process.platform} (marked as knownProblem in the golden snapshot):`
-      );
-      for (const t of [...problematicTypesInGolden].sort()) {
-        console.log(`  ${t}`);
-      }
-    } else {
-      console.log(
-        `[natvis.summary] No golden entries are marked with knownProblem on ${process.platform}.`
-      );
-    }
-  }
   printNatvisTypeStatusTable({
     natvisSnapshot,
     goldenSnapshot,
@@ -445,6 +366,12 @@ function computeNatvisFamily(
  *  - `root`: status of the top-level DisplayString value vs golden.
  *  - `children`: status of Expand children vs golden (not implemented yet, so "-").
  *
+ * In addition to the table, this function also prints **uncovered NatVis base patterns**
+ * (i.e. `<Type Name="...">` entries from the NatVis file that were not exercised by the
+ * current snapshot). Uncovered patterns are derived from the same NatVis family keys
+ * computed for table rows (via `computeNatvisFamily(...)`), and are printed via
+ * `printUncoveredNatvisBases(...)`.
+ *
  * Status semantics (root column):
  *  - OK:  variable exists in both snapshot and golden, is not knownProblem, and
  *         does not appear in the mismatch list.
@@ -500,10 +427,14 @@ export function printNatvisTypeStatusTable(params: {
 
   const rows: Row[] = [];
 
+  const coveredNatvisFamilies = new Set<string>();
+
   for (const a of natvisSnapshot) {
     const varName = a.name;
     const exercisedType = a.type ?? '<none>';
     const natvisType = computeNatvisFamily(exercisedType, natvis);
+
+    coveredNatvisFamilies.add(natvisType);
 
     const g = goldenByName.get(varName);
 
@@ -585,6 +516,8 @@ export function printNatvisTypeStatusTable(params: {
     consider([r.natvisType, r.exercisedType, r.varName, rootLabel, r.children]);
   }
 
+  printUncoveredNatvisBases({ natvis, coveredNatvisFamilies });
+
   const pad = (s: string, w: number) =>
     s + ' '.repeat(Math.max(0, w - s.length));
   const line = (cols: string[]) =>
@@ -602,9 +535,7 @@ export function printNatvisTypeStatusTable(params: {
     );
   }
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
-  console.log(
-    `  (covers variables from snapshot + golden expectations; excludes missing NatVis patterns list)`
-  );
+  console.log(`  (covers variables from snapshot + golden expectations)`);
   console.log('  Columns:');
   console.log(
     '    root     = status of the top-level variable value vs golden'
