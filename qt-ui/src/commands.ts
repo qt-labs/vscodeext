@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import * as child_process from 'child_process';
 /**
  * Exposed reference for integration tests.
@@ -15,16 +16,55 @@ import {
   createLogger,
   CoreKey,
   CORE_EXTENSION_ID,
-  telemetry
+  telemetry,
+  resolveConfiguration
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension';
 import { locateDesignerFromKit } from '@/util';
+import * as consts from '@/constants';
 
 const logger = createLogger('commands');
 
 export async function openWidgetDesigner() {
   telemetry.sendAction('openWidgetDesigner');
   logger.info('Opening Qt Designer');
+
+  // Check custom designer path first
+  const customDesignerPath = vscode.workspace
+    .getConfiguration(consts.EXTENSION_ID)
+    .get<string>(consts.CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH, '');
+
+  if (customDesignerPath) {
+    const resolvedPath = resolveConfiguration(customDesignerPath);
+    if (fs.existsSync(resolvedPath)) {
+      logger.info('Using custom designer path:', resolvedPath);
+      const process = child_process.spawn(resolvedPath, [], {
+        shell: true
+      });
+
+      lastSpawnedDesignerRef.proc = process;
+
+      process.on('error', (err) => {
+        void vscode.window.showErrorMessage(
+          `Error while opening Qt Designer: ${err.message}`
+        );
+      });
+
+      process.stderr.setEncoding('utf8');
+      process.stderr.on('data', (data) => {
+        void vscode.window.showErrorMessage(
+          `Qt Designer error: ${String(data)}`
+        );
+      });
+
+      return;
+    } else {
+      void vscode.window.showWarningMessage(
+        `Custom Qt Designer path not found: ${resolvedPath}`
+      );
+    }
+  }
+
   // Find the latest Qt installation in both global and project settings
   // and run the designer
   const qtInsRoots: string[] = [];
