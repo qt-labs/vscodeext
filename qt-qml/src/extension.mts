@@ -18,6 +18,7 @@ import { registerDownloadQmllsCommand } from '@cmd/download-qmlls.mjs';
 import { registerDebugPort } from '@cmd/debug.mjs';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update.mjs';
 import { getDoNotAskForDownloadingQmlls, Qmlls } from '@/qmlls.mjs';
+import * as installer from '@/installer.mjs';
 import * as consts from '@/constants.js';
 import { QMLProjectManager, createQMLProject } from '@/project.mjs';
 import { registerResetCommand } from '@cmd/reset.mjs';
@@ -37,6 +38,9 @@ const logger = createLogger('extension');
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(consts.EXTENSION_ID);
   telemetry.activate(context);
+
+  installer.initialize(context.globalStorageUri);
+
   projectManager = new QMLProjectManager(context);
   coreAPI = await getCoreApi();
   if (!coreAPI) {

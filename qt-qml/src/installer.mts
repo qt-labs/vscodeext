@@ -7,12 +7,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { spawnSync } from 'child_process';
 
-import {
-  UserLocalDir,
-  OSExeSuffix,
-  fetchWithAbort,
-  createLogger
-} from 'qt-lib';
+import { OSExeSuffix, fetchWithAbort, createLogger } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
 import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
@@ -20,12 +15,27 @@ import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;
 const DownloadDir = os.tmpdir();
-const InstallDir = installerDir();
-const ExtractDir = path.join(InstallDir, 'files');
-const QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
-const ReleaseJsonPath = path.join(InstallDir, 'release.json');
+
+let InstallDir: string;
+let ExtractDir: string;
+let QmllsExePath: string;
+let ReleaseJsonPath: string;
 
 const logger = createLogger('installer');
+
+/**
+ * Initialize the installer with the global storage URI from VS Code extension context.
+ * Must be called before using any other installer functions.
+ * @param globalStorageUri The URI to the extension's global storage directory
+ */
+export function initialize(globalStorageUri: vscode.Uri) {
+  const globalStoragePath = globalStorageUri.fsPath;
+  InstallDir = path.join(globalStoragePath, 'qmlls');
+  ExtractDir = path.join(InstallDir, 'files');
+  QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
+  ReleaseJsonPath = path.join(InstallDir, 'release.json');
+  logger.info(`Installer initialized with path: ${InstallDir}`);
+}
 
 interface Asset {
   id: string;
@@ -35,12 +45,6 @@ interface Asset {
   created_at: string;
 }
 
-function installerDir() {
-  if (!UserLocalDir) {
-    throw new Error('Cannot determine the user local directory');
-  }
-  return path.join(UserLocalDir, 'qmlls');
-}
 export interface AssetWithTag extends Asset {
   tag_name: string;
 }
