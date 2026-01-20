@@ -7,7 +7,12 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { spawnSync } from 'child_process';
 
-import { OSExeSuffix, fetchWithAbort, createLogger } from 'qt-lib';
+import {
+  OSExeSuffix,
+  fetchWithAbort,
+  createLogger,
+  UserLocalDir
+} from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
 import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
@@ -35,6 +40,41 @@ export function initialize(globalStorageUri: vscode.Uri) {
   QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
   ReleaseJsonPath = path.join(InstallDir, 'release.json');
   logger.info(`Installer initialized with path: ${InstallDir}`);
+
+  // Clean up old installation directory that polluted the user file system
+  cleanupOldInstallation();
+}
+
+/**
+ * Removes the old qmlls installation directory from the user's local data directory.
+ * This cleanup is needed because we previously installed qmlls in UserLocalDir/qmlls,
+ * which polluted the user's file system. We now use VS Code's globalStorageUri.
+ */
+function cleanupOldInstallation() {
+  if (!UserLocalDir) {
+    return;
+  }
+
+  const oldInstallDir = path.join(UserLocalDir, 'qmlls');
+
+  // Only attempt cleanup if the old directory exists and is different from the new one
+  if (oldInstallDir === InstallDir) {
+    return;
+  }
+
+  if (fs.existsSync(oldInstallDir)) {
+    try {
+      logger.info(
+        `Removing old qmlls installation directory: ${oldInstallDir}`
+      );
+      fs.rmSync(oldInstallDir, { recursive: true, force: true });
+      logger.info('Old qmlls installation directory removed successfully');
+    } catch (error) {
+      logger.warn(
+        `Failed to remove old qmlls installation directory: ${String(error)}`
+      );
+    }
+  }
 }
 
 interface Asset {
