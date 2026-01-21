@@ -215,6 +215,11 @@ export function showAutoDismissNotification(
   );
 }
 
+export enum FetchAbortReason {
+  UserCancelled = 'UserCancelled',
+  Timeout = 'Timeout'
+}
+
 export async function fetchWithAbort(
   url: string,
   options: { controller: AbortController; timeout?: number }
@@ -225,7 +230,7 @@ export async function fetchWithAbort(
   if (timeout) {
     setTimeout(() => {
       if (!controller.signal.aborted) {
-        controller.abort();
+        controller.abort(FetchAbortReason.Timeout);
       }
     }, timeout);
   }

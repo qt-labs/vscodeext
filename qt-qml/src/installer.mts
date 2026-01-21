@@ -11,7 +11,8 @@ import {
   OSExeSuffix,
   fetchWithAbort,
   createLogger,
-  UserLocalDir
+  UserLocalDir,
+  FetchAbortReason
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
@@ -175,53 +176,83 @@ export async function install(asset: AssetWithTag) {
 }
 
 export async function fetchAssetToInstall(controller: AbortController) {
-  const res = await fetchWithAbort(ReleaseInfoUrl, {
-    controller: controller,
-    timeout: ReleaseInfoTimeout
-  });
-  if (!res) {
-    // Aborted
-    return;
+  try {
+    const res = await fetchWithAbort(ReleaseInfoUrl, {
+      controller: controller,
+      timeout: ReleaseInfoTimeout
+    });
+
+    if (!res) {
+      // Aborted - check the reason
+      const reason = controller.signal.reason as FetchAbortReason;
+      if (reason === FetchAbortReason.Timeout) {
+        void vscode.window.showErrorMessage(
+          'Failed to fetch QML Language Server release information: Request timed out. Please check your network connection and try again.'
+        );
+        logger.warn('Fetching QML Language Server release info timed out');
+      } else {
+        // User cancelled
+        logger.info('User cancelled fetching QML Language Server release info');
+      }
+      return undefined;
+    }
+
+    if (!res.ok) {
+      void vscode.window.showErrorMessage(
+        `Failed to fetch QML Language Server release information: Unexpected HTTP status ${res.status}.`
+      );
+      logger.warn(`Unexpected HTTP status, code = ${res.status.toFixed(0)}`);
+      return undefined;
+    }
+
+    logger.info(`Fetched release info from: ${ReleaseInfoUrl}`);
+
+    const json = (await res.json()) as {
+      tag_name: string;
+      assets: Asset[];
+    };
+
+    let name = '';
+    const platform = process.platform;
+
+    if (platform === 'win32') {
+      name = 'windows';
+    } else if (platform === 'darwin') {
+      name = 'macos';
+    } else if (platform === 'linux') {
+      name = 'ubuntu';
+    } else {
+      throw new Error(`Platform '${platform}' is not supported`);
+    }
+
+    const prefix = `qmlls-${name}`;
+
+    const filtered = json.assets.filter((asset) =>
+      asset.name.startsWith(prefix)
+    );
+    filtered.sort((a, b) => {
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+
+    if (filtered.length === 0) {
+      throw new Error(`Cannot find a package for the platform '${platform}'`);
+    }
+
+    return {
+      tag_name: json.tag_name,
+      ...filtered[0]
+    } as AssetWithTag;
+  } catch (error) {
+    void vscode.window.showErrorMessage(
+      `Failed to fetch QML Language Server release information: ${error instanceof Error ? error.message : String(error)}`
+    );
+    logger.warn(
+      `Network error fetching QML Language Server release info: ${error instanceof Error ? error.message : String(error)}`
+    );
+    return undefined;
   }
-  if (!res.ok) {
-    throw new Error(`Unexpected HTTP status, code = ${res.status.toFixed(0)}`);
-  }
-
-  logger.info(`Fetched release info from: ${ReleaseInfoUrl}`);
-
-  const json = (await res.json()) as {
-    tag_name: string;
-    assets: Asset[];
-  };
-
-  let name = '';
-  const platform = process.platform;
-
-  if (platform === 'win32') {
-    name = 'windows';
-  } else if (platform === 'darwin') {
-    name = 'macos';
-  } else if (platform === 'linux') {
-    name = 'ubuntu';
-  } else {
-    throw new Error(`Platform '${platform}' is not supported`);
-  }
-
-  const prefix = `qmlls-${name}`;
-
-  const filtered = json.assets.filter((asset) => asset.name.startsWith(prefix));
-  filtered.sort((a, b) => {
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-
-  if (filtered.length === 0) {
-    throw new Error(`Cannot find a package for the platform '${platform}'`);
-  }
-
-  return {
-    tag_name: json.tag_name,
-    ...filtered[0]
-  } as AssetWithTag;
 }
 
 async function downloadWithProgress(url: string, destPath: string) {
