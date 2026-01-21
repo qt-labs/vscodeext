@@ -16,9 +16,17 @@ export function registerDownloadQmllsCommand() {
 
       switch (decision.code) {
         case DecisionCode.NeedToUpdate:
-        case DecisionCode.AlreadyUpToDate:
           if (decision.asset) {
-            await Qmlls.install(decision.asset);
+            try {
+              await Qmlls.install(decision.asset);
+              void vscode.window.showInformationMessage(
+                'QML Language Server installed successfully.'
+              );
+            } catch (error) {
+              void vscode.window.showErrorMessage(
+                `Failed to install QML Language Server: ${error instanceof Error ? error.message : String(error)}`
+              );
+            }
           }
           break;
 
