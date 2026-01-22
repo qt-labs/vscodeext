@@ -69,6 +69,8 @@ export class QmlDebugConnectionManager {
     return this._maximumRetries;
   }
   dispose() {
+    this.stopConnectionTimer();
+    this._connectionTimer.disconnect();
     if (this._connection) {
       this._connection.dispose();
     }
