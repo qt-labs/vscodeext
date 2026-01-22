@@ -86,7 +86,7 @@ function startQmlls() {
   // Perform the release check asynchronously in the background
   const shouldCheck = !getDoNotAskForDownloadingQmlls();
   if (shouldCheck) {
-    void Qmlls.checkAssetAndDecide();
+    Qmlls.checkAssetAndDecide();
   }
 }
 
@@ -137,7 +137,7 @@ function processMessage(message: QtWorkspaceConfigMessage) {
     }
     if (updateQmlls) {
       project.updateQmllsParams();
-      void project.qmlls.restart();
+      void project.restartQmlls();
     }
   } catch (e) {
     const err = e as Error;

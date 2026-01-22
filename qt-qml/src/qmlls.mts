@@ -27,6 +27,7 @@ import {
 import { coreAPI, projectManager } from '@/extension.mjs';
 import { EXTENSION_ID } from '@/constants.js';
 import * as installer from '@/installer.mjs';
+import { QmllsOperationType } from '@/qmlls-queue.mjs';
 
 const logger = createLogger('qmlls');
 const QMLLS_CONFIG = `${EXTENSION_ID}.qmlls`;
@@ -120,7 +121,6 @@ export async function fetchAssetAndDecide(options?: {
 }
 
 export class Qmlls {
-  private static _isInstalling = false;
   private _docsPath: string | undefined;
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _importPaths = new Set<string>();
@@ -170,41 +170,33 @@ export class Qmlls {
   }
 
   public static async install(asset: installer.AssetWithTag) {
-    // Prevent concurrent installations
-    if (Qmlls._isInstalling) {
-      logger.info('Installation already in progress, skipping');
-      void vscode.window.showWarningMessage(
-        'QML language server installation is already in progress. Please wait for it to complete.'
-      );
-      return QmllsStatus.stopped;
-    }
+    return projectManager.qmllsQueue.enqueue(QmllsOperationType.Install, () => {
+      try {
+        logger.info('Stopping QML language server to install new version');
+        void projectManager.stopQmlls();
 
-    Qmlls._isInstalling = true;
+        logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
+        void installer.install(asset);
+        logger.info('Installation done');
 
-    try {
-      logger.info('Stopping QML language server to install new version');
-      await projectManager.stopQmlls();
+        projectManager.updateQmllsParams();
+        void projectManager.startQmlls();
+      } catch (error) {
+        logger.warn(isError(error) ? error.message : String(error));
+      }
 
-      logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
-      await installer.install(asset);
-      logger.info('Installation done');
-    } catch (error) {
-      logger.warn(isError(error) ? error.message : String(error));
-    } finally {
-      Qmlls._isInstalling = false;
-    }
-
-    void projectManager.startQmlls();
-    return QmllsStatus.running;
+      return QmllsStatus.running;
+    });
   }
-  public static async checkAssetAndDecide() {
+  public static checkAssetAndDecide() {
     // Do not show the progress bar during the startup
-    const result = await fetchAssetAndDecide({ silent: true });
-    if (result.code === DecisionCode.NeedToUpdate && result.asset) {
-      logger.info('Updating QML language server');
-      return Qmlls.install(result.asset);
-    }
-    return QmllsStatus.stopped;
+    void fetchAssetAndDecide({ silent: true }).then((result) => {
+      if (result.code === DecisionCode.NeedToUpdate && result.asset) {
+        logger.info('Updating QML language server');
+        // Install and start are queued - no need to await
+        void Qmlls.install(result.asset);
+      }
+    });
   }
 
   public async start() {
@@ -429,9 +421,26 @@ export class Qmlls {
     }
   }
 
-  public async restart() {
+  /**
+   * Internal restart method - does not go through the queue.
+   * Use this when already inside a queued operation.
+   */
+  async _restartInternal() {
     await this.stop();
     await this.start();
+  }
+
+  /**
+   * Restart the language server. This goes through the operation queue
+   * to prevent race conditions with install/update operations.
+   */
+  public async restart() {
+    return projectManager.qmllsQueue.enqueue(
+      QmllsOperationType.Restart,
+      async () => {
+        await this._restartInternal();
+      }
+    );
   }
 }
 
