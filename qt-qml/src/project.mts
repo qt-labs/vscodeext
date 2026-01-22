@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import { CoreKey, Project, ProjectManager, createLogger } from 'qt-lib';
 import { Qmlls } from '@/qmlls.mjs';
 import { coreAPI } from '@/extension.mjs';
+import { QmllsOperationQueue, QmllsOperationType } from '@/qmlls-queue.mjs';
 
 const logger = createLogger('project');
 
@@ -17,35 +18,72 @@ export async function createQMLProject(
 }
 
 export class QMLProjectManager extends ProjectManager<QMLProject> {
+  private readonly _qmllsQueue = new QmllsOperationQueue();
+
   constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createQMLProject);
     this.onProjectAdded((project) => {
       logger.info('Adding project:', project.folder.uri.fsPath);
       project.getConfigValues();
       project.updateQmllsParams();
-      void project.qmlls.start();
+      void this.startQmllsForProject(project);
     });
   }
+
+  /**
+   * Get the QMLLS operation queue for serializing operations.
+   */
+  get qmllsQueue() {
+    return this._qmllsQueue;
+  }
+
+  /**
+   * Start qmlls for a single project through the queue.
+   */
+  private async startQmllsForProject(project: QMLProject) {
+    return this._qmllsQueue.enqueue(QmllsOperationType.Start, async () => {
+      await project.qmlls.start();
+    });
+  }
+
+  /**
+   * Stop all qmlls instances. This is called internally during install,
+   * so it does NOT go through the queue to avoid deadlock.
+   */
   async stopQmlls() {
-    const promises = [];
-    for (const project of this.getProjects()) {
-      promises.push(project.qmlls.stop());
-    }
-    return Promise.all(promises);
+    return this._qmllsQueue.enqueue(QmllsOperationType.Stop, async () => {
+      const promises = [];
+      for (const project of this.getProjects()) {
+        promises.push(project.qmlls.stop());
+      }
+      return Promise.all(promises);
+    });
   }
+
+  /**
+   * Start all qmlls instances through the queue.
+   */
   async startQmlls() {
-    const promises = [];
-    for (const project of this.getProjects()) {
-      promises.push(project.qmlls.start());
-    }
-    return Promise.all(promises);
+    return this._qmllsQueue.enqueue(QmllsOperationType.Start, async () => {
+      const promises = [];
+      for (const project of this.getProjects()) {
+        promises.push(project.qmlls.start());
+      }
+      return Promise.all(promises);
+    });
   }
+
+  /**
+   * Restart all qmlls instances through the queue.
+   */
   async restartQmlls() {
-    const promises = [];
-    for (const project of this.getProjects()) {
-      promises.push(project.qmlls.restart());
-    }
-    return Promise.all(promises);
+    return this._qmllsQueue.enqueue(QmllsOperationType.Restart, async () => {
+      const promises = [];
+      for (const project of this.getProjects()) {
+        promises.push(project.qmlls._restartInternal());
+      }
+      return Promise.all(promises);
+    });
   }
   updateQmllsParams() {
     for (const project of this.getProjects()) {
@@ -82,6 +120,13 @@ export class QMLProject implements Project {
   }
   async startQmlls() {
     return this.qmlls.start();
+  }
+
+  /**
+   * Restart qmlls for this project (goes through the queue).
+   */
+  async restartQmlls() {
+    return this.qmlls.restart();
   }
   get qtpathsExe() {
     return this._qtpathsExe;
