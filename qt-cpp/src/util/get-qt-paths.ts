@@ -3,6 +3,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import type { Dirent } from 'fs';
 
 import * as fsutil from '@util/fs';
 import { OSExeSuffix, IsMacOS } from 'qt-lib';
@@ -76,7 +77,15 @@ export async function locateNinjaExecutable(qtRootDir: string) {
 export async function locateMingwBinDirPath(qtRootDir: string) {
   // TODO: check if g++ exists in PATH already
   const qtToolsDir = qtToolsDirByQtRootDir(qtRootDir);
-  const items = await fs.readdir(qtToolsDir, { withFileTypes: true });
+  let items: Dirent[];
+  try {
+    items = await fs.readdir(qtToolsDir, { withFileTypes: true });
+  } catch (err: unknown) {
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      return undefined;
+    }
+    throw err;
+  }
   const mingws = items.filter((item) =>
     item.name.toLowerCase().startsWith('mingw')
   );
