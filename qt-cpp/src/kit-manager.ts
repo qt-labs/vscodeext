@@ -505,8 +505,6 @@ export class KitManager {
   ) {
     const promiseCmakeQtToolchainPath =
       qtPath.locateCMakeQtToolchainFile(installation);
-
-    const promiseMingwPath = qtPath.locateMingwBinDirPath(qtInsRoot);
     let qtPathEnv = KitManager.generateEnvPathForQtInstallation(installation);
     let locatedNinjaExePath = '';
     if (!commandExists.sync('ninja')) {
@@ -555,7 +553,7 @@ export class KitManager {
         );
         return;
       } else if (platform.startsWith('mingw')) {
-        const mingwDirPath = await promiseMingwPath;
+        const mingwDirPath = await qtPath.locateMingwBinDirPath(qtInsRoot);
         logger.info(`Mingw dir path: ${mingwDirPath}`);
         if (mingwDirPath) {
           newKit.environmentVariables.PATH = [
