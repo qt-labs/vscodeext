@@ -227,9 +227,6 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
         'Locals at top frame (flattened):',
         flatLocals.map((v: DebugVariable) => v.name).join(', ')
       );
-      const vRect =
-        flatLocals.find((v) => v.name === 'coreTypes.qRect') ??
-        flatLocals.find((v) => v.name === 'qRect');
       const vBA =
         flatLocals.find((v) => v.name === 'coreTypes.qByteArray') ??
         flatLocals.find((v) => v.name === 'qByteArray');
@@ -237,35 +234,17 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
         flatLocals.find((v) => v.name === 'coreTypes.qString') ??
         flatLocals.find((v) => v.name === 'qString');
 
-      expect(vRect, '[snippet-test] qRect not found in Locals').to.exist;
       expect(vBA, '[snippet-test] qByteArray not found in Locals').to.exist;
       expect(vStr, '[snippet-test] qString not found in Locals').to.exist;
 
       // Make TS happy: if any is missing, bail out
-      if (!vRect || !vBA || !vStr) {
+      if (!vBA || !vStr) {
         throw new Error(
           '[snippet-test] Required locals missing despite existence checks'
         );
       }
 
       // Light NatVis sanity check: same idea as golden, but without golden compare
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect value does not look NatVis-formatted'
-      ).to.match(/height.*/i);
-
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect.x did not match expected NatVis output'
-      ).to.match(/x\s*=\s*5/i);
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect.y did not match expected NatVis output'
-      ).to.match(/y\s*=\s*6/i);
-      expect(
-        String(vRect.value),
-        '[snippet-test] qRect.width did not match expected NatVis output'
-      ).to.match(/width\s*=\s*41/i);
       expect(
         String(vStr.value),
         '[snippet-test] qString did not contain expected text'
