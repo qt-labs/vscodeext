@@ -843,6 +843,145 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       win32:
         'QHostAddress NatVis has no DisplayString; debugger reports undefined.'
     }
+  },
+  {
+    name: 'guiTypes.qImageArgb32',
+    type: 'QImage',
+    value: '4x3',
+    knownProblem: {
+      darwin:
+        'LLDB does not reliably apply the QImage NatVis DisplayString on macOS; ' +
+        'it often falls back to an opaque "{...}" representation instead of the ' +
+        'expected "{width}x{height}" summary.',
+      linux:
+        'GDB does not reliably apply the QImage NatVis DisplayString on Linux; ' +
+        'the value may remain empty instead of showing the expected ' +
+        '"{width}x{height}" summary.',
+      win32:
+        'The QImage NatVis DisplayString is not reliably applied; ' +
+        'the debugger often reports the image as "empty" instead of showing the ' +
+        'expected "{width}x{height}" summary.'
+    }
+  },
+  {
+    name: 'guiTypes.qPixmap',
+    type: 'QPixmap',
+    value: '4x3',
+    knownProblem: {
+      darwin:
+        'LLDB does not reliably apply the QPixmap NatVis DisplayString on macOS; ' +
+        'it often falls back to an opaque "{...}" representation instead of the ' +
+        'expected "{width}x{height}" summary.',
+      linux:
+        'GDB does not reliably apply the QPixmap NatVis DisplayString on Linux; ' +
+        'the value may remain empty instead of showing the expected ' +
+        '"{width}x{height}" summary.',
+      win32:
+        'The QPixmap NatVis DisplayString is not reliably applied; ' +
+        'the debugger falls back to an internal "{data={...}}" representation ' +
+        'instead of the expected "{width}x{height}" summary.'
+    }
+  },
+  {
+    name: 'guiTypes.qPolygon',
+    type: 'QPolygon',
+    value: '{ size=4 }',
+    knownProblem: {
+      darwin:
+        'LLDB NatVis evaluation for QPolygon is unstable on macOS: the rule relies ' +
+        "on accessing the internal 'd' pointer, but LLDB reports 'Multiple internal " +
+        "symbols found for d', producing an evaluation error instead of the " +
+        "'{ size=N }' summary."
+    }
+  },
+  {
+    name: 'guiTypes.qPolygonF',
+    type: 'QPolygonF',
+    value: '{ size=4 }',
+    knownProblem: {
+      darwin:
+        'LLDB NatVis evaluation for QPolygonF is unstable on macOS: the rule relies ' +
+        "on accessing the internal 'd' pointer, but LLDB reports 'Multiple internal " +
+        "symbols found for d', producing an evaluation error instead of the " +
+        "'{ size=N }' summary."
+    }
+  },
+  {
+    name: 'guiTypes.qVector2D',
+    type: 'QVector2D',
+    value: '(1, 2)',
+    knownProblem: {
+      darwin:
+        'On macOS, LLDB sometimes does not apply the QVector2D NatVis DisplayString ' +
+        'and falls back to a raw field view instead of the expected "(x, y)" ' +
+        'summary.',
+      linux:
+        'On Linux, GDB does not consistently apply the QVector2D NatVis DisplayString ' +
+        'and falls back to a raw field-based representation instead of the expected ' +
+        '"(x, y)" summary.',
+      win32:
+        'The QVector2D NatVis DisplayString is not applied; ' +
+        'the debugger shows the raw field-based representation instead of the ' +
+        'expected "(x, y)" summary.'
+    }
+  },
+  {
+    name: 'guiTypes.qVector3D',
+    type: 'QVector3D',
+    value: '(1, 2, 3)',
+    knownProblem: {
+      darwin:
+        'On macOS, LLDB sometimes does not apply the QVector3D NatVis DisplayString ' +
+        'and falls back to a raw field view instead of the expected "(x, y, z)" ' +
+        'summary.',
+      linux:
+        'On Linux, GDB does not consistently apply the QVector3D NatVis DisplayString ' +
+        'and falls back to a raw field-based representation instead of the expected ' +
+        '"(x, y, z)" summary.',
+      win32:
+        'The QVector3D NatVis DisplayString is not applied; ' +
+        'the debugger shows the raw field-based representation instead of the ' +
+        'expected "(x, y, z)" summary.'
+    }
+  },
+  {
+    name: 'guiTypes.qVector4D',
+    type: 'QVector4D',
+    value: '(1, 2, 3, 4)',
+    knownProblem: {
+      darwin:
+        'On macOS, LLDB sometimes does not apply the QVector4D NatVis DisplayString ' +
+        'and falls back to a raw field view instead of the expected "(x, y, z, w)" ' +
+        'summary.',
+      linux:
+        'On Linux, GDB does not consistently apply the QVector4D NatVis DisplayString ' +
+        'and falls back to a raw field-based representation instead of the expected ' +
+        '"(x, y, z, w)" summary.',
+      win32:
+        'On Windows CI, the QVector4D NatVis DisplayString is not applied; ' +
+        'the debugger shows the raw field-based representation instead of the ' +
+        'expected "(x, y, z, w)" summary.'
+    }
+  },
+  {
+    name: 'guiTypes.qMatrix4x4',
+    type: 'QMatrix4x4',
+    value: '{ m11 = 2, m12 = 0, m13 = 0, m14 = 1, ... }'
+  },
+  {
+    name: 'guiTypes.qMatrix2x2',
+    type: 'QMatrix2x2',
+    value: 'Columns: [2], Rows: [2]',
+    knownProblem: {
+      darwin:
+        'LLDB does not support NatVis template-parameter tokens ($T1/$T2) in DisplayString for ' +
+        'QGenericMatrix<*,*,*> (and its aliases like QMatrix2x2). Evaluation errors occur, so the ' +
+        'debugger falls back to "undefined" instead of the "Columns/Rows" summary.',
+      linux:
+        'GDB fails to substitute QGenericMatrix<*,*,*> template parameters ($T1/$T2) when ' +
+        'evaluating the DisplayString for aliases like QMatrix2x2, so the placeholders ' +
+        'render as "void" (Columns: [void], Rows: [void]) instead of the expected dimensions.'
+    }
   }
 ] as const;
 
