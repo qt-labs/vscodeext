@@ -67,16 +67,19 @@ function main() {
   }
   const isQtcpp = targetExtension.includes('qt-cpp');
   const isEven = (num: number) => num % 2 === 0;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   const parsedVersion = semver.parse(version);
   if (parsedVersion === null) {
     throw new Error(`Invalid version: ${version}`);
   }
-  if (isEven(parsedVersion.minor) && preRelease) {
+
+  const minor: number = (parsedVersion as { minor: number }).minor;
+  if (isEven(minor) && preRelease) {
     throw new Error(
       `Cannot publish pre-release version for even minor version: ${version}`
     );
   }
-  if (!isEven(parsedVersion.minor) && !preRelease) {
+  if (!isEven(minor) && !preRelease) {
     throw new Error(
       `Cannot publish stable version for odd minor version: ${version}`
     );

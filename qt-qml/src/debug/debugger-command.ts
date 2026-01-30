@@ -13,10 +13,8 @@ export class DebuggerCommand {
   get function() {
     return this._func;
   }
-  arg<T>(name: string, value: T) {
-    if (this._args === null) {
-      this._args = {};
-    }
+  arg(name: string, value: unknown) {
+    this._args ??= {};
     this._args = addtoJson(this._args, name, value);
     return this;
   }
@@ -26,7 +24,7 @@ export class DebuggerCommand {
 }
 
 // addToJsonObject equivalent
-function addtoJson<T>(args: object, key: string, value: T) {
+function addtoJson(args: object, key: string, value: unknown) {
   const newJson = { ...args, [key]: value };
   return newJson;
 }

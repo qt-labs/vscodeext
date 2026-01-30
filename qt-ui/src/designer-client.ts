@@ -32,7 +32,7 @@ export class DesignerClient {
         })
         .on('exit', (number) => {
           this.process = undefined;
-          logger.info('Designer client exited with code:' + number);
+          logger.info('Designer client exited with code:' + String(number));
         })
         .on('error', () => {
           this.process = undefined;
@@ -41,7 +41,7 @@ export class DesignerClient {
             'Exe:' +
             designerExePath +
             'Port:' +
-            designerServerPort;
+            String(designerServerPort);
           logger.error(message);
           throw new Error(message);
         });

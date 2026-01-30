@@ -53,7 +53,7 @@ async function main() {
   const initialText = `Third-Party Notices${EOL}${EOL}This file contains the licenses for third-party software used in this product.${EOL}`;
   append(initialText);
   const entries = Object.entries(outputJSON);
-  console.log(`Found ${entries.length} third-party dependencies`);
+  console.log(`Found ${String(entries.length)} third-party dependencies`);
   for (const [name, license] of entries.sort()) {
     if (excludeList.some((excluded) => name.includes(excluded))) {
       continue;
@@ -62,9 +62,10 @@ async function main() {
     append(
       `---------------------------------------------------------${EOL}${EOL}`
     );
-    const version = name.split('@').pop();
+    const version = name.split('@').pop() ?? '';
     const nameWithoutVersion = name.replace(`@${version}`, '');
-    const nameWithoutVersionAndPublisher = nameWithoutVersion.split('/').pop();
+    const nameWithoutVersionAndPublisher =
+      nameWithoutVersion.split('/').pop() ?? '';
 
     append(
       `${nameWithoutVersionAndPublisher} ${version} - ${license.licenses}${EOL}`
@@ -72,8 +73,8 @@ async function main() {
     append(`${license.repository}#readme${EOL}${EOL}`);
 
     if (
-      !license.licenseFile ||
-      !license.licenseFile.toLocaleLowerCase().includes('license')
+      license.licenseFile &&
+      !license.licenseFile.toLowerCase().includes('license')
     ) {
       const possibleLicenseFileNames = [
         'license',
@@ -104,7 +105,7 @@ async function main() {
               found = true;
               break;
             }
-          } catch (error) {
+          } catch {
             // Ignore errors, continue to next possible file or branch
           }
         }

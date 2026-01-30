@@ -290,7 +290,7 @@ export class QmlDebugConnection {
     }
   }
   close() {
-    if (this._device && this._device.readyState === 'open') {
+    if (this._device?.readyState === 'open') {
       this._device.destroy();
     }
   }
@@ -313,7 +313,7 @@ export class QmlDebugConnection {
       this.protocolReadyRead();
     });
     this._device.on('error', (error: Error) => {
-      logger.error('Cannot connect to host:' + error.stack);
+      logger.error('Cannot connect to host:' + (error.stack ?? ''));
       this.socketDisconnected();
     });
     this._device.on('connect', () => {
@@ -324,7 +324,7 @@ export class QmlDebugConnection {
       logger.info('Socket closed');
       this.socketDisconnected();
     });
-    this._device.connect(port, host ? host : 'localhost');
+    this._device.connect(port, host ?? 'localhost');
   }
   async socketConnected() {
     const packet = new Packet();
@@ -449,7 +449,9 @@ export class QmlDebugConnection {
             }
           }
         } else {
-          logger.warn('QML Debug Client: Unknown control message id' + op);
+          logger.warn(
+            'QML Debug Client: Unknown control message id' + String(op)
+          );
         }
       } else {
         const client = this._plugins.get(name);
@@ -623,6 +625,6 @@ export class DebugMessageClient
   }
   override stateChanged(_state: QmlDebugConnectionState) {
     void this;
-    logger.info('DebugMessages: stateChanged:' + _state);
+    logger.info('DebugMessages: stateChanged:' + String(_state));
   }
 }

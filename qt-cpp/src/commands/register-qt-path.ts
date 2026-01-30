@@ -44,9 +44,7 @@ export async function getActiveFolder() {
   return vscode.workspace.getWorkspaceFolder(vscode.Uri.file(activeFolder));
 }
 async function getSelectedKitName(folder?: vscode.WorkspaceFolder) {
-  if (folder === undefined) {
-    folder = await getActiveFolder();
-  }
+  folder ??= await getActiveFolder();
   const selectedKit = await vscode.commands.executeCommand<string>(
     'cmake.buildKit',
     folder
@@ -61,9 +59,7 @@ export async function getSelectedKit(
   folder?: vscode.WorkspaceFolder,
   silent = false
 ) {
-  if (folder === undefined) {
-    folder = await getActiveFolder();
-  }
+  folder ??= await getActiveFolder();
   const selectedKitName = await getSelectedKitName(folder);
   if (selectedKitName === undefined) {
     if (!silent) {

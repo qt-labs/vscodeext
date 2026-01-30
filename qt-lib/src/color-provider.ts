@@ -78,7 +78,7 @@ function parseQtRgba(document: vscode.TextDocument) {
 }
 
 function hexToColor(hex: string | undefined): vscode.Color | undefined {
-  if (!hex || !hex.startsWith('#')) {
+  if (!hex?.startsWith('#')) {
     return undefined;
   }
 

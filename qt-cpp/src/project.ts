@@ -102,9 +102,7 @@ export class CppProject implements Project {
       logger.info('Using Kit configuration');
       this._type = CppProjectType.Kit;
     }
-    logger.info(
-      `Project type for ${this._folder.uri.fsPath} is ${this._type.toString()}`
-    );
+    logger.info(`Project type for ${this._folder.uri.fsPath} is ${this._type}`);
     const onSelectedConfigurationChangedHandler =
       this._cmakeProject.onSelectedConfigurationChanged(
         async (configurationType: cmakeApi.ConfigurationType) => {
@@ -147,7 +145,7 @@ export class CppProject implements Project {
       `Selected configuration changed: ${configurationType.toString()} for project: ${this._folder.uri.fsPath}`
     );
     logger.info(
-      `useCMakePresets: ${this._cmakeProject?.useCMakePresets} for project: ${this._folder.uri.fsPath}`
+      `useCMakePresets: ${String(this._cmakeProject?.useCMakePresets)} for project: ${this._folder.uri.fsPath}`
     );
     switch (configurationType) {
       case cmakeApi.ConfigurationType.Kit:
@@ -177,7 +175,7 @@ export class CppProject implements Project {
       coreAPI?.setValue(this.folder, key, value);
       message.config.add(key);
       logger.info(
-        `Setting ${key} for ${this.folder.uri.fsPath} to ${typeof value === 'object' ? JSON.stringify(value) : value}`
+        `Setting ${key} for ${this.folder.uri.fsPath} to ${typeof value === 'object' ? JSON.stringify(value) : (value ?? '')}`
       );
     }
     coreAPI?.notify(message);
@@ -690,7 +688,7 @@ export class CppProject implements Project {
       coreAPI.setValue(this.folder, key, value);
       message.config.add(key);
       logger.info(
-        `Setting ${key} for ${this.folder.uri.fsPath} to ${typeof value === 'object' ? JSON.stringify(value) : value}`
+        `Setting ${key} for ${this.folder.uri.fsPath} to ${typeof value === 'object' ? JSON.stringify(value) : (value ?? '')}`
       );
     }
     coreAPI.notify(message);

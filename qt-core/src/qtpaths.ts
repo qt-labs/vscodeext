@@ -79,7 +79,9 @@ export function checkQtpathsInEnvPath(): void {
     logger.info(`${qtPath.path} already exists in the settings`);
     return;
   }
-  logger.info(`Added ${qtPath.path} to the settings with name: ${qtPath.name}`);
+  logger.info(
+    `Added ${qtPath.path} to the settings with name: ${qtPath.name ?? ''}`
+  );
   addQtPathToSettings(qtPath);
   telemetry.sendConfig('qtpathsFromEnvPath');
 }
@@ -94,9 +96,7 @@ export function addQtPathToSettings(qtPath: QtAdditionalPath) {
   if (!info) {
     throw new Error(`Failed to get Qt info for ${qtPath.path}`);
   }
-  if (!qtPath.name) {
-    qtPath.name = generateDefaultQtPathsName(info);
-  }
+  qtPath.name ??= generateDefaultQtPathsName(info);
   const valueToAdd = { name: qtPath.name, path: qtPath.path };
   if (additionalQtPaths?.globalValue) {
     additionalQtPaths.globalValue.push(valueToAdd);

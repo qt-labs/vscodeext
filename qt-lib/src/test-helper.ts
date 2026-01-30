@@ -32,6 +32,7 @@ export function assertAllDependenciesAreActive(packageJson: PackageJson): void {
 
   for (const extensionId of dependencies) {
     const isActive = vscode.extensions.getExtension(extensionId)?.isActive;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     expect(isActive, `Dependency not active: ${extensionId}`).to.be.true;
   }
 }

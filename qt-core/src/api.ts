@@ -39,7 +39,7 @@ export class CoreAPIImpl implements CoreAPI {
   private static obtainArch(content: string) {
     const keysToCheck = ['QT_ARCHS', 'QT_TARGET_ARCH', 'QT_ARCH'];
     for (const k of keysToCheck) {
-      const match = content.match(new RegExp(`${k}\\s*\\=\\s*(.*)`));
+      const match = new RegExp(`${k}\\s*\\=\\s*(.*)`).exec(content);
       if (match) {
         return match[1];
       }
@@ -77,7 +77,7 @@ export class CoreAPIImpl implements CoreAPI {
       'QT_MSVC_PATCH_VERSION'
     ];
     for (const k of keysToCheck) {
-      const match = content.match(new RegExp(`${k}\\s*\\=\\s*(.*)`));
+      const match = new RegExp(`${k}\\s*\\=\\s*(.*)`).exec(content);
       if (match) {
         if (k === 'QT_MSVC_MAJOR_VERSION') {
           ret.major = parseInt(match[1] ?? '-1');
@@ -113,7 +113,8 @@ export class CoreAPIImpl implements CoreAPI {
     }
   }
 
-  getValue<T>(
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  getValue<T = unknown>(
     folder: vscode.WorkspaceFolder | string,
     key: string
   ): T | undefined {

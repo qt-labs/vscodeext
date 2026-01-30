@@ -535,8 +535,10 @@ export interface SnapshotBase<TChildConfig> {
  *   - value is a single string,
  *   - children are also platform-resolved Snapshot values.
  */
-export interface Snapshot
-  extends Omit<SnapshotBase<Snapshot>, 'value' | 'children'> {
+export interface Snapshot extends Omit<
+  SnapshotBase<Snapshot>,
+  'value' | 'children'
+> {
   readonly value?: string;
   readonly children?: readonly Snapshot[];
 }
@@ -576,11 +578,10 @@ export interface GoldenEntryInput //<TChildConfig>
  *   - platform field is gone
  *   - children are also GoldenSnapshot values
  */
-export interface GoldenSnapshot
-  extends Omit<
-    GoldenEntryInput,
-    'platform' | 'value' | 'children' | 'knownProblem'
-  > {
+export interface GoldenSnapshot extends Omit<
+  GoldenEntryInput,
+  'platform' | 'value' | 'children' | 'knownProblem'
+> {
   readonly value?: string;
   readonly children?: readonly Snapshot[];
   readonly knownProblem?: string;

@@ -30,7 +30,9 @@ export function registerDownloadQmllsCommand() {
           }
           break;
 
-        default:
+        case DecisionCode.AlreadyUpToDate:
+        case DecisionCode.UserDeclined:
+        case DecisionCode.ErrorOccured:
           break;
       }
     }

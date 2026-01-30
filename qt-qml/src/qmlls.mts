@@ -268,11 +268,9 @@ export class Qmlls {
     const verboseOutput = configs.get<boolean>('verboseOutput', false);
     const traceLsp = configs.get<string>('traceLsp', 'off');
 
-    if (!this._channel) {
-      this._channel = vscode.window.createOutputChannel(
-        `QML Language Server - ${this._folder.name}`
-      );
-    }
+    this._channel ??= vscode.window.createOutputChannel(
+      `QML Language Server - ${this._folder.name}`
+    );
     let args: string[] = [];
     const customArgs = configs.get<string[]>('customArgs', []);
     if (customArgs.length > 0) {
@@ -516,7 +514,7 @@ function createErrorString(e: Error): string {
   };
 
   return (
-    casted.path +
+    (casted.path ?? '') +
     ', ' +
     `${KnownErrors[casted.code] ?? 'Error'} (${casted.code})`
   );

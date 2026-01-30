@@ -54,7 +54,7 @@ export async function onInstallPySide6Command() {
     selected.folder,
     'Check installation status: ',
     `result = ${result.status}, `,
-    `version = ${result.pysideVersion}`
+    `version = ${result.pysideVersion ?? ''}`
   );
 
   void showMessageOrInstall(result);
@@ -214,7 +214,8 @@ async function tryInstallPySide(
           }
           return;
 
-        default:
+        case 'download':
+        case undefined:
           return;
       }
 
@@ -232,7 +233,7 @@ async function tryInstallPySide(
           env.venvName ?? ''
         )
       );
-    } catch (e) {
+    } catch {
       void vscode.window.showWarningMessage(
         texts.install.popup.installFailed(folder.name) + ` (${linkShowLogs})`
       );
@@ -316,7 +317,7 @@ async function getLocalPackageInfo(insRoot: string, env: PySideEnv) {
       });
 
     return pickerItems;
-  } catch (err) {
+  } catch {
     return [];
   }
 }

@@ -12,7 +12,7 @@ let qtcliExePath: string | undefined;
 const logger = createLogger('qtcli-runner');
 
 export async function startQtcliServer(extensionUri: vscode.Uri) {
-  qtcliExePath ||= await findQtcliExePath(extensionUri);
+  qtcliExePath ??= await findQtcliExePath(extensionUri);
   if (!qtcliExePath) {
     logger.error('Cannot locate qtcli executable');
     return;
@@ -45,7 +45,7 @@ async function runQtcli(
         return;
       }
 
-      reject(new Error(`Process exited with code ${code}`));
+      reject(new Error(`Process exited with code ${String(code)}`));
     });
   });
 

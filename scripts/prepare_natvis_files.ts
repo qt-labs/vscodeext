@@ -55,7 +55,7 @@ function processNatvisFiles(): boolean {
   if (fs.existsSync(timestampFilePath)) {
     try {
       lastRunTime = parseInt(fs.readFileSync(timestampFilePath, 'utf8'));
-    } catch (_) {
+    } catch {
       // This is fine. The script probably runs for the first time.
     }
   }

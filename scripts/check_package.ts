@@ -57,7 +57,7 @@ function main() {
   console.log('Checking for missing dependencies...');
   try {
     execSync('npm ls');
-  } catch (error) {
+  } catch {
     const errorMessage =
       "Missing dependencies found. Please run 'npm install' to install missing dependencies.";
     console.error(errorMessage);

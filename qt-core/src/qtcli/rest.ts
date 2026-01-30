@@ -55,8 +55,8 @@ export class QtcliRestClient {
     } catch (e) {
       if (remainingRetries > 0) {
         console.log(
-          `Retrying '${req.method?.toUpperCase()} ${req.url}' ` +
-            `in ${this._retryDelay}ms...`
+          `Retrying '${req.method?.toUpperCase() ?? ''} ${req.url ?? ''}' ` +
+            `in ${String(this._retryDelay)}ms...`
         );
 
         await new Promise((resolve) => setTimeout(resolve, this._retryDelay));

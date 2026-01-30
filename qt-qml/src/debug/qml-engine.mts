@@ -156,8 +156,7 @@ interface QmlResponseBodySetBreakpoint {
   actual_locations?: number[];
 }
 
-interface QmlSetBreakpointResponse
-  extends QmlResponse<QmlResponseBodySetBreakpoint> {
+interface QmlSetBreakpointResponse extends QmlResponse<QmlResponseBodySetBreakpoint> {
   command: 'breakpoint';
 }
 
@@ -314,7 +313,11 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       Timer.singleShot(0, cb);
     }
   }
-  runCommand<T>(command: DebuggerCommand, cb?: (response: T) => void) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  runCommand<T = unknown>(
+    command: DebuggerCommand,
+    cb?: (response: T) => void
+  ) {
     ++this._sequence;
     const object = {
       type: 'request',
@@ -323,7 +326,10 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       arguments: command.args
     };
     if (cb) {
-      this._callbackForToken.set(this._sequence, cb);
+      this._callbackForToken.set(
+        this._sequence,
+        cb as (response: unknown) => void
+      );
     }
     const msg = new Packet();
     msg.writeJsonUTF8(object);
@@ -772,7 +778,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
   async getThisVariable() {
     const exp = 'this';
     const response = await this.evaluate(exp);
-    if (!response || !response.success) {
+    if (!response?.success) {
       return undefined;
     }
     const rawThisVariable = response.body;
@@ -1040,22 +1046,22 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     switch (newState) {
       case QmlDebugConnectionState.Unavailable:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'unavailable'.`
+          `Status of "${service}" Version: ${String(version)} changed to 'unavailable'.`
         );
         break;
       case QmlDebugConnectionState.Enabled:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'enabled'.`
+          `Status of "${service}" Version: ${String(version)} changed to 'enabled'.`
         );
         break;
       case QmlDebugConnectionState.NotConnected:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'not connected'.`
+          `Status of "${service}" Version: ${String(version)} changed to 'not connected'.`
         );
         break;
       case QmlDebugConnectionState.Connected:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'connected'.`
+          `Status of "${service}" Version: ${String(version)} changed to 'connected'.`
         );
         break;
     }
@@ -1162,7 +1168,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     this.notifyEngineSetupOk();
 
     if (this.state !== DebuggerState.EngineRunRequested) {
-      throw new Error('Unexpected state:' + this.state);
+      throw new Error('Unexpected state:' + String(this.state));
     }
     void this.ui.showWaitingForDebugger(this.server.port.toString());
     if (this._startMode === DebuggerStartMode.AttachToQmlServer) {
@@ -1253,7 +1259,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     logger.info('NOTE: ENGINE SETUP OK');
 
     if (this.state !== DebuggerState.EngineSetupRequested) {
-      throw new Error('Unexpected state:' + this.state);
+      throw new Error('Unexpected state:' + String(this.state));
     }
     this.setState(DebuggerState.EngineRunRequested);
   }

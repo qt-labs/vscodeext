@@ -124,9 +124,7 @@ export async function openWidgetDesigner() {
   const groupedQtInstallations: Record<string, string[]> = {};
   for (const qtInstallation of uniqueQtInstallations) {
     const version = getInstallationVersion(qtInstallation);
-    if (!groupedQtInstallations[version]) {
-      groupedQtInstallations[version] = [];
-    }
+    groupedQtInstallations[version] ??= [];
     groupedQtInstallations[version].push(qtInstallation);
   }
   // convert groupedQtInstallations to array<<version, locatedPath>>

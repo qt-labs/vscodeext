@@ -35,11 +35,7 @@ export class WebviewChannel {
     return this._onDidReceiveMessage.event;
   }
 
-  public post(
-    id: CommandId,
-    payload: unknown,
-    tag: string | undefined = undefined
-  ) {
+  public post(id: CommandId, payload: unknown, tag?: string) {
     void this._view.postMessage({ id, payload, tag });
   }
 

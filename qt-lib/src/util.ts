@@ -170,7 +170,7 @@ export function matchesVersionPattern(installationPath: string): boolean {
 }
 
 export function isPathToQtPathsOrQMake(filePath: string): boolean {
-  return filePath.match(/(qtpaths|qmake)[0-9]?(\.(exe|bat|EXE|BAT))?$/)
+  return /(qtpaths|qmake)[0-9]?(\.(exe|bat|EXE|BAT))?$/.exec(filePath)
     ? true
     : false;
 }
@@ -179,7 +179,7 @@ export function generateDefaultQtPathsName(qtInfo: QtInfo): string {
   const qtVersion = qtInfo.get('QT_VERSION');
   const targetMkSpec = qtInfo.get('QMAKE_XSPEC');
   const vcpkg = qtInfo.isVCPKG ? 'vcpkg-' : '';
-  return 'Qt-' + vcpkg + qtVersion + '-' + targetMkSpec;
+  return 'Qt-' + vcpkg + (qtVersion ?? '') + '-' + (targetMkSpec ?? '');
 }
 
 export function inVCPKGRoot(p: string) {
@@ -234,7 +234,7 @@ export async function fetchWithAbort(
       }
     }, timeout);
   }
-  return fetch(url, { signal: controller.signal }).catch((error) => {
+  return fetch(url, { signal: controller.signal }).catch((error: unknown) => {
     if (controller.signal.aborted) {
       return undefined;
     }
@@ -242,11 +242,12 @@ export async function fetchWithAbort(
   });
 }
 
-export async function waitForQtCpp() {
+export async function waitForQtCpp(): Promise<unknown> {
   const qtcpp = vscode.extensions.getExtension('theqtcompany.qt-cpp');
   if (qtcpp) {
     return qtcpp.activate();
   }
+  return undefined;
 }
 
 export function findQtPathsInInstallationPath(dir: string): string | undefined {
@@ -330,9 +331,9 @@ class FileWriter {
               done();
             }
           })
-          .catch((err: Error) => {
+          .catch((err: unknown) => {
             if (done) {
-              done(err);
+              done(err as Error);
             }
           });
       },

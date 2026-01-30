@@ -124,7 +124,7 @@ function parseToml(absPath: string): PySideProjectInfo | undefined {
       name: _.get(dataJson, consts.TOML_KEY_PROJECT_NAME, '') as string,
       files: _.get(dataJson, consts.TOML_KEY_PROJECT_FILES, []) as string[]
     };
-  } catch (e) {
+  } catch {
     return undefined;
   }
 }

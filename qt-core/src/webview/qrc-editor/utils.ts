@@ -21,7 +21,7 @@ export function makeUniqueName(name: string, alreadyUsed: Set<string>): string {
   const maxAttempts = 10_000; // arbitrary big number
 
   for (let c = 1; c < maxAttempts; ++c) {
-    const modified = `${name}${c}`;
+    const modified = `${name}${String(c)}`;
     if (!alreadyUsed.has(modified)) {
       return modified;
     }

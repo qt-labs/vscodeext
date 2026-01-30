@@ -209,11 +209,11 @@ export class QrcNodePos implements QrcNodePosData {
   }
 
   private static _createId(groupKey: string, fileIndex: number) {
-    return `qrcnode|${groupKey}|${fileIndex}`;
+    return `qrcnode|${groupKey}|${String(fileIndex)}`;
   }
 
   private static _parseId(id: string) {
-    const match = id.match(/^qrcnode\|(.+)\|(-?\d+)$/);
+    const match = /^qrcnode\|(.+)\|(-?\d+)$/.exec(id);
     if (match) {
       const groupKey = match[1];
       const file = Number(match[2]);

@@ -90,7 +90,8 @@ export class QtInfo {
 
 export interface CoreAPI {
   notify(config: QtWorkspaceConfigMessage): void;
-  getValue<T>(
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  getValue<T = unknown>(
     folder: vscode.WorkspaceFolder | string,
     key: string
   ): T | undefined;

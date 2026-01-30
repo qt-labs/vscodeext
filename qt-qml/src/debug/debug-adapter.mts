@@ -1,6 +1,8 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+/* eslint-disable @typescript-eslint/no-misused-promises */
+
 import * as vscode from 'vscode';
 import {
   InitializedEvent,
@@ -104,7 +106,7 @@ export class QmlDebugSession extends LoggingDebugSession {
     }
     return undefined;
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
+
   protected override async disconnectRequest(
     response: DebugProtocol.DisconnectResponse,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -127,7 +129,7 @@ export class QmlDebugSession extends LoggingDebugSession {
           if (IsWindows) {
             // On Windows, we need to kill the process with taskkill
             // because ChildProcess.kill() does not work.
-            execSync(`taskkill /pid ${this._process.pid} /T /F`, {
+            execSync(`taskkill /pid ${String(this._process.pid)} /T /F`, {
               stdio: 'ignore'
             });
           } else if (IsLinux) {
@@ -624,7 +626,7 @@ export class QmlDebugSession extends LoggingDebugSession {
         const portStr = getParam(portRegex, args.debuggerArgs);
         host = getParam(hostRegex, args.debuggerArgs);
 
-        const hostMatch = args.debuggerArgs.match(hostRegex);
+        const hostMatch = hostRegex.exec(args.debuggerArgs);
         if (hostMatch?.[1] === undefined) {
           throw new Error('Host not found in debuggerArgs');
         }
@@ -649,7 +651,7 @@ export class QmlDebugSession extends LoggingDebugSession {
         return `"${escaped}"`;
       };
 
-      let command = `${program} ${debuggerArgs}`;
+      let command = `${program} ${debuggerArgs ?? ''}`;
       if (additionalArgs.length > 0) {
         command += ` ${additionalArgs.map(quoteArg).join(' ')}`;
       }
@@ -665,9 +667,9 @@ export class QmlDebugSession extends LoggingDebugSession {
       }
       if (IsWindows) {
         const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
-        if (dllDirs !== undefined) {
+        if (dllDirs !== undefined && typeof dllDirs === 'string') {
           const env = { ...process.env };
-          env.PATH = `${dllDirs as string};${env.PATH}`;
+          env.PATH = `${dllDirs};${env.PATH ?? ''}`;
           options = {
             ...options,
             env: env
@@ -737,7 +739,7 @@ export class QmlDebugSession extends LoggingDebugSession {
         port = parseInt(args.port, 10);
       }
       if (port === undefined || isNaN(port)) {
-        throw new Error(`Invalid port number: ${args.port}`);
+        throw new Error(`Invalid port number: ${String(args.port)}`);
       }
       const server: Server = {
         host: args.host,

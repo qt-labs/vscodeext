@@ -46,11 +46,10 @@ export class FileFinder {
       const additionalQrcFiles = await vscode.workspace.findFiles(pattern);
       allQrcFiles.push(...additionalQrcFiles);
     }
-    // parse all qrc files asynchrounously
-    const parsePromises = allQrcFiles.map((file) =>
+    // parse all qrc files synchronously (parseQRCFile is not async)
+    const parsedQrcFiles = allQrcFiles.map((file) =>
       this._qrcParser.parseQRCFile(file.fsPath)
     );
-    const parsedQrcFiles = await Promise.all(parsePromises);
     this._cache.clear();
     for (const parsedQrcFile of parsedQrcFiles) {
       if (parsedQrcFile) {
@@ -123,7 +122,7 @@ export class FileFinder {
 
     if (filePaths.length === 1) {
       console.debug(
-        `FileInProjectFinder: found ${filePaths[0]} in project files`
+        `FileInProjectFinder: found ${filePaths[0] ?? ''} in project files`
       );
       return filePaths;
     }

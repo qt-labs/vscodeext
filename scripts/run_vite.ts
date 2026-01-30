@@ -35,7 +35,7 @@ async function main() {
   }
 }
 
-main().catch((e) => {
+main().catch((e: unknown) => {
   console.log('Fatal error:', e);
   process.exit(1);
 });
@@ -83,7 +83,7 @@ async function start(c: Configs) {
     process.exit(1);
   }
 
-  console.log(`[${c.info}] Started on background, pid = ${p.pid}`);
+  console.log(`[${c.info}] Started on background, pid = ${String(p.pid)}`);
   p.unref();
 }
 

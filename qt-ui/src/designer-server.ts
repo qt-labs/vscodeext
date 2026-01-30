@@ -26,7 +26,7 @@ export class DesignerServer {
   public start() {
     this.server
       .listen(this.port, () => {
-        logger.info(`Designer server is listening on ${this.port}`);
+        logger.info(`Designer server is listening on ${String(this.port)}`);
       })
       .on('connection', (socket) => {
         this.onConnection(socket);
@@ -38,7 +38,7 @@ export class DesignerServer {
   }
 
   private onConnection(socket: net.Socket) {
-    logger.info('Designer server is connected:' + socket.remoteAddress);
+    logger.info('Designer server is connected:' + String(socket.remoteAddress));
     this.client = socket;
   }
 
@@ -75,6 +75,6 @@ export class DesignerServer {
       throw new Error(message);
     }
     logger.info('Sending file:' + filePath);
-    this.client.write(filePath.toString() + DesignerServer.newLine);
+    this.client.write(filePath + DesignerServer.newLine);
   }
 }

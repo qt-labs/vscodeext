@@ -10,14 +10,15 @@ export class BaseStateManager {
   ) {}
   protected _get<T>(key: string, defaultValue: T): T {
     const state = this.context.globalState;
-    const ret = state.get<T>(this.folder?.uri.fsPath + key);
+    const ret = state.get<T>((this.folder?.uri.fsPath ?? '') + key);
     if (ret === undefined) {
       return defaultValue;
     }
     return ret;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   protected _update<T>(key: string, value: T): Thenable<void> {
     const state = this.context.globalState;
-    return state.update(this.folder?.uri.fsPath + key, value);
+    return state.update((this.folder?.uri.fsPath ?? '') + key, value);
   }
 }

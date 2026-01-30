@@ -250,7 +250,7 @@ export class KitManager {
       void vscode.window.showWarningMessage(warningMessage);
       logger.info(warningMessage);
     } else {
-      const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtInsRoot}".`;
+      const infoMessage = `Found ${String(qtInstallations.length)} Qt installation(s) in "${qtInsRoot}".`;
       void vscode.window.showInformationMessage(infoMessage);
       logger.info(infoMessage);
     }
@@ -309,7 +309,7 @@ export class KitManager {
         continue;
       }
       const kit = KitManager.generateKitFromQtInfo(qtInfo, await cmakeKits);
-      for await (const k of kit) {
+      for (const k of kit) {
         logger.info('newKit: ' + JSON.stringify(k));
         if (k) {
           kits.push(k);
@@ -338,7 +338,7 @@ export class KitManager {
   private static *generateKitFromQtInfo(qtInfo: QtInfo, cmakeOnlyKits?: Kit[]) {
     const kit = KitManager.initKitWithCommonSettings();
     const version = qtInfo.get('QT_VERSION');
-    kit.name = qtInfo.name ? qtInfo.name : generateDefaultQtPathsName(qtInfo);
+    kit.name = qtInfo.name ?? generateDefaultQtPathsName(qtInfo);
     const libs = qtInfo.get('QT_INSTALL_LIBS');
     if (!libs) {
       return undefined;
@@ -350,7 +350,7 @@ export class KitManager {
         ? KitManager.getVCPKGToolchainFile()
         : path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
       if (!toolchainFile || !fsSync.existsSync(toolchainFile)) {
-        const warn = `Toolchain file not found: ${toolchainFile}`;
+        const warn = `Toolchain file not found: ${toolchainFile ?? 'undefined'}`;
         void vscode.window.showWarningMessage(warn);
         logger.error(warn);
         return undefined;
@@ -385,19 +385,19 @@ export class KitManager {
       const msvcMajor = Number(qtInfo.get(`MSVC_MAJOR_VERSION`) ?? '-1') * 100;
       const msvcMinor = Number(qtInfo.get(`MSVC_MINOR_VERSION`) ?? '-1');
       if (msvcMajor < 0 || msvcMinor < 0) {
-        logger.warn(`MSVC version: ${msvcMajor}.${msvcMinor}`);
+        logger.warn(`MSVC version: ${String(msvcMajor)}.${String(msvcMinor)}`);
         yield undefined;
         return;
       }
       const vsyear = KitManager.convertMSCVERToYear(msvcMajor + msvcMinor);
       if (!vsyear) {
-        logger.warn(`vsyear: ${vsyear}`);
+        logger.warn(`vsyear: undefined`);
         yield undefined;
         return;
       }
       const arch = KitManager.MapMsvcPlatformToQt[qtInfo.get('ARCH') ?? ''];
       if (!arch) {
-        logger.warn(`arch: ${arch}`);
+        logger.warn(`arch: undefined`);
         yield undefined;
         return;
       }
@@ -554,7 +554,7 @@ export class KitManager {
         return;
       } else if (platform.startsWith('mingw')) {
         const mingwDirPath = await qtPath.locateMingwBinDirPath(qtInsRoot);
-        logger.info(`Mingw dir path: ${mingwDirPath}`);
+        logger.info(`Mingw dir path: ${mingwDirPath ?? 'undefined'}`);
         if (mingwDirPath) {
           newKit.environmentVariables.PATH = [
             newKit.environmentVariables.PATH,
@@ -733,7 +733,7 @@ export class KitManager {
   private static getCMakeGenerator() {
     const cmakeConfig = vscode.workspace.getConfiguration('cmake');
     const generator = cmakeConfig.get<string>('generator');
-    return generator ? generator : CMakeDefaultGenerator;
+    return generator ?? CMakeDefaultGenerator;
   }
 
   private static *generateMsvcKits(
@@ -782,9 +782,7 @@ export class KitManager {
         kit.preferredGenerator.name = newKit.preferredGenerator.name;
         if (kit.preferredGenerator.name.startsWith('Ninja')) {
           if (newKit.cmakeSettings) {
-            if (kit.cmakeSettings == undefined) {
-              kit.cmakeSettings = {};
-            }
+            kit.cmakeSettings ??= {};
             kit.cmakeSettings = {
               ...newKit.cmakeSettings,
               ...kit.cmakeSettings

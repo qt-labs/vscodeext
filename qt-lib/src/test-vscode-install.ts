@@ -52,7 +52,7 @@ export function installExtensionWithRetry(
       console.error(res.stderr);
     }
     console.error(
-      `[runTest] install "${ext.idOrVsix}" failed (attempt ${i}/${attempts})`
+      `[runTest] install "${ext.idOrVsix}" failed (attempt ${String(i)}/${String(attempts)})`
     );
     if (i < attempts) {
       try {
@@ -95,7 +95,7 @@ export function debugListExtensions(cli: string, baseArgs: string[]): void {
     { encoding: 'utf-8', shell: process.platform === 'win32' }
   );
 
-  const out = (res.stdout || '').toString().trim();
+  const out = (res.stdout || '').trim();
   console.log(
     '[debug] --list-extensions --show-versions:\n' + (out || '<empty>')
   );
@@ -115,7 +115,7 @@ export function assertExtensionsInstalled(
     shell: process.platform === 'win32'
   });
 
-  const list = (res.stdout || '').toString().toLowerCase();
+  const list = (res.stdout || '').toLowerCase();
   const missing = requiredIds.filter((id) => !list.includes(id.toLowerCase()));
   if (missing.length) {
     console.error('[runTest] Missing required extensions:', missing.join(', '));

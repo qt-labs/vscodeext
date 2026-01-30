@@ -85,7 +85,7 @@ function getQtDirFromQtPaths(pathsExe: string, toolchainFile?: string) {
   const paths: string[] = [];
   if (info) {
     const keys = info.data;
-    const isInVCPKG = toolchainFile && toolchainFile.endsWith('vcpkg.cmake');
+    const isInVCPKG = toolchainFile?.endsWith('vcpkg.cmake');
     for (const [key, value] of keys) {
       if (!isValidKey(key)) {
         continue;
