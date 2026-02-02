@@ -14,7 +14,7 @@ export function registerScanForQtKitsCommand() {
       if (IsWindows) {
         await vscode.commands.executeCommand('cmake.scanForKits');
       }
-      await kitManager.checkForAllQtInstallations();
+      await kitManager.checkForAllQtInstallations(true);
     }
   );
 }

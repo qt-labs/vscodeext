@@ -184,15 +184,42 @@ export class KitManager {
     return path.join(folder.uri.fsPath, '.vscode', 'cmake-kits.json');
   }
 
-  public async checkForAllQtInstallations() {
+  private static isAutoKitGenerationDisabled(
+    workspaceFolder?: vscode.WorkspaceFolder
+  ): boolean {
+    const config = vscode.workspace.getConfiguration(
+      EXTENSION_ID,
+      workspaceFolder
+    );
+    return config.get<boolean>('disableAutoKitGenerationOnOpen', false);
+  }
+
+  private static shouldSkipAutoKitGeneration(
+    force: boolean,
+    workspaceFolder?: vscode.WorkspaceFolder
+  ): boolean {
+    if (force) {
+      return false;
+    }
+    return KitManager.isAutoKitGenerationDisabled(workspaceFolder);
+  }
+
+  public async checkForAllQtInstallations(force = false) {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title: 'Updating kits'
       },
       async () => {
-        await this.checkForGlobalQtInstallations();
-        await this.checkForWorkspaceFolderQtInstallations();
+        // Check global setting for global installations
+        if (!KitManager.shouldSkipAutoKitGeneration(force)) {
+          await this.checkForGlobalQtInstallations();
+        } else {
+          logger.info(
+            'Auto-kit generation on activation is disabled globally, skipping global kit check'
+          );
+        }
+        await this.checkForWorkspaceFolderQtInstallations(force);
       }
     );
   }
@@ -233,9 +260,16 @@ export class KitManager {
     await this.checkForQtInstallations();
   }
 
-  private async checkForWorkspaceFolderQtInstallations() {
+  private async checkForWorkspaceFolderQtInstallations(force = false) {
     for (const project of this.projects) {
       if (project.type === CppProjectType.Kit) {
+        // Check workspace-specific setting
+        if (KitManager.shouldSkipAutoKitGeneration(force, project.folder)) {
+          logger.info(
+            `Auto-kit generation on activation is disabled for workspace '${project.folder.name}', skipping kit check`
+          );
+          continue;
+        }
         await this.checkForQtInstallations(project);
       }
     }
