@@ -80,6 +80,12 @@
           "type": "boolean",
           "default": false,
           "description": "Do not show a warning when the installed CMake Tools extension is too old for CMake Presets support."
+        },
+        "qt-cpp.disableAutoKitGenerationOnOpen": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Disable automatic CMake kit generation on extension activation.\n\nWhen enabled, the extension will not automatically scan and update `cmake-kits.json` when VS Code starts. Kits will still be updated when you manually change Qt settings or run the `Qt: Scan for Qt Kits` command.\n\nThis is useful if you manage your kits manually or check `cmake-kits.json` into version control.",
+          "scope": "machine-overridable"
         }
       }
     },
