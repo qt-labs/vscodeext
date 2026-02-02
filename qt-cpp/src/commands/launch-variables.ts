@@ -19,6 +19,18 @@ import { CppProjectType, getActiveProject } from '@/project';
 
 const logger = createLogger('launch-variables');
 
+function getDebugPathVariant(basePath: string) {
+  return path.join(basePath, 'debug');
+}
+
+function replacePathWithDebugVariant(
+  pathString: string,
+  basePath: string,
+  debugPath: string
+) {
+  return pathString.replace(path.normalize(basePath), debugPath);
+}
+
 export function registerlaunchTargetFilenameWithoutExtension() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.launchTargetFilenameWithoutExtension`,
@@ -97,7 +109,7 @@ function getQtDirFromQtPaths(pathsExe: string, toolchainFile?: string) {
           if (value.endsWith('bin')) {
             const installPrefix = info.get('QT_INSTALL_PREFIX');
             if (installPrefix) {
-              const installPrefixDebug = path.join(installPrefix, 'debug');
+              const installPrefixDebug = getDebugPathVariant(installPrefix);
               const newValue = value.replace(installPrefix, installPrefixDebug);
               paths.push(newValue);
             }
@@ -206,10 +218,11 @@ async function findQtPluginPath(qtpaths: string) {
       // we need to return the debug version of the plugin path
       const installPrefix = info.get('QT_INSTALL_PREFIX');
       if (installPrefix) {
-        const installPrefixDebug = path.join(installPrefix, 'debug');
+        const installPrefixDebug = getDebugPathVariant(installPrefix);
         if (pluginPath) {
-          const pluginPathDebug = pluginPath.replace(
-            path.normalize(installPrefix),
+          const pluginPathDebug = replacePathWithDebugVariant(
+            pluginPath,
+            installPrefix,
             installPrefixDebug
           );
           return pluginPathDebug;
@@ -282,10 +295,11 @@ async function getQmlImportPathFromQtPaths(qtpaths: string) {
     // we need to return the debug version of the import path
     const installPrefix = info.get('QT_INSTALL_PREFIX');
     if (installPrefix) {
-      const installPrefixDebug = path.join(installPrefix, 'debug');
+      const installPrefixDebug = getDebugPathVariant(installPrefix);
       if (importPath) {
-        const importPathDebug = importPath.replace(
-          path.normalize(installPrefix),
+        const importPathDebug = replacePathWithDebugVariant(
+          importPath,
+          installPrefix,
           installPrefixDebug
         );
         return importPathDebug;
