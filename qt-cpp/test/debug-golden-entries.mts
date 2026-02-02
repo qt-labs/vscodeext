@@ -982,6 +982,26 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'evaluating the DisplayString for aliases like QMatrix2x2, so the placeholders ' +
         'render as "void" (Columns: [void], Rows: [void]) instead of the expected dimensions.'
     }
+  },
+  {
+    name: 'coreTypes.qSizePolicy',
+    type: 'QSizePolicy',
+    value: '{ horizontal = Expanding, vertical = Minimum }',
+    knownProblem: {
+      darwin:
+        'LLDB fails to evaluate QSizePolicy NatVis intrinsics. The DisplayString relies on ' +
+        'internal enum types (Policy) and bitfields that are not visible to the expression ' +
+        'evaluator, resulting in evaluation errors and a fallback to "undefined".',
+      linux:
+        'GDB cannot evaluate the QSizePolicy NatVis DisplayString in some configurations. ' +
+        'The evaluator fails to create internal variable objects (-var-create) and cannot ' +
+        'resolve symbols like ControlType, producing errors in-place of the horizontal/vertical ' +
+        'policy names.',
+      win32:
+        'The MSVC debug engine (cppvsdbg) fails to resolve QSizePolicy enum values when evaluating ' +
+        'the NatVis DisplayString. As a result, the horizontal/vertical fields render empty, and ' +
+        'the summary degrades to blank placeholders instead of policy names.'
+    }
   }
 ] as const;
 
