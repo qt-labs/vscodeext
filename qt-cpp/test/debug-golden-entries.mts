@@ -1002,6 +1002,26 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'the NatVis DisplayString. As a result, the horizontal/vertical fields render empty, and ' +
         'the summary degrades to blank placeholders instead of policy names.'
     }
+  },
+  {
+    name: 'quickTypes.qQuickItem',
+    type: 'QQuickItem',
+    value: '{ x = 1.25, y = 2.5, width = 320, height = 200 }',
+    knownProblem: {
+      darwin:
+        'LLDB fails to evaluate the QQuickItem NatVis DisplayString. The DisplayString references ' +
+        'the private member d_ptr (d_ptr.d), but the expression evaluator cannot resolve it and ' +
+        'reports "use of undeclared identifier \'d_ptr\'", so the debugger falls back to "undefined".',
+      linux:
+        'The debugger cannot materialize the delegated NatVis expression `{d_ptr.d,na}` for QQuickItem ' +
+        'and fails to create a variable object for the underlying private data. It reports ' +
+        '"-var-create: unable to create variable object", so the expected QQuickItemPrivate summary ' +
+        '(x/y/width/height) is not available at the root.',
+      win32:
+        'The debugger shows an opaque "{...}" placeholder for QQuickItem instead of evaluating the ' +
+        'delegated NatVis DisplayString `{d_ptr.d,na}`. As a result, the expected QQuickItemPrivate ' +
+        'summary (x/y/width/height) is not produced at the root.'
+    }
   }
 ] as const;
 

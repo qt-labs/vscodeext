@@ -7,6 +7,7 @@
 #include "container_types.h"
 #include "core_state_types.h"
 #include "gui_types.h"
+#include "quick_types.h"
 
 int main(int argc, char** argv) {
   QCoreApplication app(argc, argv);
@@ -15,6 +16,7 @@ int main(int argc, char** argv) {
   auto containerTypes = ContainerTypes();
   auto coreStateTypes = CoreStateTypes();
   auto guiTypes = GuiTypes();
+  auto quickTypes = QuickTypes();
 
   // BREAK_HERE
   return 0;
