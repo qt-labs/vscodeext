@@ -6,6 +6,97 @@ import * as fs from 'fs/promises';
 import type { DebugVariable } from './debug-helper.mts';
 
 /**
+ * NatVis `<Type Name="...">` patterns that should not be treated as “missing coverage”.
+ *
+ * These are support / helper / internal implementation types that are exercised
+ * indirectly when the corresponding public-facing Qt types are present in the snapshot.
+ *
+ * Notes:
+ * - We intentionally do NOT skip QBasicAtomicPointer<void>. If it is uncovered, add a
+ *   top-level sample variable to exercise it.
+ * - QPropertyData<*> is skipped until the test validates Expand/children. Today we only
+ *   validate root DisplayString values, so requiring QPropertyData<*> would be misleading.
+ */
+export const SKIP_COVERAGE_BASES: ReadonlySet<string> = new Set<string>([
+  // QProperty support: exercised via QProperty<T>, but only observable once Expand/children is validated
+  'QPropertyData<*>',
+
+  // Qt Quick support: exercised via QQuickItem (d_ptr.d expands into QQuickItemPrivate)
+  'QQuickItemPrivate',
+
+  // CBOR/JSON backend support: exercised via QCborArray/QCborMap/QCborValue and QJsonObject/QJsonArray/QJsonDocument
+  'QCborContainerPrivate',
+  'QtCbor::ByteData',
+  'QtCbor::Element',
+  'QJsonDocumentPrivate',
+  'QJsonValueRef',
+  'QJsonValueConstRef',
+
+  // QHash internals: exercised via QHash<*,*> and QMultiHash<*,*>
+  'QHashPrivate::Node<*,*>',
+  'QHashPrivate::Node<*,QHashDummyValue>',
+  'QHashPrivate::MultiNode<*,*>',
+
+  // Legacy / compat helper
+  'QStringRef',
+
+  // Qt internal helper template; not a direct “fixture type”
+  'QSpecialInteger<*>'
+]);
+
+export const SKIP_COVERAGE_REASONS: ReadonlyMap<string, string> = new Map([
+  [
+    'QPropertyData<*>',
+    'Internal support for QProperty<T>; observable only once children/Expand is validated'
+  ],
+  [
+    'QQuickItemPrivate',
+    'Qt Quick private backing type; exercised indirectly via QQuickItem'
+  ],
+  [
+    'QCborContainerPrivate',
+    'CBOR/JSON backend type; exercised indirectly via QCbor*/QJson* public types'
+  ],
+  [
+    'QtCbor::ByteData',
+    'CBOR backend helper; exercised indirectly via QCborValue/containers'
+  ],
+  [
+    'QtCbor::Element',
+    'CBOR backend helper; exercised indirectly via QCborValue/containers'
+  ],
+  [
+    'QJsonDocumentPrivate',
+    'JSON backend private; exercised indirectly via QJsonDocument'
+  ],
+  [
+    'QJsonValueRef',
+    'JSON ref helper; exercised indirectly via QJsonArray/QJsonObject element access'
+  ],
+  [
+    'QJsonValueConstRef',
+    'JSON const-ref helper; exercised indirectly via QJsonArray/QJsonObject element access'
+  ],
+  [
+    'QHashPrivate::Node<*,*>',
+    'QHash internal node; exercised indirectly via QHash/QMultiHash'
+  ],
+  [
+    'QHashPrivate::Node<*,QHashDummyValue>',
+    'QHash internal node; exercised indirectly via QHash/QMultiHash'
+  ],
+  [
+    'QHashPrivate::MultiNode<*,*>',
+    'QHash internal node; exercised indirectly via QHash/QMultiHash'
+  ],
+  [
+    'QStringRef',
+    'Legacy/compat type; intentionally not required by the fixture'
+  ],
+  ['QSpecialInteger<*>', 'Internal helper template; not a fixture surface type']
+]);
+
+/**
  * NatVis golden + snapshot utilities for qt-cpp integration tests.
  *
  * This module contains the core data model and helpers used by natvis tests:
@@ -311,27 +402,62 @@ function decodeXmlEntities(input: string): string {
 }
 
 /**
- * Structured representation of NatVis type patterns extracted from a `.natvis` file.
+ * Structured representation of NatVis type metadata used by the test framework.
  *
- * This type captures the *logical shape* of NatVis coverage rules after parsing,
- * including base type patterns and their declared alternative forms.
+ * `NatvisTypes` is a *test-oriented abstraction* built from parsing a `.natvis`
+ * file. It captures the logical structure of NatVis type rules in a form that
+ * supports:
+ *
+ *   - Coverage analysis (which NatVis rules were exercised or missed),
+ *   - Type-family grouping in the summary table,
+ *   - Relaxed type compatibility checks (via AlternativeType and aliases),
+ *   - Explicit exclusion of internal / helper rules from coverage reporting.
+ *
+ * It is **not** a full NatVis schema model; it only represents the information
+ * needed by the NatVis tests.
  *
  * Fields:
- *   - `all`   : All type patterns defined in the NatVis file, including bases
- *               and AlternativeType entries.
- *   - `bases` : The primary (base) type patterns declared via `<Type Name="...">`.
- *   - `alts`  : Mapping from a base type pattern to the set of its
- *               `<AlternativeType>` patterns.
- *   - `altToBase`  : Reverse mapping from an `<AlternativeType>` pattern to its
- *                    base type pattern, derived from the NatVis file.
+ * - `all`
+ *     All type patterns declared in the NatVis file, including base `<Type Name="…">`
+ *     entries *and* `<AlternativeType>` patterns.
  *
- * This structure is used by NatVis tests to:
- *   - Match runtime snapshot types against NatVis rules,
- *   - Reason about coverage (which rules were exercised or missed),
- *   - Correctly handle AlternativeType equivalence during comparison.
+ * - `bases`
+ *     The primary NatVis base patterns, corresponding exactly to
+ *     `<Type Name="…">` entries in the NatVis file.
+ *     These are the units used for coverage reporting.
  *
- * It is a test-oriented abstraction and does not attempt to model the full
- * NatVis schema or debugger behavior.
+ * - `alts`
+ *     Mapping from a NatVis base pattern to the set of its declared
+ *     `<AlternativeType>` patterns.
+ *
+ * - `altToBase`
+ *     Reverse lookup mapping an AlternativeType (or equivalent alias)
+ *     back to its canonical NatVis base pattern.
+ *     Used to normalize concrete debugger types into stable NatVis “families”.
+ *
+ * - `extraAliases`
+ *     Test-defined aliases that supplement NatVis `<AlternativeType>` rules.
+ *     This is used to bridge gaps where the debugger reports typedefs or
+ *     expanded template spellings not explicitly covered by NatVis.
+ *     (e.g. `SelectionFlags` → `QFlags<*>`).
+ *
+ * - `skipCoverageBases`
+ *     Set of NatVis base patterns that should be *excluded* from “missing coverage”
+ *     reporting.
+ *
+ *     These typically represent:
+ *       - private implementation types (e.g. `QQuickItemPrivate`)
+ *       - internal support structures (e.g. `QHashPrivate::*`)
+ *       - helper templates not observable at the root level
+ *         until children/Expand validation exists (e.g. `QPropertyData<*>`)
+ *
+ *     Skipped bases are considered exercised *indirectly* when their associated
+ *     public-facing Qt types are present in the snapshot.
+ *
+ * - `skipCoverageReasons`
+ *     Optional human-readable explanations for entries in `skipCoverageBases`.
+ *     Used only for verbose diagnostic output to make coverage decisions
+ *     explicit and auditable in test logs.
  */
 export type NatvisTypes = {
   all: Set<string>;
@@ -339,6 +465,8 @@ export type NatvisTypes = {
   alts: Map<string, Set<string>>;
   altToBase: Map<string, string>;
   extraAliases?: ReadonlyMap<string, readonly string[]>;
+  skipCoverageBases?: ReadonlySet<string>;
+  skipCoverageReasons?: ReadonlyMap<string, string>; // optional but useful
 };
 
 // Extra aliases for types whose *real* NatVis rule is more generic.
@@ -355,24 +483,35 @@ export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
 };
 
 /**
- * Parses a NatVis (.natvis) file and extracts all declared type patterns,
- * including base <Type Name="..."> entries and their <AlternativeType> mappings.
+ * Parse a NatVis `.natvis` file and extract the type-pattern metadata needed by the tests.
  *
- * The returned structure is used for:
- * - NatVis coverage reporting (which patterns were exercised or not),
- * - relaxed type compatibility checks in NatVis tests
- *   (e.g. QPoint ↔ QPointF via AlternativeType),
- * - avoiding any hard-coded knowledge of Qt type equivalence.
+ * This is the canonical “NatVis ingestion” step for the test suite. It reads the XML,
+ * removes comments, and collects:
+ *
+ *   - Base NatVis patterns from `<Type Name="...">` into `bases`
+ *   - All declared patterns (bases + `<AlternativeType Name="...">`) into `all`
+ *   - Forward AlternativeType mapping (`alts`: base → alternatives)
+ *   - Reverse AlternativeType mapping (`altToBase`: alternative → base)
+ *
+ * In addition, this function seeds `altToBase` with test-defined aliases from
+ * `EXTRA_NATVIS_TYPE_ALIASES` to cover debugger-reported typedef names or template
+ * spellings that are not explicitly declared in the NatVis file.
+ *
+ * Robustness / failure behavior:
+ *   - If the file cannot be read or parsed, the function returns empty NatVis sets/maps,
+ *     but still includes the test’s coverage-skip policy (`skipCoverageBases` and
+ *     `skipCoverageReasons`) so the rest of the reporting code can behave consistently.
  *
  * Notes:
- * - `alts` maps a base type to its AlternativeType set as declared in NatVis.
- * - `altToBase` provides the reverse lookup (AlternativeType → base),
- *   built deterministically from the NatVis file.
- * - Stray <AlternativeType> elements outside of a <Type> block (rare) are
- *   added to `all` for completeness, but cannot be reliably associated to a base
- *   and therefore do not populate `altToBase`.
+ *   - XML entities in attribute values (e.g. `&lt;`, `&gt;`, `&amp;`) are decoded so
+ *     type patterns match the debugger’s type spelling.
+ *   - “Stray” `<AlternativeType>` elements outside a `<Type>` block are added to `all`
+ *     for completeness, but cannot be reliably associated with a base type and therefore
+ *     do not populate `altToBase` unless explicitly seeded via aliases.
  *
- * NatVis is treated as the single source of truth for type equivalence.
+ * @param natvisPath Absolute path to the NatVis file to parse.
+ * @returns          A populated `NatvisTypes` structure used for coverage, grouping,
+ *                   and type-compatibility checks.
  */
 export async function parseNatvisTypesWithAlternatives(
   natvisPath: string
@@ -462,9 +601,25 @@ export async function parseNatvisTypesWithAlternatives(
       if (alt) all.add(alt);
     }
 
-    return { all, bases, alts, altToBase, extraAliases };
+    return {
+      all,
+      bases,
+      alts,
+      altToBase,
+      extraAliases,
+      skipCoverageBases: SKIP_COVERAGE_BASES,
+      skipCoverageReasons: SKIP_COVERAGE_REASONS
+    };
   } catch {
-    return { all, bases, alts, altToBase, extraAliases };
+    return {
+      all,
+      bases,
+      alts,
+      altToBase,
+      extraAliases,
+      skipCoverageBases: SKIP_COVERAGE_BASES,
+      skipCoverageReasons: SKIP_COVERAGE_REASONS
+    };
   }
 }
 
