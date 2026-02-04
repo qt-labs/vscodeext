@@ -49,13 +49,42 @@ export function formatValuePreview(v: unknown, max: number = 200): string {
 }
 
 /**
- * Print NatVis base patterns that were not exercised by the current snapshot.
+ * Print NatVis base `<Type Name="...">` patterns that were *not exercised* by the
+ * current debugger snapshot.
  *
- * Coverage is derived from the set of NatVis family keys that the status table
- * computed from snapshot entries (via `computeNatvisFamily(...)`).
+ * This function is part of the NatVis **coverage reporting** logic. It answers the
+ * question:
  *
- * Note: This does not perform wildcard matching against concrete snapshot types.
- * It only checks whether a NatVis base pattern appears in the computed family set.
+ *   “Which NatVis rules exist in the .natvis file but were not exercised by any
+ *    variable in this test run?”
+ *
+ * How it works:
+ * - Starts from `natvis.bases`, i.e. all `<Type Name="...">` entries declared
+ *   in the NatVis file.
+ * - Removes any bases listed in `natvis.skipCoverageBases`:
+ *     • These represent internal / helper / private types that are expected
+ *       to be exercised *indirectly* by public-facing Qt types.
+ *     • Skipped bases are *not* considered missing coverage.
+ * - Removes any bases that appear in `coveredNatvisFamilies`, which represents
+ *   the NatVis “family keys” derived from actual debugger variables.
+ *
+ * Output:
+ * - If uncovered bases remain, prints a list under:
+ *     “[natvis.summary] Qt types defined in NatVis file but not covered…”
+ * - Otherwise prints a success message indicating full coverage.
+ *
+ * Verbose diagnostics:
+ * - When `NATVIS_VERBOSE=1` is set, this function also prints the list of
+ *   skipped coverage bases along with their human-readable reasons
+ *   (`natvis.skipCoverageReasons`), to make coverage decisions explicit
+ *   and auditable in logs.
+ *
+ * Notes:
+ * - This function is **purely diagnostic**; it does not affect test pass/fail.
+ * - Coverage is evaluated at the NatVis *base type* level, not per concrete
+ *   template instantiation.
+ * - This intentionally avoids wildcard matching against concrete snapshot
+ *   types; grouping is handled upstream via NatVis family computation.
  */
 export function printUncoveredNatvisBases(params: {
   natvis: NatvisTypes;
@@ -63,7 +92,10 @@ export function printUncoveredNatvisBases(params: {
 }): void {
   const { natvis, coveredNatvisFamilies } = params;
 
+  const skip = natvis.skipCoverageBases ?? new Set<string>();
+
   const uncoveredBases = [...natvis.bases]
+    .filter((base) => !skip.has(base))
     .filter((base) => !coveredNatvisFamilies.has(base))
     .sort((a, b) => a.localeCompare(b));
 
@@ -71,6 +103,18 @@ export function printUncoveredNatvisBases(params: {
     const alts = natvis.alts.get(base);
     return alts && alts.size ? `${base} (alts: ${[...alts].join(', ')})` : base;
   });
+
+  if (process.env.NATVIS_VERBOSE === '1') {
+    const reasons = natvis.skipCoverageReasons;
+    if (reasons && reasons.size) {
+      for (const base of skip) {
+        const reason = reasons.get(base);
+        if (reason) {
+          console.log(`[natvis.summary][skip-coverage] ${base}: ${reason}`);
+        }
+      }
+    }
+  }
 
   if (uncoveredLines.length > 0) {
     console.log(
