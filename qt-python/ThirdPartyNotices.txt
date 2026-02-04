@@ -97,7 +97,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-brace-expansion 5.0.0 - MIT
+brace-expansion 5.0.1 - MIT
 undefined#readme
 
 MIT License
@@ -1503,7 +1503,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-lodash 4.17.21 - MIT
+lodash 4.17.23 - MIT
 https://github.com/lodash/lodash#readme
 
 Copyright OpenJS Foundation and other contributors <https://openjsf.org/>

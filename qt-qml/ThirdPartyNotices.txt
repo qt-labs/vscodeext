@@ -941,7 +941,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-fast-xml-parser 5.0.8 - MIT
+fast-xml-parser 5.3.4 - MIT
 https://github.com/NaturalIntelligence/fast-xml-parser#readme
 
 MIT License
@@ -1766,7 +1766,7 @@ IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-strnum 2.0.5 - MIT
+strnum 2.1.2 - MIT
 https://github.com/NaturalIntelligence/strnum#readme
 
 MIT License
