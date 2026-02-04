@@ -349,6 +349,139 @@ function sortNatvisRows<T extends NatvisTableRowLike>(rows: T[]): void {
   });
 }
 
+function isWildcardTemplatePattern(typePattern: string): boolean {
+  const parsed = splitOuterTemplate(typePattern);
+  if (parsed.arity <= 0) return false;
+
+  const args = (parsed.argsText ?? '').split(',').map((s) => s.trim());
+  return args.length > 0 && args.every((a) => a === '*');
+}
+
+function parseArity(typePattern: string): { base: string; arity: number } {
+  const p = splitOuterTemplate(typePattern);
+  return { base: p.base, arity: p.arity };
+}
+/**
+ * Compute the set of NatVis base `<Type Name="...">` patterns that should be
+ * considered **covered** when the debugger reports a concrete exercised runtime type.
+ *
+ * Why this exists:
+ * - A single concrete type can match multiple NatVis rules at once.
+ *   Example: `QBasicAtomicPointer<void>` matches both:
+ *     • `QBasicAtomicPointer<void>` (exact specialization)
+ *     • `QBasicAtomicPointer<*>`    (generic wildcard)
+ * - Coverage accounting must mark *all* matching NatVis bases as covered, otherwise
+ *   the specialized rule can incorrectly show up as “missing” while the wildcard
+ *   rule shows up as “covered”.
+ *
+ * How it works:
+ * 1) Normalize the exercised type spelling (strip class/struct noise, normalize spaces).
+ * 2) Derive candidate keys that might match NatVis bases:
+ *    - exact normalized spelling (covers specializations)
+ *    - wildcard family form (base<*>, base<*,*>, ...)
+ *    - canonical base via AlternativeType / extra alias mapping
+ * 3) Filter candidates down to only real NatVis base patterns present in `natvis.bases`,
+ *    also resolving any `altToBase` mappings to ensure AlternativeType spellings count
+ *    as covering their base rule.
+ *
+ * Output:
+ * - A set of NatVis base patterns to add to `coveredNatvisBases` for coverage reporting.
+ *
+ * Note:
+ * - This is for coverage accounting only. Table display should still pick a single
+ *   “best” base (see `pickMostSpecificNatvisBase`) for readability.
+ */
+function computeCoveredNatvisBasesForType(
+  exercisedType: string,
+  natvis: NatvisTypes
+): ReadonlySet<string> {
+  const t = normalizeType(exercisedType);
+  const parsed = splitOuterTemplate(t);
+
+  const keys = new Set<string>();
+
+  // 1) Exact spelling (covers specializations like QBasicAtomicPointer<void>)
+  keys.add(t);
+
+  // 2) Wildcard family (covers patterns like QBasicAtomicPointer<*>)
+  if (parsed.arity > 0) {
+    keys.add(wildcard(parsed.base, parsed.arity));
+  }
+
+  // 3) Canonicalization via AlternativeType / aliases (helps typedef-style names)
+  //    base-only canonicalization for non-templates
+  keys.add(canonicalBase(parsed.base, parsed.arity, natvis));
+
+  const out = new Set<string>();
+  for (const k of keys) {
+    if (natvis.bases.has(k)) {
+      out.add(k);
+    }
+    const mapped = natvis.altToBase.get(k);
+    if (mapped && natvis.bases.has(mapped)) {
+      out.add(mapped);
+    }
+  }
+
+  for (const basePattern of natvis.bases) {
+    const p = parseArity(basePattern);
+    if (p.base !== parsed.base) continue;
+    if (!isWildcardTemplatePattern(basePattern)) continue;
+
+    if (parsed.arity === 0 || parsed.arity >= p.arity) {
+      out.add(basePattern);
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Choose the single NatVis `<Type Name="...">` base pattern to *display* in the
+ * NatVis status summary table when a concrete exercised runtime type matches
+ * multiple NatVis rules.
+ *
+ * Why this exists:
+ * - Some types have both a generic wildcard rule and a specialization in the NatVis file
+ *   (example: `QBasicAtomicPointer<*>` and `QBasicAtomicPointer<void>`).
+ * - For coverage accounting we mark *all* matching NatVis bases as covered, but the
+ *   summary table needs exactly one “NatVis Type” label per row.
+ *
+ * Selection strategy (most specific wins):
+ * - Prefer patterns without `*` (exact specializations) over wildcard families.
+ * - If still tied, prefer longer patterns as a stable tie-breaker.
+ *
+ * Fallback:
+ * - If there are no candidates, fall back to `computeNatvisFamily(...)` so behavior
+ *   remains consistent with older logic.
+ *
+ * Note:
+ * - This function does not affect coverage (covered vs missing). It is only for
+ *   table readability and correct attribution of specializations.
+ */
+function pickMostSpecificNatvisBase(
+  candidates: ReadonlySet<string>,
+  exercisedType: string,
+  natvis: NatvisTypes
+): string {
+  if (candidates.size === 0) {
+    // Keep existing behavior as a fallback
+    return computeNatvisFamily(exercisedType, natvis);
+  }
+
+  const scored = [...candidates].map((c) => {
+    // Specificity rules:
+    // - Prefer no wildcard '*'
+    // - Prefer exact template spellings over wildcard family
+    // - Prefer longer strings as a tie-breaker
+    const hasStar = c.includes('*');
+    const score = (hasStar ? 0 : 10) + c.length / 1000;
+    return { c, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0]!.c;
+}
 /**
  * Compute the "NatVis family" key used to group concrete exercised types into
  * a single NatVis type bucket for the summary table.
@@ -476,9 +609,19 @@ export function printNatvisTypeStatusTable(params: {
   for (const a of natvisSnapshot) {
     const varName = a.name;
     const exercisedType = a.type ?? '<none>';
-    const natvisType = computeNatvisFamily(exercisedType, natvis);
+    const coveredBasesForVar = computeCoveredNatvisBasesForType(
+      exercisedType,
+      natvis
+    );
+    for (const b of coveredBasesForVar) {
+      coveredNatvisFamilies.add(b);
+    }
 
-    coveredNatvisFamilies.add(natvisType);
+    const natvisType = pickMostSpecificNatvisBase(
+      coveredBasesForVar,
+      exercisedType,
+      natvis
+    );
 
     const g = goldenByName.get(varName);
 
