@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-import { QRCParser } from '@debug/qrc-parser';
+import { QRCParser } from './qrc-parser';
 
 export class FileFinder {
   private readonly _qrcParser: QRCParser;

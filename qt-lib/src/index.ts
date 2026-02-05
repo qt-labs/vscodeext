@@ -10,3 +10,5 @@ export * from './configuration-resolver';
 export * from './vcpkg';
 export * from './test-helper';
 export * from './test-constants';
+export * from './file-finder';
+export * from './qrc-parser';

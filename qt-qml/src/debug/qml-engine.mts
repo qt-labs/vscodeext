@@ -15,7 +15,7 @@ import {
   QmlDebugConnectionState
 } from '@debug/debug-connection.mjs';
 import { Timer } from '@debug/timer.js';
-import { createLogger } from 'qt-lib';
+import { createLogger, FileFinder } from 'qt-lib';
 import {
   BreakpointState,
   QmlBreakpoint,
@@ -59,7 +59,6 @@ import {
 } from '@debug/qmlv8debuggerclientconstants.js';
 import { Packet } from '@debug/packet.mjs';
 import { DebuggerCommand } from '@debug/debugger-command.js';
-import { FileFinder } from '@debug/file-finder.js';
 import { QmlEngineUI } from '@debug/ui.js';
 
 const logger = createLogger('qml-engine');
