@@ -12,7 +12,10 @@ import {
   fetchWithAbort,
   createLogger,
   UserLocalDir,
-  FetchAbortReason
+  FetchAbortReason,
+  IsWindows,
+  IsMacOS,
+  IsLinux
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
@@ -213,16 +216,15 @@ export async function fetchAssetToInstall(controller: AbortController) {
     };
 
     let name = '';
-    const platform = process.platform;
 
-    if (platform === 'win32') {
+    if (IsWindows) {
       name = 'windows';
-    } else if (platform === 'darwin') {
+    } else if (IsMacOS) {
       name = 'macos';
-    } else if (platform === 'linux') {
+    } else if (IsLinux) {
       name = 'ubuntu';
     } else {
-      throw new Error(`Platform '${platform}' is not supported`);
+      throw new Error(`Platform is not supported`);
     }
 
     const prefix = `qmlls-${name}`;
@@ -237,7 +239,9 @@ export async function fetchAssetToInstall(controller: AbortController) {
     });
 
     if (filtered.length === 0) {
-      throw new Error(`Cannot find a package for the platform '${platform}'`);
+      throw new Error(
+        `Cannot find a package for the current platform: ${name}`
+      );
     }
 
     return {
