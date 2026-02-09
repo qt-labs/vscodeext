@@ -15,7 +15,8 @@ import {
   FetchAbortReason,
   IsWindows,
   IsMacOS,
-  IsLinux
+  IsLinux,
+  IsArm64
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
@@ -215,38 +216,45 @@ export async function fetchAssetToInstall(controller: AbortController) {
       assets: Asset[];
     };
 
-    let name = '';
+    // Determine platform and architecture
+    let platform = '';
+    let arch = '';
 
     if (IsWindows) {
-      name = 'windows';
+      platform = 'windows';
+      arch = IsArm64 ? 'arm64' : 'x64';
     } else if (IsMacOS) {
-      name = 'macos';
+      platform = 'macos';
+      arch = 'universal'; // macOS uses universal binaries
     } else if (IsLinux) {
-      name = 'ubuntu';
+      platform = 'linux';
+      arch = IsArm64 ? 'arm64' : 'x64';
     } else {
       throw new Error(`Platform is not supported`);
     }
 
-    const prefix = `qmlls-${name}`;
+    const prefix = `qmllanguageserver-${platform}-${arch}`;
 
-    const filtered = json.assets.filter((asset) =>
+    const matchingAssets = json.assets.filter((asset) =>
       asset.name.startsWith(prefix)
     );
-    filtered.sort((a, b) => {
+    matchingAssets.sort((a, b) => {
       return (
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
-
-    if (filtered.length === 0) {
+    const selectedAsset = matchingAssets[0];
+    if (!selectedAsset) {
       throw new Error(
-        `Cannot find a package for the current platform: ${name}`
+        `Cannot find a package for the current platform: ${platform}-${arch}`
       );
     }
 
+    logger.info(`Selected asset: ${selectedAsset.name}`);
+
     return {
       tag_name: json.tag_name,
-      ...filtered[0]
+      ...selectedAsset
     } as AssetWithTag;
   } catch (error) {
     void vscode.window.showErrorMessage(
