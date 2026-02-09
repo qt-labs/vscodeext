@@ -19,12 +19,11 @@
     "exactOptionalPropertyTypes": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"],
-      "@cmd/*": ["src/commands/*"],
-      "@task/*": ["src/tasks/*"],
-      "@util/*": ["src/util/*"]
+      "@/*": ["./src/*"],
+      "@cmd/*": ["./src/commands/*"],
+      "@task/*": ["./src/tasks/*"],
+      "@util/*": ["./src/util/*"]
     }
   },
   "include": ["src/**/*"]

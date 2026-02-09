@@ -19,9 +19,8 @@
     "exactOptionalPropertyTypes": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["scripts/*"]
+      "@/*": ["./scripts/*"]
     }
   },
   "include": ["scripts/**/*"]

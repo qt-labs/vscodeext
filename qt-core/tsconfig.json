@@ -22,10 +22,9 @@
     "exactOptionalPropertyTypes": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"],
-      "@cmd/*": ["src/commands/*"]
+      "@/*": ["./src/*"],
+      "@cmd/*": ["./src/commands/*"]
     }
   },
   "include": ["src/**/*", "test/**/*"],
