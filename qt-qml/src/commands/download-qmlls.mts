@@ -16,6 +16,7 @@ export function registerDownloadQmllsCommand() {
 
       switch (decision.code) {
         case DecisionCode.NeedToUpdate:
+        case DecisionCode.AlreadyUpToDate:
           if (decision.asset) {
             try {
               await Qmlls.install(decision.asset);
