@@ -487,6 +487,7 @@ export type NatvisTypes = {
   extraAliases?: ReadonlyMap<string, readonly string[]>;
   skipCoverageBases?: ReadonlySet<string>;
   skipCoverageReasons?: ReadonlyMap<string, string>; // optional but useful
+  basesHaveExpand: ReadonlyMap<string, boolean>;
 };
 
 // Extra aliases for types whose *real* NatVis rule is more generic.
@@ -545,6 +546,7 @@ export async function parseNatvisTypesWithAlternatives(
   const extraAliases = new Map<string, readonly string[]>(
     Object.entries(EXTRA_NATVIS_TYPE_ALIASES)
   );
+  const basesHaveExpand = new Map<string, boolean>();
 
   // Seed reverse aliases from EXTRA_NATVIS_TYPE_ALIASES.
   // Example:
@@ -584,6 +586,11 @@ export async function parseNatvisTypesWithAlternatives(
 
       bases.add(base);
       all.add(base);
+
+      const hasExpand =
+        /<\s*Expand\b/.test(typeInner) || /<\s*ArrayItems\b/.test(typeInner);
+
+      basesHaveExpand.set(base, hasExpand);
 
       // Collect <AlternativeType Name="..."> inside this block
       const altRe = /<\s*AlternativeType\b[^>]*\bName\s*=\s*"([^"]+)"/g;
@@ -628,7 +635,8 @@ export async function parseNatvisTypesWithAlternatives(
       altToBase,
       extraAliases,
       skipCoverageBases: SKIP_COVERAGE_BASES,
-      skipCoverageReasons: SKIP_COVERAGE_REASONS
+      skipCoverageReasons: SKIP_COVERAGE_REASONS,
+      basesHaveExpand
     };
   } catch {
     return {
@@ -638,7 +646,8 @@ export async function parseNatvisTypesWithAlternatives(
       altToBase,
       extraAliases,
       skipCoverageBases: SKIP_COVERAGE_BASES,
-      skipCoverageReasons: SKIP_COVERAGE_REASONS
+      skipCoverageReasons: SKIP_COVERAGE_REASONS,
+      basesHaveExpand
     };
   }
 }
