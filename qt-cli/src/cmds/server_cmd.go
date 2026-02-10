@@ -4,8 +4,8 @@
 package cmds
 
 import (
+	"qtcli/common/utils"
 	"qtcli/server"
-	"qtcli/util"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ var tcpPort string
 
 var serverCmd = &cobra.Command{
 	Use:   "server <start|stop>",
-	Short: util.Msg("Start or stop a rest server"),
+	Short: utils.Msg("Start or stop a rest server"),
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		control := strings.ToLower(strings.TrimSpace(args[0]))
@@ -37,11 +37,11 @@ var serverCmd = &cobra.Command{
 func init() {
 	serverCmd.Flags().BoolVar(
 		&useTcp, "tcp", false,
-		util.Msg("Use TCP instead of local IPC"))
+		utils.Msg("Use TCP instead of local IPC"))
 
 	serverCmd.Flags().StringVar(
 		&tcpPort, "port", "8080",
-		util.Msg("Specify TCP port (effective only when --tcp is set)"))
+		utils.Msg("Specify TCP port (effective only when --tcp is set)"))
 
 	rootCmd.AddCommand(serverCmd)
 }

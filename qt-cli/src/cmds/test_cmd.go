@@ -5,9 +5,9 @@ package cmds
 
 import (
 	"fmt"
-	"qtcli/common"
-	"qtcli/runner"
-	"qtcli/util"
+	"qtcli/common/utils"
+	"qtcli/newitem"
+	"qtcli/newitem/preset"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -15,7 +15,7 @@ import (
 
 var testCmd = &cobra.Command{
 	Use:   "test",
-	Short: util.Msg("Test specific features"),
+	Short: utils.Msg("Test specific features"),
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -23,7 +23,7 @@ var testCmd = &cobra.Command{
 
 var testPromptCmd = &cobra.Command{
 	Use:   "prompt <default-preset-name>",
-	Short: util.Msg("Run a prompt for testing purpose"),
+	Short: utils.Msg("Run a prompt for testing purpose"),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !strings.HasPrefix(args[0], "@") {
@@ -32,9 +32,9 @@ var testPromptCmd = &cobra.Command{
 
 		name := args[0]
 
-		for _, p := range runner.Presets.Default.GetAll() {
+		for _, p := range newitem.Presets.Default.GetAll() {
 			if p.Name == name {
-				options, err := runner.RunPromptFromDir(name[1:])
+				options, err := newitem.RunPromptFromDir(name[1:])
 				if err != nil {
 					return err
 				}
@@ -52,7 +52,7 @@ var testPromptCmd = &cobra.Command{
 
 var testDefaultCmd = &cobra.Command{
 	Use:   "default <default-preset-name>",
-	Short: util.Msg("Display default values of a given preset"),
+	Short: utils.Msg("Display default values of a given preset"),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !strings.HasPrefix(args[0], "@") {
@@ -61,7 +61,7 @@ var testDefaultCmd = &cobra.Command{
 
 		name := args[0][1:]
 
-		for _, p := range runner.Presets.Default.GetAll() {
+		for _, p := range newitem.Presets.Default.GetAll() {
 			if name == p.TemplateDir {
 				printPreset(p)
 				return nil
@@ -72,14 +72,14 @@ var testDefaultCmd = &cobra.Command{
 	},
 }
 
-func printPreset(p common.PresetData) {
+func printPreset(p preset.PresetData) {
 	fmt.Println(strings.Repeat("-", 40))
 	fmt.Println(p.ToYaml())
 }
 
 func createNotFoundError(name string) error {
 	return fmt.Errorf(
-		util.Msg("cannot find the given preset, name = '%s'"), name)
+		utils.Msg("cannot find the given preset, name = '%s'"), name)
 }
 
 func init() {
