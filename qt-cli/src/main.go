@@ -4,10 +4,10 @@
 package main
 
 import (
+	"qtcli/cmds"
 	"strconv"
 	"strings"
 	"time"
-	"qtcli/cmds"
 )
 
 var version = "dev"

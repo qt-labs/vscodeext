@@ -6,10 +6,10 @@ package cmds
 import (
 	"fmt"
 	"path"
-	"qtcli/common"
-	"qtcli/generator"
-	"qtcli/runner"
-	"qtcli/util"
+	"qtcli/common/utils"
+	"qtcli/newitem"
+	"qtcli/newitem/generator"
+	"qtcli/newitem/preset"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -19,14 +19,14 @@ var newFilePresetName string
 
 var newFileCmd = &cobra.Command{
 	Use:   "new-file [file-name]",
-	Short: util.Msg("Create a new file in the current directory"),
+	Short: utils.Msg("Create a new file in the current directory"),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var name string
-		var selected common.Preset
-		const targetType = common.TargetTypeFile
+		var selected preset.Preset
+		const targetType = preset.TargetTypeFile
 
 		if len(args) == 0 {
-			name = runner.RunFileNamePrompt()
+			name = newitem.RunFileNamePrompt()
 			if len(name) == 0 {
 				return nil
 			}
@@ -35,36 +35,36 @@ var newFileCmd = &cobra.Command{
 		}
 
 		if ext := path.Ext(name); len(ext) != 0 {
-			userPreset, err := runner.RunFilePromptByExt(ext)
+			userPreset, err := newitem.RunFilePromptByExt(ext)
 			if err != nil {
 				return err
 			}
 
 			if userPreset == nil {
 				return fmt.Errorf(
-					util.Msg("unknown file type, ext = '%s'"), ext)
+					utils.Msg("unknown file type, ext = '%s'"), ext)
 			}
 
 			name = strings.TrimSuffix(name, ext)
 			selected = userPreset
 		} else {
 			var err error
-			selected, err = runner.FindPresetOrRunSelector(
+			selected, err = newitem.FindPresetOrRunSelector(
 				targetType, newFilePresetName)
 			if err != nil {
 				return fmt.Errorf(
-					util.Msg("failed to find or select a preset: '%w'"), err)
+					utils.Msg("failed to find or select a preset: '%w'"), err)
 			}
 		}
 
 		result := generator.NewGenerator(name).
-			Env(runner.GeneratorEnv).
+			Env(newitem.GeneratorEnv).
 			Preset(selected).
 			Render()
 
 		if !result.Success {
 			return fmt.Errorf(
-				util.Msg("failed to generate a file: '%w'"),
+				utils.Msg("failed to generate a file: '%w'"),
 				result.Error.Message)
 
 		}
@@ -76,7 +76,7 @@ var newFileCmd = &cobra.Command{
 func init() {
 	newFileCmd.Flags().StringVar(
 		&newFilePresetName, "preset", "",
-		util.Msg("Specify a preset to use"))
+		utils.Msg("Specify a preset to use"))
 
 	rootCmd.AddCommand(newFileCmd)
 }

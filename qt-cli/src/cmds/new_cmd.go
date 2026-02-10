@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"qtcli/common"
-	"qtcli/generator"
-	"qtcli/runner"
-	"qtcli/util"
+	"qtcli/common/utils"
+	"qtcli/newitem"
+	"qtcli/newitem/generator"
+	"qtcli/newitem/preset"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -20,7 +20,7 @@ var newPresetName string
 
 var newCmd = &cobra.Command{
 	Use:   "new <project-name>",
-	Short: util.Msg("Create a new project under the current directory"),
+	Short: utils.Msg("Create a new project under the current directory"),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
@@ -28,29 +28,29 @@ var newCmd = &cobra.Command{
 		out := generator.Validate(generator.ValidatorIn{
 			Name:       name,
 			WorkingDir: filepath.ToSlash(cwd),
-			TypeId:     common.TargetTypeProject,
+			TypeId:     preset.TargetTypeProject,
 		})
 
 		if out.HasError() {
 			return fmt.Errorf(
-				util.Msg("Cannot generate the project\n%s"), out)
+				utils.Msg("Cannot generate the project\n%s"), out)
 		}
 
-		const targetType = common.TargetTypeProject
-		preset, err := runner.FindPresetOrRunSelector(targetType, newPresetName)
+		const targetType = preset.TargetTypeProject
+		preset, err := newitem.FindPresetOrRunSelector(targetType, newPresetName)
 		if err != nil {
 			return fmt.Errorf(
-				util.Msg("failed to select a preset: '%w'"), err)
+				utils.Msg("failed to select a preset: '%w'"), err)
 		}
 
 		result := generator.NewGenerator(name).
-			Env(runner.GeneratorEnv).
+			Env(newitem.GeneratorEnv).
 			Preset(preset).
 			Render()
 
 		if !result.Success {
 			return fmt.Errorf(
-				util.Msg("failed to generate a project\n%s"),
+				utils.Msg("failed to generate a project\n%s"),
 				result.Error)
 		}
 
@@ -65,7 +65,7 @@ var newCmd = &cobra.Command{
 func init() {
 	newCmd.Flags().StringVar(
 		&newPresetName, "preset", "",
-		util.Msg("Specify a preset to use"))
+		utils.Msg("Specify a preset to use"))
 
 	rootCmd.AddCommand(newCmd)
 }

@@ -6,17 +6,17 @@ package cmds
 import (
 	"errors"
 	"fmt"
-	"qtcli/common"
-	"qtcli/prompt/comps"
-	"qtcli/runner"
-	"qtcli/util"
+	"qtcli/common/prompt"
+	"qtcli/common/utils"
+	"qtcli/newitem"
+	"qtcli/newitem/preset"
 
 	"github.com/spf13/cobra"
 )
 
 var presetCmd = &cobra.Command{
 	Use:   "preset",
-	Short: util.Msg("Inspect and manage presets"),
+	Short: utils.Msg("Inspect and manage presets"),
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -24,11 +24,11 @@ var presetCmd = &cobra.Command{
 
 var presetListCmd = &cobra.Command{
 	Use:   "ls",
-	Short: util.Msg("List the names of all presets"),
+	Short: utils.Msg("List the names of all presets"),
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		items := runner.Presets.User.GetAll()
-		items = append(items, runner.Presets.Default.GetAll()...)
+		items := newitem.Presets.User.GetAll()
+		items = append(items, newitem.Presets.Default.GetAll()...)
 
 		for _, item := range items {
 			fmt.Println(item.GetDescription())
@@ -38,11 +38,11 @@ var presetListCmd = &cobra.Command{
 
 var presetCatCmd = &cobra.Command{
 	Use:   "cat <preset-name>",
-	Short: util.Msg("Print the contents of the given preset"),
+	Short: utils.Msg("Print the contents of the given preset"),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
-		item, err := runner.Presets.Any.FindByName(name)
+		item, err := newitem.Presets.Any.FindByName(name)
 		if err != nil {
 			return err
 		}
@@ -55,11 +55,11 @@ var presetCatCmd = &cobra.Command{
 
 var presetMoveCmd = &cobra.Command{
 	Use:   "mv <from:preset-name> <to:new-preset-name>",
-	Short: util.Msg("Rename a user preset"),
+	Short: utils.Msg("Rename a user preset"),
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !userPresets().Contains(args[0]) {
-			return errors.New(util.Msg("preset not found"))
+			return errors.New(utils.Msg("preset not found"))
 		}
 
 		err := userPresets().Rename(args[0], args[1])
@@ -77,14 +77,14 @@ var presetMoveCmd = &cobra.Command{
 
 var presetRemoveCmd = &cobra.Command{
 	Use:   "rm <preset-name>",
-	Short: util.Msg("Remove a user preset"),
+	Short: utils.Msg("Remove a user preset"),
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !userPresets().Contains(args[0]) {
-			return errors.New(util.Msg("preset not found"))
+			return errors.New(utils.Msg("preset not found"))
 		}
 
-		msg := util.Msg("Are you sure you want to remove this preset?")
+		msg := utils.Msg("Are you sure you want to remove this preset?")
 		if getConfirm(msg) {
 			if err := userPresets().Remove(args[0]); err != nil {
 				return err
@@ -101,7 +101,7 @@ var presetRemoveCmd = &cobra.Command{
 
 var presetClearCmd = &cobra.Command{
 	Use:   "clear",
-	Short: util.Msg("Remove all user presets"),
+	Short: utils.Msg("Remove all user presets"),
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		count := userPresets().GetCount()
@@ -109,7 +109,7 @@ var presetClearCmd = &cobra.Command{
 			return nil
 		}
 
-		msg := util.Msg("Are you sure you want to remove all presets?")
+		msg := utils.Msg("Are you sure you want to remove all presets?")
 		if getConfirm(msg) {
 			userPresets().RemoveAll()
 			if err := userPresets().Save(); err != nil {
@@ -122,7 +122,7 @@ var presetClearCmd = &cobra.Command{
 }
 
 func getConfirm(msg string) bool {
-	r, _ := comps.NewConfirm().
+	r, _ := prompt.NewConfirm().
 		Question(msg).
 		Description("y/N").
 		DefaultValue("n").
@@ -131,8 +131,8 @@ func getConfirm(msg string) bool {
 	return r.ValueAsBool(false)
 }
 
-func userPresets() *common.UserPresetFile {
-	return runner.Presets.User.GetFile()
+func userPresets() *preset.UserPresetFile {
+	return newitem.Presets.User.GetFile()
 }
 
 func init() {

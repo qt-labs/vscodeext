@@ -1,0 +1,109 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+package newitem
+
+import (
+	"path/filepath"
+	"qtcli/common/rest"
+	"qtcli/common/texts"
+	"qtcli/newitem/generator"
+	"qtcli/newitem/preset"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+type NewItemRequest struct {
+	Name       string         `json:"name"`
+	WorkingDir string         `json:"workingDir"`
+	PresetId   string         `json:"presetId"`
+	Options    map[string]any `json:"options"`
+}
+
+type NewItemResponse struct {
+	Type       string   `json:"type" binding:"required"`
+	Files      []string `json:"files" binding:"required"`
+	FilesDir   string   `json:"filesDir" binding:"required"`
+	WorkingDir string   `json:"workingDir" binding:"required"`
+	DryRun     bool     `json:"dryRun" binding:"required"`
+}
+
+type PostNewItemContext struct {
+	name       string
+	workingDir string
+	preset     preset.PresetData
+	dryRun     bool
+}
+
+func PreparePostItemsContext(c *gin.Context) *PostNewItemContext {
+	var req NewItemRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		rest.ReplyErrorMsg(c, err.Error())
+		return nil
+	}
+
+	preset, err := Presets.Any.FindByUniqueId(req.PresetId)
+	if err != nil {
+		rest.ReplyErrorMsg(c, err.Error())
+		return nil
+	}
+
+	preset.MergeOptions(req.Options)
+	normalizedWorkingDir := filepath.Clean(req.WorkingDir)
+	normalizedWorkingDir = filepath.ToSlash(normalizedWorkingDir)
+
+	return &PostNewItemContext{
+		name:       req.Name,
+		workingDir: normalizedWorkingDir,
+		preset:     preset,
+		dryRun:     strings.ToLower(c.Query("dry_run")) == "true",
+	}
+}
+
+func PostItems(c *gin.Context) {
+	context := PreparePostItemsContext(c)
+	if context == nil {
+		return
+	}
+
+	result := generator.NewGenerator(context.name).
+		Env(GeneratorEnv).
+		WorkingDir(context.workingDir).
+		Preset(context.preset).
+		DryRun(context.dryRun).
+		Render()
+
+	if !result.Success {
+		rest.ReplyError(c, result.Error.Message, &result.Error.Details)
+		return
+	}
+
+	rest.ReplyPost(c, NewItemResponse{
+		Type:       context.preset.GetTypeName(),
+		Files:      result.Data.GetOutputFilesRel(),
+		FilesDir:   result.Data.GetOutputDirAbs(),
+		WorkingDir: context.workingDir,
+		DryRun:     context.dryRun,
+	})
+}
+
+func PostItemsValidate(c *gin.Context) {
+	context := PreparePostItemsContext(c)
+	if context == nil {
+		return
+	}
+
+	issues := generator.Validate(generator.ValidatorIn{
+		Name:       context.name,
+		WorkingDir: context.workingDir,
+		TypeId:     context.preset.GetTypeId(),
+	})
+
+	if len(issues) != 0 {
+		rest.ReplyError(c, texts.InputHasIssues, &issues)
+		return
+	}
+
+	rest.ReplyStatus(c, texts.InputOkay)
+}

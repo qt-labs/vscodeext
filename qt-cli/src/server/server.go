@@ -10,8 +10,8 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"qtcli/server/handlers"
-	"qtcli/util"
+	"qtcli/common/utils"
+	"qtcli/newitem"
 	"strconv"
 	"strings"
 	"syscall"
@@ -83,7 +83,7 @@ func Start(o Options) {
 func Stop() {
 	pid, err := getActivePid(pidFile)
 	if err == nil {
-		util.SendSigTermOrKill(pid)
+		utils.SendSigTermOrKill(pid)
 	}
 }
 
@@ -105,21 +105,21 @@ func createApiHandler() *gin.Engine {
 	v1 := r.Group("/v1")
 
 	// read presets or details of the specific preset
-	v1.GET("/presets", handlers.GetPresetsByNameOrType)
-	v1.GET("/presets/:id", handlers.GetPresetById)
+	v1.GET("/presets", newitem.GetPresetsByNameOrType)
+	v1.GET("/presets/:id", newitem.GetPresetById)
 
 	// manage custom presets
-	v1.POST("/presets", handlers.PostCustomPreset)
-	v1.PATCH("/presets/:id", handlers.PatchCustomPresetById)
-	v1.DELETE("/presets/:id", handlers.DeleteCustomPresetById)
+	v1.POST("/presets", newitem.PostCustomPreset)
+	v1.PATCH("/presets/:id", newitem.PatchCustomPresetById)
+	v1.DELETE("/presets/:id", newitem.DeleteCustomPresetById)
 
 	// create item (project or file) & validation
-	v1.POST("/items", handlers.PostItems)
-	v1.POST("/items/validate", handlers.PostItemsValidate)
+	v1.POST("/items", newitem.PostItems)
+	v1.POST("/items/validate", newitem.PostItemsValidate)
 
 	// others
-	v1.GET("/ready", handlers.GetReady)
-	v1.DELETE("/server", handlers.DeleteServer)
+	v1.GET("/ready", GetReady)
+	v1.DELETE("/server", DeleteServer)
 
 	return r
 }
@@ -127,7 +127,7 @@ func createApiHandler() *gin.Engine {
 func ensurePrevRunStopped(filePath string) {
 	pid, err := getActivePid(filePath)
 	if err == nil {
-		util.SendSigTermOrKill(pid)
+		utils.SendSigTermOrKill(pid)
 		time.Sleep(1 * time.Second)
 	}
 }
