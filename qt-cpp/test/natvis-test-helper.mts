@@ -6,6 +6,90 @@ import * as path from 'path';
 
 import { NatvisTypes, Snapshot, GoldenSnapshot } from './debug-golden.mts';
 
+function indexByName<T extends { name: string }>(
+  items: readonly T[] | undefined
+): ReadonlyMap<string, T> {
+  const m = new Map<string, T>();
+  for (const it of items ?? []) {
+    if (!m.has(it.name)) m.set(it.name, it);
+  }
+  return m;
+}
+
+type ChildrenMismatch = {
+  expectedChild: GoldenSnapshot;
+  actualChild?: Snapshot;
+};
+
+/**
+ * Find the first mismatch in NatVis children, treating the golden children list as a **subset**:
+ * - Every golden child must exist in actual children (matched by full child `name`)
+ * - If the golden child specifies `type`, it must be type-compatible
+ * - If the golden child specifies `value`, it must match exactly (after snapshot normalization)
+ * - Actual may contain extra children (ignored)
+ *
+ * Returns the first failing golden child (and the corresponding actual child if present),
+ * or `undefined` if all asserted children match.
+ *
+ * Debug output is intentionally minimal. Set `QT_TEST_DEBUG=1` to see per-failure details.
+ */
+function findFirstChildrenMismatch(
+  actualNode: Snapshot,
+  expectedNode: GoldenSnapshot,
+  natvis: NatvisTypes
+): ChildrenMismatch | undefined {
+  const expectedChildren = expectedNode.children ?? [];
+  if (expectedChildren.length === 0) return undefined;
+
+  const actualByChildName = indexByName(actualNode.children);
+
+  for (const ec of expectedChildren) {
+    const ac = actualByChildName.get(ec.name);
+
+    if (!ac) {
+      if (process.env.QT_TEST_DEBUG === '1') {
+        console.log(
+          `[natvis.test][children][FAIL] missing child\n` +
+            `  root:     ${expectedNode.name}\n` +
+            `  expected: ${ec.name}`
+        );
+      }
+      return { expectedChild: ec };
+    }
+
+    if (!areTypesCompatible(ac.type, ec.type, natvis)) {
+      if (process.env.QT_TEST_DEBUG === '1') {
+        console.log(
+          `[natvis.test][children][FAIL] type mismatch\n` +
+            `  root:     ${expectedNode.name}\n` +
+            `  child:    ${ec.name}\n` +
+            `  expected: ${ec.type ?? '<none>'}\n` +
+            `  actual:   ${ac.type ?? '<none>'}`
+        );
+      }
+      return { expectedChild: ec, actualChild: ac };
+    }
+
+    if (ec.value !== undefined && ac.value !== ec.value) {
+      if (process.env.QT_TEST_DEBUG === '1') {
+        console.log(
+          `[natvis.test][children][FAIL] value mismatch\n` +
+            `  root:     ${expectedNode.name}\n` +
+            `  child:    ${ec.name}\n` +
+            `  expected: ${ec.value}\n` +
+            `  actual:   ${ac.value ?? '<none>'}`
+        );
+      }
+      return { expectedChild: ec, actualChild: ac };
+    }
+
+    const nested = findFirstChildrenMismatch(ac, ec, natvis);
+    if (nested) return nested;
+  }
+
+  return undefined;
+}
+
 /**
  * NatVis test utilities for qt-cpp integration tests.
  *
@@ -588,6 +672,17 @@ export function printNatvisTypeStatusTable(params: {
     params;
 
   const failNames = new Set<string>(mismatches.map((m) => m.name));
+  // Child mismatches are reported under their full dotted child name
+  // (e.g. "coreTypes.qString.[size]"). For the summary table we want
+  // to flag the *root* ("coreTypes.qString") as children=FAIL.
+  const childFailRoots = new Set<string>();
+  for (const m of mismatches) {
+    const n = m.name;
+    const lastDot = n.lastIndexOf('.');
+    if (lastDot > 0) {
+      childFailRoots.add(n.slice(0, lastDot));
+    }
+  }
 
   const goldenByName = new Map<string, GoldenSnapshot>();
   for (const g of goldenSnapshot) {
@@ -635,7 +730,12 @@ export function printNatvisTypeStatusTable(params: {
       root = 'KP';
     }
 
-    const children: TypeStatus = '-';
+    let children: TypeStatus = '-';
+
+    // Only evaluate children if golden defines children for this root variable.
+    if ((g?.children?.length ?? 0) > 0) {
+      children = childFailRoots.has(varName) ? 'FAIL' : 'OK';
+    }
     const kpGoodNews = root === 'KP' && goodNewsNames.has(varName);
 
     rows.push({
@@ -668,7 +768,11 @@ export function printNatvisTypeStatusTable(params: {
       root = 'FAIL';
     }
 
-    const children: TypeStatus = '-';
+    let children: TypeStatus = '-';
+
+    if ((g.children?.length ?? 0) > 0) {
+      children = childFailRoots.has(varName) ? 'FAIL' : 'OK';
+    }
     const kpGoodNews = root === 'KP' && goodNewsNames.has(varName);
 
     rows.push({
@@ -761,6 +865,23 @@ export interface SnapshotMismatch {
   readonly expected?: GoldenSnapshot;
 }
 
+function pushChildMismatch(
+  mismatches: SnapshotMismatch[],
+  fail: ChildrenMismatch
+): void {
+  if (fail.actualChild) {
+    mismatches.push({
+      name: fail.expectedChild.name,
+      actual: fail.actualChild,
+      expected: fail.expectedChild
+    });
+  } else {
+    mismatches.push({
+      name: fail.expectedChild.name,
+      expected: fail.expectedChild
+    });
+  }
+}
 /**
  * Compares a debugger snapshot against a platform-resolved golden snapshot and
  * returns the list of real NatVis mismatches.
@@ -877,6 +998,31 @@ export function findMismatchedSnapshotEntries(
             `(${e.name}) no longer mismatches on ${process.platform}.\n` +
             `  Previous description: ${e.knownProblem}`
         );
+        continue;
+      }
+      const expectedHasChildren = (e.children?.length ?? 0) > 0;
+
+      if (expectedHasChildren) {
+        console.log(
+          `[natvis.test][debug] '${e.name}' has children in golden, checking for mismatches.....................................................`
+        );
+        const fail = findFirstChildrenMismatch(a, e, natvis);
+
+        if (fail) {
+          const kp = fail.expectedChild.knownProblem;
+          if (kp) {
+            if (process.env.NATVIS_VERBOSE === '1') {
+              console.warn(
+                `[natvis.test][known-problem] '${e.name}' child mismatch ignored.\n` +
+                  `  Child:  ${fail.expectedChild.name}\n` +
+                  `  Reason: ${kp}`
+              );
+            }
+          } else {
+            pushChildMismatch(mismatches, fail);
+          }
+          continue;
+        }
       }
       continue;
     }

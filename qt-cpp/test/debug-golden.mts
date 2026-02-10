@@ -152,48 +152,75 @@ function normalizeFloats(raw: string): string {
     return rounded;
   });
 }
+
 /**
- * Normalize debugger-produced string values into a single canonical form.
+ * Normalize a raw debugger `value` string into a stable, comparable form.
  *
- * Debug adapters (GDB, LLDB, cppvsdbg) print values differently:
- *   - QString / QByteArray may appear as:           "Hello World!", u"Hello World!""
- *   - Or preceded by pointer prefixes:              0x123ABC "Hello World!"
- *   - Struct/geometry types may include float noise: 5.0999999999999996
+ * Goal:
+ * - Remove debugger-/adapter-specific noise so golden snapshots remain stable
+ *   across platforms (GDB/LLDB/cppvsdbg) and runs.
  *
- * This function removes all debugger-specific decorations so golden files
- * remain stable across platforms:
+ * Behavior (in order):
+ * 1) If `rawValue` is not a string, returns `undefined` (caller can skip value).
+ * 2) Trims leading/trailing whitespace.
+ * 3) Strips leading pointer/address prefixes that some debuggers prepend, e.g.:
+ *      0x1234 "Hello"
+ *      "0x1234 "Hello""
+ *    (addresses are already de-noised to `0xADDR` by `stripUnstable`, but we also
+ *     handle it here to keep the pipeline robust).
+ * 4) Normalizes floating-point artifacts (e.g. 4.2000000000000002 -> 4.2).
+ * 5) Special-case normalization for `char16_t` (QString ArrayItems / Expand):
+ *    - "U+0048 u'H'" -> "u'H'"
+ *    - "72 'H'"      -> "u'H'"
+ *    - "72 u'H'"     -> "u'H'"
+ *    This keeps golden child values short and consistent.
+ * 6) Special-case QChar-like numeric prefix form (mostly Windows):
+ *    - "99 u'c'" -> "99 'c'"
+ * 7) If the value ends with a quoted payload (optional `u` prefix), extracts the
+ *    inner text and drops quotes:
+ *      u"Hello""  -> Hello
+ *      "Hello""   -> Hello
+ *      "Hello"    -> Hello
+ * 8) Otherwise, returns the (trimmed + float-normalized) value as-is.
  *
- *   1) Strips leading pointer prefixes (0x1234..., 0xADDR) even when quoted.
- *   2) Normalizes floating-point artifacts globally (QRectF, QSizeF, etc.).
- *   3) Extracts the final quoted payload for quoted types (QString/QByteArray),
- *      returning the inner text only (no surrounding quotes).
- *   4) Leaves unquoted structs unchanged:
- *          "{ x = 5, y = 6, width = 41, height = 42 }"
- *   5) Does NOT wrap values in quotes — golden files store plain values.
- *
- * The goal is *pure canonicalization*, not type-aware formatting:
- * normalization is applied uniformly to all values, regardless of their type.
- *
- * IMPORTANT:
- *   – This must stay narrow: only collapse debugger noise, never reinterpret
- *     NatVis semantics. NatVis logic itself is verified by the golden.
- *   – Golden files should remain readable and stable; this function enforces that.
+ * Notes:
+ * - This function is intentionally narrow: it only removes formatting noise and
+ *   should never reinterpret NatVis semantics.
+ * - Apply `stripUnstable(...)` after this to remove remaining unstable patterns
+ *   like hex addresses, repeated spaces, etc.
  */
-export function normalizeValue(raw: string): string {
-  let value = raw.trim();
+export function normalizeValue(
+  rawValue: unknown,
+  typeText?: string
+): string | undefined {
+  if (typeof rawValue !== 'string') return undefined;
+
+  let value = rawValue.trim();
 
   // Strip leading pointer-like prefixes, with optional opening quote:
   //    "0x1234 "Hello World!""  or  0x1234 "Hello World!"
-  value = value.replace(/^"?(0x[0-9A-Fa-f]+|0xADDR)\s*/u, '');
-  value = value.trim();
+  value = value.replace(/^"?(0x[0-9A-Fa-f]+|0xADDR)\s*/u, '').trim();
 
   // Normalize floating-point artifacts everywhere (QRectF, QSizeF, etc.)
   value = normalizeFloats(value);
 
-  // Special case: QChar-style representation
-  //    Windows: "99 u'c'"
-  //    Other OSes: "99 'c'"
-  //    normalize both to "99 'c'"
+  // ---- char16_t (QString ArrayItems etc.) ----
+  // CI cases:
+  //   "U+0048 u'H'" -> "u'H'"
+  //   "72 'H'"      -> "u'H'"
+  //   "72 u'H'"     -> "u'H'"
+  if (typeText === 'char16_t') {
+    const uLit = value.match(/u'[^']*'/u);
+    if (uLit) return uLit[0];
+
+    const asciiLit = value.match(/^\d+\s+u?'([^']*)'$/u);
+    if (asciiLit) return `u'${asciiLit[1]}'`;
+  }
+
+  // ---- QChar-style representation ----
+  // Windows: "99 u'c'"
+  // Other OSes: "99 'c'"
+  // normalize both to "99 'c'"
   const qCharLike = value.match(/^(\d+)\s+u'([^']*)'$/u);
   if (qCharLike) {
     const [, code, ch] = qCharLike;
@@ -201,27 +228,17 @@ export function normalizeValue(raw: string): string {
   }
 
   // If there is a final quoted payload (optional leading 'u'), extract it:
-  //
-  //    u"Hello World!""   -> Hello World!
-  //    "Hello World!""    -> Hello World!
-  //    "Hello World!"     -> Hello World!
-  //
   const quoted = value.match(/u?"([^"]*)"\s*"?$/u);
-  if (quoted && quoted[1] !== undefined) {
-    return quoted[1];
-  }
+  if (quoted && quoted[1] !== undefined) return quoted[1];
 
-  // Fallbacks for simpler fully-quoted forms, just in case:
+  // Fallbacks for simpler fully-quoted forms
   if (value.startsWith('"') && value.endsWith('""') && value.length >= 3) {
-    // "Hello World!"" -> Hello World!
     return value.slice(1, -2);
   }
   if (value.startsWith('"') && value.endsWith('"') && value.length >= 2) {
-    // "Hello World!" -> Hello World!
     return value.slice(1, -1);
   }
 
-  // 5) No quotes to strip: structs like { x = 5, ... } just pass through.
   return value;
 }
 
@@ -294,13 +311,6 @@ export function materializeLocalSnapshot(
     return created;
   };
 
-  const normalizeVarValue = (rawValue: unknown): string | undefined => {
-    if (typeof rawValue !== 'string') return undefined;
-
-    const normalized = normalizeValue(rawValue);
-    return stripUnstable(normalized);
-  };
-
   // 1) Create/update nodes for every flattened variable.
   for (const v of vars) {
     const name = v.name ?? '';
@@ -318,7 +328,10 @@ export function materializeLocalSnapshot(
     // Prefer "real" values/types when present.
     if (v.type) node.type = v.type;
 
-    const stable = normalizeVarValue(v.value);
+    //const stable = normalizeVarValue(v.value, v.type);
+    let stable: string | undefined;
+    const normalized = normalizeValue(v.value, v.type);
+    if (normalized !== undefined) stable = stripUnstable(normalized);
     if (stable !== undefined) node.value = stable;
 
     // Ensure all ancestors exist.
@@ -380,6 +393,13 @@ export function materializeLocalSnapshot(
 
   sortTree(promoted);
   if (process.env.NATVIS_VERBOSE === '1') {
+    const qString = promoted.find((p) => p.name === 'coreTypes.qString');
+    if (qString) {
+      console.log(
+        '[natvis.test] Snapshot for coreTypes.qString:\n' +
+          JSON.stringify(snapshotToJSON(qString), null, 2)
+      );
+    }
     console.log(
       '[natvis.test] Snapshot after noise filtering (JSON):\n' +
         JSON.stringify(promoted.map(snapshotToJSON), null, 2)

@@ -340,7 +340,24 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qString',
     type: 'QString',
-    value: 'Hello World! Again.'
+    value: 'Hello World! Again.',
+    children: [
+      // NatVis <Item Name="[size]">d.size</Item>
+      {
+        name: 'coreTypes.qString.[size]',
+        value: '19'
+      },
+
+      // NatVis <ArrayItems> – minimal sentinel checks
+      {
+        name: 'coreTypes.qString.[0]',
+        value: "u'H'"
+      },
+      {
+        name: 'coreTypes.qString.[18]',
+        value: "u'.'"
+      }
+    ]
   },
   {
     name: 'coreTypes.qStringView',
