@@ -276,9 +276,10 @@ export function printNatvisSummary(params: {
  *              as knownProblem on this platform.
  *   - 'FAIL' : A real mismatch detected after knownProblem filtering
  *              (value mismatch, extra variable, or missing expected variable).
- *   - '-'    : Not evaluated yet (reserved for future use, e.g. child/Expand checks).
+ *   - '-'    : No children documented in the natvis file
+ *  - '?'     : Not evaluated yet.
  */
-type TypeStatus = 'OK' | 'KP' | 'FAIL' | '-';
+type TypeStatus = 'OK' | 'KP' | 'FAIL' | '-' | '?';
 
 /**
  * Sorting mode for the NatVis status summary table.
@@ -320,7 +321,8 @@ const STATUS_ORDER: Readonly<Record<TypeStatus, number>> = {
   OK: 0,
   KP: 1,
   FAIL: 2,
-  '-': 3
+  '?': 3,
+  '-': 4
 };
 
 /**
@@ -717,6 +719,7 @@ export function printNatvisTypeStatusTable(params: {
       exercisedType,
       natvis
     );
+    const hasExpand = natvis.basesHaveExpand.get(natvisType) ?? false;
 
     const g = goldenByName.get(varName);
 
@@ -730,7 +733,20 @@ export function printNatvisTypeStatusTable(params: {
       root = 'KP';
     }
 
-    let children: TypeStatus = '-';
+    let children: TypeStatus;
+
+    // Case 1: golden explicitly defines children → we validate
+    if ((g?.children?.length ?? 0) > 0) {
+      children = childFailRoots.has(varName) ? 'FAIL' : 'OK';
+    }
+    // Case 2: NatVis has Expand, but we are not validating it yet
+    else if (hasExpand) {
+      children = '?';
+    }
+    // Case 3: NatVis has no Expand at all
+    else {
+      children = '-';
+    }
 
     // Only evaluate children if golden defines children for this root variable.
     if ((g?.children?.length ?? 0) > 0) {
@@ -839,7 +855,10 @@ export function printNatvisTypeStatusTable(params: {
     '    KP   = assertion disabled due to knownProblem on this platform'
   );
   console.log('    FAIL = mismatches golden (after knownProblem filtering)');
-  console.log('    -    = not explored');
+  console.log('    -    = NatVis type has no Expand');
+  console.log(
+    '    ?    = NatVis type has Expand, but children are not validated yet'
+  );
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('---'));
 }
 
