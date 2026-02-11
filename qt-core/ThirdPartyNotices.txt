@@ -1408,7 +1408,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-axios 1.12.2 - MIT
+axios 1.13.5 - MIT
 https://github.com/axios/axios#readme
 
 # Copyright (c) 2014-present Matt Zabriskie & Collaborators
@@ -2168,7 +2168,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-follow-redirects 1.15.9 - MIT
+follow-redirects 1.15.11 - MIT
 https://github.com/follow-redirects/follow-redirects#readme
 
 Copyright 2014–present Olivier Lalonde <olalonde@gmail.com>, James Talmage <james@talmage.io>, Ruben Verborgh
@@ -2194,7 +2194,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-form-data 4.0.4 - MIT
+form-data 4.0.5 - MIT
 https://github.com/form-data/form-data#readme
 
 Copyright (c) 2012 Felix Geisendörfer (felix@debuggable.com) and contributors
