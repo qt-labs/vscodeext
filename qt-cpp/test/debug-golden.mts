@@ -204,17 +204,28 @@ export function normalizeValue(
   // Normalize floating-point artifacts everywhere (QRectF, QSizeF, etc.)
   value = normalizeFloats(value);
 
-  // ---- char16_t (QString ArrayItems etc.) ----
-  // CI cases:
-  //   "U+0048 u'H'" -> "u'H'"
-  //   "72 'H'"      -> "u'H'"
-  //   "72 u'H'"     -> "u'H'"
-  if (typeText === 'char16_t') {
-    const uLit = value.match(/u'[^']*'/u);
-    if (uLit) return uLit[0];
+  // Some debuggers (notably cppvsdbg) report QChar child nodes ([latin 1]/[unicode])
+  // as an int formatted like: "99 'c'". Normalize to just "'c'" for stable goldens.
+  if (typeText === 'int') {
+    const intChar = value.match(/^\d+\s+'([^']*)'$/u);
+    if (intChar) return `'${intChar[1]}'`;
+  }
+  // ---- character-like literal normalization ----
+  // Handles debugger formats like:
+  //   char     : "72 'H'"        -> "'H'"
+  //   char16_t : "72 'H'"        -> "u'H'"
+  //   char16_t : "U+0048 u'H'"   -> "u'H'"
+  //   char16_t : "72 u'H'"       -> "u'H'"
+  if (typeText === 'char' || typeText === 'char16_t') {
+    const wantUPrefix = typeText === 'char16_t';
 
+    // If we already have u'X', keep it (char16_t) or strip u (char)
+    const uLit = value.match(/u'([^']*)'/u);
+    if (uLit) return wantUPrefix ? `u'${uLit[1]}'` : `'${uLit[1]}'`;
+
+    // Numeric prefix form: "72 'H'" or "72 u'H'"
     const asciiLit = value.match(/^\d+\s+u?'([^']*)'$/u);
-    if (asciiLit) return `u'${asciiLit[1]}'`;
+    if (asciiLit) return wantUPrefix ? `u'${asciiLit[1]}'` : `'${asciiLit[1]}'`;
   }
 
   // ---- QChar-style representation ----
@@ -393,10 +404,12 @@ export function materializeLocalSnapshot(
 
   sortTree(promoted);
   if (process.env.NATVIS_VERBOSE === '1') {
-    const qString = promoted.find((p) => p.name === 'coreTypes.qString');
+    const qString = promoted.find(
+      (p) => p.name === 'containerTypes.qHashStringInt'
+    );
     if (qString) {
       console.log(
-        '[natvis.test] Snapshot for coreTypes.qString:\n' +
+        '[natvis.test] Snapshot for containerTypes.qHashStringInt:\n' +
           JSON.stringify(snapshotToJSON(qString), null, 2)
       );
     }
@@ -712,6 +725,11 @@ export interface SnapshotBase<TChildConfig> {
   readonly value?: string | ValueByPlatform;
   readonly children?: readonly TChildConfig[];
 }
+// Golden-only node shape
+export interface GoldenSnapshotBase<TChildConfig>
+  extends SnapshotBase<TChildConfig> {
+  readonly knownProblem?: ValueByPlatform;
+}
 
 /**
  * Runtime snapshot (locals or materialized golden) where:
@@ -738,7 +756,9 @@ export type SnapVar = Snapshot;
 // Golden snapshot config vs runtime golden snapshot
 // ---------------------------------------------------------------------------
 
-export interface GoldenEntryElement extends SnapshotBase<GoldenEntryElement> {}
+//export interface GoldenEntryElement extends SnapshotBase<GoldenEntryElement> {}
+export interface GoldenEntryElement
+  extends GoldenSnapshotBase<GoldenEntryElement> {}
 
 /**
  * Platform-aware golden snapshot config.
@@ -747,11 +767,16 @@ export interface GoldenEntryElement extends SnapshotBase<GoldenEntryElement> {}
  * knownProblem. Both `value` and `knownProblem` are described in a
  * per-platform way using ValueByPlatform.
  */
-export interface GoldenEntryInput //<TChildConfig>
-  extends SnapshotBase<GoldenEntryElement> {
-  //<TChildConfig> {
+// export interface GoldenEntryInput //<TChildConfig>
+//   extends SnapshotBase<GoldenEntryElement> {
+//   //<TChildConfig> {
+//   readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
+//   readonly knownProblem?: ValueByPlatform;
+// }
+
+export interface GoldenEntryInput
+  extends GoldenSnapshotBase<GoldenEntryElement> {
   readonly platform?: NodeJS.Platform | readonly NodeJS.Platform[];
-  readonly knownProblem?: ValueByPlatform;
 }
 
 /**
@@ -766,7 +791,8 @@ export interface GoldenSnapshot
     'platform' | 'value' | 'children' | 'knownProblem'
   > {
   readonly value?: string;
-  readonly children?: readonly Snapshot[];
+  //readonly children?: readonly Snapshot[];
+  readonly children?: readonly GoldenSnapshot[];
   readonly knownProblem?: string;
 }
 
@@ -840,24 +866,52 @@ export class GoldenEntry {
 
   private materializeTree(
     cfg: GoldenEntryElement,
-    platform: NodeJS.Platform
-  ): Snapshot {
+    platform: NodeJS.Platform,
+    parentFullName?: string
+  ): GoldenSnapshot {
     const resolvedValue = this.resolveForPlatform(cfg.value, platform);
+    const resolvedProblem = this.resolveForPlatform(cfg.knownProblem, platform);
+
+    const isFullyQualified = (name: string): boolean => name.includes('.');
+
+    // If this node has a parent, its name must be relative (no dots).
+    // This enforces the rule that golden children are written as "[x]", "[size]", etc.
+    if (
+      parentFullName &&
+      parentFullName.length > 0 &&
+      isFullyQualified(cfg.name)
+    ) {
+      throw new Error(
+        `[natvis.golden] Child name must be relative under '${parentFullName}', got '${cfg.name}'. ` +
+          `Use '${cfg.name.slice(cfg.name.lastIndexOf('.') + 1)}' or the intended relative segment (e.g. "[size]").`
+      );
+    }
+
+    const fullName =
+      parentFullName && parentFullName.length > 0
+        ? `${parentFullName}.${cfg.name}`
+        : cfg.name;
 
     const childSnaps =
       cfg.children && cfg.children.length
-        ? cfg.children.map((c) => this.materializeTree(c, platform))
+        ? cfg.children.map((child) =>
+            this.materializeTree(child, platform, fullName)
+          )
         : undefined;
 
     return {
-      name: cfg.name,
+      name: fullName,
       ...(cfg.type ? { type: cfg.type } : {}),
       ...(resolvedValue !== undefined ? { value: resolvedValue } : {}),
+      ...(resolvedProblem !== undefined
+        ? { knownProblem: resolvedProblem }
+        : {}),
       ...(childSnaps && childSnaps.length
         ? { children: sortSnapshotEntries(childSnaps) }
         : {})
     };
   }
+
   /**
    *
    * Convert this entry into a GoldenSnapshot for `platform`.

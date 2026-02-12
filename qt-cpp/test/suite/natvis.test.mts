@@ -432,12 +432,14 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         // type is not dictated by natvis, a perfect match is not expected
         const compactActual = mismatches.map((m) => ({
           name: m.name,
+          present: m.actual !== undefined,
           type: m.actual?.type ?? m.expected?.type ?? '<unknown>',
           value: formatValuePreview(m.actual?.value)
         }));
 
         const compactExpected = mismatches.map((m) => ({
           name: m.name,
+          present: true,
           type: m.actual?.type ?? m.expected?.type ?? '<unknown>',
           value: formatValuePreview(m.expected?.value)
         }));
