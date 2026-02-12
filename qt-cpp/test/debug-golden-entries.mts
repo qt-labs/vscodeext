@@ -9,12 +9,40 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qByteArray',
     type: 'QByteArray',
-    value: 'Hello World!'
+    value: 'Hello World!',
+    children: [
+      {
+        name: '[size]',
+        value: '12'
+      },
+      {
+        name: '[0]',
+        value: "'H'"
+      },
+      {
+        name: '[11]',
+        value: "'!'"
+      }
+    ]
   },
   {
     name: 'coreTypes.qChar',
     type: 'QChar',
-    value: "99 'c'"
+    value: "99 'c'",
+    children: [
+      {
+        name: '[latin 1]',
+        value: "'c'"
+      },
+      {
+        name: '[unicode]',
+        value: {
+          darwin: "'c'",
+          linux: "'c'",
+          win32: "u'c'"
+        }
+      }
+    ]
   },
   {
     name: 'coreTypes.qDate',
@@ -287,7 +315,17 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qPointF',
     type: 'QPointF',
-    value: '{ x = 24.5, y = 48.5 }'
+    value: '{ x = 24.5, y = 48.5 }',
+    children: [
+      {
+        name: '[x]',
+        value: '24.5'
+      },
+      {
+        name: '[y]',
+        value: '48.5'
+      }
+    ]
   },
   {
     name: 'coreTypes.qRect',
@@ -313,7 +351,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qRectF',
     type: 'QRectF',
-    value: '{ x = 5.1, y = 5.5, width = 4.1, height = 4.2 }'
+    value: '{ x = 5.1, y = 5.5, width = 4.1, height = 4.2 }',
+    children: [
+      { name: '[x]', value: '5.1' },
+      { name: '[y]', value: '5.5' },
+      { name: '[width]', value: '4.1' },
+      { name: '[height]', value: '4.2' }
+    ]
   },
   {
     name: 'coreTypes.qSize',
@@ -335,7 +379,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qSizeF',
     type: 'QSizeF',
-    value: '{ width = 4.1, height = 4.2 }'
+    value: '{ width = 4.1, height = 4.2 }',
+    children: [
+      { name: '[width]', value: '4.1' },
+      { name: '[height]', value: '4.2' }
+    ]
   },
   {
     name: 'coreTypes.qString',
@@ -344,17 +392,17 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     children: [
       // NatVis <Item Name="[size]">d.size</Item>
       {
-        name: 'coreTypes.qString.[size]',
+        name: '[size]',
         value: '19'
       },
 
       // NatVis <ArrayItems> – minimal sentinel checks
       {
-        name: 'coreTypes.qString.[0]',
+        name: '[0]',
         value: "u'H'"
       },
       {
-        name: 'coreTypes.qString.[18]',
+        name: '[18]',
         value: "u'.'"
       }
     ]
@@ -373,7 +421,57 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qTime',
     type: 'QTime',
-    value: '{ milliseconds = 45296000 }'
+    value: '{ milliseconds = 45296000 }',
+    children: [
+      {
+        name: '[hours]',
+        value: '12',
+        knownProblem: {
+          darwin:
+            'LLDB fails to evaluate QTime intrinsic hour(); ' +
+            'reports "use of undeclared identifier \'hour\'".',
+          linux:
+            'GDB fails to evaluate QTime intrinsic hour(); ' +
+            'reports "use of undeclared identifier \'hour\'".'
+        }
+      },
+      {
+        name: '[minutes]',
+        value: '34',
+        knownProblem: {
+          darwin:
+            'LLDB fails to evaluate QTime intrinsic minute(); ' +
+            'reports "use of undeclared identifier \'minute\'".',
+          linux:
+            'GDB fails to evaluate QTime intrinsic minute(); ' +
+            'reports "use of undeclared identifier \'minute\'".'
+        }
+      },
+      {
+        name: '[seconds]',
+        value: '56',
+        knownProblem: {
+          darwin:
+            'LLDB fails to evaluate QTime intrinsic second(); ' +
+            'reports "use of undeclared identifier \'second\'".',
+          linux:
+            'GDB fails to evaluate QTime intrinsic second(); ' +
+            'reports "use of undeclared identifier \'second\'".'
+        }
+      },
+      {
+        name: '[milliseconds]',
+        value: '0',
+        knownProblem: {
+          darwin:
+            'LLDB fails to evaluate QTime intrinsic millisecond(); ' +
+            'reports "use of undeclared identifier \'millisecond\'".',
+          linux:
+            'GDB fails to evaluate QTime intrinsic millisecond(); ' +
+            'reports "use of undeclared identifier \'millisecond\'".'
+        }
+      }
+    ]
   },
   {
     name: 'coreTypes.qUrl',
@@ -402,17 +500,53 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qIntList',
     type: 'QList<int>',
-    value: '{ size=3 }'
+    value: '{ size=3 }',
+    children: [
+      { name: '[0]', value: '1' },
+      { name: '[2]', value: '3' }
+    ]
   },
   {
     name: 'containerTypes.qVariantList',
     type: 'QList<QVariant>',
-    value: '{ size=2 }'
+    value: '{ size=2 }',
+    children: [
+      {
+        name: '[0]',
+        value: '123',
+        knownProblem: {
+          darwin:
+            'QVariant NatVis evaluation fails under LLDB. QList expands but element DisplayString becomes an evaluator error.',
+          linux:
+            'QVariant NatVis evaluation fails under GDB. QList expands but element DisplayString becomes an evaluator error.',
+          win32:
+            'QVariant elements are rendered as their internal storage ' +
+            '(d/data/shared/_forAlignment...) instead of the contained scalar value.'
+        }
+      },
+      {
+        name: '[1]',
+        value: 'hello',
+        knownProblem: {
+          darwin:
+            'QVariant NatVis evaluation fails under LLDB. QList expands but element DisplayString becomes an evaluator error.',
+          linux:
+            'QVariant NatVis evaluation fails under GDB. QList expands but element DisplayString becomes an evaluator error.',
+          win32:
+            'QVariant elements are rendered as their internal storage ' +
+            '(d/data/shared/_forAlignment...) instead of the contained scalar value.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qStringListExplicit',
     type: 'QList<QString>',
-    value: '{ size=2 }'
+    value: '{ size=2 }',
+    children: [
+      { name: '[0]', value: 'alpha' },
+      { name: '[1]', value: 'beta' }
+    ]
   },
   {
     name: 'containerTypes.qStringList',
@@ -649,6 +783,25 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin: '(0xADDR u"pair-key", 42)',
       linux: '(pair-key, 42)'
     },
+    children: [
+      {
+        name: '[first]',
+        knownProblem: {
+          win32:
+            'QPair<QString,int> children are not reliably materialized; ' +
+            'the debugger may omit [first] even when the root DisplayString is correct.'
+        }
+      },
+      {
+        name: '[second]',
+        value: '42',
+        knownProblem: {
+          win32:
+            'QPair<QString,int> children are not reliably materialized; ' +
+            'the debugger may omit [second] even when the root DisplayString is correct.'
+        }
+      }
+    ],
     knownProblem: {
       linux:
         'Typedef (QPair<QString, int>) rule evaluation fails, so the debugger falls back to {...}.'
@@ -983,7 +1136,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'guiTypes.qMatrix4x4',
     type: 'QMatrix4x4',
-    value: '{ m11 = 2, m12 = 0, m13 = 0, m14 = 1, ... }'
+    value: '{ m11 = 2, m12 = 0, m13 = 0, m14 = 1, ... }',
+    children: [
+      { name: '[m11]', value: '2' },
+      { name: '[m14]', value: '1' },
+      { name: '[m41]', value: '0' },
+      { name: '[m44]', value: '1' }
+    ]
   },
   {
     name: 'guiTypes.qMatrix2x2',
