@@ -94,7 +94,33 @@
             \l {Automatic registration}.
     \endtable
 
-    \section1 \QMLLS settings
+    \section1 QML settings
+
+    Settings for writing and previewing QML code.
+
+    \section2 QML preview settings
+
+    \image {vscodeext-qt-settings-qml-preview.webp} {Qt QML Configuration}
+
+    Settings for QML live preview. For more information, see
+    \l {Preview Qt Quick applications}.
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li \uicontrol {Additional Build Dirs}
+        \li Additional build directories to search for QRC files during
+            QML preview. This is useful when the build directory is outside
+            the workspace.
+    \row
+        \li \uicontrol {Args}
+        \li Default command-line arguments to pass to the application when you
+            start it from the command palette.
+    \endtable
+
+    \section2 \QMLLS settings
 
     \image {vscodeext-qt-settings-qml.webp} {Qt QML Configuration}
 
