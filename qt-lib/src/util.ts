@@ -175,11 +175,47 @@ export function isPathToQtPathsOrQMake(filePath: string): boolean {
     : false;
 }
 
-export function generateDefaultQtPathsName(qtInfo: QtInfo): string {
+export function getArchInfoFromQtInfo(qtInfo: QtInfo) {
+  const targetArch = qtInfo.get('QT_TARGET_ARCH');
+  if (targetArch) {
+    return targetArch;
+  }
+
+  const targetArchs = qtInfo.get('QT_ARCHS');
+  if (targetArchs) {
+    const targetArchsParts = targetArchs.split(' ');
+    if (targetArchsParts.length > 0) {
+      return targetArchsParts.join('-');
+    }
+  }
+
+  const arch = qtInfo.get('QT_ARCH');
+  if (arch) {
+    return arch;
+  }
+  return undefined;
+}
+
+export function generateDefaultQtPathsName(qtInfo: QtInfo) {
   const qtVersion = qtInfo.get('QT_VERSION');
   const targetMkSpec = qtInfo.get('QMAKE_XSPEC');
   const vcpkg = qtInfo.isVCPKG ? 'vcpkg-' : '';
-  return 'Qt-' + vcpkg + qtVersion + '-' + targetMkSpec;
+  let name = 'Qt-';
+  if (vcpkg) {
+    name += vcpkg;
+  }
+  if (qtVersion) {
+    name += qtVersion;
+  }
+  if (targetMkSpec) {
+    name += '-' + targetMkSpec;
+  }
+  const archInfo = getArchInfoFromQtInfo(qtInfo);
+  if (archInfo) {
+    name += '-' + archInfo;
+  }
+
+  return name;
 }
 
 export function inVCPKGRoot(p: string) {

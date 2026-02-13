@@ -36,15 +36,39 @@ export class CoreAPIImpl implements CoreAPI {
     return this._onValueChanged.event;
   }
 
-  private static obtainArch(content: string) {
+  private static obtainArchs(content: string) {
     const keysToCheck = ['QT_ARCHS', 'QT_TARGET_ARCH', 'QT_ARCH'];
     for (const k of keysToCheck) {
-      const match = content.match(new RegExp(`${k}\\s*\\=\\s*(.*)`));
+      const match = content.match(
+        new RegExp(`${k}\\s*\\=\\s*(?!.*\\$\\$)(.*)`)
+      );
       if (match) {
         return match[1];
       }
     }
     return undefined;
+  }
+
+  private static obtainKeyFromConfigPri(content: string, key: string) {
+    const match = content.match(
+      new RegExp(`${key}\\s*\\=\\s*(?!.*\\$\\$)(.*)`)
+    );
+    if (match) {
+      return match[1];
+    }
+    return undefined;
+  }
+
+  private static obtainArch(content: string) {
+    return CoreAPIImpl.obtainKeyFromConfigPri(content, 'QT_ARCH');
+  }
+
+  private static obtainTargetArch(content: string) {
+    return CoreAPIImpl.obtainKeyFromConfigPri(content, 'QT_TARGET_ARCH');
+  }
+
+  private static obtainTargetArchs(content: string) {
+    return CoreAPIImpl.obtainKeyFromConfigPri(content, 'QT_ARCHS');
   }
 
   private static getQConfigPriContent(qtInfo: QtInfo) {
@@ -188,13 +212,37 @@ export class CoreAPIImpl implements CoreAPI {
     }
     const qconfigPriContent = CoreAPIImpl.getQConfigPriContent(result);
     if (qconfigPriContent) {
-      const arch = CoreAPIImpl.obtainArch(qconfigPriContent);
-      if (arch) {
-        result.set('ARCH', arch);
-      } else {
-        logger.warn(
-          `Cannot determine architecture for ${qtAdditionalPath.path}`
-        );
+      // Architecture configurations using map to avoid code duplication
+      const archConfigs = [
+        {
+          obtainFn: (content: string) => CoreAPIImpl.obtainArchs(content),
+          resultKey: 'ARCH',
+          warningMsg: `Cannot determine architecture for ${qtAdditionalPath.path}`
+        },
+        {
+          obtainFn: (content: string) => CoreAPIImpl.obtainTargetArch(content),
+          resultKey: 'QT_TARGET_ARCH',
+          warningMsg: `Cannot determine target architecture for ${qtAdditionalPath.path}`
+        },
+        {
+          obtainFn: (content: string) => CoreAPIImpl.obtainTargetArchs(content),
+          resultKey: 'QT_ARCHS',
+          warningMsg: `Cannot determine target architectures for ${qtAdditionalPath.path}`
+        },
+        {
+          obtainFn: (content: string) => CoreAPIImpl.obtainArch(content),
+          resultKey: 'QT_ARCH',
+          warningMsg: `Cannot determine target architectures for ${qtAdditionalPath.path}`
+        }
+      ];
+
+      for (const config of archConfigs) {
+        const value = config.obtainFn(qconfigPriContent);
+        if (value) {
+          result.set(config.resultKey, value);
+        } else {
+          logger.warn(config.warningMsg);
+        }
       }
       const msvcVersion = CoreAPIImpl.obtainMSVCVersions(qconfigPriContent);
       result.set('MSVC_MAJOR_VERSION', msvcVersion.major.toString());

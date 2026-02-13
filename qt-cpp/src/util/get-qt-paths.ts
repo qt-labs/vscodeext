@@ -6,7 +6,13 @@ import * as fs from 'fs/promises';
 import type { Dirent } from 'fs';
 
 import * as fsutil from '@util/fs';
-import { OSExeSuffix, IsMacOS } from 'qt-lib';
+import {
+  OSExeSuffix,
+  IsMacOS,
+  findQtPathsInInstallationPath,
+  getArchInfoFromQtInfo
+} from 'qt-lib';
+import { coreAPI } from '@/extension';
 
 const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
 const NinjaFileName = 'ninja' + OSExeSuffix;
@@ -26,14 +32,24 @@ function qtToolsDirByQtRootDir(qtRootDir: string): string {
   return path.normalize(path.join(qtRootDir, 'Tools'));
 }
 
-export function mangleQtInstallation(
-  qtInsRoot: string,
-  installation: string
-): string {
+export function mangleQtInstallation(qtInsRoot: string, installation: string) {
   const relativeInstallationPath = path.relative(qtInsRoot, installation);
   const pathParts = relativeInstallationPath.split(path.sep).filter(String);
   pathParts.unshift(path.basename(qtInsRoot));
-  return pathParts.slice().join('-');
+  const kitName = pathParts.slice().join('-');
+
+  const qtPaths = findQtPathsInInstallationPath(installation);
+  if (qtPaths) {
+    const qtInfo = coreAPI?.getQtInfoFromPath(qtPaths);
+    if (qtInfo) {
+      const archInfo = getArchInfoFromQtInfo(qtInfo);
+      if (archInfo) {
+        return kitName + '-' + archInfo;
+      }
+    }
+  }
+
+  return kitName;
 }
 
 export function mangleMsvcKitName(installation: string): string {
