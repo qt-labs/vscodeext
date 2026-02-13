@@ -1,0 +1,84 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-preview-qml.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-qml
+
+    \title Preview Qt Quick applications
+
+    You can preview Qt Quick applications and single QML files from the code
+    editor. The changes you make to the code become instantly visible in the
+    preview.
+
+    \image {vscodeext-qml-preview.gif} {Previewing a Qt Quick application}
+    \caption Previewing a Qt Quick application.
+
+    \section1 Preview the whole application
+
+    To launch and preview a Qt Quick application:
+
+    \list 1
+        \li To launch the application:
+            \list
+                \li Select \inlineimage {preview-app.png} {Preview changes to QML code live in your application}
+                    on the editor toolbar.
+                \li Go to \uicontrol {Command Palette}, and select
+                    \uicontrol {Qt: Preview changes to QML code live in your application}.
+            \endlist
+        \li Select the application executable as the launch target.
+    \endlist
+
+    If the build directory is outside the workspace, select
+    \uicontrol {Qt: Open Qt Extension settings} > \uicontrol {Qt Qml Configuration}
+    to set it in \uicontrol {Preview: Additional Build Dirs}. This tells \QVSC
+    where to look for QRC files during QML preview.
+
+    To pass command-line arguments to the application when you start it from the
+    command palette, set them in \uicontrol {Qt: Open Qt Extension settings} >
+    \uicontrol {Qt Qml Configuration} > \uicontrol {Preview: Args}.
+
+    \section1 Preview a single file
+
+    To preview a single QML file:
+
+    \list
+        \li Select \inlineimage {preview-file.png} {Preview current QML file live}
+            on the editor toolbar.
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Preview current QML file live}.
+    \endlist
+
+    \section1 Attach to a running application for live preview
+
+    To Attach to a running Qt Quick application for live preview:
+
+    \list 1
+        \li In the \uicontrol Terminal, start the application with the following
+            arguments:
+            \badcode
+            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:QmlPreview,DebugTranslation
+            \endcode
+            Where \e IP_address is the IP address of the host where the
+            application is running and \e port_number is the debugging port.
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Attach to a running QML application for live preview}.
+        \li Enter the IP address where the application is running.
+        \li Enter the port number where the application is running.
+    \endlist
+
+    \section1 Stop previewing
+
+    To stop previewing a Qt Quick application or a QML file:
+
+    \list
+        \li Close the preview window.
+        \li Select \inlineimage {stop-circle.png} {Stop QML preview} on the
+            editor toolbar.
+    \endlist
+
+    \sa {Qt settings}
+*/
