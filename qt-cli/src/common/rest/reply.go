@@ -14,6 +14,10 @@ func ReplyGet[T any](c *gin.Context, data T) {
 	c.JSON(http.StatusOK, data)
 }
 
+func ReplyPut[T any](c *gin.Context, data T) {
+	c.JSON(http.StatusOK, data)
+}
+
 func ReplyPost[T any](c *gin.Context, data T) {
 	c.JSON(http.StatusCreated, data)
 }
