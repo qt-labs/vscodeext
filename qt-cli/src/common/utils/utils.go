@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"maps"
+	"math"
 	"os"
 	"runtime"
 	"strconv"
@@ -59,6 +60,33 @@ func ToFloat64(value any, defaultValue float64) float64 {
 
 	case nil:
 		return 0.0
+
+	default:
+		return defaultValue
+	}
+}
+
+func ToInt64(value any, defaultValue int64) int64 {
+	switch c := value.(type) {
+	case string:
+		v, err := strconv.ParseInt(c, 10, 64)
+		if err != nil {
+			return defaultValue
+		}
+
+		return v
+
+	case int64:
+		return c
+
+	case int:
+		return int64(c)
+
+	case float64:
+		return int64(math.Round((c)))
+
+	case nil:
+		return 0
 
 	default:
 		return defaultValue
