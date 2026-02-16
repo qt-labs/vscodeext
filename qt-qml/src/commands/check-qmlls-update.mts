@@ -15,6 +15,7 @@ export function registerCheckQmllsUpdateCommand() {
       const decision = await fetchAssetAndDecide();
 
       switch (decision.code) {
+        case DecisionCode.NeedToInstall:
         case DecisionCode.NeedToUpdate:
           if (decision.asset) {
             await Qmlls.install(decision.asset);

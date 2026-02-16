@@ -94,9 +94,15 @@ export interface AssetWithTag extends Asset {
   tag_name: string;
 }
 
+export enum AssetStatus {
+  Outdated,
+  UpToDate,
+  NotInstalled,
+  Broken
+}
 interface CheckResult {
   message: string;
-  shouldInstall: boolean;
+  status: AssetStatus;
 }
 
 export function getExpectedQmllsPath() {
@@ -108,7 +114,7 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   if (!fs.existsSync(ReleaseJsonPath) || !fs.existsSync(QmllsExePath)) {
     return {
       message: 'Not Installed',
-      shouldInstall: true
+      status: AssetStatus.NotInstalled
     };
   }
 
@@ -123,7 +129,7 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
         'Tag mismatch, ' +
         `local = ${local.tag_name}, ` +
         `recent = ${asset.tag_name}`,
-      shouldInstall: true
+      status: AssetStatus.Outdated
     };
   }
 
@@ -132,22 +138,23 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   if (res.status !== 0) {
     return {
       message: 'Found, but not executable',
-      shouldInstall: true
+      status: AssetStatus.Broken
     };
   }
 
   return {
     message: `Already Up-to-date, tag = ${asset.tag_name}`,
-    shouldInstall: false
+    status: AssetStatus.UpToDate
   };
 }
 
-export async function getUserConsent(): Promise<boolean> {
+export async function getUserConsent(isNewInstall: boolean): Promise<boolean> {
   const prompt = 'Install';
   const doNotShowAgain = 'Do not show again';
-  const message =
-    'A newer version of the QML language server is available. ' +
-    'Do you want to install it?';
+  const message = isNewInstall
+    ? 'Do you want to install the QML language server?'
+    : 'A newer version of the QML language server is available. ' +
+      'Do you want to install it?';
 
   const ans = await vscode.window.showInformationMessage(
     message,
