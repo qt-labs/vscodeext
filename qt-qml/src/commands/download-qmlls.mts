@@ -15,6 +15,7 @@ export function registerDownloadQmllsCommand() {
       const decision = await fetchAssetAndDecide({ doNotAsk: true });
 
       switch (decision.code) {
+        case DecisionCode.NeedToInstall:
         case DecisionCode.NeedToUpdate:
         case DecisionCode.AlreadyUpToDate:
           if (decision.asset) {

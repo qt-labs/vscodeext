@@ -38,6 +38,7 @@ interface QmllsExeConfig {
 }
 
 export enum DecisionCode {
+  NeedToInstall,
   NeedToUpdate,
   AlreadyUpToDate,
   UserDeclined,
@@ -91,18 +92,29 @@ export async function fetchAssetAndDecide(options?: {
       const status = installer.checkStatusAgainst(asset);
       logger.info('Status Check: ', status.message);
 
-      if (!status.shouldInstall) {
+      if (status.status === installer.AssetStatus.UpToDate) {
         return { code: DecisionCode.AlreadyUpToDate, asset };
       }
 
+      const needToInstall =
+        status.status === installer.AssetStatus.NotInstalled;
       if (options?.doNotAsk !== true) {
-        if (!(await installer.getUserConsent())) {
+        if (!(await installer.getUserConsent(needToInstall))) {
           logger.info('User declined to install qmlls');
           return { code: DecisionCode.UserDeclined };
         }
       }
-      telemetry.sendAction('UserConsentNewerVersionOfQmlls');
-      return { code: DecisionCode.NeedToUpdate, asset };
+      telemetry.sendAction(
+        needToInstall
+          ? 'UserConsentInstallQmlls'
+          : 'UserConsentNewerVersionOfQmlls'
+      );
+      return {
+        code: needToInstall
+          ? DecisionCode.NeedToInstall
+          : DecisionCode.NeedToUpdate,
+        asset
+      };
     } catch (error) {
       logger.warn(isError(error) ? error.message : String(error));
       return { code: DecisionCode.ErrorOccured };
@@ -191,8 +203,16 @@ export class Qmlls {
   public static checkAssetAndDecide() {
     // Do not show the progress bar during the startup
     void fetchAssetAndDecide({ silent: true }).then((result) => {
-      if (result.code === DecisionCode.NeedToUpdate && result.asset) {
-        logger.info('Updating QML language server');
+      if (
+        (result.code === DecisionCode.NeedToInstall ||
+          result.code === DecisionCode.NeedToUpdate) &&
+        result.asset
+      ) {
+        logger.info(
+          result.code === DecisionCode.NeedToInstall
+            ? 'Installing QML language server'
+            : 'Updating QML language server'
+        );
         // Install and start are queued - no need to await
         void Qmlls.install(result.asset);
       }
