@@ -107,6 +107,16 @@
             "filenamePattern": "*.qrc"
           }
         ]
+      },
+      {
+        "viewType": "qt-core.qmlTrace",
+        "displayName": "QML trace",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.{qtd,qzt}"
+          }
+        ]
       }
     ],
     "languages": [
@@ -170,6 +180,35 @@
           "light": "res/icons/qt-ts-light.svg",
           "dark": "res/icons/qt-ts-dark.svg"
         }
+      },
+      {
+        "id": "qtd",
+        "configuration": "./res/lang/qtd/language-configuration.json",
+        "extensions": [
+          ".qtd"
+        ],
+        "aliases": [
+          "QTD",
+          "Qt QML Profiler Trace (text)"
+        ],
+        "icon": {
+          "light": "res/icons/qtd-light.svg",
+          "dark": "res/icons/qtd-dark.svg"
+        }
+      },
+      {
+        "id": "qzt",
+        "extensions": [
+          ".qzt"
+        ],
+        "aliases": [
+          "QZT",
+          "Qt QML Profiler Trace (compressed)"
+        ],
+        "icon": {
+          "light": "res/icons/qzt-light.svg",
+          "dark": "res/icons/qzt-dark.svg"
+        }
       }
     ],
     "grammars": [
@@ -192,6 +231,11 @@
         "language": "qt-ts",
         "scopeName": "source.qt-ts",
         "path": "./res/lang/qt-ts/qt-ts.tmLanguage.json"
+      },
+      {
+        "language": "qtd",
+        "scopeName": "source.qtd",
+        "path": "./res/lang/qtd/qtd.tmLanguage.json"
       }
     ],
     "configuration": {

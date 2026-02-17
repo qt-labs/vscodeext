@@ -1,6 +1,6 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
@@ -11,7 +11,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     error = undefined,
     forceHidden = false,
     busyText = 'Loading...',
-    closeText = 'Close'
+    closeText = 'Close',
+    backgroundOpacity = 10
   } = $props();
 </script>
 
@@ -19,7 +20,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   class:hidden={forceHidden || (!busy && error === undefined)}
   class={`
     flex w-full h-full absolute inset-0
-    bg-white/10 justify-center items-center qt-border-radius`}
+    bg-white/${backgroundOpacity} justify-center items-center qt-border-radius`}
 >
   {#if busy}
     <div class="flex w-full justify-center items-center gap-6">

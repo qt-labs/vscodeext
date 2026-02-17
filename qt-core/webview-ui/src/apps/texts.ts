@@ -105,3 +105,72 @@ export const qrc = {
     invalidLang: 'Use a valid language code (de_DE, en_US, de)'
   }
 }
+
+export const qmltrace = {
+  noData: 'No data available',
+  noLabels: '(none)',
+  rootLabel: 'All operations',
+  mergedLabel: 'Various Events',
+
+  header: {
+    buttons: {
+      time: 'Total time',
+      memory: 'Memory',
+      alloc: 'Allocations'
+    },
+
+    tooltips: {
+      filter: 'Show/hide filter dialog',
+      zoomIn: 'Zoom to fit (or double-click the cell)',
+      zoomOut: 'Zoom out to parent',
+      zoomOutFull: 'Zoom out to full view',
+      config: 'Open configuration settings',
+      jsonc: 'Open flame graph as a JSONC document',
+      openAsText: 'Open in text editor'
+    }
+  },
+
+  detailsOverlay: {
+    title: 'Trace details',
+    label: 'Label',
+    details: 'Details',
+    feature: 'Feature',
+    calls: 'Total calls',
+    time: 'Total time',
+    meanTime: 'Mean time',
+    memory: 'Memory',
+    alloc: "Allocations",
+    loc: 'Location'
+  },
+
+  featuresOverlay: {
+    title: 'Filter',
+    clearButton: 'Clear',
+    selectAllButton: 'Select all'
+  },
+
+  configDialog: {
+    title: 'Configuration',
+    saveButton: 'Save',
+    qmlDirsLabel: 'QML lookup directories',
+    qmlDirsLabelHelp: 'Select project source and/or build directories',
+    tooltips: {
+      browse: 'Browse for a directory',
+      workspaces: 'Add workspace folders',
+      clear: 'Clear all entries',
+    }
+  },
+
+  featureNames: [
+    // the first element is a backend key.
+    // the second element is the label for the UI.
+    //
+    // not all features have to be listed here,
+    // only the ones we want to show in the UI with a custom label.
+    ['javascript', 'JavaScript'],
+    ['compiling', 'Compiling'],
+    ['creating', 'Creating'],
+    ['binding', 'Binding'],
+    ['handlingsignal', 'Signal handling']
+  ]
+}

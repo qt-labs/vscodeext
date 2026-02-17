@@ -18,6 +18,8 @@
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/vite": "^4.0.0",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/d3": "^7.4.3",
+    "@types/tinycolor2": "^1.4.6",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "axios": "^1.7.9",
@@ -39,8 +41,10 @@
   "dependencies": {
     "@lucide/svelte": "^0.525.0",
     "@types/vscode-webview": "^1.57.5",
+    "d3": "^7.9.0",
     "marked": "^15.0.7",
     "nanoid": "^5.1.5",
+    "tinycolor2": "^1.6.0",
     "zod": "^3.25.67"
   }
 }
