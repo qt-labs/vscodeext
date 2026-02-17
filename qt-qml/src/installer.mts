@@ -21,6 +21,8 @@ import {
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
 import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
+import { projectManager } from './extension.mts';
+import { QmllsOperationType } from './qmlls-queue.mts';
 
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;
@@ -168,21 +170,25 @@ export async function getUserConsent(isNewInstall: boolean): Promise<boolean> {
 }
 
 export async function install(asset: AssetWithTag) {
-  const tmpPath = path.join(DownloadDir, asset.name);
+  return projectManager.qmllsQueue.enqueue(
+    QmllsOperationType.Install,
+    async () => {
+      const tmpPath = path.join(DownloadDir, asset.name);
 
-  // download, unzip
-  logger.info(`Downloading from: ${asset.browser_download_url}`);
-  await downloadWithProgress(asset.browser_download_url, tmpPath);
-  logger.info(`Unzipping to: ${ExtractDir}`);
-  await unzipWithProgress(tmpPath);
+      logger.info(`Downloading from: ${asset.browser_download_url}`);
+      await downloadWithProgress(asset.browser_download_url, tmpPath);
+      logger.info(`Unzipping to: ${ExtractDir}`);
+      await unzipWithProgress(tmpPath);
 
-  // follow up
-  logger.info(`QML language server installed to: ${QmllsExePath}`);
-  fs.chmodSync(QmllsExePath, 0o755);
-  fs.unlinkSync(tmpPath);
-  fs.writeFileSync(
-    ReleaseJsonPath,
-    JSON.stringify({ tag_name: asset.tag_name }, null, 2)
+      // follow up
+      logger.info(`QML language server installed to: ${QmllsExePath}`);
+      fs.chmodSync(QmllsExePath, 0o755);
+      fs.unlinkSync(tmpPath);
+      fs.writeFileSync(
+        ReleaseJsonPath,
+        JSON.stringify({ tag_name: asset.tag_name }, null, 2)
+      );
+    }
   );
 }
 
