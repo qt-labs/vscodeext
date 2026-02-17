@@ -28,14 +28,29 @@ export enum CommandId {
   QrcSetProp,
   QrcSortAll,
   QrcRunVscodeUiAction,
-  QrcRunClipboardAction
+  QrcRunClipboardAction,
+
+  // qml trace
+  QmlTraceLoadFile,
+  QmlTraceGetConfigs,
+  QmlTraceSetConfigs,
+  QmlTraceGetFlameGraph,
+  QmlTraceOpenSourceFile,
+  QmlTraceOpenFileInTextEditor,
+  QmlTraceOpenFlameGraphData,
+  QmlTraceSelectFolder,
+  QmlTraceGetWorkspaceFolders,
+
+  // common
+  CommonVscodeThemeChanged
 }
 
 export const OneWayCommandIds = [
   CommandId.UiClosed,
   CommandId.UiItemCreationRequested,
   CommandId.UiHasError,
-  CommandId.QrcDocChanged
+  CommandId.QrcDocChanged,
+  CommandId.CommonVscodeThemeChanged
 ];
 
 export interface Command<T = unknown> {

@@ -154,6 +154,12 @@ html {
   @apply bg-white/5;
 }
 
+.qt-overlay {
+  @apply qt-border-radius;
+  background: var(--qt-surface-background);
+  border: 1px solid var(--qt-outline);
+}
+
 /* button */
 .qt-button {
   @apply qt-button-base;
@@ -428,6 +434,12 @@ body.vscode-high-contrast .qt-item:hover {
   color: var(--qt-disabled-foreground);
 }
 
+.qt-label.link:hover {
+  @apply underline;
+  @apply underline-offset-3;
+  @apply decoration-1;
+}
+
 .qt-tooltip {
   @apply text-base font-normal;
   @apply px-3.5 py-1.5;
@@ -436,6 +448,9 @@ body.vscode-high-contrast .qt-item:hover {
   background-color: var(--qt-surfaceBright-background);
   border: 1px solid var(--qt-outline);
   z-index: 10000;
+  max-width: 500px;
+  word-break: break-all;
+  white-space: normal;
 }
 
 .qt-tooltip[role="tooltip"] > div {
@@ -535,6 +550,12 @@ body.vscode-high-contrast .qt-item:hover {
 
 .lucide * {
   vector-effect: non-scaling-stroke;
+}
+
+.lucide.medium {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.5;
 }
 
 .lucide.large {

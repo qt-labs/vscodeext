@@ -29,6 +29,10 @@ export class QtcliRestClient {
     return this.call({ method: 'post', url, data, params });
   }
 
+  public async put(url: string, data?: unknown, params?: unknown) {
+    return this.call({ method: 'put', url, data, params });
+  }
+
   public async patch(url: string, data?: unknown) {
     return this.call({ method: 'patch', url, data });
   }

@@ -47,6 +47,10 @@ export class WebviewChannel {
     this.post(cmd.id, { data }, cmd.tag);
   }
 
+  public postStatusReply(cmd: Command, status: string) {
+    this.post(cmd.id, { status }, cmd.tag);
+  }
+
   public postErrorReply(cmd: Command, error: unknown) {
     this.post(cmd.id, { error }, cmd.tag);
   }

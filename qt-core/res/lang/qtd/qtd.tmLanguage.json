@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Qt QML Profiler Trace (text)",
+  "scopeName": "source.qtd",
+  "patterns": [
+    {
+      "include": "text.xml"
+    }
+  ]
+}

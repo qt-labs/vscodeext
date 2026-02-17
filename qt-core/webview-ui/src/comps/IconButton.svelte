@@ -13,7 +13,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     text = '',
     tooltip = '',
     tooltipPlacement = 'top' as Placement,
-    icon = Check,
+    icon = Check as (typeof Check | undefined),
     flat = false,
     square = false,
     visible = true,
@@ -32,8 +32,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       qt-button${flat ? '-flat' : ''} ${className}
       ${square ? 'aspect-square' : ''}
     `}
-    on:click={() => {
-      onClicked(id);
+    on:click={(ev: MouseEvent) => {
+      onClicked(id, ev);
+      ev.stopPropagation();
     }}
   >
     {@const IconComp = icon}
@@ -55,6 +56,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       placement={tooltipPlacement}
       data-placement={tooltipPlacement}
       class="qt-tooltip"
+      strategy='fixed'
       offset={10}
     >
       {tooltip}
