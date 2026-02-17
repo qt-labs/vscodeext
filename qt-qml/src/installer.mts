@@ -16,7 +16,8 @@ import {
   IsWindows,
   IsMacOS,
   IsLinux,
-  IsArm64
+  IsArm64,
+  IsUnix
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
@@ -177,6 +178,20 @@ export async function install(asset: AssetWithTag) {
 
       logger.info(`Downloading from: ${asset.browser_download_url}`);
       await downloadWithProgress(asset.browser_download_url, tmpPath);
+
+      // Remove existing files before extraction to avoid ETXTBSY error on Linux.
+      // On Linux, even after the language server process has stopped, the kernel
+      // may still hold a reference to the executable file briefly. Deleting the
+      // file first works because Linux allows deletion of open files - the inode
+      // persists until all handles are closed, but the directory entry is removed,
+      // allowing us to create a new file with the same name.
+      if (IsUnix) {
+        if (fs.existsSync(ExtractDir)) {
+          logger.info(`Removing existing installation: ${ExtractDir}`);
+          fs.rmSync(ExtractDir, { recursive: true, force: true });
+        }
+      }
+
       logger.info(`Unzipping to: ${ExtractDir}`);
       await unzipWithProgress(tmpPath);
 
