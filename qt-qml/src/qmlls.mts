@@ -182,23 +182,21 @@ export class Qmlls {
   }
 
   public static async install(asset: installer.AssetWithTag) {
-    return projectManager.qmllsQueue.enqueue(QmllsOperationType.Install, () => {
-      try {
-        logger.info('Stopping QML language server to install new version');
-        void projectManager.stopQmlls();
+    try {
+      logger.info('Stopping QML language server to install new version');
+      await projectManager.stopQmlls();
 
-        logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
-        void installer.install(asset);
-        logger.info('Installation done');
+      logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
+      await installer.install(asset);
+      logger.info('Installation done');
 
-        projectManager.updateQmllsParams();
-        void projectManager.startQmlls();
-      } catch (error) {
-        logger.warn(isError(error) ? error.message : String(error));
-      }
+      projectManager.updateQmllsParams();
+      await projectManager.startQmlls();
+    } catch (error) {
+      logger.warn(isError(error) ? error.message : String(error));
+    }
 
-      return QmllsStatus.running;
-    });
+    return QmllsStatus.running;
   }
   public static checkAssetAndDecide() {
     // Do not show the progress bar during the startup
