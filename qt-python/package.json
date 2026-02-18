@@ -109,7 +109,7 @@
         "configurationSnippets": [
           {
             "label": "%qt-python.debug.launch.label%",
-            "description": "%qt-python.debug.lunch.description%",
+            "description": "%qt-python.debug.launch.description%",
             "body": {
               "name": "%qt-python.debug.launch.label%",
               "type": "debugpy",
