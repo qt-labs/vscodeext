@@ -12,7 +12,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     forceHidden = false,
     busyText = 'Loading...',
     closeText = 'Close',
-    backgroundOpacity = 10
+    backgroundOpacity = 2.5
   } = $props();
 </script>
 
@@ -20,8 +20,16 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   class:hidden={forceHidden || (!busy && error === undefined)}
   class={`
     flex w-full h-full absolute inset-0
-    bg-white/${backgroundOpacity} justify-center items-center qt-border-radius`}
+    justify-center items-center qt-border-radius`}
 >
+  <!-- background with opacity -->
+  <div
+    class="w-full h-full absolute inset-0"
+    style={`background-color: rgba(255,255,255,${backgroundOpacity / 100})`}
+  >
+  </div>
+
+  <!-- contents -->
   {#if busy}
     <div class="flex w-full justify-center items-center gap-6">
       <Spinner class="qt-spinner" size="20" color="custom" />

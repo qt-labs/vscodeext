@@ -39,7 +39,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   >
     {@const IconComp = icon}
     <div class={`
-      flex flex-${align} items-center
+      flex ${align === 'row' ? 'flex-row' : 'flex-col'} items-center
       ${align === 'col' ? 'gap-1' : ''}
     `}>
       {#if IconComp}
