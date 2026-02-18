@@ -12,6 +12,7 @@ import {
   CustomTextEditorProvider
 } from 'vscode';
 
+import { telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import {
   createWebviewHtml,
@@ -115,6 +116,8 @@ class QrcEditorProvider implements CustomTextEditorProvider {
       controller.dispose();
       this._controllers.delete(panel);
     });
+
+    telemetry.sendEvent('QRCEditor:resolveCustomTextEditor');
 
     return Promise.resolve();
   }
