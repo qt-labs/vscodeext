@@ -42,7 +42,6 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     busy={ui.task.busy}
     error={ui.task.error}
     forceHidden={ui.task.isDebouncing}
-    backgroundOpacity={15}
     busyText={texts.loading.busy}
     closeText={texts.loading.close}
   />

@@ -29,13 +29,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   ]
 
   const roleButtons = [
-    { role: 'in', icon: ZoomIn, tooltip: t.tooltips.zoomIn, roundnone: '-r' },
-    { role: 'out', icon: ZoomOut, tooltip: t.tooltips.zoomOut, roundnone: ''  },
-    { role: 'full', icon: Fullscreen, tooltip: t.tooltips.zoomOutFull, roundnone: '-l' },
-    { role: '_grow', icon: ZoomIn, tooltip: '', roundnone: ''  },
-    { role: 'config', icon: Settings, tooltip: t.tooltips.config, roundnone: '-r' },
-    { role: 'json', icon: Braces, tooltip: t.tooltips.jsonc, roundnone: '' },
-    { role: 'text', icon: Type, tooltip: t.tooltips.openAsText, roundnone: '-l'  },
+    { role: 'in', icon: ZoomIn, tooltip: t.tooltips.zoomIn, round: 'l' },
+    { role: 'out', icon: ZoomOut, tooltip: t.tooltips.zoomOut, round: 'x'  },
+    { role: 'full', icon: Fullscreen, tooltip: t.tooltips.zoomOutFull, round: 'r' },
+    { role: '_grow', icon: ZoomIn, tooltip: '', round: ''  },
+    { role: 'config', icon: Settings, tooltip: t.tooltips.config, round: 'l' },
+    { role: 'json', icon: Braces, tooltip: t.tooltips.jsonc, round: 'x' },
+    { role: 'text', icon: Type, tooltip: t.tooltips.openAsText, round: 'r'  },
   ]
 
   const underlineClass =
@@ -106,7 +106,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         icon={b.icon}
         tooltip={b.tooltip}
         tooltipPlacement='bottom'
-        class={`w-1 -ml-px rounded${b.roundnone}-none!`}
+        class={`
+          w-1 -ml-px
+          ${b.round === 'l' ? 'rounded-r-none!' : ''}
+          ${b.round === 'r' ? 'rounded-l-none!' : ''}
+          ${b.round === 'x' ? 'rounded-none!' : ''}
+        `}
         onClicked={() => onRoleButtonClicked(b.role)}
         visible={b.role !== 'text' || data.configs.filePath.endsWith('.qtd')}
         disabled={['in', 'out', 'full'].includes(b.role) && (
