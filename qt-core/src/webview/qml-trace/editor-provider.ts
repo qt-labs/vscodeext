@@ -11,6 +11,7 @@ import {
   CustomDocumentOpenContext
 } from 'vscode';
 
+import { telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import {
   createWebviewHtml,
@@ -78,6 +79,8 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
       controller.dispose();
       this._controllers.delete(panel);
     });
+
+    telemetry.sendEvent('QMLTrace:resolveCustomEditor');
 
     return Promise.resolve();
   }
