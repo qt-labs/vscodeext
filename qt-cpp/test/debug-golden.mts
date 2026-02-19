@@ -405,11 +405,11 @@ export function materializeLocalSnapshot(
   sortTree(promoted);
   if (process.env.NATVIS_VERBOSE === '1') {
     const qString = promoted.find(
-      (p) => p.name === 'containerTypes.qHashStringInt'
+      (p) => p.name === 'containerTypes.qVariantList'
     );
     if (qString) {
       console.log(
-        '[natvis.test] Snapshot for containerTypes.qHashStringInt:\n' +
+        '[natvis.test] Snapshot for containerTypes.qVariantList:\n' +
           JSON.stringify(snapshotToJSON(qString), null, 2)
       );
     }
@@ -513,7 +513,7 @@ export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
   'QPair<*,*>': ['std::pair'],
   'QHash<*,*>': ['QVariantHash'],
   'QMap<*,*>': ['QVariantMap'],
-  CoreStateFlags: ['QFlags<CoreStateFlag>']
+  CoreStateFlags: ['QFlags<CoreStateFlag>', 'QFlags<*>']
 };
 
 /**

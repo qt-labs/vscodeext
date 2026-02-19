@@ -786,6 +786,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     children: [
       {
         name: '[first]',
+        value: 'pair-key',
         knownProblem: {
           win32:
             'QPair<QString,int> children are not reliably materialized; ' +
@@ -901,7 +902,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   // QFlags (NatVis for QFlags<*> is numeric: {($T1)i})
   {
     name: 'coreStateTypes.qFlagsNone',
-    type: 'CoreStateFlags',
+    type: 'QFlags<*>',
     value: '0',
     knownProblem: {
       darwin:
@@ -916,7 +917,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     // This is the typedef created by Q_DECLARE_FLAGS(CoreStateFlags, CoreStateFlag)
     // NatVis applies via the underlying QFlags<*> rule.
     name: 'coreStateTypes.qFlags',
-    type: 'CoreStateFlags',
+    type: 'QFlags<*>',
     value: '3',
     knownProblem: {
       darwin:

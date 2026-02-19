@@ -405,7 +405,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
         );
       }
 
-      const { mismatches, goodNewsNames } = findMismatchedSnapshotEntries(
+      const { mismatches, statsByRoot } = findMismatchedSnapshotEntries(
         snapshot,
         goldenSnapshot,
         natvis
@@ -416,10 +416,8 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 
       if (SHOW_SUMMARY) {
         printNatvisSummary({
-          natvisSnapshot: snapshot,
           goldenSnapshot,
-          mismatches,
-          goodNewsNames,
+          statsByRoot,
           natvis,
           natvisPath,
           wsFolder
