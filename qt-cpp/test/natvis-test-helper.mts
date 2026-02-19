@@ -21,11 +21,6 @@ function indexByName<T extends { name: string }>(
   return m;
 }
 
-type ChildrenMismatch = {
-  expectedChild: GoldenSnapshot;
-  actualChild?: Snapshot;
-};
-
 function resolvesKnownProblem(
   kp: string | ValueByPlatform | undefined,
   platform: NodeJS.Platform
@@ -42,87 +37,6 @@ function resolvesKnownProblem(
     default:
       return kp.all;
   }
-}
-/**
- * Find the first mismatch in NatVis children, treating the golden children list as a **subset**:
- * - Every golden child must exist in actual children (matched by full child `name`)
- * - If the golden child specifies `type`, it must be type-compatible
- * - If the golden child specifies `value`, it must match exactly (after snapshot normalization)
- * - Actual may contain extra children (ignored)
- *
- * Returns the first failing golden child (and the corresponding actual child if present),
- * or `undefined` if all asserted children match.
- *
- * Debug output is intentionally minimal. Set `QT_TEST_DEBUG=1` to see per-failure details.
- */
-function findFirstChildrenMismatch(
-  actualNode: Snapshot,
-  expectedNode: GoldenSnapshot,
-  natvis: NatvisTypes,
-  platform: NodeJS.Platform
-): ChildrenMismatch | undefined {
-  const expectedChildren = expectedNode.children ?? [];
-  if (expectedChildren.length === 0) return undefined;
-
-  const actualByChildName = indexByName(actualNode.children);
-
-  for (const ec of expectedChildren) {
-    const ac = actualByChildName.get(ec.name);
-
-    if (!ac) {
-      const kp = resolvesKnownProblem(ec.knownProblem, platform);
-      if (kp) {
-        continue;
-      } // missing but known-problem: ignore and keep scanning
-      if (process.env.QT_TEST_DEBUG === '1') {
-        console.log(
-          `[natvis.test][children][FAIL] missing child\n` +
-            `  root:     ${expectedNode.name}\n` +
-            `  expected: ${ec.name}`
-        );
-      }
-      return { expectedChild: ec };
-    }
-
-    if (!areTypesCompatible(ac.type, ec.type, natvis)) {
-      const kp = resolvesKnownProblem(ec.knownProblem, platform);
-      if (kp) {
-        continue;
-      }
-      if (process.env.QT_TEST_DEBUG === '1') {
-        console.log(
-          `[natvis.test][children][FAIL] type mismatch\n` +
-            `  root:     ${expectedNode.name}\n` +
-            `  child:    ${ec.name}\n` +
-            `  expected: ${ec.type ?? '<none>'}\n` +
-            `  actual:   ${ac.type ?? '<none>'}`
-        );
-      }
-      return { expectedChild: ec, actualChild: ac };
-    }
-
-    if (ec.value !== undefined && ac.value !== ec.value) {
-      const kp = resolvesKnownProblem(ec.knownProblem, platform);
-      if (kp) {
-        continue;
-      }
-      if (process.env.QT_TEST_DEBUG === '1') {
-        console.log(
-          `[natvis.test][children][FAIL] value mismatch\n` +
-            `  root:     ${expectedNode.name}\n` +
-            `  child:    ${ec.name}\n` +
-            `  expected: ${ec.value}\n` +
-            `  actual:   ${ac.value ?? '<none>'}`
-        );
-      }
-      return { expectedChild: ec, actualChild: ac };
-    }
-
-    const nested = findFirstChildrenMismatch(ac, ec, natvis, platform);
-    if (nested) return nested;
-  }
-
-  return undefined;
 }
 
 /**
@@ -255,28 +169,27 @@ export function printUncoveredNatvisBases(params: {
  * This function is purely diagnostic: it does not affect test pass/fail.
  *
  * It prints:
- *  - The NatVis file label (workspace-relative if possible)
- *  - The NatVis status summary table (and the "uncovered NatVis base patterns" list),
- *    both produced by `printNatvisTypeStatusTable(...)`.
+ *  - The NatVis file label (workspace-relative if possible).
+ *  - The NatVis status summary table, derived entirely from `statsByRoot`
+ *    (root/children slices) and the golden snapshot.
+ *  - The list of NatVis base patterns that were not exercised in this run
+ *    (coverage report).
+ *
+ * The summary reflects the already-computed comparison results:
+ *  - Root and children statuses are read from `StatsByRoot`.
+ *  - No additional assessment or mismatch logic is performed here.
+ *
+ * This function is a thin logging wrapper around
+ * `printNatvisTypeStatusTable(...)`.
  */
 export function printNatvisSummary(params: {
-  natvisSnapshot: readonly Snapshot[];
   goldenSnapshot: readonly GoldenSnapshot[];
-  mismatches: readonly SnapshotMismatch[];
-  goodNewsNames: ReadonlySet<string>;
+  statsByRoot: StatsByRoot;
   natvis: NatvisTypes;
   natvisPath: string | undefined;
   wsFolder: vscode.WorkspaceFolder;
 }): void {
-  const {
-    natvisSnapshot,
-    goldenSnapshot,
-    mismatches,
-    goodNewsNames,
-    natvis,
-    natvisPath,
-    wsFolder
-  } = params;
+  const { goldenSnapshot, statsByRoot, natvis, natvisPath, wsFolder } = params;
 
   let natvisFileLabel: string = natvisPath ?? '<unknown>';
   if (natvisPath) {
@@ -293,10 +206,8 @@ export function printNatvisSummary(params: {
   );
 
   printNatvisTypeStatusTable({
-    natvisSnapshot,
     goldenSnapshot,
-    mismatches,
-    goodNewsNames,
+    statsByRoot,
     natvis
   });
 }
@@ -305,25 +216,35 @@ export function printNatvisSummary(params: {
  * Status of a NatVis table entry at a given validation level.
  *
  * Meanings:
- *   - 'OK'   : Variable value matches the golden snapshot and is not marked
- *              as a knownProblem.
- *   - 'KP'   : Validation is disabled because the golden entry is marked
- *              as knownProblem on this platform.
- *   - 'FAIL' : A real mismatch detected after knownProblem filtering
- *              (value mismatch, extra variable, or missing expected variable).
- *   - '-'    : No children documented in the natvis file
- *  - '?'     : Not evaluated yet.
+ *   - 'OK'   : The slice was evaluated and fully matches the golden snapshot
+ *              (no knownProblem involved).
+ *   - 'KP'   : The golden entry is marked as knownProblem on this platform
+ *              and validation is therefore suppressed.
+ *   - 'KP*'  : The entry is marked as knownProblem, but it unexpectedly matches
+ *              the golden value (good news).
+ *   - 'FAIL' : A real mismatch was detected (after knownProblem filtering),
+ *              including missing variables or value differences.
+ *   - 'x'    : The slice could not be evaluated (unknown), typically because
+ *              a root-level failure prevented reliable comparison.
+ *   - '?'    : The slice was intentionally not evaluated (e.g. no golden
+ *              children defined), so no success/failure/KP state applies.
  */
-type TypeStatus = 'OK' | 'KP' | 'FAIL' | '-' | '?';
+type TypeStatus = 'OK' | 'KP' | 'KP*' | 'FAIL' | 'x' | '?';
 
 /**
  * Sorting mode for the NatVis status summary table.
  *
- *   - 'status'          : Sort rows strictly by status severity (OK → KP → FAIL → '-'),
- *                         then by NatVis type and variable name.
- *   - 'status_grouped'  : Group rows by NatVis type, ordered by the *best*
- *                         status seen for that NatVis type, then sort within
- *                         each group by variable status and name.
+ *   - 'status'
+ *       Sort rows strictly by root status severity
+ *       (OK < KP* < KP < FAIL < x < ?),
+ *       then by NatVis type and variable name.
+ *
+ *   - 'status_grouped'
+ *       Group rows by NatVis type, ordered by the *best*
+ *       (least severe) root status observed for that NatVis type.
+ *       Within each group, rows are sorted by:
+ *         1) root status severity
+ *         2) variable name
  */
 type SortMode = 'status' | 'status_grouped';
 
@@ -334,13 +255,21 @@ type SortMode = 'status' | 'status_grouped';
  * Each row represents one top-level debugger variable.
  */
 type NatvisTableRowLike = {
-  /** Canonical NatVis family (e.g. QList<*>, QCborValue) */
+  /**
+   * NatVis type label shown in the table.
+   * This is typically resolved from the exercised debugger type
+   * (if it matches a NatVis <Type Name="..."> entry),
+   * otherwise it may fall back to the golden-declared type.
+   */
   natvisType: string;
-  /** Concrete C++ type reported by the debugger (e.g. QList<int>) */
+
+  /** Concrete C++ type reported by the debugger (from Locals). */
   exercisedType: string;
-  /** Fully qualified variable name in the debugger snapshot */
+
+  /** Fully qualified variable name in the debugger snapshot. */
   varName: string;
-  /** Root-level validation status for this variable */
+
+  /** Root-level validation status for this variable. */
   root: TypeStatus;
 };
 
@@ -348,16 +277,29 @@ type NatvisTableRowLike = {
  * Numeric ordering for TypeStatus values.
  *
  * Lower numbers are "better" and sort first.
+ *
+ * Ordering semantics:
+ *   OK   < KP* < KP < FAIL < x < ?
+ *
+ * Where:
+ *   - OK   : fully validated and correct
+ *   - KP*  : knownProblem exists but now matches (good news)
+ *   - KP   : knownProblem (assertion disabled)
+ *   - FAIL : real mismatch
+ *   - x    : could not be evaluated (e.g. root-level failure prevented comparison)
+ *   - ?    : unevaluated (nothing to compare, e.g. no golden children)
+ *
  * Used to:
  *   - Order rows by severity.
- *   - Compute the best (least severe) root status for a NatVis type group.
+ *   - Compute the best (least severe) root status for grouping.
  */
 const STATUS_ORDER: Readonly<Record<TypeStatus, number>> = {
   OK: 0,
-  KP: 1,
-  FAIL: 2,
-  '?': 3,
-  '-': 4
+  'KP*': 1,
+  KP: 2,
+  FAIL: 3,
+  x: 4,
+  '?': 5
 };
 
 /**
@@ -366,12 +308,17 @@ const STATUS_ORDER: Readonly<Record<TypeStatus, number>> = {
  * Controlled via the NATVIS_TABLE_SORT environment variable.
  *
  * Supported values:
- *   - 'status'          : Sort rows strictly by status severity.
- *   - 'status_grouped'  : Group rows by NatVis type and order groups by their
- *                         best (least severe) status.
+ *   - 'status'
+ *       Sort rows strictly by root status severity (OK < KP* < KP < FAIL < x < ?),
+ *       then by NatVis type and variable name.
+ *
+ *   - 'status_grouped'
+ *       Group rows by resolved NatVis type and order groups by the *best*
+ *       (least severe) root status observed in that group.
+ *       Within each group, rows are sorted by status and variable name.
  *
  * Any unset or invalid value defaults to 'status_grouped', which provides
- * a more compact and NatVis-centric view.
+ * a more compact, NatVis-centric overview.
  */
 function getNatvisTableSortMode(): SortMode {
   const raw = (process.env.NATVIS_TABLE_SORT ?? '').trim().toLowerCase();
@@ -386,10 +333,14 @@ function getNatvisTableSortMode(): SortMode {
  *
  * For each NatVis family (e.g. QList<*>), the smallest numeric rank
  * from STATUS_ORDER is kept:
- *   OK < KP < FAIL < '-'
+ *
+ *   OK < KP* < KP < FAIL < x < ?
+ *
+ * Only the *root* status is considered for grouping. Children status
+ * does not affect group ordering.
  *
  * @param rows  Table rows representing individual variables.
- * @returns     Map from NatVis type to its best (lowest-severity) status rank.
+ * @returns     Map from NatVis type to its best (lowest-severity) root status rank.
  */
 function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
   rows: readonly T[]
@@ -414,7 +365,10 @@ function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
  * Two sorting strategies are supported:
  *
  * 1) **'status'**
- *    - Sort rows directly by root status severity (OK < KP < FAIL < '-').
+ *    - Sort rows directly by *root* status severity:
+ *
+ *        OK < KP* < KP < FAIL < x < ?
+ *
  *    - Tie-breakers:
  *        a) NatVis type (alphabetical)
  *        b) Variable name (alphabetical)
@@ -423,7 +377,7 @@ function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
  *
  * 2) **'status_grouped'** (default)
  *    - Group rows by NatVis type (e.g. QList<*>).
- *    - Order NatVis type groups by their *best* (least severe) status
+ *    - Order NatVis type groups by their *best* (least severe) root status
  *      observed across all variables in that group.
  *    - Within each group:
  *        a) Root status severity
@@ -431,6 +385,10 @@ function buildBestStatusByNatvisType<T extends NatvisTableRowLike>(
  *
  *    This mode provides a compact, NatVis-centric overview where related
  *    concrete types stay visually grouped.
+ *
+ * Notes:
+ * - Only the *root* status is used for sorting/grouping. Children status does not
+ *   affect ordering.
  *
  * @param rows  Mutable list of NatVis table rows to be sorted in place.
  */
@@ -455,8 +413,8 @@ function sortNatvisRows<T extends NatvisTableRowLike>(rows: T[]): void {
   const bestByNatvis = buildBestStatusByNatvisType(rows);
 
   rows.sort((a, b) => {
-    const ga = bestByNatvis.get(a.natvisType) ?? STATUS_ORDER['-'];
-    const gb = bestByNatvis.get(b.natvisType) ?? STATUS_ORDER['-'];
+    const ga = bestByNatvis.get(a.natvisType) ?? STATUS_ORDER['?'];
+    const gb = bestByNatvis.get(b.natvisType) ?? STATUS_ORDER['?'];
     if (ga !== gb) return ga - gb;
 
     const byNatvis = a.natvisType.localeCompare(b.natvisType);
@@ -482,35 +440,44 @@ function parseArity(typePattern: string): { base: string; arity: number } {
   const p = splitOuterTemplate(typePattern);
   return { base: p.base, arity: p.arity };
 }
+
 /**
  * Compute the set of NatVis base `<Type Name="...">` patterns that should be
  * considered **covered** when the debugger reports a concrete exercised runtime type.
  *
  * Why this exists:
- * - A single concrete type can match multiple NatVis rules at once.
+ * - A single concrete runtime type can satisfy multiple NatVis `<Type Name="...">` rules.
  *   Example: `QBasicAtomicPointer<void>` matches both:
- *     • `QBasicAtomicPointer<void>` (exact specialization)
- *     • `QBasicAtomicPointer<*>`    (generic wildcard)
- * - Coverage accounting must mark *all* matching NatVis bases as covered, otherwise
- *   the specialized rule can incorrectly show up as “missing” while the wildcard
- *   rule shows up as “covered”.
+ *     - `QBasicAtomicPointer<void>` (exact specialization)
+ *     - `QBasicAtomicPointer<*>`    (generic wildcard family)
+ * - Coverage must mark *all* matching NatVis bases as covered; otherwise an exact
+ *   specialization may be reported as “missing” even though the runtime type exercised it.
+ *
+ * What this function returns:
+ * - A set of NatVis base patterns (strings that exist in `natvis.bases`) that should be
+ *   added to the “covered” set for coverage reporting.
  *
  * How it works:
- * 1) Normalize the exercised type spelling (strip class/struct noise, normalize spaces).
- * 2) Derive candidate keys that might match NatVis bases:
- *    - exact normalized spelling (covers specializations)
- *    - wildcard family form (base<*>, base<*,*>, ...)
- *    - canonical base via AlternativeType / extra alias mapping
- * 3) Filter candidates down to only real NatVis base patterns present in `natvis.bases`,
- *    also resolving any `altToBase` mappings to ensure AlternativeType spellings count
- *    as covering their base rule.
+ * 1) Normalize the exercised type spelling (`normalizeType`) and split the outer template
+ *    (`splitOuterTemplate`) to get:
+ *      - base name (e.g. QBasicAtomicPointer)
+ *      - template arity (e.g. 1 for <T>, 2 for <K,V>, ...)
+ * 2) Build a small set of candidate keys derived from the exercised type:
+ *      - exact normalized type (covers specializations like `Type<void>`)
+ *      - wildcard family for the same base/arity (e.g. `Type<*>`, `Type<*,*>`)
+ *      - canonicalized base/family via AlternativeType / aliases (`canonicalBase`)
+ * 3) Keep only candidates that correspond to real NatVis bases:
+ *      - if candidate itself is in `natvis.bases`, include it
+ *      - if candidate is an AlternativeType that maps via `natvis.altToBase`, include its base
+ * 4) Additionally, include any wildcard NatVis base patterns that share the same *base name*
+ *    as the exercised type and whose wildcard arity is less-or-equal to the exercised arity.
+ *    This is done by scanning `natvis.bases` and selecting patterns like `Base<*>`, `Base<*,*>`, ...
  *
- * Output:
- * - A set of NatVis base patterns to add to `coveredNatvisBases` for coverage reporting.
- *
- * Note:
- * - This is for coverage accounting only. Table display should still pick a single
- *   “best” base (see `pickMostSpecificNatvisBase`) for readability.
+ * Notes:
+ * - This is *coverage accounting only*. Table display should still pick a single best label
+ *   (see `pickMostSpecificNatvisBase`) for readability.
+ * - The wildcard scan is O(|natvis.bases|). That’s fine for NatVis sizes, but it is a deliberate
+ *   choice (it is not just using the 2-3 direct candidate keys).
  */
 function computeCoveredNatvisBasesForType(
   exercisedType: string,
@@ -558,27 +525,28 @@ function computeCoveredNatvisBasesForType(
 }
 
 /**
- * Choose the single NatVis `<Type Name="...">` base pattern to *display* in the
- * NatVis status summary table when a concrete exercised runtime type matches
- * multiple NatVis rules.
+ * Pick a single NatVis `<Type Name="...">` base pattern to *display* in the
+ * NatVis status summary table when one exercised runtime type covers multiple
+ * NatVis rules.
  *
  * Why this exists:
- * - Some types have both a generic wildcard rule and a specialization in the NatVis file
- *   (example: `QBasicAtomicPointer<*>` and `QBasicAtomicPointer<void>`).
- * - For coverage accounting we mark *all* matching NatVis bases as covered, but the
- *   summary table needs exactly one “NatVis Type” label per row.
+ * - A single concrete runtime type can match multiple NatVis `<Type>` patterns.
+ *   Example: `QBasicAtomicPointer<void>` can match both:
+ *     - `QBasicAtomicPointer<void>` (exact specialization)
+ *     - `QBasicAtomicPointer<*>`    (wildcard family)
+ * - Coverage accounting marks *all* matching NatVis bases as covered, but the
+ *   summary table needs exactly one label per row for readability.
  *
  * Selection strategy (most specific wins):
- * - Prefer patterns without `*` (exact specializations) over wildcard families.
- * - If still tied, prefer longer patterns as a stable tie-breaker.
+ * - Prefer candidates that do not contain `*` (treat as “more specific”).
+ * - If still tied, prefer the longer string as a stable tie-breaker.
  *
  * Fallback:
- * - If there are no candidates, fall back to `computeNatvisFamily(...)` so behavior
- *   remains consistent with older logic.
+ * - If `candidates` is empty, fall back to `computeNatvisFamily(exercisedType, natvis)`
+ *   to preserve older behavior.
  *
- * Note:
- * - This function does not affect coverage (covered vs missing). It is only for
- *   table readability and correct attribution of specializations.
+ * Notes:
+ * - This function affects only table labeling, not coverage accounting.
  */
 function pickMostSpecificNatvisBase(
   candidates: ReadonlySet<string>,
@@ -603,9 +571,64 @@ function pickMostSpecificNatvisBase(
   scored.sort((a, b) => b.score - a.score);
   return scored[0]!.c;
 }
+
 /**
- * Compute the "NatVis family" key used to group concrete exercised types into
- * a single NatVis type bucket for the summary table.
+ * Resolve the NatVis `<Type Name="...">` label to display in the summary table
+ * for a given debugger variable.
+ *
+ * Strategy:
+ * 1) Prefer a NatVis base pattern that actually matches the concrete
+ *    `exercisedType` reported by the debugger.
+ *    - Uses `computeCoveredNatvisBasesForType(...)` to determine all
+ *      matching NatVis `<Type>` entries.
+ *    - If one or more matches exist, selects the most specific one via
+ *      `pickMostSpecificNatvisBase(...)`.
+ *
+ * 2) If the exercised type cannot be mapped to any NatVis `<Type>` entry,
+ *    fall back to the `goldenType`, but only if that type exists in
+ *    `natvis.bases`.
+ *
+ * 3) As a final fallback, return `goldenType` (or "<none>") so that the
+ *    table remains readable even if neither locals nor golden type can
+ *    be resolved to a known NatVis base.
+ *
+ * Notes:
+ * - This function only affects how the "NatVis Type" column is displayed.
+ * - It does not influence validation logic or coverage accounting.
+ */
+function resolveNatvisTypeForRow(params: {
+  exercisedType: string;
+  goldenType: string | undefined;
+  natvis: NatvisTypes;
+}): string {
+  const { exercisedType, goldenType, natvis } = params;
+
+  // 1) Try to find something that actually exists in the NatVis file from locals type
+  const covered = computeCoveredNatvisBasesForType(exercisedType, natvis);
+  if (covered.size > 0) {
+    return pickMostSpecificNatvisBase(covered, exercisedType, natvis);
+  }
+
+  // 2) If locals type cannot be mapped to any natvis <Type Name="...">, use golden as fallback
+  if (goldenType && natvis.bases.has(goldenType)) {
+    return goldenType;
+  }
+
+  // 3) Last resort (keeps table readable even if both fail)
+  return goldenType ?? '<none>';
+}
+
+/**
+ * Compute a stable "NatVis family" key used to bucket concrete exercised types
+ * for reporting and grouping when we cannot (or do not want to) pick a single
+ * concrete NatVis `<Type Name="...">` base pattern.
+ *
+ * This is primarily a **fallback grouping key**. When possible, the summary table
+ * should prefer displaying an actual NatVis base pattern resolved from the locals
+ * type (see `resolveNatvisTypeForRow`), but this function remains useful to:
+ * - keep grouping stable across template instantiations
+ * - handle AlternativeType relationships
+ * - provide a readable label when no exact NatVis base can be resolved
  *
  * Examples:
  * - "QList<int>"      -> "QList<*>"
@@ -613,19 +636,19 @@ function pickMostSpecificNatvisBase(
  * - "QStringList"     -> "QList<*>" (if NatVis declares it as an AlternativeType)
  * - "QByteArray"      -> "QByteArray" (non-template types stay as-is)
  *
- * The algorithm:
+ * Algorithm:
  * 1) Normalize the raw debugger type string (strip class/struct, normalize spaces).
  * 2) Split only the outermost template to get (base, arity).
  * 3) Canonicalize the base using NatVis AlternativeType relationships so that
  *    equivalent types share a stable bucket key.
- * 4) Prefer returning an *existing* NatVis base pattern when possible.
- * 5) Otherwise derive a wildcard pattern (e.g. base<*,*>), but only keep it if
- *    NatVis actually defines that pattern.
- * 6) Final fallback: return the base name.
+ * 4) If canonicalization yields an existing NatVis base pattern, return it.
+ * 5) Otherwise derive a wildcard family (e.g. base<*,*>), but only keep it if
+ *    NatVis defines that pattern.
+ * 6) Final fallback: return the raw base name.
  *
  * @param exercisedType  Concrete type string as reported by the debugger (may be noisy).
- * @param natvis         Parsed NatVis type metadata (base patterns and AlternativeType rules).
- * @returns              A stable grouping key used as the "NatVis Type" column in the table.
+ * @param natvis         Parsed NatVis type metadata (bases and AlternativeType rules).
+ * @returns              A stable family key suitable for grouping/reporting.
  */
 function computeNatvisFamily(
   exercisedType: string,
@@ -650,222 +673,131 @@ function computeNatvisFamily(
   return parsed.base;
 }
 
-function hasAnyKnownProblemInChildren(
-  node: GoldenSnapshot | undefined
-): boolean {
-  const walk = (n: GoldenSnapshot | undefined): boolean => {
-    if (!n) return false;
-    for (const c of n.children ?? []) {
-      if (c.knownProblem) return true;
-      if (walk(c)) return true;
-    }
-    return false;
-  };
-  return walk(node);
+/**
+ * Convert a StatSlice into a table-level TypeStatus.
+ *
+ * Mapping rules (priority order):
+ *
+ *  - 'x'    : slice.unknown === true
+ *             The node could not be evaluated at all
+ *             (typically due to a root-level failure preventing children evaluation).
+ *
+ *  - 'OK'   : slice.succeeded === true
+ *             Value (or children block) matched the golden snapshot
+ *             and is not marked as a knownProblem.
+ *
+ *  - 'FAIL' : slice.failed === true
+ *             A real mismatch was detected after knownProblem filtering.
+ *
+ *  - 'KP*'  : slice.hadKP === true && slice.kpGoodNews === true
+ *             A knownProblem exists for this platform, but the comparison
+ *             unexpectedly succeeded ("good news").
+ *
+ *  - 'KP'   : slice.hadKP === true
+ *             Validation is disabled due to a knownProblem on this platform.
+ *
+ *  - '?'    : Fallback state.
+ *             The slice was evaluated (unknown === false), but no success,
+ *             failure, or knownProblem was recorded.
+ *             For children, this typically means there were no golden
+ *             children to compare or that the root has a KP.
+ *
+ * NOTE:
+ * - 'unknown' maps exclusively to 'x'.
+ * - '?' does NOT mean unknown; it means "evaluated but nothing asserted".
+ */
+function statusFromSlice(slice: StatSlice): TypeStatus {
+  if (slice.unknown) return 'x';
+  if (slice.succeeded) return 'OK';
+  if (slice.failed) return 'FAIL';
+  if (slice.hadKP) return slice.kpGoodNews ? 'KP*' : 'KP';
+  return '?';
 }
 
 /**
  * Print a compact, per-variable NatVis status table to the test log.
  *
- * The table is intended as a quick “at a glance” overview of what the current
- * NatVis run produced, using variable names as the primary key (not types).
+ * The table is an at-a-glance summary keyed by **top-level variable name**.
+ * Each row corresponds to one root variable that appears either:
+ * - in the golden snapshot (expected), or
+ * - in the locals snapshot only (extra).
  *
- * Each row represents one top-level variable, and includes:
- *  - `natvisType`: the NatVis “family key” derived from the concrete type
- *    (e.g. QList<int> and QList<double> group under QList<*> when applicable).
- *  - `exercisedType`: the concrete debugger type for that variable (or "<none>").
- *  - `varName`: the variable name (matches how snapshots/golden are compared).
- *  - `root`: status of the top-level DisplayString value vs golden.
- *  - `children`: status of Expand children vs golden (not implemented yet, so "-").
+ * Row columns:
+ *  - natvisType      : The NatVis `<Type Name="...">` pattern chosen for display
+ *                      for this variable (prefers the most specific matching rule).
+ *  - exercisedType   : The concrete runtime type reported by the debugger.
+ *  - variable name   : The fully qualified root variable name.
+ *  - status root     : Result of comparing the root value against the golden entry.
+ *  - status children : Result of comparing children (Expand) against the golden entry.
  *
- * In addition to the table, this function also prints **uncovered NatVis base patterns**
- * (i.e. `<Type Name="...">` entries from the NatVis file that were not exercised by the
- * current snapshot). Uncovered patterns are derived from the same NatVis family keys
- * computed for table rows (via `computeNatvisFamily(...)`), and are printed via
- * `printUncoveredNatvisBases(...)`.
+ * Status computation is entirely derived from `statsByRoot` via `statusFromSlice(...)`.
+ * In particular:
+ *  - 'x' means the children could not be evaluated due to a root-level problem.
+ *  - '?' means the children slice was evaluated but nothing was asserted
+ *    (most commonly: there are no golden children for this variable yet).
  *
- * Status semantics (root column):
- *  - OK:  variable exists in both snapshot and golden, is not knownProblem, and
- *         does not appear in the mismatch list.
- *  - KP:  golden marks this variable as knownProblem for the current platform
- *         (assertion disabled even if it mismatches).
- *  - KP*: same as KP, but the variable unexpectedly matched; the variable name
- *         is present in `goodNewsNames` (“progress” indicator).
- *  - FAIL: any real mismatch for this variable (after knownProblem filtering),
- *          including:
- *            • variable present in snapshot but missing from golden
- *            • variable missing from snapshot but present in golden (unless KP)
- *            • value mismatch with no knownProblem
+ * Coverage reporting:
+ * - While building rows, the function also tracks which NatVis base patterns were
+ *   exercised by the concrete types seen in the table. It then prints the set of
+ *   NatVis bases that remain uncovered via `printUncoveredNatvisBases(...)`.
  *
- * Row construction uses two passes:
- *  1) Iterate `natvisSnapshot` to report observed variables (including
- *     snapshot-only extras).
- *  2) Iterate `goldenSnapshot` to add golden-only variables missing from
- *     the snapshot (so missing expectations are visible as FAIL/KP).
+ * Sorting:
+ * - Rows are sorted by `sortNatvisRows(...)`, controlled by `NATVIS_TABLE_SORT`
+ *   ("status" or "status_grouped").
  *
- * Sorting is delegated to `sortNatvisRows` and can be influenced via
- * NATVIS_TABLE_SORT ("status" or "status_grouped").
- *
- * @param params.natvisSnapshot Platform-normalized locals after NatVis filtering.
- * @param params.goldenSnapshot Platform-resolved golden snapshot (with knownProblem).
- * @param params.mismatches     Real mismatches returned by the comparison logic.
- * @param params.goodNewsNames  Variable names whose knownProblem entries matched (KP*).
- * @param params.natvis         Parsed NatVis type information (bases and AlternativeType rules).
+ * This function is diagnostic only (log output). It does not determine pass/fail.
  */
 export function printNatvisTypeStatusTable(params: {
-  natvisSnapshot: readonly Snapshot[];
   goldenSnapshot: readonly GoldenSnapshot[];
-  mismatches: readonly SnapshotMismatch[];
-  goodNewsNames: ReadonlySet<string>;
+  statsByRoot: StatsByRoot;
   natvis: NatvisTypes;
 }): void {
-  const { natvisSnapshot, goldenSnapshot, mismatches, goodNewsNames, natvis } =
-    params;
-
-  const failNames = new Set<string>(mismatches.map((m) => m.name));
-  // Child mismatches are reported under their full dotted child name
-  // (e.g. "coreTypes.qStringF.[size]").
-  const goldenNames = new Set<string>(goldenSnapshot.map((g) => g.name));
-
-  const childFailRoots = new Set<string>();
-  for (const m of mismatches) {
-    let n = m.name;
-
-    // If the mismatch is already a top-level variable name, it's a root mismatch, not a child mismatch.
-    if (goldenNames.has(n)) continue;
-
-    // Walk up dotted segments until we find the nearest top-level golden variable name.
-    while (true) {
-      const lastDot = n.lastIndexOf('.');
-      if (lastDot <= 0) break;
-
-      n = n.slice(0, lastDot);
-      if (goldenNames.has(n)) {
-        childFailRoots.add(n);
-        break;
-      }
-    }
-  }
+  const { goldenSnapshot, statsByRoot, natvis } = params;
 
   const goldenByName = new Map<string, GoldenSnapshot>();
+  for (const g of goldenSnapshot) goldenByName.set(g.name, g);
 
-  for (const g of goldenSnapshot) {
-    goldenByName.set(g.name, g);
-  }
   type Row = {
     natvisType: string;
     exercisedType: string;
     varName: string;
     root: TypeStatus;
     children: TypeStatus;
-    kpGoodNews: boolean;
   };
 
   const rows: Row[] = [];
-
   const coveredNatvisFamilies = new Set<string>();
 
-  for (const a of natvisSnapshot) {
-    const varName = a.name;
-    const exercisedType = a.type ?? '<none>';
+  for (const [varName, rowStats] of statsByRoot) {
+    const g = goldenByName.get(varName);
+
+    const exercisedType = rowStats.exercisedType ?? '<none>';
+
     const coveredBasesForVar = computeCoveredNatvisBasesForType(
       exercisedType,
       natvis
     );
-    for (const b of coveredBasesForVar) {
-      coveredNatvisFamilies.add(b);
-    }
+    for (const b of coveredBasesForVar) coveredNatvisFamilies.add(b);
 
-    const natvisType = pickMostSpecificNatvisBase(
-      coveredBasesForVar,
+    const natvisType = resolveNatvisTypeForRow({
       exercisedType,
+      goldenType: g?.type,
       natvis
-    );
-    const hasExpand = natvis.basesHaveExpand.get(natvisType) ?? false;
-
-    const g = goldenByName.get(varName);
-
-    let root: TypeStatus = 'OK';
-    if (!g) {
-      // Variable present in Locals but missing from golden => real failure
-      root = 'FAIL';
-    } else if (failNames.has(varName)) {
-      root = 'FAIL';
-    } else if (g.knownProblem) {
-      root = 'KP';
-    }
-
-    let children: TypeStatus;
-
-    // Case 1: golden explicitly defines children → we validate
-    if ((g?.children?.length ?? 0) > 0) {
-      //children = childFailRoots.has(varName) ? 'FAIL' : 'OK';
-      if (childFailRoots.has(varName)) {
-        children = 'FAIL';
-      } else if (hasAnyKnownProblemInChildren(g)) {
-        children = 'KP';
-      } else {
-        children = 'OK';
-      }
-    }
-    // Case 2: NatVis has Expand, but we are not validating it yet
-    else if (hasExpand) {
-      children = '?';
-    }
-    // Case 3: NatVis has no Expand at all
-    else {
-      children = '-';
-    }
-
-    const kpGoodNews = root === 'KP' && goodNewsNames.has(varName);
-
-    rows.push({
-      natvisType,
-      exercisedType,
-      varName,
-      root,
-      children,
-      kpGoodNews
     });
+
+    const root = statusFromSlice(rowStats.stats.root);
+
+    const children = statusFromSlice(rowStats.stats.children);
+
+    rows.push({ natvisType, exercisedType, varName, root, children });
   }
 
-  const seenNames = new Set<string>(natvisSnapshot.map((s) => s.name));
-
-  for (const g of goldenSnapshot) {
-    if (seenNames.has(g.name)) continue;
-
-    const varName = g.name;
-    const exercisedType = g.type ?? '<none>';
-    const natvisType = computeNatvisFamily(exercisedType, natvis);
-
-    let root: TypeStatus = 'OK';
-    if (failNames.has(varName)) {
-      root = 'FAIL';
-    } else if (g.knownProblem) {
-      root = 'KP';
-    } else {
-      // expected but missing and not knownProblem => FAIL is already in mismatches by name,
-      // but keep this defensive:
-      root = 'FAIL';
-    }
-
-    let children: TypeStatus = '-';
-
-    if ((g.children?.length ?? 0) > 0) {
-      children = childFailRoots.has(varName) ? 'FAIL' : 'OK';
-    }
-    const kpGoodNews = root === 'KP' && goodNewsNames.has(varName);
-
-    rows.push({
-      natvisType,
-      exercisedType,
-      varName,
-      root,
-      children,
-      kpGoodNews
-    });
-  }
   sortNatvisRows(rows);
+
+  // ---- formatting + printing stays mostly identical ----
+  // BUT: remove kpGoodNewsRoot/kpGoodNewsChildren and the label rewriting
+  // because statusFromSlice already returns KP*.
+
   const header = [
     'NatVis Type',
     'Exercised type',
@@ -874,7 +806,6 @@ export function printNatvisTypeStatusTable(params: {
     'Status children'
   ];
 
-  // Simple fixed-width formatting (good enough for logs)
   const colWidths = [0, 0, 0, 0, 0];
   const consider = (cols: string[]) => {
     for (let i = 0; i < cols.length; i++) {
@@ -884,8 +815,7 @@ export function printNatvisTypeStatusTable(params: {
 
   consider(header);
   for (const r of rows) {
-    const rootLabel = r.root === 'KP' && r.kpGoodNews ? 'KP*' : r.root;
-    consider([r.natvisType, r.exercisedType, r.varName, rootLabel, r.children]);
+    consider([r.natvisType, r.exercisedType, r.varName, r.root, r.children]);
   }
 
   printUncoveredNatvisBases({ natvis, coveredNatvisFamilies });
@@ -894,54 +824,295 @@ export function printNatvisTypeStatusTable(params: {
     s + ' '.repeat(Math.max(0, w - s.length));
   const line = (cols: string[]) =>
     cols.map((c, i) => pad(c, colWidths[i]!)).join(' | ');
+
   console.log(
     `[natvis.summary] Qt Type natvis status summary (covered types only):`
   );
   console.log('  ' + line(header));
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
+
   for (const r of rows) {
-    const rootLabel = r.root === 'KP' && r.kpGoodNews ? 'KP*' : r.root;
     console.log(
       '  ' +
-        line([r.natvisType, r.exercisedType, r.varName, rootLabel, r.children])
+        line([r.natvisType, r.exercisedType, r.varName, r.root, r.children])
     );
   }
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('-|-'));
-  console.log(`  (covers variables from snapshot + golden expectations)`);
+  console.log('  (covers variables from snapshot + golden expectations)');
   console.log('  Columns:');
   console.log(
     '    root     = status of the top-level variable value vs golden'
   );
   console.log('    children = status of NatVis Expand children vs golden');
-  console.log('              (not explored yet, so currently always "-")');
   console.log('  Status codes:');
   console.log('    OK   = matches golden and not marked knownProblem');
   console.log(
     '    KP   = assertion disabled due to knownProblem on this platform'
   );
+  console.log('    KP*  = knownProblem exists but now matches (good news)');
   console.log('    FAIL = mismatches golden (after knownProblem filtering)');
-  console.log('    -    = NatVis type has no Expand');
+  console.log('    x    = could not be evaluated');
   console.log(
-    '    ?    = NatVis type has Expand, but children are not validated yet'
+    '    ?    = Children not covered in golden snapshot (status not evaluated yet)'
   );
   console.log('  ' + colWidths.map((w) => '-'.repeat(w)).join('---'));
 }
 
 /**
- * Describes a single *real* mismatch between a runtime NatVis snapshot
- * and the expected golden snapshot.
+ * Recursively compare a single golden snapshot node against the corresponding
+ * runtime snapshot node and update comparison statistics.
  *
- * A mismatch can represent one of three situations:
- *   - An **extra variable** present in Locals but not described by the golden
- *     snapshot (`actual` defined, `expected` undefined).
- *   - A **missing variable** expected by the golden snapshot but absent
- *     from Locals (`expected` defined, `actual` undefined).
- *   - A **value or type difference** for a variable present in both snapshots
- *     (`actual` and `expected` both defined but not equal).
+ * This function is the core of NatVis validation. It:
  *
- * Entries covered by a `knownProblem` in the golden snapshot are filtered out
- * before this structure is produced; therefore, every `SnapshotMismatch`
- * represents a genuine test failure that should be surfaced to the user.
+ * 1) Compares presence:
+ *    - Missing actual node:
+ *        • If marked as knownProblem on this platform → mark KP.
+ *        • Otherwise → record mismatch and mark FAIL.
+ *
+ * 2) Validates type compatibility:
+ *    - Uses `areTypesCompatible(...)`.
+ *    - A root-level type incompatibility is considered fatal and throws.
+ *
+ * 3) Compares value (DisplayString):
+ *    - If values differ:
+ *        • If knownProblem → mark KP.
+ *        • Otherwise → record mismatch and mark FAIL.
+ *    - If values match:
+ *        • If knownProblem → mark KP + KP* (good news).
+ *        • Otherwise → mark OK.
+ *
+ * 4) Validates children (one level only):
+ *    - Children are only evaluated for the root call (`isRoot === true`).
+ *    - If the golden entry defines children, each expected child is compared
+ *      against the corresponding runtime child (subset comparison).
+ *    - Children status is aggregated in `stats.children`.
+ *    - If no golden children are defined, the children slice remains
+ *      "unset" (unknown=false, no flags set), which maps to '?'.
+ *
+ * Status model:
+ *  - `stats.root` and `stats.children` are updated via small helpers
+ *    (markSucceeded, markFail, markKPSeen, markKPGoodNews).
+ *  - `unknown` indicates “could not be evaluated” and maps to 'x'.
+ *  - If no flags are set and unknown=false, the status falls back to '?'.
+ *
+ * Notes:
+ *  - Only one child level is currently validated (no grandchildren).
+ *  - The golden model is treated as authoritative; extra runtime children
+ *    are ignored (subset comparison).
+ *  - This function does not itself decide pass/fail; it records mismatches
+ *    and updates `CompareStats`, which are later rendered by the summary table.
+ */
+function compareNode(
+  actual: Snapshot | undefined,
+  expected: GoldenSnapshot,
+  natvis: NatvisTypes,
+  platform: NodeJS.Platform,
+  mismatches: SnapshotMismatch[],
+  stats: CompareStats,
+  isRoot: boolean
+): void {
+  const kp = resolvesKnownProblem(expected.knownProblem, platform);
+
+  const expectedChildren = expected.children ?? [];
+  const hasGoldenChildren = expectedChildren.length > 0;
+
+  const clearUnknownThisSlice = () => {
+    if (isRoot) stats.root.unknown = false;
+    else stats.children.unknown = false;
+  };
+
+  const markSucceeded = () => {
+    if (isRoot) stats.root.succeeded = true;
+    else stats.children.succeeded = true;
+    clearUnknownThisSlice();
+  };
+
+  const markFail = () => {
+    if (isRoot) stats.root.failed = true;
+    else stats.children.failed = true;
+    clearUnknownThisSlice();
+  };
+
+  const markKPSeen = () => {
+    if (isRoot) stats.root.hadKP = true;
+    else stats.children.hadKP = true;
+    clearUnknownThisSlice();
+  };
+
+  const markKPGoodNews = () => {
+    if (isRoot) stats.root.kpGoodNews = true;
+    else stats.children.kpGoodNews = true;
+    clearUnknownThisSlice();
+  };
+
+  // ----------------------------
+  // Missing node (root or child)
+  // ----------------------------
+  if (!actual) {
+    if (kp) {
+      // Known-problem: do not mark succeeded.
+      markKPSeen();
+
+      // If root is missing but golden has children, treat children as KP too (by extension).
+      if (isRoot && hasGoldenChildren) {
+        stats.children.hadKP = true;
+        stats.children.unknown = false; // so this becomes KP (not x)
+      }
+
+      return;
+    }
+
+    // Real missing variable/child.
+    mismatches.push({ name: expected.name, expected });
+    markFail();
+
+    return;
+  }
+
+  // ----------------------------
+  // Type check (hard stop)
+  // ----------------------------
+  if (!areTypesCompatible(actual.type, expected.type, natvis)) {
+    // Root type mismatch means we cannot evaluate children reliably.
+    if (isRoot && hasGoldenChildren) {
+      stats.children.unknown = true; // x
+    }
+
+    throw new Error(
+      `[natvis.test] Type incompatibility for '${expected.name}'`
+    );
+  }
+
+  // ----------------------------
+  // Root/child value compare
+  // ----------------------------
+  const sameValue = actual.value === expected.value;
+
+  if (!sameValue) {
+    if (kp) {
+      markKPSeen();
+    } else {
+      mismatches.push({ name: expected.name, actual, expected });
+      markFail();
+    }
+  } else {
+    if (kp) {
+      // KP but succeeded => KP*
+      markKPSeen();
+      markKPGoodNews();
+    } else {
+      // True success
+      markSucceeded();
+    }
+  }
+
+  // If the *root* is a known-problem on this platform, do NOT explore children.
+  // Treat children as "unexplored" when golden expects them.
+  if (isRoot && kp) {
+    stats.children.unknown = false; // so table shows ? (not x)
+    return;
+  }
+  // ----------------------------
+  // Children compare (subset)
+  // ----------------------------
+  if (!isRoot) return; //  only validate one child level (no grandchildren yet)
+
+  // We *are* evaluating children, so ensure children is not "unknown/x".
+  stats.children.unknown = false;
+
+  if (!hasGoldenChildren) {
+    // Nothing to compare => children slice should remain "unset"
+    // so statusFromSlice() returns fallback '?'.
+    return;
+  }
+
+  const actualByChild = indexByName(actual.children);
+
+  for (const ec of expectedChildren) {
+    const ac = actualByChild.get(ec.name);
+    compareNode(ac, ec, natvis, platform, mismatches, stats, false);
+  }
+
+  // If we compared children and none failed/KP, children succeeded.
+  if (!stats.children.failed && !stats.children.hadKP) {
+    stats.children.succeeded = true;
+  }
+}
+
+/**
+ * Represents the validation state of a single comparison slice
+ * (either the root value or the children level).
+ *
+ * Exactly one logical outcome is expected in normal cases:
+ *   - succeeded  → maps to 'OK'
+ *   - failed     → maps to 'FAIL'
+ *   - hadKP      → maps to 'KP' (or 'KP*' if kpGoodNews is also true)
+ *   - unknown    → maps to 'x' (could not be evaluated)
+ *
+ * If none of the flags are set and `unknown === false`,
+ * the status falls back to '?' (unevaluated / not applicable).
+ */
+export type StatSlice = {
+  succeeded: boolean;
+  failed: boolean;
+  hadKP: boolean;
+  kpGoodNews: boolean;
+  unknown: boolean;
+};
+
+/**
+ * Aggregated comparison result for a single top-level variable.
+ *
+ * - `root`     describes the status of the variable’s top-level value
+ *              (DisplayString comparison).
+ * - `children` describes the status of its NatVis Expand children
+ *              (currently one level only).
+ */
+export type CompareStats = {
+  root: StatSlice;
+  children: StatSlice;
+};
+
+/**
+ * Per-variable entry stored in `StatsByRoot`.
+ *
+ * - `exercisedType` is the concrete C++ type reported by the debugger
+ *   for this variable (used for NatVis family resolution and coverage).
+ * - `stats` contains the aggregated root and children validation state.
+ */
+export type RowStats = {
+  exercisedType: string;
+  stats: CompareStats;
+};
+
+export type StatsByRoot = ReadonlyMap<string, RowStats>;
+
+/**
+ * Describes a single *real* mismatch detected during NatVis snapshot comparison.
+ *
+ * A mismatch represents a comparison failure after all `knownProblem`
+ * exemptions have been applied.
+ *
+ * It can correspond to one of the following situations:
+ *
+ *   - **Extra variable**
+ *       Present in the debugger snapshot but not defined in the golden snapshot.
+ *       (`actual` defined, `expected` undefined)
+ *
+ *   - **Missing variable**
+ *       Defined in the golden snapshot but not present in the debugger snapshot.
+ *       (`expected` defined, `actual` undefined)
+ *
+ *   - **Value mismatch**
+ *       Variable present in both snapshots but with a differing value.
+ *       (`actual` and `expected` both defined)
+ *
+ * Notes:
+ * - Type incompatibilities are treated as hard errors and are not represented
+ *   as `SnapshotMismatch` entries.
+ * - Entries marked as `knownProblem` for the current platform are excluded
+ *   before this structure is produced.
+ * - Therefore, every `SnapshotMismatch` represents a genuine test failure.
  */
 export interface SnapshotMismatch {
   readonly name: string;
@@ -949,202 +1120,123 @@ export interface SnapshotMismatch {
   readonly expected?: GoldenSnapshot;
 }
 
-function pushChildMismatch(
-  mismatches: SnapshotMismatch[],
-  fail: ChildrenMismatch
-): void {
-  if (fail.actualChild) {
-    mismatches.push({
-      name: fail.expectedChild.name,
-      actual: fail.actualChild,
-      expected: fail.expectedChild
-    });
-  } else {
-    mismatches.push({
-      name: fail.expectedChild.name,
-      expected: fail.expectedChild
-    });
-  }
-}
-
 /**
- * Compares a debugger snapshot against a platform-resolved golden snapshot and
- * returns the list of real NatVis mismatches.
+ * Compare the runtime NatVis snapshot against the golden snapshot and
+ * compute:
  *
- * Matching is done by variable name (exact match). The comparison proceeds in
- * two passes:
+ *   1) The list of real mismatches (`SnapshotMismatch[]`)
+ *   2) Per-root comparison statistics (`StatsByRoot`) used by the summary table
  *
- * 1) Walk actual debugger locals:
- *    - If a variable is not described by the golden snapshot, it is reported as
- *      an extra entry.
- *    - If the variable exists in the golden snapshot:
- *        - Its type is first checked for semantic compatibility using NatVis
- *          information (base types and AlternativeType rules).
- *          Incompatible types indicate a real error (wrong variable or unsupported
- *          NatVis rule) and cause an immediate test failure.
- *        - If types are compatible, values are compared.
- *        - Value mismatches are ignored when the golden entry is marked as a
- *          platform-specific knownProblem.
- *        - Otherwise, value mismatches are collected.
+ * High-level behavior:
  *
- * 2) Walk golden entries:
- *    - Any golden entry missing from the debugger locals is reported as a mismatch,
- *      unless it is marked as a knownProblem for the current platform.
+ * - Matching is performed by **variable name** at the top level.
+ * - For each golden entry:
+ *     • The corresponding actual snapshot entry (if any) is located.
+ *     • `compareNode(...)` is invoked to:
+ *         - Record real mismatches (after knownProblem filtering).
+ *         - Populate `CompareStats` for both root and children slices.
+ * - For each extra actual variable not present in golden:
+ *     • A mismatch is recorded.
+ *     • A synthetic `CompareStats` entry is created:
+ *         - root = FAIL
+ *         - children = unknown (since no golden children exist)
  *
- * Notes:
- * - Type strings are not compared for exact equality, as they are debugger-dependent
- *   and not dictated by NatVis. Instead, a relaxed semantic compatibility check is
- *   used as a guardrail.
- * - Known problems are used only to suppress expected NatVis failures; they never
- *   suppress type incompatibility errors.
+ * Important notes:
  *
- * @param actual   Platform-normalized debugger snapshot.
- * @param expected Platform-resolved golden snapshot (with knownProblem applied).
- * @param natvis   Parsed NatVis type information (bases and AlternativeType rules).
- * @returns        Object containing:
- *                 - `mismatches`: list of real NatVis mismatches to be asserted by the test.
- *                 - `goodNewsNames`: set of Qt types variable whose `knownProblem` entries unexpectedly matched
- *                   (used for reporting progress, e.g. KP* in summaries).
+ * - Type incompatibilities are treated as hard errors inside `compareNode`
+ *   and will throw before returning here.
+ * - `knownProblem` entries do not produce mismatches; they instead affect
+ *   the corresponding `StatSlice` (KP / KP*).
+ * - `StatsByRoot` is the single source of truth for the NatVis summary
+ *   table; the table renderer must not re-evaluate comparison logic.
+ *
+ * @param actual   Normalized NatVis snapshot captured from the debugger.
+ * @param expected Platform-resolved golden snapshot.
+ * @param natvis   Parsed NatVis metadata (bases, alternatives, aliases).
+ *
+ * @returns
+ *   - `mismatches`: real comparison failures.
+ *   - `statsByRoot`: per-variable root/children status slices.
  */
 export function findMismatchedSnapshotEntries(
   actual: readonly Snapshot[],
   expected: readonly GoldenSnapshot[],
   natvis: NatvisTypes
-): { mismatches: SnapshotMismatch[]; goodNewsNames: ReadonlySet<string> } {
-  const goodNewsNames = new Set<string>();
+): {
+  mismatches: SnapshotMismatch[];
+  statsByRoot: StatsByRoot;
+} {
+  const statsByRoot = new Map<string, RowStats>();
+  const platform = process.platform;
 
   const mismatches: SnapshotMismatch[] = [];
 
-  // Build lookup maps by variable name (exact match)
   const actualByName = new Map<string, Snapshot>();
   for (const a of actual) {
-    if (!a.name) continue;
-
-    const k = a.name;
-    // Keep first occurrence deterministically; warn in debug if we collide
-    if (!actualByName.has(k)) {
-      actualByName.set(k, a);
-    } else if (process.env.QT_TEST_DEBUG === '1') {
-      const prev = actualByName.get(k)!;
-      if (prev.name !== a.name) {
-        console.warn(
-          `[natvis.test][debug] actual key collision for '${k}': '${prev.name}' vs '${a.name}'`
-        );
-      }
-    }
+    if (a.name) actualByName.set(a.name, a);
   }
 
   const expectedByName = new Map<string, GoldenSnapshot>();
   for (const e of expected) {
-    if (!e.name) continue;
-
-    const k = e.name;
-    if (!expectedByName.has(k)) {
-      expectedByName.set(k, e);
-    } else if (process.env.QT_TEST_DEBUG === '1') {
-      const prev = expectedByName.get(k)!;
-      if (prev.name !== e.name) {
-        console.warn(
-          `[natvis.test][debug] expected key collision for '${k}': '${prev.name}' vs '${e.name}'`
-        );
-      }
-    }
+    if (e.name) expectedByName.set(e.name, e);
   }
 
-  const seenKeys = new Set<string>();
-
-  // Pass 1: walk ACTUAL locals, compare against golden
-  for (const [k, a] of actualByName) {
-    seenKeys.add(k);
-
-    const e = expectedByName.get(k);
-    if (!e) {
-      // Extra variable in Locals (not described by golden)
-      mismatches.push({ name: a.name, actual: a });
-      continue;
-    }
-
-    const typesCompatible = areTypesCompatible(a.type, e.type, natvis);
-
-    if (!typesCompatible) {
-      throw new Error(
-        `[natvis.test] Type incompatibility for '${e.name}' on ${process.platform}.\n` +
-          `  expected type: ${e.type ?? '<none>'}\n` +
-          `  actual type:   ${a.type ?? '<none>'}\n` +
-          `This indicates a real mismatch (wrong variable or unsupported NatVis rule).`
-      );
-    }
-    const sameValue = a.value === e.value;
-    if (sameValue) {
-      if (e.knownProblem) {
-        goodNewsNames.add(e.name);
-        console.warn(
-          `[natvis.test][good-news] Known problem for '${e.type ?? '<unknown>'}' ` +
-            `(${e.name}) no longer mismatches on ${process.platform}.\n` +
-            `  Previous description: ${e.knownProblem}`
-        );
-        continue;
+  for (const [name, e] of expectedByName) {
+    const a = actualByName.get(name);
+    const stats: CompareStats = {
+      root: {
+        succeeded: false,
+        failed: false,
+        hadKP: false,
+        kpGoodNews: false,
+        unknown: true
+      },
+      children: {
+        succeeded: false,
+        failed: false,
+        hadKP: false,
+        kpGoodNews: false,
+        unknown: true
       }
-      const expectedHasChildren = (e.children?.length ?? 0) > 0;
+    };
 
-      if (expectedHasChildren) {
-        console.log(
-          `[natvis.test][debug] '${e.name}' has children in golden, checking for mismatches.....................................................`
-        );
-        const fail = findFirstChildrenMismatch(a, e, natvis, process.platform);
+    compareNode(a, e, natvis, platform, mismatches, stats, true);
+    const exercisedType = a?.type ?? '<none>';
 
-        if (fail) {
-          const kp = fail.expectedChild.knownProblem;
-          if (kp) {
-            if (process.env.NATVIS_VERBOSE === '1') {
-              console.warn(
-                `[natvis.test][known-problem] '${e.name}' child mismatch ignored.\n` +
-                  `  Child:  ${fail.expectedChild.name}\n` +
-                  `  Reason: ${kp}`
-              );
-            }
-          } else {
-            pushChildMismatch(mismatches, fail);
+    statsByRoot.set(name, {
+      exercisedType,
+      stats
+    });
+  }
+
+  // Extra actual variables
+  for (const [name, a] of actualByName) {
+    if (!expectedByName.has(name)) {
+      mismatches.push({ name, actual: a });
+
+      statsByRoot.set(name, {
+        exercisedType: a.type ?? '<none>',
+        stats: {
+          root: {
+            succeeded: false,
+            failed: true,
+            hadKP: false,
+            kpGoodNews: false,
+            unknown: false
+          },
+          children: {
+            succeeded: false,
+            failed: false,
+            hadKP: false,
+            kpGoodNews: false,
+            unknown: true
           }
-          continue;
         }
-      }
-      continue;
+      });
     }
-
-    if (e.knownProblem) {
-      if (process.env.NATVIS_VERBOSE === '1') {
-        console.warn(
-          `[natvis.test][known-problem] '${e.name}' mismatch ignored.\n` +
-            `  Reason: ${e.knownProblem}\n` +
-            `  expected: ${JSON.stringify({ type: e.type, value: formatValuePreview(e.value) })}\n` +
-            `  actual:   ${JSON.stringify({ type: a.type, value: formatValuePreview(a.value) })}`
-        );
-      }
-      continue;
-    }
-
-    mismatches.push({ name: e.name, actual: a, expected: e });
   }
 
-  // Pass 2: walk GOLDEN entries, ensure none are missing in locals
-  for (const [k, e] of expectedByName) {
-    if (seenKeys.has(k)) continue;
-
-    if (e.knownProblem) {
-      if (process.env.QT_TEST_DEBUG === '1') {
-        console.warn(
-          `[natvis.test][known-problem] '${e.name}' missing in Locals, ignoring.\n` +
-            `  Reason: ${e.knownProblem}`
-        );
-      }
-      continue;
-    }
-
-    mismatches.push({ name: e.name, expected: e });
-  }
-
-  return { mismatches, goodNewsNames };
+  return { mismatches, statsByRoot };
 }
 
 function normalizeType(typeText: string): string {
