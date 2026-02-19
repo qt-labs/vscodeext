@@ -45,7 +45,7 @@ export enum DecisionCode {
   ErrorOccured
 }
 
-export enum QmllsStatus {
+enum QmllsStatus {
   running,
   stopped
 }

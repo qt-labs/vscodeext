@@ -3,11 +3,11 @@
 
 import * as vscode from 'vscode';
 
-export interface AttachConnectionInfo {
+interface AttachConnectionInfo {
   host: string;
   port: number;
 }
-export interface FpsDisplayInfo {
+interface FpsDisplayInfo {
   numSyncs: number;
   minSync: number;
   maxSync: number;

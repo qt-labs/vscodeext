@@ -29,7 +29,7 @@ export function registerOpenInLinguistCommand() {
   );
 }
 
-export async function openInLinguistCommand() {
+async function openInLinguistCommand() {
   telemetry.sendAction('openInLinguist');
   const activeDocument = vscode.window.activeTextEditor?.document.uri;
   if (!activeDocument) {

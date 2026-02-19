@@ -179,7 +179,7 @@ export function registerRegisterQtByPathCommand() {
   );
 }
 
-export async function registerQt() {
+async function registerQt() {
   telemetry.sendAction('registerQt');
   const options: vscode.OpenDialogOptions = {
     canSelectMany: false,
@@ -202,7 +202,7 @@ export async function registerQt() {
   return 0;
 }
 
-export async function setGlobalQtInstallationRoot(qtInsRoot: string) {
+async function setGlobalQtInstallationRoot(qtInsRoot: string) {
   logger.info(`Setting global Qt installation root to: ${qtInsRoot}`);
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   await config.update(

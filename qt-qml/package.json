@@ -533,7 +533,6 @@
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.6.0",
     "chai": "^4.5.0",
-    "commander": "^11.1.0",
     "cross-env": "^7.0.3",
     "esbuild": "^0.25.0",
     "eslint": "^8.57.1",

@@ -18,7 +18,7 @@ const logger = createLogger('qml-preview-manager');
  * File loader function type
  * Returns file contents or failure status
  */
-export type FileLoader = (filename: string) => {
+type FileLoader = (filename: string) => {
   success: boolean;
   contents: Buffer;
 };
@@ -27,17 +27,17 @@ export type FileLoader = (filename: string) => {
  * File classifier function type
  * Returns true if file can be hot-reloaded, false if requires restart
  */
-export type FileClassifier = (filename: string) => boolean;
+type FileClassifier = (filename: string) => boolean;
 
 /**
  * FPS handler function type
  */
-export type FpsHandler = (fps: FpsInfo) => void;
+type FpsHandler = (fps: FpsInfo) => void;
 
 /**
  * Settings for QML Preview
  */
-export interface QmlPreviewSettings {
+interface QmlPreviewSettings {
   fileLoader?: FileLoader;
   fileClassifier?: FileClassifier;
   fpsHandler?: FpsHandler;
