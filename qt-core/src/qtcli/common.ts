@@ -6,24 +6,11 @@ import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { spawnSync } from 'child_process';
 
-import { createLogger, isError, OSExeSuffix } from 'qt-lib';
+import { createLogger, OSExeSuffix } from 'qt-lib';
 
 export const qtcliExeName = 'qtcli' + OSExeSuffix;
-export const logger = createLogger('qtcli');
-
-export function errorString<T>(e: T) {
-  return isError(e) ? e.message : String(e);
-}
-
-export function isValidQtcliPath(qtcliPath: string): boolean {
-  const res = spawnSync(qtcliPath, ['--help'], {
-    timeout: 1000
-  });
-
-  return res.status === 0;
-}
+const logger = createLogger('qtcli');
 
 export function fallbackWorkingDir(): string {
   const docs = path.join(os.homedir(), 'Documents');

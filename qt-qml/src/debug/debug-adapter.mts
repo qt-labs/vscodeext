@@ -712,9 +712,7 @@ export class QmlDebugSession extends LoggingDebugSession {
   }
 }
 
-export class QmlDebugAdapterFactory
-  implements vscode.DebugAdapterDescriptorFactory
-{
+class QmlDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   public createDebugAdapterDescriptor(
     session: vscode.DebugSession,
