@@ -75,6 +75,9 @@
     If some Qt CMake kits are missing, go to \uicontrol {Command Palette} and
     select \uicontrol {Qt: Scan for Qt kits}.
 
+    To show registered kits on the status bar, go to \uicontrol {Command Palette}
+    and select \uicontrol {Qt: Set the recommended Qt Extension settings}.
+
     \section1 Use CMake presets
 
     Alternatively to registering Qt installations as CMake kits, you can use

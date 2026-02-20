@@ -8,16 +8,37 @@
 
     \title Getting started
 
-    To work on Qt projects in VS Code:
+    To check that \QVSC can find your Qt installation and CMake kits, open a Qt
+    example for building and running.
 
-    \list
-        \li \l {Installation}{Install a Qt extension}.
-        \li \l {Register Qt installations}.
-        \li Open a folder that contains a Qt CMake project (that has a
-            \e {CMakeLists.txt} file).
+    \image {vscodeext-getting-started.gif} {Building and running a Qt example}
+    \caption Building and running a Qt example in VS Code.
+
+    To open and run a Qt example project in VS Code:
+
+    \list 1
+        \li Install \QVSC.
+        \li Open a folder that contains a Qt example (that has a
+            \c {CMakeLists.txt} file) from your Qt installation.
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Register Qt installation} to register a Qt version.
         \li Go to \uicontrol {Command Palette} and select
-            \uicontrol {CMake: Select a Kit} to select a
-            kit that matches your Qt version and toolchain.
-        \li Select \uicontrol {CMake: Build} to build the project.
+            \uicontrol {Qt: Set the recommended Qt Extension settings} to show
+            the registered Qt CMake kits on the status bar.
+        \li Go to \uicontrol {Command Palette} and select
+            \uicontrol {Qt: Scan for kits}. Then select a kit that matches your
+            Qt version and toolchain.
+        \li Select
+            \inlineimage {run_project.png} {Launch the selected target in the terminal window}
+            on the status bar.
+        \li Select the executable as the launch target to build and run the
+            project.
     \endlist
+
+    You can now select a tutorial to follow to learn about developing
+    Qt applications. Use project wizard templates to create your own
+    application projects.
+
+    \sa {Installation}, {Register Qt installations}, {Tutorials},
+    {Create Qt projects}
 */
