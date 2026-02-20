@@ -10,6 +10,7 @@ import {
   initLogger,
   telemetry,
   QtWorkspaceConfigMessage,
+  QtWorkspaceFeatures,
   createColorProvider,
   CoreKey
 } from 'qt-lib';
@@ -74,6 +75,9 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      updatePreviewLaunchContext();
+    }),
     registerDebugPort(),
     registerRestartQmllsCommand(),
     registerCheckQmllsUpdateCommand(),
@@ -121,6 +125,30 @@ export function deactivate() {
   }
 }
 
+function updatePreviewLaunchContext() {
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  const folder = activeUri
+    ? vscode.workspace.getWorkspaceFolder(activeUri)
+    : undefined;
+
+  let launchEnabled = false;
+  if (folder) {
+    const features = coreAPI?.getValue<QtWorkspaceFeatures>(
+      folder,
+      CoreKey.WORKSPACE_FEATURES
+    );
+    // Enable preview launch only for CMake projects.
+    // PySide projects can only use attach.
+    launchEnabled = features?.projectTypes.cmake === true;
+  }
+
+  void vscode.commands.executeCommand(
+    'setContext',
+    'qt-qml.qmlPreviewLaunchEnabled',
+    launchEnabled
+  );
+}
+
 function processMessage(message: QtWorkspaceConfigMessage) {
   try {
     // check if workspace folder is a string. If it is, it means the global
@@ -155,6 +183,9 @@ function processMessage(message: QtWorkspaceConfigMessage) {
           updateQmlls = true;
           project.buildDir = buildDir;
         }
+      }
+      if (key === CoreKey.WORKSPACE_FEATURES) {
+        updatePreviewLaunchContext();
       }
     }
     if (updateQmlls) {
