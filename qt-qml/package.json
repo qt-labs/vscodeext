@@ -98,11 +98,11 @@
         },
         {
           "command": "qt-qml.startQmlPreview",
-          "when": "!qt-qml.qmlPreviewRunning"
+          "when": "!qt-qml.qmlPreviewRunning && qt-qml.qmlPreviewLaunchEnabled"
         },
         {
           "command": "qt-qml.startQmlPreviewForCurrentFile",
-          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning"
+          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning && qt-qml.qmlPreviewLaunchEnabled"
         },
         {
           "command": "qt-qml.attachQmlPreview",
@@ -112,12 +112,12 @@
       "editor/title": [
         {
           "command": "qt-qml.startQmlPreview",
-          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning",
+          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning && qt-qml.qmlPreviewLaunchEnabled",
           "group": "navigation@1"
         },
         {
           "command": "qt-qml.startQmlPreviewForCurrentFile",
-          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning",
+          "when": "resourceLangId == qml && !qt-qml.qmlPreviewRunning && qt-qml.qmlPreviewLaunchEnabled",
           "group": "navigation@2"
         },
         {
