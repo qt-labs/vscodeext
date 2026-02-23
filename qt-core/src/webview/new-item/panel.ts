@@ -14,7 +14,7 @@ import {
   basicWebviewAppConfig
 } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
-import { startQtcliServer } from '@/qtcli/runner';
+import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { GlobalStateManager } from '@/state';
 
 // definitions for webview-panel
@@ -26,9 +26,9 @@ export function registerCreateNewItemPanelCommand(
 ) {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.createNewItem`,
-    () => {
+    async () => {
       telemetry.sendAction('createNewItem');
-      NewItemPanel.render(context);
+      await NewItemPanel.render(context);
     }
   );
 }
@@ -37,10 +37,11 @@ export class NewItemPanel {
   private readonly _comm: WebviewChannel;
   private readonly _panel: vscode.WebviewPanel;
   private readonly _disposables: vscode.Disposable[] = [];
-  private readonly _dispatcher = new NewItemDispatcher();
+  private readonly _dispatcher: NewItemDispatcher;
 
   private constructor(
     panel: vscode.WebviewPanel,
+    qtcliSocketName: string,
     context: vscode.ExtensionContext
   ) {
     const config = {
@@ -55,6 +56,8 @@ export class NewItemPanel {
 
     this._comm = new WebviewChannel(panel.webview);
     this._panel = panel;
+
+    this._dispatcher = new NewItemDispatcher(qtcliSocketName);
     this._dispatcher.setPanel(this);
     this._dispatcher.setComm(this._comm);
     this._dispatcher.setContext(context);
@@ -84,7 +87,7 @@ export class NewItemPanel {
     this._panel.dispose();
   }
 
-  public static render(context: vscode.ExtensionContext) {
+  public static async render(context: vscode.ExtensionContext) {
     if (!NewItemPanel.instance) {
       const panel = vscode.window.createWebviewPanel(
         PanelViewType,
@@ -92,10 +95,16 @@ export class NewItemPanel {
         PanelColumn
       );
 
-      NewItemPanel.instance = new NewItemPanel(panel, context);
-    }
+      const socketId = generateSocketId('new-item');
+      const qtcliServer = new QtcliRestServer(socketId);
+      await qtcliServer.start(context);
 
-    void startQtcliServer(context.extensionUri);
+      NewItemPanel.instance = new NewItemPanel(
+        panel,
+        qtcliServer.socketName,
+        context
+      );
+    }
 
     const globalState = new GlobalStateManager(context);
     const savedOpenIn = globalState.getNewProjectOpenIn();

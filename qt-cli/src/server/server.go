@@ -13,8 +13,10 @@ import (
 	"qtcli/common/utils"
 	"qtcli/newitem"
 	"qtcli/qmltrace"
+	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -24,29 +26,50 @@ import (
 )
 
 type Options struct {
-	UseTcp  bool
-	TcpPort string
+	UseTcp        bool
+	TcpPort       string
+	UdsSocketName string
+	UseIdleExit   bool
+	Heartbeat     time.Duration
 }
 
-var pidFile = getPidFilePath()
+var lastRequest atomic.Int64
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func getNetListener(o Options) (net.Listener, error) {
-	if o.UseTcp {
-		if o.TcpPort == "" {
-			o.TcpPort = "8080"
-		}
+func GetAllPidFiles() []string {
+	return getAllPidFiles()
+}
 
-		return net.Listen("tcp", ":"+o.TcpPort)
+func ValidateOptions(o Options) error {
+	if o.UseTcp {
+		port, err := strconv.Atoi(o.TcpPort)
+		if err != nil || port <= 0 || port > 65535 {
+			return fmt.Errorf("Invalid TCP port: %s (must be 1-65535)", o.TcpPort)
+		}
 	}
 
-	return getLocalIpcListener()
+	validSocketName := regexp.MustCompile(`^[a-zA-Z0-9_-]{1,48}$`)
+	if !validSocketName.MatchString(o.UdsSocketName) {
+		return fmt.Errorf(
+			"Invalid socket name: %s (1-48 chars, letters, digits, '-' or '_')",
+			o.UdsSocketName)
+	}
+
+	if o.UseIdleExit {
+		if o.Heartbeat <= 0 {
+			return fmt.Errorf(
+				"Invalid heartbeat interval: %s (must be > 0)", o.Heartbeat)
+		}
+	}
+
+	return nil
 }
 
 func Start(o Options) {
+	pidFile := getPidFilePathFrom(o)
 	ensurePrevRunStopped(pidFile)
 
 	listener, err := getNetListener(o)
@@ -61,6 +84,11 @@ func Start(o Options) {
 
 	go func() {
 		savePidToFile(os.Getpid(), pidFile)
+		lastRequest.Store(time.Now().UnixNano())
+		if o.UseIdleExit {
+			startIdleWatcher(server, o.Heartbeat, pidFile)
+		}
+
 		logrus.Infof("Starting server at %s", listener.Addr().String())
 		if err := server.Serve(listener); err != nil {
 			logrus.Fatalf("Server error: %v", err)
@@ -81,17 +109,58 @@ func Start(o Options) {
 	logrus.Info("Server stopped")
 }
 
-func Stop() {
-	pid, err := getActivePid(pidFile)
-	if err == nil {
-		utils.SendSigTermOrKill(pid)
+func Stop(o Options) {
+	stopAllFromPidFiles([]string{
+		getPidFilePathFrom(o),
+	})
+}
+
+func StopAll() {
+	stopAllFromPidFiles(getAllPidFiles())
+}
+
+func stopAllFromPidFiles(pidFiles []string) {
+	for _, pidFile := range pidFiles {
+		pid, err := readPidFile(pidFile)
+		if err == nil {
+			utils.SendSigTermOrKill(pid)
+		}
 	}
+}
+
+func getBaseName(o Options) string {
+	protocol := "uds"
+	suffix := o.UdsSocketName
+
+	if o.UseTcp {
+		protocol = "tcp"
+		suffix = o.TcpPort
+	}
+
+	return fmt.Sprintf("qtcli-%s-%s", protocol, suffix)
+}
+
+func getNetListener(o Options) (net.Listener, error) {
+	if o.UseTcp {
+		if o.TcpPort == "" {
+			o.TcpPort = "8080"
+		}
+
+		return net.Listen("tcp", ":"+o.TcpPort)
+	}
+
+	return getLocalIpcListener(o)
 }
 
 func createApiHandler() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		lastRequest.Store(time.Now().UnixNano())
+		c.Next()
+	})
+
 	r.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
@@ -124,13 +193,14 @@ func createApiHandler() *gin.Engine {
 
 	// others
 	v1.GET("/ready", GetReady)
+	v1.POST("/heartbeat", PostHeartbeat)
 	v1.DELETE("/server", DeleteServer)
 
 	return r
 }
 
 func ensurePrevRunStopped(filePath string) {
-	pid, err := getActivePid(filePath)
+	pid, err := readPidFile(filePath)
 	if err == nil {
 		utils.SendSigTermOrKill(pid)
 		time.Sleep(1 * time.Second)
@@ -149,14 +219,37 @@ func savePidToFile(pid int, filePath string) {
 		logrus.Fatalf("failed to write pid file: %v", err)
 	}
 
-	logrus.Info("pid file created at:", filePath)
+	logrus.Infof("PID file created at %s, pid = %d", filePath, pid)
 }
 
-func getActivePid(filePath string) (int, error) {
+func readPidFile(filePath string) (int, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return 0, err
 	}
 
 	return strconv.Atoi(string(data))
+}
+
+func startIdleWatcher(
+	server *http.Server,
+	heartbeat time.Duration,
+	pidFile string) {
+	go func() {
+		maxIdle := heartbeat * 3
+		checkInterval := heartbeat / 2
+
+		ticker := time.NewTicker(checkInterval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			last := time.Unix(0, lastRequest.Load())
+			if time.Since(last) > maxIdle {
+				logrus.Infof("Shutting down: idle %s", maxIdle)
+				os.Remove(pidFile)
+				_ = server.Close()
+				return
+			}
+		}
+	}()
 }
