@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.12.0 (Feb 26, 2026)
+
+⚠️ **Changed**
+
+- Use `qt-ui.customWidgetsDesignerExePath` in `Qt: Open Qt Widgets Designer`
+
 ## 1.11.1 (Dec 22, 2025)
 
 The same as `1.11.0`
