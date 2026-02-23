@@ -979,7 +979,7 @@ function compareNode(
     }
 
     throw new Error(
-      `[natvis.test] Type incompatibility for '${expected.name}'`
+      `[natvis.test] Type incompatibility for '${expected.name}': actual type '${actual.type}' vs expected type '${expected.type}'`
     );
   }
 

@@ -508,12 +508,11 @@ export type NatvisTypes = {
 // but the debugger reports the typedef name "SelectionFlags".
 export const EXTRA_NATVIS_TYPE_ALIASES: Record<string, string[]> = {
   // NatVis pattern       // Snapshot types to treat as covered by that pattern
-  'QFlags<*>': ['SelectionFlags'],
+  'QFlags<*>': ['SelectionFlags', 'CoreStateFlags', 'QFlags<CoreStateFlag>'],
   'QList<*>': ['QByteArrayList', 'QStringList', 'QVariantList'],
   'QPair<*,*>': ['std::pair'],
   'QHash<*,*>': ['QVariantHash'],
-  'QMap<*,*>': ['QVariantMap'],
-  CoreStateFlags: ['QFlags<CoreStateFlag>', 'QFlags<*>']
+  'QMap<*,*>': ['QVariantMap']
 };
 
 /**
