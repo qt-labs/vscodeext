@@ -1,5 +1,27 @@
 # Change Log
 
+## 1.13.0 (Feb 26, 2026)
+
+🎉 **Added**
+
+- Introduce QML Live Preview with hot-reload capability [Documentation](https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-how-preview-qml.html)
+  - Preview QML changes in real-time without restarting the application
+  - Editor toolbar buttons for starting/stopping preview on QML files
+  - Support for both `qt_add_qml_module` and QRC-based resources
+  - Automatic hot-reloading when QML files change
+- Support QML Language Server on arm64 architecture
+
+🐞 **Fixed**
+
+- Fix ETXTBSY error during QML Language Server installation on Unix
+- Fix race conditions in QML Language Server installation and download
+- Improve QML Language Server download error handling and user prompts
+- Clean up legacy QML Language Server installation directory
+
+⚠️ **Changed**
+
+- Use VS Code's `globalStorageUri` for QML Language Server installation for automatic cleanup on uninstallation
+
 ## 1.12.0 (Feb 26, 2026)
 
 The same as `1.11.1`

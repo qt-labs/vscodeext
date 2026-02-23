@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.13.0 (Feb 26, 2026)
+
+🎉 **Added**
+
+- Introduce QML Trace Viewer with flame graph visualization for QML trace files [Documentation](https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-how-profile-qml.html)
+  - Support for `.qtd` and `.qzt` file formats
+  - Interactive flame graph with zoom in/out functionality
+  - Three types of flame graphs to switch between
+  - Filter trace event categories on and off
+  - Click on cells to navigate to QML source files
+  - Open raw trace data in JSONC format
+
 ## 1.12.0 (Feb 26, 2026)
 
 The same as `1.11.1`
