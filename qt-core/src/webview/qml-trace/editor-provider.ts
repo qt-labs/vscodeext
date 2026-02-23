@@ -18,7 +18,7 @@ import {
   createWebviewOptions,
   basicWebviewAppConfig
 } from '@/webview/utils';
-import { startQtcliServer } from '@/qtcli/runner';
+import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { QmlTraceDoc } from './doc';
 import { QmlTraceController } from './controller';
 
@@ -41,7 +41,6 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
   // eslint-disable-next-line
   public dispose() {}
 
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   public openCustomDocument(
     uri: Uri,
     openContext: CustomDocumentOpenContext,
@@ -58,7 +57,6 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
     token: CancellationToken
   ): Promise<void> {
     void token;
-    void startQtcliServer(this._context.extensionUri);
 
     // view
     const config = {
@@ -73,7 +71,17 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
     view.options = createWebviewOptions(config);
 
     // controller
-    const controller = new QmlTraceController(doc, view, this._context);
+    const socketId = generateSocketId('qml-trace');
+    const qtcliServer = new QtcliRestServer(socketId);
+    await qtcliServer.start(this._context);
+
+    const controller = new QmlTraceController(
+      doc,
+      view,
+      qtcliServer.socketName,
+      this._context
+    );
+
     this._controllers.set(panel, controller);
     panel.onDidDispose(() => {
       controller.dispose();

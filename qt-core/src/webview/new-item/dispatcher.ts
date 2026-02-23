@@ -19,14 +19,14 @@ const logger = createLogger('new-item-handler');
 type CommandHandler = (command: Command) => void | Promise<void>;
 
 export class NewItemDispatcher {
-  private readonly _qtcliRest = new QtcliRestClient();
+  private readonly _qtcliRest: QtcliRestClient;
   private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
   private _comm: WebviewChannel | undefined;
   private _panel: NewItemPanel | undefined = undefined;
   private _uiConfigs: unknown = {};
   private _context: vscode.ExtensionContext | undefined;
 
-  public constructor() {
+  public constructor(qtcliSocketName: string) {
     this._handlers = new Map<CommandId, CommandHandler>([
       [CommandId.UiClosed, this.onUiClosed],
       [CommandId.UiItemCreationRequested, this.onUiItemCreationRequested],
@@ -40,10 +40,12 @@ export class NewItemDispatcher {
       [CommandId.UiSelectWorkingDir, this.onUiSelectWorkingDir],
       [CommandId.UiSaveOpenInPreference, this.onUiSaveOpenInPreference]
     ]);
+
+    this._qtcliRest = new QtcliRestClient(qtcliSocketName);
   }
 
   public dispose() {
-    void this._qtcliRest.delete('/server');
+    this._qtcliRest.dispose();
   }
 
   public setPanel(p: NewItemPanel) {

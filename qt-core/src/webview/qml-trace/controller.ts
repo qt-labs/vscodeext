@@ -20,25 +20,27 @@ const logger = createLogger('qml-trace-controller');
 
 export class QmlTraceController {
   private readonly _context: vscode.ExtensionContext;
-  private readonly _qtcliRest = new QtcliRestClient();
-
   private readonly _doc: QmlTraceDoc;
   private readonly _comm: WebviewChannel;
+  private readonly _qtcli: QtcliRestClient;
   private readonly _routes: Map<CommandId, CommandHandler>;
   private readonly _disposables: vscode.Disposable[] = [];
 
   public constructor(
     doc: QmlTraceDoc,
     view: vscode.Webview,
+    qtcliSocketName: string,
     context: vscode.ExtensionContext
   ) {
+    this._context = context;
     this._doc = doc;
     this._comm = new WebviewChannel(view);
-    this._context = context;
+    this._qtcli = new QtcliRestClient(qtcliSocketName);
 
     this._disposables.push(
       this._comm,
       this._comm.onDidReceiveMessage(this._dispatch),
+      this._qtcli,
       vscode.window.onDidChangeActiveColorTheme(this._onThemeChanged)
     );
 
@@ -57,7 +59,6 @@ export class QmlTraceController {
   }
 
   public dispose() {
-    void this._qtcliRest.delete('/server');
     this._disposables.forEach((d) => {
       d.dispose();
     });
@@ -90,7 +91,7 @@ export class QmlTraceController {
 
   private readonly _onCheckIfQtcliReady = async (cmd: Command) => {
     try {
-      const data = await this._qtcliRest.retryCall({
+      const data = await this._qtcli.retryCall({
         method: 'get',
         url: '/ready'
       });
@@ -101,7 +102,7 @@ export class QmlTraceController {
   };
 
   private readonly _onLoadFile = async (cmd: Command) => {
-    const data = await this._qtcliRest.put('/qmltraces/load', {
+    const data = await this._qtcli.put('/qmltraces/load', {
       filePath: this._doc.uri.fsPath
     });
 
@@ -124,7 +125,7 @@ export class QmlTraceController {
   private readonly _onGetFlameGraph = async (cmd: Command) => {
     const kind = _.get(cmd.payload, 'kind', '') as string;
     const features = _.get(cmd.payload, 'features', '') as string;
-    const data = await this._qtcliRest.get('/qmltraces/flamegraph', {
+    const data = await this._qtcli.get('/qmltraces/flamegraph', {
       kind,
       features
     });

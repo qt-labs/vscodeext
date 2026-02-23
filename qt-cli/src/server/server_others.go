@@ -13,20 +13,30 @@ import (
 
 const TempDir = "/tmp/qtcli"
 
-func getPidFilePath() string {
+func getPidFilePathFrom(o Options) string {
 	if err := os.MkdirAll(TempDir, 0755); err != nil {
 		return ""
 	}
 
-	return filepath.Join(TempDir, "qtcli-server.pid")
+	return filepath.Join(TempDir, getBaseName(o)+".pid")
 }
 
-func getLocalIpcListener() (net.Listener, error) {
+func getAllPidFiles() []string {
+	pattern := "/tmp/qtcli/qtcli-*.pid"
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return []string{}
+	}
+
+	return files
+}
+
+func getLocalIpcListener(o Options) (net.Listener, error) {
 	if err := os.MkdirAll(TempDir, 0755); err != nil {
 		return nil, err
 	}
 
-	fullPath := filepath.Join(TempDir, "qtcli-server.sock")
+	fullPath := filepath.Join(TempDir, getBaseName(o)+".sock")
 	_, err := os.Stat(fullPath)
 	if !os.IsNotExist(err) {
 		err := os.Remove(fullPath)

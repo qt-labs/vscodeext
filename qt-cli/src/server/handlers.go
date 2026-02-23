@@ -17,6 +17,10 @@ func GetReady(c *gin.Context) {
 	rest.ReplyStatus(c, "ready")
 }
 
+func PostHeartbeat(c *gin.Context) {
+	rest.ReplyStatus(c, "ok")
+}
+
 func DeleteServer(c *gin.Context) {
 	rest.ReplyStatus(c, texts.ServerClosing)
 
