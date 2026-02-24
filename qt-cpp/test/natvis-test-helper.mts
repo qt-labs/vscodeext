@@ -708,9 +708,9 @@ function computeNatvisFamily(
  */
 function statusFromSlice(slice: StatSlice): TypeStatus {
   if (slice.unknown) return 'x';
-  if (slice.succeeded) return 'OK';
   if (slice.failed) return 'FAIL';
   if (slice.hadKP) return slice.kpGoodNews ? 'KP*' : 'KP';
+  if (slice.succeeded) return 'OK';
   return '?';
 }
 
@@ -913,8 +913,16 @@ function compareNode(
 ): void {
   const kp = resolvesKnownProblem(expected.knownProblem, platform);
 
-  const expectedChildren = expected.children ?? [];
-  const hasGoldenChildren = expectedChildren.length > 0;
+  const expectedChildren = expected.children; // may be undefined
+
+  const isExpectNoneName = (n: string | undefined) =>
+    n === '[expect_none]' || n?.endsWith('.[expect_none]') === true;
+
+  const expectsNoChildren =
+    (expectedChildren?.length ?? 0) === 1 &&
+    isExpectNoneName(expectedChildren?.[0]?.name);
+
+  const hasGoldenChildrenExpectation = expectedChildren !== undefined;
 
   const clearUnknownThisSlice = () => {
     if (isRoot) stats.root.unknown = false;
@@ -953,8 +961,9 @@ function compareNode(
       // Known-problem: do not mark succeeded.
       markKPSeen();
 
-      // If root is missing but golden has children, treat children as KP too (by extension).
-      if (isRoot && hasGoldenChildren) {
+      // If root is missing but golden defines children expectations (including []),
+      // treat children as KP too (by extension).
+      if (isRoot && hasGoldenChildrenExpectation) {
         stats.children.hadKP = true;
         stats.children.unknown = false; // so this becomes KP (not x)
       }
@@ -973,8 +982,7 @@ function compareNode(
   // Type check (hard stop)
   // ----------------------------
   if (!areTypesCompatible(actual.type, expected.type, natvis)) {
-    // Root type mismatch means we cannot evaluate children reliably.
-    if (isRoot && hasGoldenChildren) {
+    if (isRoot && hasGoldenChildrenExpectation) {
       stats.children.unknown = true; // x
     }
 
@@ -1020,9 +1028,15 @@ function compareNode(
   // We *are* evaluating children, so ensure children is not "unknown/x".
   stats.children.unknown = false;
 
-  if (!hasGoldenChildren) {
-    // Nothing to compare => children slice should remain "unset"
-    // so statusFromSlice() returns fallback '?'.
+  if (!hasGoldenChildrenExpectation) {
+    return;
+  }
+
+  // Golden explicitly expects "no children" via sentinel.
+  // Evaluate and yield OK/FAIL (not '?').
+  if (expectsNoChildren) {
+    stats.children.succeeded = true;
+    stats.children.unknown = false;
     return;
   }
 

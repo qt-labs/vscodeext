@@ -405,11 +405,11 @@ export function materializeLocalSnapshot(
   sortTree(promoted);
   if (process.env.NATVIS_VERBOSE === '1') {
     const qString = promoted.find(
-      (p) => p.name === 'containerTypes.qVariantList'
+      (p) => p.name === 'containerTypes.qHashStringInt'
     );
     if (qString) {
       console.log(
-        '[natvis.test] Snapshot for containerTypes.qVariantList:\n' +
+        '[natvis.test] Snapshot for containerTypes.qHashStringInt:\n' +
           JSON.stringify(snapshotToJSON(qString), null, 2)
       );
     }
