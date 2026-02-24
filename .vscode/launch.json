@@ -94,7 +94,14 @@
       "type": "extensionHost",
       "request": "launch",
       "env": {
-        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
+        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}",
+        "QT_TEST_DEBUG": "1",
+        "NATVIS_SHOW_SUMMARY": "1",
+        "NATVIS_VERBOSE": "1",
+        "QT_VERSION_FOR_TEST": "6.10.1",
+        "CMAKE_PREFIX_PATH":""
+
+
       },
       "runtimeExecutable": "${execPath}",
       "args": [

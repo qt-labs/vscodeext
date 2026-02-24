@@ -53,7 +53,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
       linux:
         'GDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.'
-    }
+    },
+    children: [
+      { name: '[year]', value: '2024' },
+      { name: '[month]', value: '6' },
+      { name: '[day]', value: '15' }
+    ]
   },
   {
     name: 'coreTypes.qDateTimeBrunei',
@@ -247,7 +252,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; LLDB falls back to a raw value, so flag names are not shown.',
       linux:
         'QFlags-based SelectionFlags NatVis rule only works with the Visual Studio debugger; GDB falls back to a raw value, so flag names are not shown.'
-    }
+    },
+    children: [{ name: '[value]', value: 'SelectCurrent | SelectAll (3)' }]
   },
   {
     name: 'coreTypes.qJsonDocument',
@@ -256,8 +262,18 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin: '{...}',
       win32: '{d=unique_ptr {...} }',
       linux: ''
-    }
-    // no knownProblem here: the known problem is only for qJsonDocumentEmpty
+    },
+    children: [
+      {
+        name: '[0]',
+        value: '<unvalidated>',
+        knownProblem: {
+          all:
+            'QJsonDocument NatVis Expand depends on a Qt6Cored.dll intrinsic / MSVC-only internals; ' +
+            'child expansion is unreliable under LLDB/GDB and on win32 CI, so children are not validated.'
+        }
+      }
+    ]
   },
   {
     name: 'coreTypes.qJsonDocumentEmpty',
@@ -272,7 +288,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; LLDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.',
       linux:
         'QJsonDocument NatVis relies on MSVC-specific internals (d._Mypair._Myval2) and a Qt6Cored.dll private type in Expand; GDB cannot evaluate these, so value stays as raw "{...}" on non-Windows.'
-    }
+    },
+    children: [{ name: '[expect_none]', value: '' }]
   },
   {
     name: 'coreTypes.qLine',
@@ -411,12 +428,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qStringView',
     type: 'QStringView',
     value: 'Hello World! Again.',
-    knownProblem: {
-      darwin:
-        'LLDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.',
-      linux:
-        'GDB currently fails to evaluate {m_data,[m_size]} and prints an evaluation error instead of the string contents.'
-    }
+    children: [{ name: '[size]', value: '19' }]
   },
   {
     name: 'coreTypes.qTime',
@@ -476,15 +488,22 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qUrl',
     type: 'QUrl',
-    value: 'https://github.com/narnaud/natvis4qt',
+    value: 'https://github.com/narnaud/natvis4qt?ref=main#section1',
     knownProblem: {
       darwin:
         'LLDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.',
       linux:
-        'GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.',
-      win32:
-        'natvis loads, but DisplayString evaluation fails due to missing private QtCore symbols or reduced PDBs, causing fallback to the raw internal form.'
-    }
+        'GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.'
+    },
+    children: [
+      { name: '[scheme]', value: 'https' },
+      { name: '[username]', value: 'user' },
+      { name: '[password]', value: 'pass' },
+      { name: '[host]', value: 'github.com' },
+      { name: '[path]', value: '/narnaud/natvis4qt' },
+      { name: '[query]', value: 'ref=main' },
+      { name: '[fragment]', value: 'section1' }
+    ]
   },
   {
     name: 'coreTypes.qUuid',
@@ -494,8 +513,17 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB, causing evaluation errors on macOS.',
       linux:
-        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB, causing evaluation errors on Linux.'
-    }
+        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB, causing evaluation errors on Linux.',
+      win32:
+        'QUuid NatVis formatting appears truncated on current Windows debugger: the Node portion renders only 6 hex digits instead of 12 (likely nvoXb format handling regression).'
+    },
+    children: [
+      { name: '[Time-low]', value: '12345678' },
+      { name: '[Time-mid]', value: '1234' },
+      { name: '[Time-high-and-version]', value: '1234' },
+      { name: '[Clock-seq]', value: '1234' },
+      { name: '[Node]', value: '1234567890AB' }
+    ]
   },
   {
     name: 'containerTypes.qIntList',
@@ -557,7 +585,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.',
       darwin:
         'Typedef (QList<QString>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.'
-    }
+    },
+    children: [
+      { name: '[0]', type: 'QString', value: 'red' },
+      { name: '[1]', type: 'QString', value: 'green' },
+      { name: '[2]', type: 'QString', value: 'blue' }
+    ]
   },
   {
     name: 'containerTypes.qVectorInt',
@@ -566,7 +599,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       linux:
         'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to {...}.'
-    }
+    },
+    children: [
+      { name: '[0]', value: '10' },
+      { name: '[1]', value: '20' },
+      { name: '[2]', value: '30' }
+    ]
   },
   {
     name: 'containerTypes.qSpanInt',
@@ -575,16 +613,25 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         "LLDB NatVis evaluation fails (e.g. 'use of undeclared identifier m_size'), so QSpan<int> isn't reliably visualized on macOS."
-    }
+    },
+    children: [
+      { name: '[0]', value: '10' },
+      { name: '[1]', value: '20' },
+      { name: '[2]', value: '30' }
+    ]
   },
   {
-    name: 'containerTypes.qVectorPoint',
-    type: 'QVector<QPoint>',
+    name: 'containerTypes.qVectorPointF',
+    type: 'QVector<QPointF>',
     value: '{ size=2 }',
     knownProblem: {
       linux:
         'The NatVis QVector<*> rule evaluation fails, so the debugger falls back to {...}.'
-    }
+    },
+    children: [
+      { name: '[0]', value: '{ x = 1, y = 2 }' },
+      { name: '[1]', value: '{ x = 3, y = 4 }' }
+    ]
   },
   {
     name: 'containerTypes.qVarLengthArrayInt',
@@ -593,7 +640,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       darwin:
         "LLDB NatVis errors out: expression 's' is not resolvable ('use of undeclared identifier s'), evaluation fails."
-    }
+    },
+    children: [
+      { name: '[capacity]', value: '4' },
+      { name: '[0]', value: '7' },
+      { name: '[1]', value: '8' },
+      { name: '[2]', value: '9' }
+    ]
   },
   {
     name: 'containerTypes.qMapStringInt',
@@ -604,7 +657,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'LLDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.',
       linux:
         'GDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.'
-    }
+    },
+    children: [
+      { name: '[one]', value: '1' },
+      { name: '[two]', value: '2' }
+    ]
   },
   {
     name: 'containerTypes.qMultiMapStringInt',
@@ -615,7 +672,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'LLDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.',
       linux:
         'GDB NatVis for QMap<*,*> errors: the rule relies on intrinsic p() and MSVC std::map internals (p()->m._Mypair..._Mysize), DisplayString/TreeItems fails.'
-    }
+    },
+    children: [
+      { name: '[first_key]', value: '1' },
+      { name: '[second_key]', value: '2' }
+    ]
   },
   {
     name: 'containerTypes.qHashStringInt',
@@ -630,7 +691,29 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qSetString',
     type: 'QSet<QString>',
-    value: '{ size=2 }'
+    value: '{ size=2 }',
+    children: [
+      {
+        name: '[apple]',
+        value: 'apple',
+        knownProblem: {
+          darwin:
+            'Expected QSet NatVis to inline-expand q_hash, but LLDB does not materialize the NatVis QHash CustomListItems expansion.',
+          linux:
+            'Expected QSet NatVis to inline-expand q_hash, but GDB does not materialize the NatVis QHash CustomListItems expansion.'
+        }
+      },
+      {
+        name: '[banana]',
+        value: 'banana',
+        knownProblem: {
+          darwin:
+            'Expected QSet NatVis to inline-expand q_hash, but LLDB does not materialize the NatVis QHash CustomListItems expansion.',
+          linux:
+            'Expected QSet NatVis to inline-expand q_hash, but GDB does not materialize the NatVis QHash CustomListItems expansion.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qVariantMap',
@@ -641,7 +724,25 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary.",
       linux:
         "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary."
-    }
+    },
+    children: [
+      {
+        name: '[answer]',
+        value: '42',
+        knownProblem: {
+          win32:
+            'QMap/QVariantMap TreeItems MapHelper view is not applied; debugger shows raw std::pair<const QString,QVariant> instead of mapped value.'
+        }
+      },
+      {
+        name: '[question]',
+        value: 'life',
+        knownProblem: {
+          win32:
+            'QMap/QVariantMap TreeItems MapHelper view is not applied; debugger shows raw std::pair<const QString,QVariant> instead of mapped value.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qVariantListContainer',
@@ -652,7 +753,33 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary.",
       linux:
         "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary."
-    }
+    },
+    children: [
+      {
+        name: '[0]',
+        value: '123',
+        knownProblem: {
+          win32:
+            'QVariant inside QList/QVariantList is not rendered via NatVis on Windows; debugger falls back to internal d={data=...} representation.'
+        }
+      },
+      {
+        name: '[1]',
+        value: 'abc',
+        knownProblem: {
+          win32:
+            'QVariant inside QList/QVariantList is not rendered via NatVis on Windows; debugger falls back to internal d={data=...} representation.'
+        }
+      },
+      {
+        name: '[2]',
+        value: 'true',
+        knownProblem: {
+          win32:
+            'QVariant inside QList/QVariantList is not rendered via NatVis on Windows; debugger falls back to internal d={data=...} representation.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qVariantHash',
@@ -672,7 +799,19 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin: '{...}',
       linux: '',
       win32: '{a={...} }'
-    }
+    },
+    children: [
+      {
+        name: '[0]',
+        value: '<unvalidated>',
+        knownProblem: {
+          all:
+            'QJsonArray NatVis expands via an Intrinsic referencing Qt6Cored.dll; ' +
+            'this is not reliable under LLDB/GDB, and is also unreliable on win32 CI. ' +
+            'Child expansion is therefore not validated.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qJsonObject',
@@ -681,7 +820,16 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin: '{...}',
       linux: '',
       win32: '{o={...} }'
-    }
+    },
+    children: [
+      {
+        name: '[0]',
+        value: '',
+        knownProblem: {
+          all: 'QJsonObject Expand depends on Intrinsic cbor() using Qt6Cored.dll symbols; evaluation is unreliable on darwin/linux and on win32 CI. Children validation is disabled.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qJsonValueNull',
@@ -690,7 +838,20 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin: '{...}',
       linux: 'null',
       win32: '{n=0 container=0xADDR <NULL> t=Null (278) }'
-    }
+    },
+    children: [
+      {
+        name: 'value',
+        value: {
+          darwin: '{...}',
+          linux: 'null',
+          win32: '{n=0 container=0xADDR <NULL> t=Null (278) }'
+        },
+        knownProblem: {
+          all: 'QJsonValue Expand surfaces the internal value via ExpandedItem; debugger presentation varies across adapters.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qJsonValueInt',
@@ -701,7 +862,16 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       win32:
         "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
-    }
+    },
+    children: [
+      {
+        name: 'value',
+        value: '42',
+        knownProblem: {
+          all: 'QJsonValue Expand surfaces the internal value via ExpandedItem; debugger presentation varies across adapters.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qJsonValueString',
@@ -736,7 +906,21 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin: '{...}',
       linux: '',
       win32: '{d={...} }'
-    }
+    },
+    children: [
+      {
+        name: '[k1]',
+        value: '1',
+        knownProblem: {
+          darwin:
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; LLDB evaluation is unreliable so key/value children do not materialize.',
+          linux:
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; GDB evaluation is unreliable so key/value children do not materialize.',
+          win32:
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics (Qt6Cored.dll!QCborContainerPrivate / QtCbor::Element). On Windows CI these symbols are not reliably resolvable, so map key/value children do not materialize.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qCborValueNull',
@@ -773,7 +957,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.',
       darwin:
         'Typedef (QList<QByteArray>). The NatVis QList<*> rule evaluation fails, so the debugger falls back to {...}.'
-    }
+    },
+    children: [
+      { name: '[0]', type: 'QByteArray', value: 'one' },
+      { name: '[1]', type: 'QByteArray', value: 'two' }
+    ]
   },
   {
     name: 'containerTypes.qPairStringInt',
@@ -830,7 +1018,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque {...} form.',
       win32:
         'QCborValue NatVis currently fails. Debugger provides: n=42 container=0xADDR <NULL> t=Integer (0) instead of just "42".'
-    }
+    },
+    children: [
+      {
+        name: '[expect_none]',
+        value: ''
+      }
+    ]
   },
   // ---------------------------------------------------------------------------
   // core_state_types
@@ -858,7 +1052,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       win32:
         'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
-    }
+    },
+    children: [{ name: '[expect_none]', value: '' }]
   },
   {
     name: 'coreStateTypes.qVariantInt',
@@ -938,7 +1133,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QBasicAtomicInteger<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
       linux:
         'QBasicAtomicInteger<*> NatVis is not applied under GDB; value falls back to {...} instead of the numeric DisplayString.'
-    }
+    },
+    children: [
+      {
+        name: '[value]',
+        value: '7'
+      }
+    ]
   },
   // Atomic pointers: non-null prints {_q_value} (address-like), null prints "empty"
   {
@@ -976,7 +1177,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
       linux:
         'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
-    }
+    },
+    children: [{ name: '[expect_none]' }]
   },
   {
     name: 'coreStateTypes.qAtomicVoidPtrNull',
@@ -987,7 +1189,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
       linux:
         'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
-    }
+    },
+    children: [{ name: '[expect_none]' }]
   },
   {
     name: 'coreTypes.qHostAddressIpv4',
@@ -1063,7 +1266,64 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         "on accessing the internal 'd' pointer, but LLDB reports 'Multiple internal " +
         "symbols found for d', producing an evaluation error instead of the " +
         "'{ size=N }' summary."
-    }
+    },
+    children: [
+      {
+        name: '[closed]',
+        value: 'false',
+        knownProblem: {
+          linux:
+            "GDB CI: QPolygon NatVis child '[closed]' is not stable/present in the locals snapshot (sometimes missing, sometimes shown).",
+          win32:
+            "Windows CI: QPolygon NatVis child '[closed]' is not stable/present in the locals snapshot (sometimes missing, sometimes shown)."
+        }
+      },
+
+      {
+        name: '[0]',
+        type: 'QPoint',
+        value: '{ x = 0, y = 0 }',
+        knownProblem: {
+          linux:
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
+          win32:
+            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+        }
+      },
+      {
+        name: '[1]',
+        type: 'QPoint',
+        value: '{ x = 10, y = 0 }',
+        knownProblem: {
+          linux:
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
+          win32:
+            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+        }
+      },
+      {
+        name: '[2]',
+        type: 'QPoint',
+        value: '{ x = 10, y = 10 }',
+        knownProblem: {
+          linux:
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
+          win32:
+            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+        }
+      },
+      {
+        name: '[3]',
+        type: 'QPoint',
+        value: '{ x = 0, y = 10 }',
+        knownProblem: {
+          linux:
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
+          win32:
+            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qPolygonF',
@@ -1075,7 +1335,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         "on accessing the internal 'd' pointer, but LLDB reports 'Multiple internal " +
         "symbols found for d', producing an evaluation error instead of the " +
         "'{ size=N }' summary."
-    }
+    },
+    children: [
+      { name: '[closed]', value: 'false' },
+
+      { name: '[0]', type: 'QPointF', value: '{ x = 0.5, y = 0.5 }' },
+      { name: '[1]', type: 'QPointF', value: '{ x = 10.5, y = 0.5 }' },
+      { name: '[2]', type: 'QPointF', value: '{ x = 10.5, y = 10.5 }' },
+      { name: '[3]', type: 'QPointF', value: '{ x = 0.5, y = 10.5 }' }
+    ]
   },
   {
     name: 'guiTypes.qVector2D',
@@ -1158,7 +1426,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'GDB fails to substitute QGenericMatrix<*,*,*> template parameters ($T1/$T2) when ' +
         'evaluating the DisplayString for aliases like QMatrix2x2, so the placeholders ' +
         'render as "void" (Columns: [void], Rows: [void]) instead of the expected dimensions.'
-    }
+    },
+    children: [
+      { name: '[0]', value: '1' },
+      { name: '[1]', value: '3' },
+      { name: '[2]', value: '2' },
+      { name: '[3]', value: '4' }
+    ]
   },
   {
     name: 'coreTypes.qSizePolicy',

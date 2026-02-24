@@ -13,7 +13,7 @@ struct ContainerTypes
     QStringList             qStringList;
     QVector<int>            qVectorInt;
     QSpan<int>              qSpanInt;
-    QVector<QPoint>         qVectorPoint;
+    QVector<QPointF>         qVectorPointF;
     QVarLengthArray<int, 4> qVarLengthArrayInt;
 
     // associative containers
@@ -60,7 +60,7 @@ inline ContainerTypes::ContainerTypes()
                    QStringLiteral("blue")}
      , qVectorInt{10, 20, 30}
      , qSpanInt() // will be set below once qVectorInt is constructed
-     , qVectorPoint{QPoint(1, 2), QPoint(3, 4)}
+     , qVectorPointF{QPointF(1, 2), QPointF(3, 4)}
      , qVarLengthArrayInt()
      , qMapStringInt({{QStringLiteral("one"), 1},
                       {QStringLiteral("two"), 2}})
@@ -95,8 +95,8 @@ inline ContainerTypes::ContainerTypes()
      qVarLengthArrayInt.append(8);
      qVarLengthArrayInt.append(9);
 
-     qMultiMapStringInt.insert(QStringLiteral("key"), 1);
-     qMultiMapStringInt.insert(QStringLiteral("key"), 2);
+     qMultiMapStringInt.insert(QStringLiteral("first_key"), 1);
+     qMultiMapStringInt.insert(QStringLiteral("second_key"), 2);
 
      qHashStringInt.insert(QStringLiteral("one"), 1);
      qHashStringInt.insert(QStringLiteral("two"), 2);
