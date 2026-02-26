@@ -24,6 +24,8 @@ The same as `1.11.1`
 
 🎉 **Our Initial Preview Release** 🎉
 
+[Documentation](https://doc.qt.io/vscodeext/vscodeext-overview.html#python-development)
+
 🎉 **Added**
 
 - Recognize `pyproject.toml` files for PySide6 projects

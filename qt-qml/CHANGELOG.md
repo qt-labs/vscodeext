@@ -38,10 +38,10 @@ The same as `1.11.1`
 🎉 **Added**
 
 - Add support for PySide projects with QML Language Server
-- Add PySide debug configuration snippet for integrated debugging
+- Add PySide debug configuration snippet for integrated debugging [Documentation](https://doc.qt.io/vscodeext/vscodeext-how-debug-apps-python.html)
 - Support user-supplied QRC files in the QML debugger
   - Works with non-CMake projects (PySide, custom C++ projects)
-  - Compatible with `qt_add_resource()` CMake command
+  - Compatible with `qt_add_resources()` CMake command
 - Add qmldir file icons
 
 🐞 **Fixed**
