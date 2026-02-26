@@ -19,7 +19,7 @@ The same as `1.11.0`
 
 🎉 **Added**
 
-- Introduce full CMakePresets support
+- Introduce full CMakePresets support [Documentation](https://doc.qt.io/vscodeext/vscodeext-how-build-with-cmake-presets.html)
   - Automatic detection of project configuration type (kit vs presets)
   - Qt path resolution from CMake cache and vcpkg toolchain files
   - Support custom vendor parameters in CMakePresets
