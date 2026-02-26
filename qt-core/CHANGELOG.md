@@ -29,7 +29,7 @@ The same as `1.11.1`
 - Introduce `Report an Issue` command to report bugs directly from VS Code
 - Add support for opening Qt Linguist from PySide6 projects
 - Add support for opening Qt for Python online documentation from `.py` files
-- Introduce new language support for Qt translation (`.ts`) files
+- Introduce new language support for Qt translation (`.ts`) files [Documentation](https://doc.qt.io/vscodeext/vscodeext-how-open-files-in-linguist.html)
   - Auto-detection of Qt translation files
   - Custom icons for light and dark themes
   - Editor title button to open files in Qt Linguist
