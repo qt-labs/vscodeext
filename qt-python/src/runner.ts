@@ -45,8 +45,17 @@ export class PySideCommandRunner {
     const errPromise = streamToLines(proc.stderr, this._onStderr);
 
     await new Promise<void>((resolve, reject) => {
-      proc.on('error', reject);
+      const timeout = setTimeout(() => {
+        proc.kill();
+        reject(new Error('Process timed out after 5 seconds'));
+      }, 3_000);
+
+      proc.on('error', (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
       proc.on('close', (code) => {
+        clearTimeout(timeout);
         if (code === 0) {
           resolve();
           return;
