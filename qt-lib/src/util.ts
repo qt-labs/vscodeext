@@ -92,31 +92,19 @@ export function compareVersions(version1: string, version2: string) {
   if (version1 == version2) {
     return 0;
   }
-  const v1parts = version1.split('.');
-  const v2parts = version2.split('.');
+  const v1parts = version1.split('.').map(Number);
+  const v2parts = version2.split('.').map(Number);
+  const length = Math.max(v1parts.length, v2parts.length);
 
-  for (let i = 0; i < v1parts.length; ++i) {
-    if (v2parts.length === i) {
-      return 1;
-    }
-    const v1Part = v1parts[i];
-    const v2Part = v2parts[i];
-    if (v1Part === undefined) {
-      throw new Error('v1Part is undefined');
-    }
-    if (v2Part === undefined) {
-      throw new Error('v2Part is undefined');
-    }
+  for (let i = 0; i < length; ++i) {
+    const v1Part = v1parts[i] ?? 0;
+    const v2Part = v2parts[i] ?? 0;
     if (v1Part === v2Part) {
       continue;
     }
     if (v1Part > v2Part) {
       return 1;
     }
-    return -1;
-  }
-
-  if (v1parts.length !== v2parts.length) {
     return -1;
   }
 
