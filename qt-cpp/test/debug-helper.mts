@@ -580,17 +580,167 @@ export interface DebugVariable {
 }
 
 /**
- * Returns a flat list of Locals, including children, using dotted names:
- *   core           -> "core"
- *   core.qRect     -> "core.qRect"
- *   core.qByteArray -> "core.qByteArray"
+ * Names of variables whose debugger representation relies on NatVis
+ * `CustomListItems` expansion (e.g. QHash/QMultiHash based containers).
  *
- * It builds on top of getLocals(session, frameId) and uses the DAP
- * "variables" request to walk into children, up to maxDepth.
+ * These types behave differently from most Qt containers in the DAP variable
+ * tree:
  *
- * NOTE: we currently **skip** debugger-synthetic "[Raw View]" nodes (and their
- * children) so that the snapshot stays OS/backend-agnostic. If we ever want
- * to test Raw View explicitly, this is the place to change.
+ *  • The first-level children are often hidden behind an intermediate
+ *    `[Raw View]` node.
+ *  • The actual entries (e.g. `[key]` nodes) are produced by NatVis
+ *    `CustomListItems`, which are not always materialized by the debugger
+ *    unless explicitly traversed.
+ *
+ * When walking the debugger variable tree we therefore enable a special
+ * traversal mode for these roots to ensure their entries are discovered
+ * and included in the runtime snapshot.
+ *
+ * This set identifies the root variables that require this custom handling.
+ */
+const QHASH_ROOTS = new Set<string>([
+  'containerTypes.qHashStringInt',
+  'containerTypes.qMultiHashStringInt',
+  'containerTypes.qVariantHash'
+]);
+
+/**
+ * Returns true if the variable corresponds exactly to one of the
+ * known QHash/QMultiHash root variables that require special traversal.
+ */
+function isHashRoot(fullName: string): boolean {
+  return QHASH_ROOTS.has(fullName);
+}
+
+/**
+ * Returns true if the variable is located under a QHash/QMultiHash root.
+ * This is used to keep the walker in "hash mode" while traversing the
+ * subtree produced by NatVis CustomListItems.
+ */
+function isUnderHashRoot(fullName: string): boolean {
+  for (const r of QHASH_ROOTS) {
+    if (fullName === r || fullName.startsWith(r + '.')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Minimal representation of a DAP Variable returned by the debugger
+ * `variables` request. Only the fields used by the snapshot builder
+ * are modeled here.
+ */
+type DapVariable = {
+  name: string;
+  value?: string;
+  type?: string;
+  variablesReference?: number;
+};
+
+/**
+ * Minimal shape of the DAP `variables` response returned by
+ * `DebugSession.customRequest('variables', ...)`.
+ */
+type VariablesResponse = { variables: DapVariable[] };
+
+/**
+ * Helper that issues a DAP `variables` request and returns the
+ * resulting variables array.
+ */
+async function fetchVars(
+  session: vscode.DebugSession,
+  args: Record<string, unknown>
+): Promise<DapVariable[]> {
+  const r = (await session.customRequest(
+    'variables',
+    args
+  )) as VariablesResponse;
+  return r.variables ?? [];
+}
+
+/**
+ * Default helper used to fetch the direct children of a variable
+ * using its `variablesReference`.
+ */
+async function fetchChildrenDefault(
+  session: vscode.DebugSession,
+  variablesReference: number
+): Promise<DapVariable[]> {
+  return fetchVars(session, { variablesReference });
+}
+
+/**
+ * Fetch children for QHash/QMultiHash variables whose entries are produced
+ * by NatVis `CustomListItems`.
+ *
+ * Some debug adapters do not expose these entries through the default
+ * `variables` request alone. To maximize compatibility, this helper tries
+ * several access patterns:
+ *
+ *  1) Unfiltered request (often the only one that works)
+ *  2) Indexed paging (`filter: 'indexed'`)
+ *  3) Named variables (`filter: 'named'`)
+ *
+ * All discovered variables are aggregated and returned.
+ */
+async function fetchChildrenForHash(
+  session: vscode.DebugSession,
+  variablesReference: number
+): Promise<DapVariable[]> {
+  const out: DapVariable[] = [];
+
+  // 0) Unfiltered first (often the only one that works)
+  const unfiltered = await fetchVars(session, { variablesReference });
+  out.push(...unfiltered);
+
+  // 1) Best-effort indexed paging
+  const PAGE = 200;
+  for (let start = 0; ; start += PAGE) {
+    const indexed = await fetchVars(session, {
+      variablesReference,
+      filter: 'indexed',
+      start,
+      count: PAGE
+    });
+    if (indexed.length === 0) break;
+    out.push(...indexed);
+    if (indexed.length < PAGE) break;
+  }
+
+  // 2) Best-effort named
+  const named = await fetchVars(session, {
+    variablesReference,
+    filter: 'named'
+  });
+  out.push(...named);
+
+  return out;
+}
+
+/**
+ * Collects and flattens the debugger "Locals" variable tree into a list of
+ * `DebugVariable` entries suitable for snapshot comparison.
+ *
+ * The function walks the DAP variable hierarchy recursively starting from the
+ * frame's local variables and produces a flattened dotted-name representation
+ * (e.g. `containerTypes.qHashStringInt.[one].value`).
+ *
+ * Special handling is implemented for QHash/QMultiHash containers because
+ * their entries are produced by NatVis `CustomListItems`, which may appear
+ * behind `[Raw View]` nodes or require alternative variable requests.
+ *
+ * Behavior:
+ *  - Recursively traverses the debugger variable tree up to `maxDepth`.
+ *  - Skips `[Raw View]` nodes in normal traversal.
+ *  - For known hash roots (`QHASH_ROOTS`) it enters a special traversal mode:
+ *      • `[Raw View]` nodes are traversed but not recorded.
+ *      • children are fetched using `fetchChildrenForHash(...)`.
+ *      • internal pointer graphs (e.g. `d`) are skipped to avoid explosion.
+ *  - All visited nodes are recorded as flattened `DebugVariable` entries.
+ *
+ * The resulting list is later converted into a snapshot used for NatVis
+ * comparison against the golden expectations.
  */
 export async function getFlattenedLocals(
   session: vscode.DebugSession | undefined,
@@ -600,24 +750,30 @@ export async function getFlattenedLocals(
   if (!session) {
     throw new Error('[natvis.test] No active debug session');
   }
+  const s: vscode.DebugSession = session;
 
-  // Reuse existing helper that returns top-level Locals
-  const roots = await getLocals(session, frameId);
-
+  const roots = await getLocals(s, frameId);
   const acc: DebugVariable[] = [];
 
   async function walkVar(v: any, prefix: string, depth: number): Promise<void> {
-    // Skip debugger "[Raw View]" synthetic nodes (Windows-only detail)
-    if (v.name === '[Raw View]') {
-      return;
-    }
     const fullName = prefix ? `${prefix}.${v.name}` : v.name;
 
-    acc.push({
-      name: fullName,
-      type: v.type,
-      value: typeof v.value === 'string' ? v.value : String(v.value ?? '')
-    });
+    const inHash = isUnderHashRoot(fullName) || isHashRoot(fullName);
+    const isRawView = v.name === '[Raw View]';
+
+    // Default behavior unchanged: skip Raw View entirely unless we are in hash mode
+    if (!inHash && isRawView) {
+      return;
+    }
+
+    // Record node (unchanged), except: do not record the Raw View container in hash mode
+    if (!(inHash && isRawView)) {
+      acc.push({
+        name: fullName,
+        type: v.type,
+        value: typeof v.value === 'string' ? v.value : String(v.value ?? '')
+      });
+    }
 
     if (
       !v.variablesReference ||
@@ -627,11 +783,30 @@ export async function getFlattenedLocals(
       return;
     }
 
-    const varsResponse = (await session!.customRequest('variables', {
-      variablesReference: v.variablesReference
-    })) as { variables: any[] };
+    // Extra path only: restrict deeper expansion to the hash roots (and under them)
+    // Default path continues expanding everything like before.
+    if (inHash) {
+      // Avoid huge internal pointer graphs under QHash
+      if (v.name === 'd') {
+        return;
+      }
 
-    for (const child of varsResponse.variables) {
+      // IMPORTANT: do not include "[Raw View]" in the dotted path
+      const nextPrefix = isRawView ? prefix : fullName;
+
+      const children = await fetchChildrenForHash(s, v.variablesReference);
+      console.log(
+        `[natvis.test] Fetched ${children.length} children for ${fullName} (hash mode)`
+      );
+      for (const child of children) {
+        await walkVar(child, nextPrefix, depth + 1);
+      }
+      return;
+    }
+
+    // Default path (exactly like your original code)
+    const children = await fetchChildrenDefault(s, v.variablesReference);
+    for (const child of children) {
       await walkVar(child, fullName, depth + 1);
     }
   }
