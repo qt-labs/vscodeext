@@ -681,12 +681,74 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qHashStringInt',
     type: 'QHash<QString, int>',
-    value: '{ size=2 }'
+    value: '{ size=2 }',
+    children: [
+      {
+        name: '[one]',
+        type: 'QHashPrivate::Node<QString,int>',
+        value: '1',
+        knownProblem: {
+          darwin:
+            'LLDB does not reliably materialize QHash CustomListItems/Node children (key/value) via DAP variables().',
+          linux:
+            'GDB/MI does not reliably materialize QHash CustomListItems/Node children (key/value) via DAP variables().'
+        },
+        children: [
+          { name: 'key', value: 'one' },
+          { name: 'value', value: '1' }
+        ]
+      },
+      {
+        name: '[two]',
+        type: 'QHashPrivate::Node<QString,int>',
+        value: '2',
+        knownProblem: {
+          darwin:
+            'LLDB does not reliably materialize QHash CustomListItems/Node children (key/value) via DAP variables().',
+          linux:
+            'GDB/MI does not reliably materialize QHash CustomListItems/Node children (key/value) via DAP variables().'
+        },
+        children: [
+          { name: 'key', value: 'two' },
+          { name: 'value', value: '2' }
+        ]
+      }
+    ]
   },
   {
     name: 'containerTypes.qMultiHashStringInt',
     type: 'QMultiHash<QString, int>',
-    value: '{ size=1 }'
+    value: '{ size=2 }',
+    children: [
+      {
+        name: '[k1]', // or '["k1"]' depending on backend formatting
+        value: '100',
+        knownProblem: {
+          darwin:
+            'LLDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().',
+          linux:
+            'GDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().'
+        },
+        children: [
+          { name: 'key', value: 'k1' },
+          { name: 'value', value: '100' }
+        ]
+      },
+      {
+        name: '[k2]', // or '["k2"]'
+        value: '200',
+        knownProblem: {
+          darwin:
+            'LLDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().',
+          linux:
+            'GDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().'
+        },
+        children: [
+          { name: 'key', value: 'k2' },
+          { name: 'value', value: '200' }
+        ]
+      }
+    ]
   },
   {
     name: 'containerTypes.qSetString',
@@ -790,7 +852,43 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         "LLDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary.",
       linux:
         "GDB NatVis evaluation fails, renders as '{...}' instead of a proper map summary."
-    }
+    },
+    children: [
+      {
+        name: '[x]',
+        type: 'QHashPrivate::Node<QString,QVariant>',
+        value: '1',
+        knownProblem: {
+          darwin:
+            'LLDB/MI does not reliably materialize QVariantHash (QHash<QString,QVariant>) CustomListItems/Node children via DAP variables().',
+          linux:
+            'GDB/MI does not reliably materialize QVariantHash (QHash<QString,QVariant>) CustomListItems/Node children via DAP variables().',
+          win32:
+            'cppvsdbg materializes QVariantHash entries as QHashPrivate::Node and the node DisplayString expands to internal QVariant storage ("{d={data=...}}") instead of a stable scalar like "1".'
+        },
+        children: [
+          { name: 'key', value: 'x' },
+          { name: 'value', value: '1' }
+        ]
+      },
+      {
+        name: '[y]',
+        type: 'QHashPrivate::Node<QString,QVariant>',
+        value: '2',
+        knownProblem: {
+          darwin:
+            'LLDB/MI does not reliably materialize QVariantHash (QHash<QString,QVariant>) CustomListItems/Node children via DAP variables().',
+          linux:
+            'GDB/MI does not reliably materialize QVariantHash (QHash<QString,QVariant>) CustomListItems/Node children via DAP variables().',
+          win32:
+            'cppvsdbg materializes QVariantHash entries as QHashPrivate::Node and the node DisplayString expands to internal QVariant storage ("{d={data=...}}") instead of a stable scalar like "2".'
+        },
+        children: [
+          { name: 'key', value: 'y' },
+          { name: 'value', value: '2' }
+        ]
+      }
+    ]
   },
   {
     name: 'containerTypes.qJsonArray',

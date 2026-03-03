@@ -101,8 +101,8 @@ inline ContainerTypes::ContainerTypes()
      qHashStringInt.insert(QStringLiteral("one"), 1);
      qHashStringInt.insert(QStringLiteral("two"), 2);
 
-     qMultiHashStringInt.insert(QStringLiteral("k"), 100);
-     qMultiHashStringInt.insert(QStringLiteral("k"), 200);
+     qMultiHashStringInt.insert(QStringLiteral("k1"), 100);
+     qMultiHashStringInt.insert(QStringLiteral("k2"), 200);
 
      qSetString.insert(QStringLiteral("apple"));
      qSetString.insert(QStringLiteral("banana"));

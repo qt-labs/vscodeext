@@ -403,16 +403,16 @@ export function materializeLocalSnapshot(
   }
 
   sortTree(promoted);
-  if (process.env.NATVIS_VERBOSE === '1') {
-    const qString = promoted.find(
-      (p) => p.name === 'containerTypes.qHashStringInt'
+  const qString = promoted.find(
+    (p) => p.name === 'containerTypes.qHashStringInt'
+  );
+  if (qString) {
+    console.log(
+      '[natvis.test] Snapshot for containerTypes.qHashStringInt:\n' +
+        JSON.stringify(snapshotToJSON(qString), null, 2)
     );
-    if (qString) {
-      console.log(
-        '[natvis.test] Snapshot for containerTypes.qHashStringInt:\n' +
-          JSON.stringify(snapshotToJSON(qString), null, 2)
-      );
-    }
+  }
+  if (process.env.NATVIS_VERBOSE === '1') {
     console.log(
       '[natvis.test] Snapshot after noise filtering (JSON):\n' +
         JSON.stringify(promoted.map(snapshotToJSON), null, 2)
