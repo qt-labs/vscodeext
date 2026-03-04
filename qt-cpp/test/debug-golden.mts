@@ -51,15 +51,15 @@ export const SKIP_COVERAGE_REASONS: ReadonlyMap<string, string> = new Map([
   ],
   [
     'QQuickItemPrivate',
-    'Qt Quick private backing type; exercised indirectly via QQuickItem'
+    'Qt Quick private backing type reached via QQuickItem (d_ptr); not expected as a top-level fixture variable'
   ],
   [
     'QCborContainerPrivate',
-    'CBOR/JSON backend type; exercised indirectly via QCbor*/QJson* public types'
+    'CBOR container private backing type; exercised indirectly via QCborArray/QCborMap/QCborValue'
   ],
   [
     'QtCbor::ByteData',
-    'CBOR backend helper; exercised indirectly via QCborValue/containers'
+    'Internal CBOR storage helper used by QCborValue/QCborArray/QCborMap; not expected as a top-level fixture variable'
   ],
   [
     'QtCbor::Element',
@@ -93,7 +93,10 @@ export const SKIP_COVERAGE_REASONS: ReadonlyMap<string, string> = new Map([
     'QStringRef',
     'Legacy/compat type; intentionally not required by the fixture'
   ],
-  ['QSpecialInteger<*>', 'Internal helper template; not a fixture surface type']
+  [
+    'QSpecialInteger<*>',
+    'Internal Qt helper template; usually only appears as an implementation detail inside other Qt types (not a top-level fixture variable).'
+  ]
 ]);
 
 /**
@@ -403,23 +406,14 @@ export function materializeLocalSnapshot(
   }
 
   sortTree(promoted);
-  let qString = promoted.find(
-    (p) => p.name === 'containerTypes.qMultiHashStringInt'
-  );
-  if (qString) {
-    console.log(
-      '[natvis.test] Snapshot for containerTypes.qMultiHashStringInt:\n' +
-        JSON.stringify(snapshotToJSON(qString), null, 2)
-    );
-  }
-  qString = promoted.find((p) => p.name === 'containerTypes.qVariantHash');
-  if (qString) {
-    console.log(
-      '[natvis.test] Snapshot for containerTypes.qVariantHash:\n' +
-        JSON.stringify(snapshotToJSON(qString), null, 2)
-    );
-  }
   if (process.env.NATVIS_VERBOSE === '1') {
+  let qString = promoted.find((p) => p.name === 'containerTypes.qCborMap');
+  if (qString) {
+    console.log(
+      '[natvis.test] Snapshot for containerTypes.qCborMap:\n' +
+        JSON.stringify(snapshotToJSON(qString), null, 2)
+    );
+  }
     console.log(
       '[natvis.test] Snapshot after noise filtering (JSON):\n' +
         JSON.stringify(promoted.map(snapshotToJSON), null, 2)
