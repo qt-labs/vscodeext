@@ -20,6 +20,7 @@ import { PySideDebugConfigProvider } from './debug';
 import { PySideProjectManager } from './project-manager';
 import * as consts from '@/constants';
 import { onInstallPySide6Command } from './installer';
+import { PySideAPIImpl } from './api';
 
 const logger = createLogger('extension');
 
@@ -40,8 +41,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     logger.info(`Activated: ${consts.EXTENSION_ID}`);
     telemetry.sendEvent('activated');
+
+    return new PySideAPIImpl();
   } catch (e) {
     logger.error(`Cannot activate: ${consts.EXTENSION_ID}: ${String(e)}`);
+    return undefined;
   }
 }
 

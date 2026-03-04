@@ -7,6 +7,7 @@ export * from './state';
 export * from './telemetry';
 export * from './color-provider';
 export * from './configuration-resolver';
+export * from './pyside-api';
 export * from './vcpkg';
 export * from './test-helper';
 export * from './test-constants';

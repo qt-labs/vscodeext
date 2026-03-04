@@ -30,6 +30,7 @@ const logger = createLogger('project');
 export class PySideProject implements Project {
   private readonly _env: PySideEnv;
   private _info: PySideProjectInfo | undefined;
+  private _pySideVersion: string | undefined;
 
   private constructor(private readonly _folder: Folder) {
     logger.info(`Create: "${_folder.uri.fsPath}"`);
@@ -53,6 +54,14 @@ export class PySideProject implements Project {
     return this._info !== undefined;
   }
 
+  get pySideVersion() {
+    return this._pySideVersion;
+  }
+
+  get projectFiles() {
+    return this._info?.files ?? [];
+  }
+
   public async refreshEnv() {
     if (!pyApi) {
       return;
@@ -61,6 +70,7 @@ export class PySideProject implements Project {
     await this._env.refresh(pyApi);
 
     const pyside = await this._env.readPySide6PackageInfo();
+    this._pySideVersion = pyside?.version;
     const qmlImportPath = pyside?.location
       ? path.normalize(path.join(pyside.location, consts.QML_IMPORT_SUBDIR))
       : '';
