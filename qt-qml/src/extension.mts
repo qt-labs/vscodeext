@@ -137,11 +137,14 @@ function updatePreviewLaunchContext() {
       folder,
       CoreKey.WORKSPACE_FEATURES
     );
-    // Enable preview launch only for CMake projects.
-    // PySide projects can only use attach.
-    launchEnabled = features?.projectTypes.cmake === true;
+    // Enable preview launch for CMake and PySide projects.
+    launchEnabled =
+      features?.projectTypes.cmake === true ||
+      features?.projectTypes.pyside === true;
   }
-
+  logger.info(
+    `Setting qmlPreviewLaunchEnabled to ${launchEnabled} for folder ${folder?.name}`
+  );
   void vscode.commands.executeCommand(
     'setContext',
     'qt-qml.qmlPreviewLaunchEnabled',
@@ -185,6 +188,17 @@ function processMessage(message: QtWorkspaceConfigMessage) {
         }
       }
       if (key === CoreKey.WORKSPACE_FEATURES) {
+        logger.info(
+          'Updating workspace features for project',
+          project.folder.name
+        );
+        const features = coreAPI?.getValue<QtWorkspaceFeatures>(
+          message.workspaceFolder,
+          CoreKey.WORKSPACE_FEATURES
+        );
+        if (features?.projectTypes.pyside === true) {
+          void project.initPySideProject();
+        }
         updatePreviewLaunchContext();
       }
     }
