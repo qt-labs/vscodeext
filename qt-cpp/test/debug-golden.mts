@@ -403,12 +403,19 @@ export function materializeLocalSnapshot(
   }
 
   sortTree(promoted);
-  const qString = promoted.find(
-    (p) => p.name === 'containerTypes.qHashStringInt'
+  let qString = promoted.find(
+    (p) => p.name === 'containerTypes.qMultiHashStringInt'
   );
   if (qString) {
     console.log(
-      '[natvis.test] Snapshot for containerTypes.qHashStringInt:\n' +
+      '[natvis.test] Snapshot for containerTypes.qMultiHashStringInt:\n' +
+        JSON.stringify(snapshotToJSON(qString), null, 2)
+    );
+  }
+  qString = promoted.find((p) => p.name === 'containerTypes.qVariantHash');
+  if (qString) {
+    console.log(
+      '[natvis.test] Snapshot for containerTypes.qVariantHash:\n' +
         JSON.stringify(snapshotToJSON(qString), null, 2)
     );
   }
