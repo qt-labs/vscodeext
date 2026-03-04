@@ -859,48 +859,82 @@ export function printNatvisTypeStatusTable(params: {
 }
 
 /**
- * Recursively compare a single golden snapshot node against the corresponding
+ * Recursively compare a golden snapshot node against the corresponding
  * runtime snapshot node and update comparison statistics.
  *
- * This function is the core of NatVis validation. It:
+ * This function is the core of NatVis validation. It compares the expected
+ * debugger view (golden snapshot) against the actual runtime snapshot
+ * produced by the debugger.
  *
- * 1) Compares presence:
- *    - Missing actual node:
- *        • If marked as knownProblem on this platform → mark KP.
- *        • Otherwise → record mismatch and mark FAIL.
+ * Comparison process
+ * ------------------
  *
- * 2) Validates type compatibility:
- *    - Uses `areTypesCompatible(...)`.
- *    - A root-level type incompatibility is considered fatal and throws.
+ * 1) Presence check
+ *    - If the runtime node is missing:
+ *        • If the entry is marked `knownProblem` on the current platform,
+ *          mark KP and stop evaluation.
+ *        • Otherwise record a mismatch and mark FAIL.
  *
- * 3) Compares value (DisplayString):
- *    - If values differ:
- *        • If knownProblem → mark KP.
- *        • Otherwise → record mismatch and mark FAIL.
- *    - If values match:
- *        • If knownProblem → mark KP + KP* (good news).
- *        • Otherwise → mark OK.
+ * 2) Type compatibility
+ *    - Types are validated using `areTypesCompatible(...)`.
+ *    - A root-level type incompatibility is treated as fatal and throws.
+ *    - If the root type is incompatible and children were expected,
+ *      children are marked as "unknown" (`x`) since they cannot be evaluated.
  *
- * 4) Validates children (one level only):
- *    - Children are only evaluated for the root call (`isRoot === true`).
- *    - If the golden entry defines children, each expected child is compared
- *      against the corresponding runtime child (subset comparison).
- *    - Children status is aggregated in `stats.children`.
- *    - If no golden children are defined, the children slice remains
- *      "unset" (unknown=false, no flags set), which maps to '?'.
+ * 3) Value comparison (DisplayString)
+ *    - Values are compared as strings.
+ *        • If values differ:
+ *            - If marked `knownProblem` → mark KP.
+ *            - Otherwise → record mismatch and mark FAIL.
+ *        • If values match:
+ *            - If marked `knownProblem` → mark KP + KP* (unexpected success).
+ *            - Otherwise → mark OK.
  *
- * Status model:
- *  - `stats.root` and `stats.children` are updated via small helpers
- *    (markSucceeded, markFail, markKPSeen, markKPGoodNews).
- *  - `unknown` indicates “could not be evaluated” and maps to 'x'.
- *  - If no flags are set and unknown=false, the status falls back to '?'.
+ * 4) Known-problem short-circuit
+ *    - If the node is marked `knownProblem` for the current platform,
+ *      recursion stops immediately. Children and grandchildren are not
+ *      evaluated since the node itself is considered unreliable.
  *
- * Notes:
- *  - Only one child level is currently validated (no grandchildren).
- *  - The golden model is treated as authoritative; extra runtime children
- *    are ignored (subset comparison).
- *  - This function does not itself decide pass/fail; it records mismatches
- *    and updates `CompareStats`, which are later rendered by the summary table.
+ * 5) Children comparison (depth-limited recursion)
+ *    - Children are compared recursively using subset semantics:
+ *        • Only children defined in the golden snapshot are validated.
+ *        • Extra runtime children are ignored.
+ *    - Recursion depth is limited:
+ *        depth 0 → root
+ *        depth 1 → children
+ *        depth 2 → grandchildren
+ *    - Deeper levels are currently not evaluated.
+ *
+ * 6) Special "no children" sentinel
+ *    - If the golden entry contains a single child named `[expect_none]`,
+ *      the node is explicitly expected to have no children.
+ *
+ * Status model
+ * ------------
+ * Results are aggregated into `CompareStats`, which has two slices:
+ *
+ *    stats.root
+ *    stats.children
+ *
+ * Each slice tracks:
+ *
+ *    succeeded   → OK
+ *    failed      → FAIL
+ *    hadKP       → KP
+ *    kpGoodNews  → KP*
+ *    unknown     → x
+ *
+ * If none of the flags are set and `unknown === false`, the status is `?`
+ * meaning "not evaluated".
+ *
+ * Notes
+ * -----
+ * - The golden snapshot is treated as authoritative.
+ * - Runtime snapshots may contain extra children which are ignored.
+ * - Known-problem entries intentionally suppress deeper comparisons
+ *   to avoid reporting cascading failures from unstable NatVis rules.
+ * - The function records mismatches but does not decide test success;
+ *   failures are reported later by the NatVis summary renderer.
  */
 function compareNode(
   actual: Snapshot | undefined,
@@ -909,8 +943,9 @@ function compareNode(
   platform: NodeJS.Platform,
   mismatches: SnapshotMismatch[],
   stats: CompareStats,
-  isRoot: boolean
+  depth: number
 ): void {
+  const isRoot = depth === 0;
   const kp = resolvesKnownProblem(expected.knownProblem, platform);
 
   const expectedChildren = expected.children; // may be undefined
@@ -1014,16 +1049,18 @@ function compareNode(
     }
   }
 
-  // If the *root* is a known-problem on this platform, do NOT explore children.
-  // Treat children as "unexplored" when golden expects them.
-  if (isRoot && kp) {
+  // If a known-problem exist on this platform, do NOT explore further (children or grand-children).
+  if (kp) {
     stats.children.unknown = false; // so table shows ? (not x)
     return;
   }
   // ----------------------------
-  // Children compare (subset)
+  // Children compare (depth-limited)
   // ----------------------------
-  if (!isRoot) return; //  only validate one child level (no grandchildren yet)
+  const MAX_DEPTH = 2; // 0 = root, 1 = children, 2 = grandchildren
+  if (depth >= MAX_DEPTH) {
+    return;
+  }
 
   // We *are* evaluating children, so ensure children is not "unknown/x".
   stats.children.unknown = false;
@@ -1044,7 +1081,7 @@ function compareNode(
 
   for (const ec of expectedChildren) {
     const ac = actualByChild.get(ec.name);
-    compareNode(ac, ec, natvis, platform, mismatches, stats, false);
+    compareNode(ac, ec, natvis, platform, mismatches, stats, depth + 1);
   }
 
   // If we compared children and none failed/KP, children succeeded.
@@ -1214,7 +1251,7 @@ export function findMismatchedSnapshotEntries(
       }
     };
 
-    compareNode(a, e, natvis, platform, mismatches, stats, true);
+    compareNode(a, e, natvis, platform, mismatches, stats, 0);
     const exercisedType = a?.type ?? '<none>';
 
     statsByRoot.set(name, {

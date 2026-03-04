@@ -721,32 +721,28 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ size=2 }',
     children: [
       {
-        name: '[k1]', // or '["k1"]' depending on backend formatting
+        name: '[k1]',
+        type: 'QHashPrivate::MultiNode<QString,int>',
         value: '100',
         knownProblem: {
           darwin:
-            'LLDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().',
+            'LLDB/MI does not reliably materialize QMultiHash CustomListItems/MultiNode children via DAP variables().',
           linux:
-            'GDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().'
+            'GDB/MI does not reliably materialize QMultiHash CustomListItems/MultiNode children via DAP variables().'
         },
-        children: [
-          { name: 'key', value: 'k1' },
-          { name: 'value', value: '100' }
-        ]
+        children: [{ name: '[0]', value: '100' }]
       },
       {
-        name: '[k2]', // or '["k2"]'
+        name: '[k2]',
+        type: 'QHashPrivate::MultiNode<QString,int>',
         value: '200',
         knownProblem: {
           darwin:
-            'LLDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().',
+            'LLDB/MI does not reliably materialize QMultiHash CustomListItems/MultiNode children via DAP variables().',
           linux:
-            'GDB/MI does not reliably materialize QMultiHash CustomListItems/Node children (key/value) via DAP variables().'
+            'GDB/MI does not reliably materialize QMultiHash CustomListItems/MultiNode children via DAP variables().'
         },
-        children: [
-          { name: 'key', value: 'k2' },
-          { name: 'value', value: '200' }
-        ]
+        children: [{ name: '[0]', value: '200' }]
       }
     ]
   },
