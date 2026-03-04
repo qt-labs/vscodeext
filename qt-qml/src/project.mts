@@ -3,7 +3,15 @@
 
 import * as vscode from 'vscode';
 
-import { CoreKey, Project, ProjectManager, createLogger } from 'qt-lib';
+import {
+  CoreKey,
+  Project,
+  ProjectManager,
+  createLogger,
+  QtWorkspaceFeatures,
+  getPySideApi,
+  PySideProject
+} from 'qt-lib';
 import { Qmlls } from '@/qmlls.mjs';
 import { coreAPI } from '@/extension.mjs';
 import { QmllsOperationQueue, QmllsOperationType } from '@/qmlls-queue.mjs';
@@ -111,6 +119,7 @@ export class QMLProject implements Project {
   _qtpathsExe: string | undefined;
   _kitPath: string | undefined;
   _buildDir: string | undefined;
+  _pySideProject?: PySideProject | undefined;
   public constructor(
     readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
@@ -135,12 +144,34 @@ export class QMLProject implements Project {
     this._qtpathsExe = qtpathsExe;
   }
 
+  get pySideProject() {
+    return this._pySideProject;
+  }
+
+  public async initPySideProject() {
+    const api = await getPySideApi();
+    this._pySideProject = api?.getProject(this._folder);
+    if (!this._pySideProject) {
+      logger.info(
+        `No PySide project available for: ${this._folder.uri.fsPath}`
+      );
+    }
+  }
+
   getConfigValues() {
     this.qtpathsExe = coreAPI?.getValue<string>(
       this.folder,
       CoreKey.SELECTED_QT_PATHS
     );
     this.buildDir = coreAPI?.getValue<string>(this.folder, CoreKey.BUILD_DIR);
+
+    const features = coreAPI?.getValue<QtWorkspaceFeatures>(
+      this.folder,
+      CoreKey.WORKSPACE_FEATURES
+    );
+    if (features?.projectTypes.pyside === true && !this._pySideProject) {
+      void this.initPySideProject();
+    }
   }
 
   updateQmllsParams() {
