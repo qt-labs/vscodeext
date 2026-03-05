@@ -18,9 +18,8 @@ import type { DebugVariable } from './debug-helper.mts';
  *   validate root DisplayString values, so requiring QPropertyData<*> would be misleading.
  */
 export const SKIP_COVERAGE_BASES: ReadonlySet<string> = new Set<string>([
-  // QProperty support: exercised via QProperty<T>, but only observable once Expand/children is validated
+  // Property system internal data; reached indirectly via QProperty, but not expected as a top-level fixture variable until we validate children/Expand output.
   'QPropertyData<*>',
-
   // Qt Quick support: exercised via QQuickItem (d_ptr.d expands into QQuickItemPrivate)
   'QQuickItemPrivate',
 
@@ -47,7 +46,7 @@ export const SKIP_COVERAGE_BASES: ReadonlySet<string> = new Set<string>([
 export const SKIP_COVERAGE_REASONS: ReadonlyMap<string, string> = new Map([
   [
     'QPropertyData<*>',
-    'Internal support for QProperty<T>; observable only once children/Expand is validated'
+    'Qt internal property storage; not expected as a top-level fixture variable, but expected as a NatVis/materialized child under QProperty<T>.'
   ],
   [
     'QQuickItemPrivate',
@@ -407,17 +406,24 @@ export function materializeLocalSnapshot(
 
   sortTree(promoted);
   if (process.env.NATVIS_VERBOSE === '1') {
-  let qString = promoted.find((p) => p.name === 'containerTypes.qCborMap');
-  if (qString) {
-    console.log(
-      '[natvis.test] Snapshot for containerTypes.qCborMap:\n' +
-        JSON.stringify(snapshotToJSON(qString), null, 2)
-    );
-  }
-    console.log(
-      '[natvis.test] Snapshot after noise filtering (JSON):\n' +
-        JSON.stringify(promoted.map(snapshotToJSON), null, 2)
-    );
+    let qString = promoted.find((p) => p.name === 'coreTypes.qPropertyString');
+    if (qString) {
+      console.log(
+        '[natvis.test] Snapshot for coreTypes.qPropertyString:\n' +
+          JSON.stringify(snapshotToJSON(qString), null, 2)
+      );
+    }
+    qString = promoted.find((p) => p.name === 'coreTypes.qPropertyInt');
+    if (qString) {
+      console.log(
+        '[natvis.test] Snapshot for coreTypes.qPropertyInt:\n' +
+          JSON.stringify(snapshotToJSON(qString), null, 2)
+      );
+    }
+    // console.log(
+    //   '[natvis.test] Snapshot after noise filtering (JSON):\n' +
+    //     JSON.stringify(promoted.map(snapshotToJSON), null, 2)
+    // );
   }
 
   return promoted;
