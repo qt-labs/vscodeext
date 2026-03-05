@@ -1567,6 +1567,48 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'delegated NatVis DisplayString `{d_ptr.d,na}`. As a result, the expected QQuickItemPrivate ' +
         'summary (x/y/width/height) is not produced at the root.'
     }
+  },
+  {
+    name: 'coreTypes.qPropertyInt',
+    type: 'QProperty<int>',
+    value: { darwin: '{...}', linux: '123', win32: '123' },
+    children: [
+      {
+        name: 'QPropertyData<int>',
+        type: 'QPropertyData<int>',
+        value: '123',
+        knownProblem: {
+          darwin:
+            "LLDB fails to evaluate the NatVis synthetic QPropertyData<T> view under QProperty<T> (reports \"no member named 'QPropertyData' in 'QProperty<...>'\"), so the QPropertyData node/value cannot be materialized reliably.",
+          win32:
+            'cppvsdbg does not consistently materialize the NatVis synthetic QPropertyData<T> view under QProperty<T>; the node may appear or disappear depending on evaluation.',
+          linux:
+            'GDB/MI materializes QPropertyData<T> differently than expected; the synthetic NatVis node may appear instead of being hidden, leading to unstable presence/value.'
+        },
+        children: [{ name: '[value]', value: '123' }]
+      }
+    ]
+  },
+  {
+    name: 'coreTypes.qPropertyString',
+    type: 'QProperty<QString>',
+    value: { darwin: '{...}', linux: 'prop', win32: 'prop' },
+    children: [
+      {
+        name: 'QPropertyData<QString>',
+        type: 'QPropertyData<QString>',
+        value: 'prop',
+        knownProblem: {
+          darwin:
+            "LLDB fails to evaluate the NatVis synthetic QPropertyData<T> view under QProperty<T> (reports \"no member named 'QPropertyData' in 'QProperty<...>'\"), so the QPropertyData node/value cannot be materialized reliably.",
+          win32:
+            'cppvsdbg does not consistently materialize the NatVis synthetic QPropertyData<T> view under QProperty<T>; the node may appear or disappear depending on evaluation.',
+          linux:
+            'GDB/MI materializes QPropertyData<T> differently than expected; the synthetic NatVis node may appear instead of being hidden, leading to unstable presence/value.'
+        },
+        children: [{ name: '[value]', value: 'prop' }]
+      }
+    ]
   }
 ] as const;
 

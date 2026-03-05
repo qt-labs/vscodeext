@@ -43,6 +43,10 @@ struct CoreTypes
     // flags
     SelectionFlags qFlags;
 
+    // properties (used to surface QPropertyData<*> in NatVis)
+    QProperty<int>     qPropertyInt;
+    QProperty<QString> qPropertyString;
+
     // JSON document
     QJsonDocument qJsonDocument;
     QJsonDocument qJsonDocumentEmpty;
@@ -77,10 +81,8 @@ inline CoreTypes::CoreTypes()
     , qString(QStringLiteral("Hello World! Again."))
     , qStringView(qString)
     , qDate(2024,06,15)
-    //, qDateTimeLocal(QDateTime(QDate(2024, 6, 15),
-    //                           QTime(12, 34, 56),
-    //                           QTimeZone::systemTimeZone()))
-    // deterministic date-times built from a fixed base date/time
+    , qPropertyInt(123)
+    , qPropertyString(QStringLiteral("prop"))
     , qDateTimeUtc(QDateTime(QDate(2024, 6, 15),
                              QTime(12, 34, 56),
                              Qt::UTC))
