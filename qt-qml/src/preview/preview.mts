@@ -259,21 +259,29 @@ async function launchPySidePreview(
       logger.info('Using pyside6-project run with args');
       proc = pySideProject.runProject(allArgs);
     } else {
-      // PySide < 6.10.3: let user pick the main Python file
+      // PySide < 6.10.3: replicate pyside6-project run manually:
+      // build the project, then run the main file with args.
       logger.info(
-        'PySide version does not support run args, using file picker'
+        'PySide version does not support run args, replicating pyside6-project run'
       );
 
-      const selectedFile = await pickPythonFile(project, pySideProject);
-      if (!selectedFile) {
-        manager.dispose();
-        return false;
+      // Determine the main file using the same logic as pyside6-project run:
+      // 1. file named main.py, 2. file containing __main__, 3. user picker.
+      let absFilePath: string | undefined = await pySideProject.getMainFile();
+      if (absFilePath) {
+        logger.info(`Auto-detected main file: ${absFilePath}`);
+      } else {
+        logger.info('Main file not auto-detected, falling back to file picker');
+        const selectedFile = await pickPythonFile(project, pySideProject);
+        if (!selectedFile) {
+          manager.dispose();
+          return false;
+        }
+        absFilePath = path.isAbsolute(selectedFile)
+          ? selectedFile
+          : path.join(folder.uri.fsPath, selectedFile);
+        logger.info(`Selected main file: ${absFilePath}`);
       }
-
-      const absFilePath = path.isAbsolute(selectedFile)
-        ? selectedFile
-        : path.join(folder.uri.fsPath, selectedFile);
-      logger.info(`Selected main file: ${absFilePath}`);
 
       logger.info('Building PySide project before running file...');
       const buildOk = await pySideProject.build();

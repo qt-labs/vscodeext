@@ -75,6 +75,15 @@ export interface PySideProject {
    * @returns true if `pyside6-project run -- <args>` is supported.
    */
   supportsProjectRunArgs(): boolean;
+
+  /**
+   * Find the main entry-point file for the project, replicating the logic
+   * used by `pyside6-project run`:
+   * 1. A Python file whose stem is `main` (i.e. `main.py`).
+   * 2. The first Python file in the project that contains `__main__`.
+   * @returns Absolute path to the main file, or undefined if not found.
+   */
+  getMainFile(): Promise<string | undefined>;
 }
 
 /**
