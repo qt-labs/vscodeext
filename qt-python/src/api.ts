@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 import { glob } from 'glob';
@@ -104,6 +106,35 @@ class PySideProjectWrapper implements PySideProjectAPI {
       cwd: this.folder.uri.fsPath,
       ignore: ['**/.*/**', '**/__pycache__/**', '**/node_modules/**']
     });
+  }
+
+  async getMainFile(): Promise<string | undefined> {
+    const folderPath = this.folder.uri.fsPath;
+    const pyFiles = this.project.projectFiles
+      .filter((f) => f.endsWith('.py') || f.endsWith('.pyw'))
+      .map((f) => (path.isAbsolute(f) ? f : path.join(folderPath, f)));
+
+    // First priority: file whose stem is 'main' (i.e. main.py)
+    const mainPy = pyFiles.find(
+      (f) => path.basename(f, path.extname(f)) === 'main'
+    );
+    if (mainPy) {
+      return mainPy;
+    }
+
+    // Second priority: first file whose content contains '__main__'
+    for (const f of pyFiles) {
+      try {
+        const content = await fs.promises.readFile(f, 'utf-8');
+        if (content.includes('__main__')) {
+          return f;
+        }
+      } catch {
+        // ignore unreadable files
+      }
+    }
+
+    return undefined;
   }
 
   getPySideVersion(): string | undefined {
