@@ -3,14 +3,18 @@
 
 import * as vscode from 'vscode';
 
+import { CoreKey } from './constants';
+
 export class BaseStateManager {
   constructor(
     readonly context: vscode.ExtensionContext,
-    readonly folder?: vscode.WorkspaceFolder
+    readonly folder: vscode.WorkspaceFolder | typeof CoreKey.GLOBAL_WORKSPACE
   ) {}
   protected _get<T>(key: string, defaultValue: T): T {
     const state = this.context.globalState;
-    const ret = state.get<T>((this.folder?.uri.fsPath ?? '') + key);
+    const prefix =
+      typeof this.folder === 'string' ? this.folder : this.folder.uri.fsPath;
+    const ret = state.get<T>(prefix + key);
     if (ret === undefined) {
       return defaultValue;
     }
@@ -18,6 +22,8 @@ export class BaseStateManager {
   }
   protected _update<T>(key: string, value: T): Thenable<void> {
     const state = this.context.globalState;
-    return state.update((this.folder?.uri.fsPath ?? '') + key, value);
+    const prefix =
+      typeof this.folder === 'string' ? this.folder : this.folder.uri.fsPath;
+    return state.update(prefix + key, value);
   }
 }

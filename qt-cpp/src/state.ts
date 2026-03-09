@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger, BaseStateManager } from 'qt-lib';
+import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 import { Kit } from '@/kit-manager';
 
 const logger = createLogger('state');
@@ -52,6 +52,9 @@ export class WorkspaceStateManager extends BaseStateManager {
 }
 
 export class GlobalStateManager extends BaseStateManager {
+  constructor(context: vscode.ExtensionContext) {
+    super(context, CoreKey.GLOBAL_WORKSPACE);
+  }
   public getGlobalQtKits(): Kit[] {
     return this._get<Kit[]>('globalQtKits', []);
   }
