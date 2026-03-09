@@ -8,7 +8,8 @@ import {
   QtInsRootConfigName,
   BaseStateManager,
   AdditionalQtPathsName,
-  QtAdditionalPath
+  QtAdditionalPath,
+  CoreKey
 } from 'qt-lib';
 
 const logger = createLogger('state');
@@ -43,6 +44,9 @@ export class WorkspaceStateManager extends BaseStateManager {
 }
 
 export class GlobalStateManager extends BaseStateManager {
+  constructor(context: vscode.ExtensionContext) {
+    super(context, CoreKey.GLOBAL_WORKSPACE);
+  }
   public getQtInstallationRoot(): string {
     return this._get<string>(QtInsRootConfigName, '');
   }
