@@ -190,7 +190,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
       if (this._settings.fpsHandler) {
         this._settings.fpsHandler(fps);
       } else {
-        logger.info(`QML Preview FPS: ${fps.numSyncs}`);
+        logger.info(`QML Preview FPS: ${fps.numSyncs.toString()}`);
       }
     });
 

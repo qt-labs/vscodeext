@@ -5,7 +5,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { nanoid } from 'nanoid';
-  import { Input, Button, Alert } from 'flowbite-svelte';
+  import Input from 'flowbite-svelte/Input.svelte';
+  import Button from 'flowbite-svelte/Button.svelte';
+  import Alert from 'flowbite-svelte/Alert.svelte';
   import { CircleMinus, Info } from '@lucide/svelte';
 
   let {

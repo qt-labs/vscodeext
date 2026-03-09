@@ -79,7 +79,9 @@ export function checkQtpathsInEnvPath(): void {
     logger.info(`${qtPath.path} already exists in the settings`);
     return;
   }
-  logger.info(`Added ${qtPath.path} to the settings with name: ${qtPath.name}`);
+  logger.info(
+    `Added ${qtPath.path} to the settings with name: ${String(qtPath.name)}`
+  );
   addQtPathToSettings(qtPath);
   telemetry.sendConfig('qtpathsFromEnvPath');
 }

@@ -61,7 +61,7 @@ async function resolveCMakeProgram() {
 }
 
 function buildPreviewArgs(host: string, port: number) {
-  return `-qmljsdebugger=host:${host},port:${port},block,services:QmlPreview,DebugTranslation`;
+  return `-qmljsdebugger=host:${host},port:${port.toString()},block,services:QmlPreview,DebugTranslation`;
 }
 
 function getPreviewConfig() {
@@ -145,7 +145,7 @@ async function launchCMakePreview(qmlFile?: string) {
     ui.showFailedToStart(new Error('Failed to obtain a free port'));
     return false;
   }
-  logger.info(`Host: ${host}, Port: ${port}`);
+  logger.info(`Host: ${host}, Port: ${port.toString()}`);
 
   const manager = createPreviewManager();
 
@@ -171,7 +171,9 @@ async function launchCMakePreview(qmlFile?: string) {
       ui.showFailedToStart(new Error('Process failed to start'));
       return false;
     }
-    logger.info(`QML Preview process started with PID: ${process.pid}`);
+    logger.info(
+      `QML Preview process started with PID: ${process.pid.toString()}`
+    );
 
     setupProcessForPreview(process, manager, qmlFile, host, port);
     return true;
@@ -232,7 +234,7 @@ async function launchPySidePreview(
     ui.showFailedToStart(new Error('Failed to obtain a free port'));
     return false;
   }
-  logger.info(`Host: ${host}, Port: ${port}`);
+  logger.info(`Host: ${host}, Port: ${String(port)}`);
 
   const manager = createPreviewManager();
   manager.onConnectionClosed(() => {
@@ -301,7 +303,7 @@ async function launchPySidePreview(
       ui.showFailedToStart(new Error('Process failed to start'));
       return false;
     }
-    logger.info(`PySide preview process started with PID: ${proc.pid}`);
+    logger.info(`PySide preview process started with PID: ${String(proc.pid)}`);
 
     setupProcessForPreview(proc, manager, qmlFile, host, port);
     return true;
@@ -339,7 +341,7 @@ function setupProcessForPreview(
 
   proc.on('exit', (code, signal) => {
     logger.info(
-      `QML Preview process exited with code ${code}, signal ${signal}`
+      `QML Preview process exited with code ${String(code)}, signal ${String(signal)}`
     );
     cleanupSession();
   });
@@ -374,7 +376,7 @@ function setupProcessForPreview(
         logger.info(`Loading QML file: ${qmlFile}`);
         manager.loadUrl(qmlFile);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         logger.error(`Timeout waiting for connection: ${String(err)}`);
       });
   }
@@ -383,7 +385,7 @@ function setupProcessForPreview(
 }
 
 function attachPreview(host: string, port: number) {
-  logger.info(`Attaching to ${host}:${port}...`);
+  logger.info(`Attaching to ${host}:${port.toString()}...`);
 
   const manager = createPreviewManager();
 
@@ -409,7 +411,7 @@ function attachPreview(host: string, port: number) {
   try {
     previewManager = manager;
     manager.connectToServer({ host, port, scheme: ServerScheme.Tcp });
-    logger.info(`Waiting for connection to ${host}:${port}...`);
+    logger.info(`Waiting for connection to ${host}:${port.toString()}...`);
     return true;
   } catch (err) {
     logger.error(`Failed to attach to QML Preview: ${String(err)}`);
@@ -541,9 +543,9 @@ export function registerStopQmlPreviewCommand() {
         return;
       }
 
-      if (previewProcess) {
+      if (previewProcess?.pid) {
         logger.info(
-          `Killing QML Preview process with PID: ${previewProcess.pid}`
+          `Killing QML Preview process with PID: ${previewProcess.pid.toString()}`
         );
       }
 

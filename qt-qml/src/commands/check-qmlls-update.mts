@@ -25,7 +25,7 @@ export function registerCheckQmllsUpdateCommand() {
         case DecisionCode.AlreadyUpToDate:
           void showAutoDismissNotification(
             'QML language server',
-            `Already Up-to-date, tag = ${decision.asset?.tag_name}`
+            `Already Up-to-date, tag = ${decision.asset?.tag_name ?? ''}`
           );
           break;
 

@@ -52,7 +52,7 @@ export function installExtensionWithRetry(
       console.error(res.stderr);
     }
     console.error(
-      `[runTest] install "${ext.idOrVsix}" failed (attempt ${i}/${attempts})`
+      `[runTest] install "${ext.idOrVsix}" failed (attempt ${i.toString()}/${attempts.toString()})`
     );
     if (i < attempts) {
       try {

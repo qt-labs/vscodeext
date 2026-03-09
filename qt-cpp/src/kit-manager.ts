@@ -284,7 +284,7 @@ export class KitManager {
       void vscode.window.showWarningMessage(warningMessage);
       logger.info(warningMessage);
     } else {
-      const infoMessage = `Found ${qtInstallations.length} Qt installation(s) in "${qtInsRoot}".`;
+      const infoMessage = `Found ${qtInstallations.length.toString()} Qt installation(s) in "${qtInsRoot}".`;
       void vscode.window.showInformationMessage(infoMessage);
       logger.info(infoMessage);
     }
@@ -384,7 +384,7 @@ export class KitManager {
         ? KitManager.getVCPKGToolchainFile()
         : path.join(libs, 'cmake', 'Qt6', `qt.toolchain.cmake`);
       if (!toolchainFile || !fsSync.existsSync(toolchainFile)) {
-        const warn = `Toolchain file not found: ${toolchainFile}`;
+        const warn = `Toolchain file not found: ${toolchainFile ?? ''}`;
         void vscode.window.showWarningMessage(warn);
         logger.error(warn);
         return undefined;
@@ -419,19 +419,21 @@ export class KitManager {
       const msvcMajor = Number(qtInfo.get(`MSVC_MAJOR_VERSION`) ?? '-1') * 100;
       const msvcMinor = Number(qtInfo.get(`MSVC_MINOR_VERSION`) ?? '-1');
       if (msvcMajor < 0 || msvcMinor < 0) {
-        logger.warn(`MSVC version: ${msvcMajor}.${msvcMinor}`);
+        logger.warn(
+          `MSVC version: ${msvcMajor.toString()}.${msvcMinor.toString()}`
+        );
         yield undefined;
         return;
       }
       const vsyear = KitManager.convertMSCVERToYear(msvcMajor + msvcMinor);
       if (!vsyear) {
-        logger.warn(`vsyear: ${vsyear}`);
+        logger.warn(`vsyear: ${String(vsyear)}`);
         yield undefined;
         return;
       }
       const arch = KitManager.MapMsvcPlatformToQt[qtInfo.get('ARCH') ?? ''];
       if (!arch) {
-        logger.warn(`arch: ${arch}`);
+        logger.warn(`arch: ${arch ?? ''}`);
         yield undefined;
         return;
       }
@@ -588,7 +590,7 @@ export class KitManager {
         return;
       } else if (platform.startsWith('mingw')) {
         const mingwDirPath = await qtPath.locateMingwBinDirPath(qtInsRoot);
-        logger.info(`Mingw dir path: ${mingwDirPath}`);
+        logger.info(`Mingw dir path: ${mingwDirPath ?? ''}`);
         if (mingwDirPath) {
           newKit.environmentVariables.PATH = [
             newKit.environmentVariables.PATH,

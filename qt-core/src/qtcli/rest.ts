@@ -91,8 +91,8 @@ export class QtcliRestClient {
     } catch (e) {
       if (remainingRetries > 0) {
         console.log(
-          `Retrying '${req.method?.toUpperCase()} ${req.url}' ` +
-            `in ${this._retryDelay}ms...`
+          `Retrying '${String(req.method?.toUpperCase())} ${String(req.url)}' ` +
+            `in ${String(this._retryDelay)}ms...`
         );
 
         await new Promise((resolve) => setTimeout(resolve, this._retryDelay));
@@ -221,7 +221,7 @@ async function runQtcli(
         return;
       }
 
-      reject(new Error(`Process exited with code ${code}`));
+      reject(new Error(`Process exited with code ${String(code)}`));
     });
   });
 

@@ -332,7 +332,7 @@ export class QmlDebugConnection {
       this.protocolReadyRead();
     });
     this._device.on('error', (error: Error) => {
-      logger.error('Cannot connect to host:' + error.stack);
+      logger.error('Cannot connect to host:' + (error.stack ?? ''));
       this.socketDisconnected();
     });
     this._device.on('connect', () => {
@@ -468,7 +468,9 @@ export class QmlDebugConnection {
             }
           }
         } else {
-          logger.warn('QML Debug Client: Unknown control message id' + op);
+          logger.warn(
+            'QML Debug Client: Unknown control message id' + String(op)
+          );
         }
       } else {
         const client = this._plugins.get(name);
@@ -642,6 +644,6 @@ export class DebugMessageClient
   }
   override stateChanged(_state: QmlDebugConnectionState) {
     void this;
-    logger.info('DebugMessages: stateChanged:' + _state);
+    logger.info('DebugMessages: stateChanged:' + String(_state));
   }
 }

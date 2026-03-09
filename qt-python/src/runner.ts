@@ -37,7 +37,7 @@ export class PySideCommandRunner {
 
     logger.info('Running command');
     logger.info(`- shell: ${cmd.shellPath}`);
-    logger.info(`- venv activation: ${options?.useVenv ?? false}`);
+    logger.info(`- venv activation: ${String(options?.useVenv ?? false)}`);
     logger.info(`- command: ${cmd.commandLine}`);
 
     const proc = childProcess.spawn(cmd.commandLine, { shell: cmd.shellPath });
@@ -61,7 +61,7 @@ export class PySideCommandRunner {
           return;
         }
 
-        reject(new Error(`Process exited with code ${code}`));
+        reject(new Error(`Process exited with code ${code?.toString() ?? ''}`));
       });
     });
 

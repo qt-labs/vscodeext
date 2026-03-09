@@ -64,7 +64,7 @@ export class QrcResourceFinder {
 
     if (resource) {
       logger.info(
-        `QRC resource found for ${qrcPath}: type=${resource.type}, realPath=${resource.realPath ?? 'N/A'}, children=${resource.children?.length ?? 0}`
+        `QRC resource found for ${qrcPath}: type=${resource.type}, realPath=${resource.realPath ?? 'N/A'}, children=${(resource.children?.length ?? 0).toString()}`
       );
     } else {
       logger.warn(
@@ -85,7 +85,7 @@ export class QrcResourceFinder {
 
     // Find all QRC files in workspace and build directories
     const allQrcFiles = await this.findAllQrcFiles();
-    logger.info(`Found ${allQrcFiles.length} QRC files`);
+    logger.info(`Found ${allQrcFiles.length.toString()} QRC files`);
 
     // Parse all QRC files
     for (const qrcFile of allQrcFiles) {
@@ -96,7 +96,9 @@ export class QrcResourceFinder {
     this.synthesizeDirectories();
 
     this._isDirty = false;
-    logger.info(`Resource map built with ${this._resourceMap.size} entries`);
+    logger.info(
+      `Resource map built with ${this._resourceMap.size.toString()} entries`
+    );
   }
 
   /**

@@ -209,7 +209,7 @@ export class QrcNodePos implements QrcNodePosData {
   }
 
   private static _createId(groupKey: string, fileIndex: number) {
-    return `qrcnode|${groupKey}|${fileIndex}`;
+    return `qrcnode|${groupKey}|${String(fileIndex)}`;
   }
 
   private static _parseId(id: string) {

@@ -1,10 +1,10 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Button } from 'flowbite-svelte';
+  import Button from 'flowbite-svelte/Button.svelte';
 
   let {
     items,

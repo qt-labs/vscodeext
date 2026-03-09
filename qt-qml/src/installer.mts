@@ -231,7 +231,7 @@ export async function fetchAssetToInstall(controller: AbortController) {
 
     if (!res.ok) {
       void vscode.window.showErrorMessage(
-        `Failed to fetch QML Language Server release information: Unexpected HTTP status ${res.status}.`
+        `Failed to fetch QML Language Server release information: Unexpected HTTP status ${res.status.toString()}.`
       );
       logger.warn(`Unexpected HTTP status, code = ${res.status.toFixed(0)}`);
       return undefined;

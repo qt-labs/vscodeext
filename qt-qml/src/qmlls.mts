@@ -534,7 +534,7 @@ function createErrorString(e: Error): string {
   };
 
   return (
-    casted.path +
+    (casted.path ?? '') +
     ', ' +
     `${KnownErrors[casted.code] ?? 'Error'} (${casted.code})`
   );

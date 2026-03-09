@@ -771,7 +771,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
   async getThisVariable() {
     const exp = 'this';
     const response = await this.evaluate(exp);
-    if (!response || !response.success) {
+    if (!response?.success) {
       return undefined;
     }
     const rawThisVariable = response.body;
@@ -1039,22 +1039,22 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     switch (newState) {
       case QmlDebugConnectionState.Unavailable:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'unavailable'.`
+          `Status of "${service}" Version: ${version.toString()} changed to 'unavailable'.`
         );
         break;
       case QmlDebugConnectionState.Enabled:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'enabled'.`
+          `Status of "${service}" Version: ${version.toString()} changed to 'enabled'.`
         );
         break;
       case QmlDebugConnectionState.NotConnected:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'not connected'.`
+          `Status of "${service}" Version: ${version.toString()} changed to 'not connected'.`
         );
         break;
       case QmlDebugConnectionState.Connected:
         this.showConnectionStateMessage(
-          `Status of "${service}" Version: ${version} changed to 'connected'.`
+          `Status of "${service}" Version: ${version.toString()} changed to 'connected'.`
         );
         break;
     }
@@ -1161,7 +1161,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     this.notifyEngineSetupOk();
 
     if (this.state !== DebuggerState.EngineRunRequested) {
-      throw new Error('Unexpected state:' + this.state);
+      throw new Error('Unexpected state:' + String(this.state));
     }
     void this.ui.showWaitingForDebugger(this.server.port.toString());
     if (this._startMode === DebuggerStartMode.AttachToQmlServer) {
@@ -1252,7 +1252,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
     logger.info('NOTE: ENGINE SETUP OK');
 
     if (this.state !== DebuggerState.EngineSetupRequested) {
-      throw new Error('Unexpected state:' + this.state);
+      throw new Error('Unexpected state:' + String(this.state));
     }
     this.setState(DebuggerState.EngineRunRequested);
   }

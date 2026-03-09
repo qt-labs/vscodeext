@@ -123,7 +123,7 @@ export class FileFinder {
 
     if (filePaths.length === 1) {
       console.debug(
-        `FileInProjectFinder: found ${filePaths[0]} in project files`
+        `FileInProjectFinder: found ${filePaths[0] ?? ''} in project files`
       );
       return filePaths;
     }

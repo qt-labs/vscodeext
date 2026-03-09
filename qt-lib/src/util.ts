@@ -258,7 +258,7 @@ export async function fetchWithAbort(
       }
     }, timeout);
   }
-  return fetch(url, { signal: controller.signal }).catch((error) => {
+  return fetch(url, { signal: controller.signal }).catch((error: unknown) => {
     if (controller.signal.aborted) {
       return undefined;
     }
@@ -354,9 +354,9 @@ class FileWriter {
               done();
             }
           })
-          .catch((err: Error) => {
+          .catch((err: unknown) => {
             if (done) {
-              done(err);
+              done(err as Error);
             }
           });
       },

@@ -142,7 +142,7 @@ async function search(keywords: string[], token?: vscode.CancellationToken) {
 
   const raw = await fetchUrl(`${SearchHostUrl}?${queries}`, token);
   if (!raw?.ok) {
-    throw new Error(`Network response: status = ${raw?.status ?? 'unknown'}`);
+    throw new Error(`Network response: status = ${String(raw?.status)}`);
   }
 
   if (token?.isCancellationRequested) {

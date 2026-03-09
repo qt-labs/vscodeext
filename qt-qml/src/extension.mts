@@ -143,7 +143,7 @@ function updatePreviewLaunchContext() {
       features?.projectTypes.pyside === true;
   }
   logger.info(
-    `Setting qmlPreviewLaunchEnabled to ${launchEnabled} for folder ${folder?.name}`
+    `Setting qmlPreviewLaunchEnabled to ${String(launchEnabled)} for folder "${String(folder?.name)}"`
   );
   void vscode.commands.executeCommand(
     'setContext',

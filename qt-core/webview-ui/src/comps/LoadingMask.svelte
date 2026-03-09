@@ -4,7 +4,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { P, Button, Spinner } from 'flowbite-svelte';
+  import P from 'flowbite-svelte/P.svelte';
+  import Button from 'flowbite-svelte/Button.svelte';
+  import Spinner from 'flowbite-svelte/Spinner.svelte';
 
   let {
     busy = false,

@@ -630,7 +630,7 @@ export class QmlDebugSession extends LoggingDebugSession {
       // Start the program with the debugger args
       const program = args.program;
       const additionalArgs = args.args ?? [];
-      const command = `${program} ${debuggerArgs}`;
+      const command = `${program} ${debuggerArgs ?? ''}`;
       this._process = await spawnProcessForTool(command, additionalArgs);
 
       if (!this._process.stdout || !this._process.stderr) {
@@ -695,7 +695,7 @@ export class QmlDebugSession extends LoggingDebugSession {
         port = parseInt(args.port, 10);
       }
       if (port === undefined || isNaN(port)) {
-        throw new Error(`Invalid port number: ${args.port}`);
+        throw new Error(`Invalid port number: ${String(args.port)}`);
       }
       const server: Server = {
         host: args.host,
