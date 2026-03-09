@@ -39,11 +39,11 @@ export class QmlPreviewUI {
     if (this._lastValidFps === 0 || (frames === 0 && this._lastValidFps < 2)) {
       fpsText = '-- FPS';
     } else {
-      fpsText = `${this._lastValidFps} FPS`;
+      fpsText = `${this._lastValidFps.toString()} FPS`;
     }
 
     this._fpsStatusItem.text = `$(pulse) ${fpsText}`;
-    this._fpsStatusItem.tooltip = `QML Preview\nSync: ${fps.minSync}ms - ${fps.maxSync}ms\nRender: ${fps.minRender}ms - ${fps.maxRender}ms`;
+    this._fpsStatusItem.tooltip = `QML Preview\nSync: ${fps.minSync.toString()}ms - ${fps.maxSync.toString()}ms\nRender: ${fps.minRender.toString()}ms - ${fps.maxRender.toString()}ms`;
   }
 
   showFpsStatus() {
@@ -100,7 +100,7 @@ export class QmlPreviewUI {
 
   showProcessExited(code: number | null, signal: NodeJS.Signals | null) {
     this.showError(
-      `QML Preview process exited with code ${code}, signal ${signal}`
+      `QML Preview process exited with code ${code?.toString() ?? ''}, signal ${String(signal ?? '')}`
     );
   }
 
@@ -116,7 +116,7 @@ export class QmlPreviewUI {
   showAttachSuccess(host: string, port: number) {
     this.removeWaitingForConnection();
     // Remove notification after 5 seconds
-    const title = `QML Preview attached successfully at ${host}:${port}`;
+    const title = `QML Preview attached successfully at ${host}:${port.toString()}`;
     const progressOptions = {
       title: title,
       location: vscode.ProgressLocation.Notification,
@@ -134,7 +134,7 @@ export class QmlPreviewUI {
   }
 
   showWaitingForConnection(host: string, port: number, onCancel?: () => void) {
-    const title = `Connecting to QML Preview at ${host}:${port}...`;
+    const title = `Connecting to QML Preview at ${host}:${port.toString()}...`;
     const progressOptions = {
       title: title,
       location: vscode.ProgressLocation.Notification,

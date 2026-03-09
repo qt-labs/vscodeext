@@ -4,7 +4,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { ListgroupItem, Tooltip } from 'flowbite-svelte';
+  import ListgroupItem from 'flowbite-svelte/ListgroupItem.svelte';
+  import Tooltip from 'flowbite-svelte/Tooltip.svelte';
   import { Ellipsis } from '@lucide/svelte';
 
   import TruncatableLabel from '@/comps/TruncatableLabel.svelte';

@@ -76,7 +76,7 @@ export class PySideTaskProvider implements vscode.TaskProvider {
 }
 
 export function findTaskFullName(id: TaskId): string {
-  return `${consts.TASK_SOURCE}: ${findTaskName(id)}`;
+  return `${consts.TASK_SOURCE}: ${findTaskName(id) ?? ''}`;
 }
 
 // helpers
@@ -85,7 +85,9 @@ function createTask(project: PySideProject, taskId: TaskId) {
   const action = findProjectToolAction(taskId);
   const taskName = findTaskName(taskId);
   if (action === undefined || !taskName) {
-    logger.info(`Cannot create: task = ${taskName}, folder = ${folder.name}`);
+    logger.info(
+      `Cannot create: task = ${taskName ?? ''}, folder = ${folder.name}`
+    );
     return undefined;
   }
 
@@ -121,7 +123,9 @@ function createShellExecution(
   const action = findProjectToolAction(taskId);
   const taskName = findTaskName(taskId);
   if (!action || !taskName || !env) {
-    logger.info(`Cannot create: task = ${taskName}, folder = ${folder.name}`);
+    logger.info(
+      `Cannot create: task = ${taskName ?? ''}, folder = ${folder.name}`
+    );
     return undefined;
   }
 

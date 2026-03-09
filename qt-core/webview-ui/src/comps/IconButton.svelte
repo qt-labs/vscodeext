@@ -5,7 +5,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import type { Placement } from '@floating-ui/dom';
-  import { Button, Tooltip } from 'flowbite-svelte';
+  import Button from 'flowbite-svelte/Button.svelte';
+  import Tooltip from 'flowbite-svelte/Tooltip.svelte';
   import { Check } from '@lucide/svelte';
 
   let {

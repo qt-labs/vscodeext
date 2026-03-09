@@ -26,7 +26,7 @@ export class DesignerServer {
   public start() {
     this.server
       .listen(this.port, () => {
-        logger.info(`Designer server is listening on ${this.port}`);
+        logger.info(`Designer server is listening on ${this.port.toString()}`);
       })
       .on('connection', (socket) => {
         this.onConnection(socket);
@@ -38,7 +38,7 @@ export class DesignerServer {
   }
 
   private onConnection(socket: net.Socket) {
-    logger.info('Designer server is connected:' + socket.remoteAddress);
+    logger.info('Designer server is connected:' + (socket.remoteAddress ?? ''));
     this.client = socket;
   }
 

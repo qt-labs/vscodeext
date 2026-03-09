@@ -4,7 +4,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Checkbox, P, Button } from 'flowbite-svelte';
+  import Checkbox from 'flowbite-svelte/Checkbox.svelte';
+  import P from 'flowbite-svelte/P.svelte';
+  import Button from 'flowbite-svelte/Button.svelte';
 
   import Overlay from '@/comps/Overlay.svelte';
   import { qmltrace as texts } from '@/apps/texts';

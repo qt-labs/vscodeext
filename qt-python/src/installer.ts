@@ -54,7 +54,7 @@ export async function onInstallPySide6Command() {
     selected.folder,
     'Check installation status: ',
     `result = ${result.status}, `,
-    `version = ${result.pysideVersion}`
+    `version = ${result.pysideVersion ?? ''}`
   );
 
   void showMessageOrInstall(result);

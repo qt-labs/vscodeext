@@ -5,7 +5,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Input } from 'flowbite-svelte';
+  import Input from 'flowbite-svelte/Input.svelte';
   import type { PresetPromptStep } from './types.svelte';
 
   let {

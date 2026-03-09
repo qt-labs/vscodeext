@@ -18,7 +18,7 @@ export class QtProcess extends ChildProcess {
 
     if (IsWindows) {
       try {
-        execSync(`taskkill /pid ${this.pid} /T /F`, {
+        execSync(`taskkill /pid ${this.pid.toString()} /T /F`, {
           stdio: 'ignore'
         });
         return true;
@@ -64,7 +64,7 @@ export async function spawnProcessForTool(
     const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
     if (dllDirs !== undefined) {
       const env = { ...process.env };
-      env.PATH = `${dllDirs as string};${env.PATH}`;
+      env.PATH = `${dllDirs as string};${env.PATH ?? ''}`;
       options = {
         ...options,
         env: env

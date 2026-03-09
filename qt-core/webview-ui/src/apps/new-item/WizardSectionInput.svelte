@@ -4,7 +4,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { Checkbox, P } from 'flowbite-svelte';
+  import Checkbox from 'flowbite-svelte/Checkbox.svelte';
+  import P from 'flowbite-svelte/P.svelte';
   import { Check, FolderOpen } from '@lucide/svelte';
 
   import IconButton from '@/comps/IconButton.svelte';

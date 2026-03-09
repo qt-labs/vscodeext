@@ -70,7 +70,7 @@ export function registerNatvisCommand() {
         // CppProjectType.Kit
         const kit = await getSelectedKit();
         if (!kit || !IsQtKit(kit)) {
-          const error = `${kit?.name} is not a Qt kit`;
+          const error = `${kit?.name ?? ''} is not a Qt kit`;
           throw new Error(error);
         }
         const version = QtVersionFromKit(kit);

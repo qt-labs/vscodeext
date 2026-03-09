@@ -5,7 +5,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { slide } from 'svelte/transition';
-  import { P, Tooltip } from 'flowbite-svelte';
+  import P from 'flowbite-svelte/P.svelte';
+  import Tooltip from 'flowbite-svelte/Tooltip.svelte';
   import { ArrowLeftToLine } from '@lucide/svelte';
 
   import Overlay from '@/comps/Overlay.svelte';

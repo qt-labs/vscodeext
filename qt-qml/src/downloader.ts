@@ -26,7 +26,7 @@ export async function download(
 
     const res = await getHttps(downloadUrl, controller);
     if (!res.statusCode) {
-      throw Error(`Invalid status code ${res.statusCode}`);
+      throw Error(`Invalid status code ${res.statusCode?.toString() ?? ''}`);
     }
 
     if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
@@ -55,7 +55,7 @@ async function downloadOctetStream(
     });
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
-      reject(new Error(`Unexpected status, ${res.statusCode}`));
+      reject(new Error(`Unexpected status, ${res.statusCode.toString()}`));
       return;
     }
 

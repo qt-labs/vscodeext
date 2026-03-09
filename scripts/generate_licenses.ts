@@ -53,7 +53,7 @@ async function main() {
   const initialText = `Third-Party Notices${EOL}${EOL}This file contains the licenses for third-party software used in this product.${EOL}`;
   append(initialText);
   const entries = Object.entries(outputJSON);
-  console.log(`Found ${entries.length} third-party dependencies`);
+  console.log(`Found ${String(entries.length)} third-party dependencies`);
   for (const [name, license] of entries.sort()) {
     if (excludeList.some((excluded) => name.includes(excluded))) {
       continue;
@@ -63,18 +63,23 @@ async function main() {
       `---------------------------------------------------------${EOL}${EOL}`
     );
     const version = name.split('@').pop();
+    if (!version) {
+      throw new Error(`Cannot parse version from package name: ${name}`);
+    }
     const nameWithoutVersion = name.replace(`@${version}`, '');
     const nameWithoutVersionAndPublisher = nameWithoutVersion.split('/').pop();
+    if (!nameWithoutVersionAndPublisher) {
+      throw new Error(
+        `Cannot parse package name without version and publisher from: ${name}`
+      );
+    }
 
     append(
       `${nameWithoutVersionAndPublisher} ${version} - ${license.licenses}${EOL}`
     );
     append(`${license.repository}#readme${EOL}${EOL}`);
 
-    if (
-      !license.licenseFile ||
-      !license.licenseFile.toLocaleLowerCase().includes('license')
-    ) {
+    if (!license.licenseFile.toLocaleLowerCase().includes('license')) {
       const possibleLicenseFileNames = [
         'license',
         'license.md',

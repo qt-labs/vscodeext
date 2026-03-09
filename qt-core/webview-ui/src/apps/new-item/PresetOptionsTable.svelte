@@ -1,11 +1,11 @@
 <!--
 Copyright (C) 2025 The Qt Company Ltd.
-SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only 
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
   import type { Component } from 'svelte';
-  import { P } from 'flowbite-svelte';
+  import P from 'flowbite-svelte/P.svelte';
 
   import { data, ui } from './states.svelte';
   import type { PresetPromptStep } from './types.svelte';

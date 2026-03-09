@@ -78,14 +78,16 @@ export class QrcEditorController {
 
     const handler = this._routes.get(cmd.id);
     if (!handler) {
-      logger.warn(`unhandled command: id = ${cmd.id}`);
+      logger.warn(`unhandled command: id = ${String(cmd.id)}`);
       return;
     }
 
     try {
       await handler(cmd);
     } catch (e) {
-      logger.error(`Error while handling command '${cmd.id}': ${String(e)}`);
+      logger.error(
+        `Error while handling command '${String(cmd.id)}': ${String(e)}`
+      );
     }
   };
 
