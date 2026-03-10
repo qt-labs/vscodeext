@@ -36,6 +36,7 @@ const extensionTestConfig = {
     './test/runTest.mts',
     './test/suite/index.mts',
     './test/suite/extension.test.mts',
+    './test/suite/command.test.mts',
     './test/runTest.qml-debug.mts',
     './test/runTestHelper.mts',
     './test/suite/index-qml-debug.mts',

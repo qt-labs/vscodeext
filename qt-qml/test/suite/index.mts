@@ -14,7 +14,9 @@ export function run(): Promise<void> {
   });
   const testsRoot = path.resolve(__dirname);
   return new Promise((c, e) => {
-    const testFiles = new glob.Glob('extension.test.js', { cwd: testsRoot });
+    const testFiles = new glob.Glob('{extension,command}.test.js', {
+      cwd: testsRoot
+    });
     const testFileStream = testFiles.stream();
     testFileStream.on('data', (file) => {
       mocha.addFile(path.resolve(testsRoot, file));
