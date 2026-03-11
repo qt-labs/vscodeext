@@ -120,7 +120,7 @@
     "publish:qt-wasm-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/wasm\" --pack=\"qt-wasm-pack\"",
     "publish:qt-all-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/qt\" --pack=\"qt-all-pack\"",
     "publish:qt-python-pack": "ts-node ./scripts/publish_ext_pack.ts --dir=\"extension_packs/python\" --pack=\"qt-python-pack\"",
-    "prepareNatvisFiles": "ts-node ./scripts/prepare_natvis_files.ts",
+    "prepareNatvisFiles": "ts-node ./scripts/copy_natvis_files.ts",
     "prettierWrite": "npm run prettierBase -- --write \"scripts/**/*.{js,ts,mts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common/.eslintrc.cjs\" --log-level silent",
     "prettierCheck": "npm run prettierBase -- --check \"scripts/**/*.{js,ts,mts,json,mjs,cjs}\" \"eslint.config.mjs\" \"common/.eslintrc.cjs\"",
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\"",

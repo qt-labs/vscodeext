@@ -16,4 +16,3 @@ src/test/util/dependencies
 tsconfig.tsbuildinfo
 qt-core/res/qtcli/*
 qt-cpp/res/natvis/*
-.natvis-copy-timestamp
