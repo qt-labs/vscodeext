@@ -6,12 +6,6 @@ import * as childProcess from 'child_process';
 
 import { IsWindows } from 'qt-lib';
 
-export interface PySideCommandBuildOutput {
-  shellPath: string;
-  shellArgs: string[];
-  commandLine: string;
-}
-
 export class PySideCommandBuilder {
   private _venvBinPath: string | undefined;
   private _useVenv: boolean | undefined;
