@@ -33,7 +33,9 @@ function formatPackageRef(pkg: PackageReference): string {
 }
 
 function filtersToJson(filters?: PackageFilters): unknown[] {
-  if (!filters) return [];
+  if (!filters) {
+    return [];
+  }
   const arr: Record<string, string>[] = [];
   for (const [key, value] of Object.entries(filters)) {
     if (value !== undefined && value !== '') {
@@ -45,19 +47,20 @@ function filtersToJson(filters?: PackageFilters): unknown[] {
 
 function parsePackageData(obj: Record<string, unknown>): PackageData {
   return {
-    id: (obj['id'] as string) ?? '',
-    version: (obj['version'] as string) ?? '',
-    name: (obj['name'] as string) ?? '',
-    author: (obj['author'] as string) ?? '',
-    description: (obj['description'] as string) ?? '',
-    license: (obj['license'] as string) ?? '',
-    product: (obj['product'] as string) ?? '',
-    productId: (obj['productId'] as string) ?? '',
-    productVersion: (obj['productVersion'] as string) ?? '',
-    productName: (obj['productName'] as string) ?? '',
-    compressedSize: (obj['compressedSize'] as number) ?? 0,
-    uncompressedSize: (obj['uncompressedSize'] as number) ?? 0,
-    installState: (obj['installState'] as InstallState) ?? InstallState.Uninstalled
+    id: (obj.id as string | undefined) ?? '',
+    version: (obj.version as string | undefined) ?? '',
+    name: (obj.name as string | undefined) ?? '',
+    author: (obj.author as string | undefined) ?? '',
+    description: (obj.description as string | undefined) ?? '',
+    license: (obj.license as string | undefined) ?? '',
+    product: (obj.product as string | undefined) ?? '',
+    productId: (obj.productId as string | undefined) ?? '',
+    productVersion: (obj.productVersion as string | undefined) ?? '',
+    productName: (obj.productName as string | undefined) ?? '',
+    compressedSize: (obj.compressedSize as number | undefined) ?? 0,
+    uncompressedSize: (obj.uncompressedSize as number | undefined) ?? 0,
+    installState:
+      (obj.installState as InstallState | undefined) ?? InstallState.Uninstalled
   };
 }
 
@@ -103,7 +106,9 @@ export class Session extends EventEmitter {
   }
 
   async connectToService(): Promise<void> {
-    if (this._state === SessionState.Connected) return;
+    if (this._state === SessionState.Connected) {
+      return;
+    }
 
     this.setState(SessionState.Connecting);
 
@@ -155,7 +160,9 @@ export class Session extends EventEmitter {
   }
 
   private setState(state: SessionState): void {
-    if (this._state === state) return;
+    if (this._state === state) {
+      return;
+    }
     this._state = state;
     this.emit('stateChanged', state);
   }
@@ -177,79 +184,118 @@ export class Packages {
 
   // ── Transaction commands ───────────────────────────────────────────────
 
-  install(
+  async install(
     packages: PackageReference[],
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<string> {
-    return this.performPackageTransaction(IPC.methods.install, packages, options, callbacks);
+    return this.performPackageTransaction(
+      IPC.methods.install,
+      packages,
+      options,
+      callbacks
+    );
   }
 
-  download(
+  async download(
     packages: PackageReference[],
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<string> {
-    return this.performPackageTransaction(IPC.methods.download, packages, options, callbacks);
+    return this.performPackageTransaction(
+      IPC.methods.download,
+      packages,
+      options,
+      callbacks
+    );
   }
 
-  update(
+  async update(
     packages?: PackageReference[],
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<string> {
-    return this.performPackageTransaction(IPC.methods.update, packages ?? [], options, callbacks);
+    return this.performPackageTransaction(
+      IPC.methods.update,
+      packages ?? [],
+      options,
+      callbacks
+    );
   }
 
-  remove(
+  async remove(
     packages: PackageReference[],
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<string> {
-    return this.performPackageTransaction(IPC.methods.remove, packages, options, callbacks);
+    return this.performPackageTransaction(
+      IPC.methods.remove,
+      packages,
+      options,
+      callbacks
+    );
   }
 
-  purge(options?: PackageRequestOptions, callbacks?: JobCallbacks): Promise<string> {
-    return this.performPackageTransaction(IPC.methods.purge, [], options, callbacks);
+  async purge(
+    options?: PackageRequestOptions,
+    callbacks?: JobCallbacks
+  ): Promise<string> {
+    return this.performPackageTransaction(
+      IPC.methods.purge,
+      [],
+      options,
+      callbacks
+    );
   }
 
   // ── Query commands ─────────────────────────────────────────────────────
 
-  searchAvailablePackages(
+  async searchAvailablePackages(
     filters?: PackageFilters,
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<PackageData[]> {
-    return this.performListQuery(IPC.methods.search, filters, options, callbacks);
+    return this.performListQuery(
+      IPC.methods.search,
+      filters,
+      options,
+      callbacks
+    );
   }
 
-  listInstalledPackages(
+  async listInstalledPackages(
     filters?: PackageFilters,
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<PackageData[]> {
-    return this.performListQuery(IPC.methods.listInstalled, filters, options, callbacks);
+    return this.performListQuery(
+      IPC.methods.listInstalled,
+      filters,
+      options,
+      callbacks
+    );
   }
 
-  listAvailableUpdates(
+  async listAvailableUpdates(
     filters?: PackageFilters,
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<PackageUpdate[]> {
-    const params = this.buildQueryParams(filters, options);
+    const params = Packages.buildQueryParams(filters, options);
 
     return this.callService<PackageUpdate[]>(
       IPC.methods.listUpdates,
       params,
       (result) => {
         const obj = result as Record<string, unknown>;
-        const packages = (obj['packages'] as Record<string, unknown>[]) ?? [];
+        const packages =
+          (obj.packages as Record<string, unknown>[] | undefined) ?? [];
         return packages.map((entry) => ({
           newPackage: parsePackageData(
-            (entry['new_package'] as Record<string, unknown>) ?? {}
+            (entry.new_package as Record<string, unknown> | undefined) ?? {}
           ),
           oldPackage: parsePackageData(
-            (entry['old_package'] as Record<string, unknown>) ?? {}
+            (entry.old_package as Record<string, unknown> | undefined) ?? {}
           )
         }));
       },
@@ -257,7 +303,7 @@ export class Packages {
     );
   }
 
-  showPackageInfo(
+  async showPackageInfo(
     pkg: PackageReference,
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
@@ -265,14 +311,15 @@ export class Packages {
     const params: Record<string, unknown> = {
       package: { id: pkg.id, version: pkg.version ?? '' }
     };
-    this.applyTimeout(params, options);
+    Packages.applyTimeout(params, options);
 
     return this.callService<PackageData>(
       IPC.methods.showInfo,
       params,
       (result) => {
         const obj = result as Record<string, unknown>;
-        const pkgObj = (obj['package'] as Record<string, unknown>) ?? {};
+        const pkgObj =
+          (obj.package as Record<string, unknown> | undefined) ?? {};
         return parsePackageData(pkgObj);
       },
       callbacks
@@ -281,7 +328,7 @@ export class Packages {
 
   // ── Internals ──────────────────────────────────────────────────────────
 
-  private performPackageTransaction(
+  private async performPackageTransaction(
     method: string,
     packages: PackageReference[],
     options?: PackageRequestOptions,
@@ -289,10 +336,10 @@ export class Packages {
   ): Promise<string> {
     const params: Record<string, unknown> = {};
     if (packages.length > 0) {
-      params['packages'] = packages.map(formatPackageRef);
+      params.packages = packages.map(formatPackageRef);
     }
     if (options?.timeoutMs) {
-      params['timeout'] = String(options.timeoutMs);
+      params.timeout = String(options.timeoutMs);
     }
 
     return this.callService<string>(
@@ -300,54 +347,55 @@ export class Packages {
       params,
       (result) => {
         const obj = result as Record<string, unknown>;
-        return (obj['message'] as string) ?? '';
+        return (obj.message as string | undefined) ?? '';
       },
       callbacks
     );
   }
 
-  private performListQuery(
+  private async performListQuery(
     method: string,
     filters?: PackageFilters,
     options?: PackageRequestOptions,
     callbacks?: JobCallbacks
   ): Promise<PackageData[]> {
-    const params = this.buildQueryParams(filters, options);
+    const params = Packages.buildQueryParams(filters, options);
 
     return this.callService<PackageData[]>(
       method,
       params,
       (result) => {
         const obj = result as Record<string, unknown>;
-        const packages = (obj['packages'] as Record<string, unknown>[]) ?? [];
+        const packages =
+          (obj.packages as Record<string, unknown>[] | undefined) ?? [];
         return packages.map(parsePackageData);
       },
       callbacks
     );
   }
 
-  private buildQueryParams(
+  private static buildQueryParams(
     filters?: PackageFilters,
     options?: PackageRequestOptions
   ): Record<string, unknown> {
     const params: Record<string, unknown> = {
       filters: filtersToJson(filters)
     };
-    this.applyTimeout(params, options);
+    Packages.applyTimeout(params, options);
     return params;
   }
 
-  private applyTimeout(
+  private static applyTimeout(
     params: Record<string, unknown>,
     options?: PackageRequestOptions
   ): void {
     if (options?.timeoutMs && options.timeoutMs > 0) {
       const opts = [{ timeout: String(options.timeoutMs) }];
-      params['options'] = opts;
+      params.options = opts;
     }
   }
 
-  private callService<T>(
+  private async callService<T>(
     method: string,
     params: unknown,
     parseResult: (result: unknown) => T,
@@ -356,15 +404,18 @@ export class Packages {
     const dispatcher = this.session.dispatcher;
 
     return new Promise<T>((resolve, reject) => {
-      const onProgress = callbacks?.onProgress
+      const progressCb = callbacks?.onProgress;
+      const onProgress = progressCb
         ? (progressParams: Record<string, unknown>) => {
-            const progress = (progressParams['progress'] as number) ?? 0;
-            callbacks.onProgress!({ progress } satisfies ProgressInfo);
+            const progress =
+              (progressParams.progress as number | undefined) ?? 0;
+            progressCb({ progress } satisfies ProgressInfo);
           }
         : undefined;
 
-      const onPrompt: PromptHandler | undefined = callbacks?.onPrompt
-        ? (prompt) => callbacks.onPrompt!(prompt)
+      const promptCb = callbacks?.onPrompt;
+      const onPrompt: PromptHandler | undefined = promptCb
+        ? async (prompt) => promptCb(prompt)
         : undefined;
 
       dispatcher.call(
@@ -374,10 +425,12 @@ export class Packages {
           try {
             resolve(parseResult(result));
           } catch (err) {
-            reject(err);
+            reject(err instanceof Error ? err : new Error(String(err)));
           }
         },
-        (error) => reject(error),
+        (error) => {
+          reject(new Error(error.message));
+        },
         onProgress,
         onPrompt
       );

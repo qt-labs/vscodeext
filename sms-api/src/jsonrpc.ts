@@ -66,7 +66,9 @@ interface PendingCall {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function isResponse(msg: JsonRpcMessage): msg is JsonRpcSuccessResponse | JsonRpcErrorResponse {
+function isResponse(
+  msg: JsonRpcMessage
+): msg is JsonRpcSuccessResponse | JsonRpcErrorResponse {
   return 'id' in msg && !('method' in msg);
 }
 
@@ -79,7 +81,9 @@ function isRequest(msg: JsonRpcMessage): msg is JsonRpcRequest {
 }
 
 function parsePromptType(raw: unknown): UserPromptType | undefined {
-  if (typeof raw !== 'string') return undefined;
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
   const map: Record<string, UserPromptType> = {
     Choice: UserPromptType.Choice,
     Text: UserPromptType.Text,
@@ -100,10 +104,14 @@ export class JsonRpcDispatcher {
   constructor(socket: net.Socket) {
     this.socket = socket;
 
-    socket.on('data', (chunk: Buffer) => this.reader.feed(chunk));
+    socket.on('data', (chunk: Buffer) => {
+      this.reader.feed(chunk);
+    });
 
     this.reader.on('packet', (pkt: { command: string; data: string }) => {
-      if (pkt.command !== 'JSON') return;
+      if (pkt.command !== 'JSON') {
+        return;
+      }
       let msg: JsonRpcMessage;
       try {
         msg = JSON.parse(pkt.data) as JsonRpcMessage;
@@ -158,7 +166,9 @@ export class JsonRpcDispatcher {
    * Send a raw JSON-RPC message (used for prompt responses).
    */
   send(msg: JsonRpcMessage): void {
-    if (this.disposed) return;
+    if (this.disposed) {
+      return;
+    }
     const raw = JSON.stringify(msg);
     this.socket.write(encodeJsonPacket(raw));
   }
@@ -175,8 +185,10 @@ export class JsonRpcDispatcher {
     // Progress notification: { method: "service/progress", params: { id, progress } }
     if (isNotification(msg) && msg.method === 'service/progress') {
       const params = msg.params as Record<string, unknown> | undefined;
-      const callId = params?.['id'] as string | undefined;
-      if (!callId) return;
+      const callId = params?.id as string | undefined;
+      if (!callId) {
+        return;
+      }
       const call = this.pending.get(callId);
       if (call?.onProgress && params) {
         call.onProgress(params);
@@ -197,14 +209,20 @@ export class JsonRpcDispatcher {
     }
   }
 
-  private handleResponse(msg: JsonRpcSuccessResponse | JsonRpcErrorResponse): void {
+  private handleResponse(
+    msg: JsonRpcSuccessResponse | JsonRpcErrorResponse
+  ): void {
     const call = this.pending.get(msg.id);
-    if (!call) return;
+    if (!call) {
+      return;
+    }
     this.pending.delete(msg.id);
 
-    if ('error' in msg && msg.error) {
+    if ('error' in msg) {
       call.onError({
-        category: (msg.error.category as ErrorCategory | undefined) ?? ErrorCategory.Unknown,
+        category:
+          (msg.error.category as ErrorCategory | undefined) ??
+          ErrorCategory.Unknown,
         code: msg.error.code as ErrorCode,
         message: msg.error.message
       });
@@ -215,16 +233,22 @@ export class JsonRpcDispatcher {
 
   private handlePrompt(msg: JsonRpcRequest): void {
     const params = msg.params as Record<string, unknown> | undefined;
-    if (!params) return;
+    if (!params) {
+      return;
+    }
 
     // The prompt's request id is used to look up the pending call
     const call = this.pending.get(msg.id);
-    if (!call?.onPrompt) return;
+    if (!call?.onPrompt) {
+      return;
+    }
 
-    const promptType = parsePromptType(params['type']);
-    if (!promptType) return;
+    const promptType = parsePromptType(params.type);
+    if (!promptType) {
+      return;
+    }
 
-    const choicesRaw = params['choices'];
+    const choicesRaw = params.choices;
     const choices =
       typeof choicesRaw === 'string'
         ? choicesRaw.split(',').filter(Boolean)
@@ -232,10 +256,10 @@ export class JsonRpcDispatcher {
 
     const prompt: UserPrompt = {
       type: promptType,
-      id: (params['id'] as string) ?? '',
-      title: (params['title'] as string) ?? '',
-      message: (params['message'] as string) ?? '',
-      defaultAnswer: (params['defaultAnswer'] as string) ?? '',
+      id: (params.id as string | undefined) ?? '',
+      title: (params.title as string | undefined) ?? '',
+      message: (params.message as string | undefined) ?? '',
+      defaultAnswer: (params.defaultAnswer as string | undefined) ?? '',
       choices
     };
 
@@ -253,9 +277,9 @@ export class JsonRpcDispatcher {
       } else {
         const result: Record<string, string> = { id: prompt.id };
         if (reply.kind === 'choice') {
-          result['reply_choice'] = reply.choice;
+          result.reply_choice = reply.choice;
         } else {
-          result['reply_text'] = reply.text;
+          result.reply_text = reply.text;
         }
         const resp: JsonRpcSuccessResponse = {
           jsonrpc: '2.0',
