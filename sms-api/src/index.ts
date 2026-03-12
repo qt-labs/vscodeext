@@ -27,7 +27,12 @@ export type {
 } from './types';
 
 // Transport (for advanced / testing use)
-export { PacketReader, encodePacket, encodeJsonPacket, connectSocket } from './transport';
+export {
+  PacketReader,
+  encodePacket,
+  encodeJsonPacket,
+  connectSocket
+} from './transport';
 export type { DecodedPacket, TransportOptions } from './transport';
 
 // JSON-RPC dispatcher (for advanced use)
