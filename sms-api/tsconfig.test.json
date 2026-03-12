@@ -5,7 +5,8 @@
     "outDir": "out",
     "declaration": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "noUncheckedIndexedAccess": false
   },
   "include": ["src/**/*", "test/**/*"]
 }
