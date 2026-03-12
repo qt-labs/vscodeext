@@ -1,0 +1,24 @@
+{
+  "name": "sms-api",
+  "version": "0.1.0",
+  "description": "TypeScript client API for Qt Software Management Service",
+  "main": "out/index.js",
+  "types": "out/index.d.ts",
+  "files": [
+    "out"
+  ],
+  "scripts": {
+    "compile": "tsc",
+    "watch": "tsc --watch",
+    "pretest": "npm run compile && npm run lint",
+    "ci-lint": "npm run prettierCheck && eslint . ",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,mts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,mts,json,mjs,cjs}\"",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "^5.6.3"
+  }
+}
