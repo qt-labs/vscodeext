@@ -103,7 +103,9 @@ export interface TransportOptions {
  * Connect to the service's Unix domain socket / Windows named pipe.
  * Returns a connected `net.Socket`.
  */
-export function connectSocket(opts: TransportOptions): Promise<net.Socket> {
+export async function connectSocket(
+  opts: TransportOptions
+): Promise<net.Socket> {
   const { socketPath, connectTimeoutMs = 5000 } = opts;
 
   return new Promise<net.Socket>((resolve, reject) => {
@@ -111,7 +113,11 @@ export function connectSocket(opts: TransportOptions): Promise<net.Socket> {
 
     const timer = setTimeout(() => {
       socket.destroy();
-      reject(new Error(`Connection to ${socketPath} timed out after ${connectTimeoutMs}ms`));
+      reject(
+        new Error(
+          `Connection to ${socketPath} timed out after ${String(connectTimeoutMs)}ms`
+        )
+      );
     }, connectTimeoutMs);
 
     socket.once('connect', () => {
