@@ -4,9 +4,14 @@
  */
 
 import { EventEmitter } from 'events';
+import { Socket } from 'net';
 
 import { connectSocket, type TransportOptions } from './transport';
-import { JsonRpcDispatcher, type PromptHandler } from './jsonrpc';
+import {
+  JsonRpcDispatcher,
+  type PromptHandler,
+  type MessageHandler
+} from './jsonrpc';
 import {
   type SmsError,
   type PackageReference,
@@ -15,6 +20,7 @@ import {
   type PackageFilters,
   type PackageRequestOptions,
   type ProgressInfo,
+  type MessageInfo,
   type JobCallbacks,
   SessionState,
   ErrorCategory,
@@ -43,6 +49,18 @@ function filtersToJson(filters?: PackageFilters): unknown[] {
     }
   }
   return arr;
+}
+
+function buildProgressInfo(
+  progressParams: Record<string, unknown>
+): ProgressInfo {
+  const progress = (progressParams.progress as number | undefined) ?? 0;
+  const message = progressParams.message as string | undefined;
+  const info: ProgressInfo = { progress };
+  if (message !== undefined) {
+    (info as { message: string }).message = message;
+  }
+  return info;
 }
 
 function parsePackageData(obj: Record<string, unknown>): PackageData {
@@ -75,7 +93,7 @@ export class Session extends EventEmitter {
   private _state: SessionState = SessionState.Disconnected;
   private _lastError: SmsError | undefined;
   private _dispatcher: JsonRpcDispatcher | undefined;
-  private _socket: import('net').Socket | undefined;
+  private _socket: Socket | undefined;
   private readonly _socketPath: string;
   private readonly _connectTimeoutMs: number;
 
@@ -407,9 +425,15 @@ export class Packages {
       const progressCb = callbacks?.onProgress;
       const onProgress = progressCb
         ? (progressParams: Record<string, unknown>) => {
-            const progress =
-              (progressParams.progress as number | undefined) ?? 0;
-            progressCb({ progress } satisfies ProgressInfo);
+            progressCb(buildProgressInfo(progressParams));
+          }
+        : undefined;
+
+      const messageCb = callbacks?.onMessage;
+      const onMessage: MessageHandler | undefined = messageCb
+        ? (messageParams: Record<string, unknown>) => {
+            const message = (messageParams.message as string | undefined) ?? '';
+            messageCb({ message } satisfies MessageInfo);
           }
         : undefined;
 
@@ -432,7 +456,182 @@ export class Packages {
           reject(new Error(error.message));
         },
         onProgress,
-        onPrompt
+        onPrompt,
+        onMessage
+      );
+    });
+  }
+}
+
+// ── Cache ────────────────────────────────────────────────────────────────────
+
+export class Cache {
+  private readonly session: Session;
+
+  constructor(session: Session) {
+    this.session = session;
+  }
+
+  async updateCache(callbacks?: JobCallbacks): Promise<string> {
+    return this.callService<string>(
+      IPC.methods.updateCache,
+      {},
+      (result) => {
+        const obj = result as Record<string, unknown>;
+        return (obj.message as string | undefined) ?? '';
+      },
+      callbacks
+    );
+  }
+
+  async clearCache(callbacks?: JobCallbacks): Promise<string> {
+    return this.callService<string>(
+      IPC.methods.clearCache,
+      {},
+      (result) => {
+        const obj = result as Record<string, unknown>;
+        return (obj.message as string | undefined) ?? '';
+      },
+      callbacks
+    );
+  }
+
+  private async callService<T>(
+    method: string,
+    params: unknown,
+    parseResult: (result: unknown) => T,
+    callbacks?: JobCallbacks
+  ): Promise<T> {
+    const dispatcher = this.session.dispatcher;
+
+    return new Promise<T>((resolve, reject) => {
+      const progressCb = callbacks?.onProgress;
+      const onProgress = progressCb
+        ? (progressParams: Record<string, unknown>) => {
+            progressCb(buildProgressInfo(progressParams));
+          }
+        : undefined;
+
+      const messageCb = callbacks?.onMessage;
+      const onMessage: MessageHandler | undefined = messageCb
+        ? (messageParams: Record<string, unknown>) => {
+            const message = (messageParams.message as string | undefined) ?? '';
+            messageCb({ message } satisfies MessageInfo);
+          }
+        : undefined;
+
+      const promptCb = callbacks?.onPrompt;
+      const onPrompt: PromptHandler | undefined = promptCb
+        ? async (prompt) => promptCb(prompt)
+        : undefined;
+
+      dispatcher.call(
+        method,
+        params,
+        (result) => {
+          try {
+            resolve(parseResult(result));
+          } catch (err) {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          }
+        },
+        (error) => {
+          reject(new Error(error.message));
+        },
+        onProgress,
+        onPrompt,
+        onMessage
+      );
+    });
+  }
+}
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+
+export class Settings {
+  private readonly session: Session;
+
+  constructor(session: Session) {
+    this.session = session;
+  }
+
+  async setSetting(
+    key: string,
+    value: string,
+    callbacks?: JobCallbacks
+  ): Promise<string> {
+    const params = [{ [key]: value }];
+
+    return this.callService<string>(
+      IPC.methods.setSetting,
+      params,
+      (result) => {
+        const obj = result as Record<string, unknown>;
+        return (obj.message as string | undefined) ?? '';
+      },
+      callbacks
+    );
+  }
+
+  async getSetting(key: string, callbacks?: JobCallbacks): Promise<string> {
+    const params = { key };
+
+    return this.callService<string>(
+      IPC.methods.getSetting,
+      params,
+      (result) => {
+        const obj = result as Record<string, unknown>;
+        return (obj[key] as string | undefined) ?? '';
+      },
+      callbacks
+    );
+  }
+
+  private async callService<T>(
+    method: string,
+    params: unknown,
+    parseResult: (result: unknown) => T,
+    callbacks?: JobCallbacks
+  ): Promise<T> {
+    const dispatcher = this.session.dispatcher;
+
+    return new Promise<T>((resolve, reject) => {
+      const progressCb = callbacks?.onProgress;
+      const onProgress = progressCb
+        ? (progressParams: Record<string, unknown>) => {
+            progressCb(buildProgressInfo(progressParams));
+          }
+        : undefined;
+
+      const messageCb = callbacks?.onMessage;
+      const onMessage: MessageHandler | undefined = messageCb
+        ? (messageParams: Record<string, unknown>) => {
+            const message = (messageParams.message as string | undefined) ?? '';
+            messageCb({ message } satisfies MessageInfo);
+          }
+        : undefined;
+
+      const promptCb = callbacks?.onPrompt;
+      const onPrompt: PromptHandler | undefined = promptCb
+        ? async (prompt) => promptCb(prompt)
+        : undefined;
+
+      dispatcher.call(
+        method,
+        params,
+        (result) => {
+          try {
+            resolve(parseResult(result));
+          } catch (err) {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          }
+        },
+        (error) => {
+          reject(new Error(error.message));
+        },
+        onProgress,
+        onPrompt,
+        onMessage
       );
     });
   }
