@@ -65,7 +65,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <Dropdown
   {id}
   open={active}
-  classContainer="qt-picker-list"
+  classContainer="qt-picker-list drop-shadow-xl drop-shadow-black/50"
   style={`width: ${width - 1}px`}
   {offset}
   tabindex={0}

@@ -3,6 +3,7 @@
 
 import { mount } from 'svelte';
 
+import Courses from './courses/CoursesApp.svelte';
 import NewItem from './new-item/NewItemApp.svelte';
 import QmlTrace from './qml-trace/QmlTraceApp.svelte';
 import QrcEditor from './qrc-editor/QrcEditorApp.svelte';
@@ -11,6 +12,7 @@ import ExBrowser from './ex-browser/ExBrowserApp.svelte';
 const appType = document.body.dataset.app;
 const appComp = (() => {
   switch (appType) {
+    case 'courses': return Courses;
     case 'qrc-editor': return QrcEditor;
     case 'qml-trace': return QmlTrace;
     case 'ex-browser': return ExBrowser;

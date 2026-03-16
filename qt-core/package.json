@@ -100,6 +100,11 @@
         "command": "qt-core.openExamplesBrowser",
         "title": "%qt-core.command.openExamplesBrowser.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.openCoursesBrowser",
+        "title": "%qt-core.command.openCoursesBrowser.title%",
+        "category": "Qt"
       }
     ],
     "customEditors": [

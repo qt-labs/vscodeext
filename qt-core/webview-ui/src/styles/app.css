@@ -4,6 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 */
 
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 @import 'flowbite/dist/flowbite.min.css';
 
 @import './styles.css';

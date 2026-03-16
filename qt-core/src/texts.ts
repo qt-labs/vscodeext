@@ -17,3 +17,7 @@ export const exBrowser = {
     featured: 'Featured'
   }
 };
+
+export const Courses = {
+  tabText: 'Qt Academy courses'
+};

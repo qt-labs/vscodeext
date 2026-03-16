@@ -12,14 +12,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   let {
     open = $bindable(false),
+    currentIndex = $bindable(-1),
     showIcon = true,
+    disabled = false,
     items = [] as PickerItem[],
     defaultText = '',
     onSelected = (_: number) => {}
   } = $props();
 
   let width = $state(100);
-  let currentIndex = $state(-1);
   let pickerList: PickerList;
 
   function onRejected() {
@@ -54,8 +55,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 </script>
 
 <PickerTrigger
-  text={items[currentIndex]?.text ?? '-'}
+  icon={items[currentIndex]?.icon}
+  text={items[currentIndex]?.text ?? defaultText}
   active={open}
+  {disabled}
   {onTriggered}
 />
 
