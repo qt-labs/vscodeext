@@ -19,13 +19,13 @@
     bodyClass: bodyClassName = '',
     titleClass: titleClassName = '',
     backgroundClass: backgroundClassName = '',
+    useDropShadow = false,
+    style: customStyle = '',
     toolbar = undefined as Snippet | undefined,
     children = undefined as Snippet | undefined,
     onTitleClicked = () => {},
     onCloseClicked = () => {}
   } = $props();
-
-  let hovered = $state(false);
 
   function onTitleButtonClicked() {
     if (collapsible) {
@@ -37,17 +37,21 @@
 </script>
 
 <div
-  class={`relative flex flex-col min-w-[100px] p-1 gap-1 ${className}`}
+  class={`
+    relative flex flex-col min-w-[100px] p-1 gap-1 group
+    ${useDropShadow ? 'drop-shadow-2xl' : ''} drop-shadow-black/50
+    ${className}
+  `}
+  style={customStyle}
   role='toolbar'
   tabindex='0'
-  onmouseenter={() => { hovered = true; }}
-  onmouseleave={() => { hovered = false; }}
 >
   <!-- background -->
   <div
     class={`
       absolute w-full h-full -z-1 top-0 left-0 qt-overlay
-      ${hovered ? '' : (collapsed ? 'opacity-20' : 'opacity-80')}
+      transition-opacity duration-200 ease-out group-hover:opacity-100
+      ${collapsed ? 'opacity-20' : 'opacity-80'}
       ${backgroundClassName}
     `}
   >
@@ -57,19 +61,21 @@
   <div class={`flex flex-row gap-2 items-stretch ${titleClassName}`}>
     <button
       class={`
-        flex flex-row gap-1 items-center
+        flex flex-row gap-2 items-center
         ${toolbar ? '' : 'grow'}
         ${collapsible ? 'cursor-pointer' : ''}
       `}
       onclick={onTitleButtonClicked}
     >
-      <ChevronDown
-        class={`
-          transition-transform duration-200 flex-shrink-0
-          ${collapsible && collapsed ? '-rotate-90' : ''}
-        `}
-      />
-      <div class="qt-label-lighlight whitespace-nowrap">
+      {#if collapsible}
+        <ChevronDown
+          class={`
+            transition-transform duration-200 flex-shrink-0
+            ${collapsible && collapsed ? '-rotate-90' : ''}
+          `}
+        />
+      {/if}
+      <div class="qt-label whitespace-nowrap">
         {title}
       </div>
     </button>

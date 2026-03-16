@@ -6,11 +6,18 @@ import { mount } from 'svelte';
 import NewItem from './new-item/NewItemApp.svelte';
 import QmlTrace from './qml-trace/QmlTraceApp.svelte';
 import QrcEditor from './qrc-editor/QrcEditorApp.svelte';
+import ExBrowser from './ex-browser/ExBrowserApp.svelte';
 
 const appType = document.body.dataset.app;
-const appComp = (appType === 'qrc-editor')
-  ? QrcEditor
-  : ((appType === 'qml-trace') ? QmlTrace : NewItem);
+const appComp = (() => {
+  switch (appType) {
+    case 'qrc-editor': return QrcEditor;
+    case 'qml-trace': return QmlTrace;
+    case 'ex-browser': return ExBrowser;
+    default:
+      return NewItem;
+  }
+})();
 
 const app = mount(appComp, {
   target: document.getElementById('app')!
