@@ -367,6 +367,80 @@ describe('Packages', () => {
     });
   });
 
+  // ── service/message notification ──────────────────────────────────────────
+
+  describe('command methods — service message notification', () => {
+    it('install: calls onMessage callback from service/message notification', async () => {
+      const messageD = deferred<string>();
+
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.install(
+        [{ id: 'qt6-base', version: '6.10' }],
+        undefined,
+        {
+          onMessage: ({ message }) => messageD.resolve(message)
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      const reqId = payload.id as string;
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        method: 'service/message',
+        params: { id: reqId, message: 'Resolving dependencies' }
+      });
+
+      const message = await messageD.promise;
+      assert.equal(message, 'Resolving dependencies');
+
+      // Complete the operation
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        result: { message: 'Done' }
+      });
+      await resultPromise;
+    });
+  });
+
+  // ── progress with message field ────────────────────────────────────────────
+
+  describe('command methods — progress with message', () => {
+    it('install: progress notification includes message field', async () => {
+      const progressD = deferred<{ progress: number; message?: string }>();
+
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.install(
+        [{ id: 'qt6-base', version: '6.10' }],
+        undefined,
+        {
+          onProgress: (info) => progressD.resolve(info)
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      const reqId = payload.id as string;
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        method: 'service/progress',
+        params: { id: reqId, progress: 0.5, message: 'Extracting archives' }
+      });
+
+      const info = await progressD.promise;
+      assert.equal(info.progress, 0.5);
+      assert.equal(info.message, 'Extracting archives');
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        result: { message: 'Done' }
+      });
+      await resultPromise;
+    });
+  });
+
   // ── testPackageListQuery ─────────────────────────────────────────────────
 
   describe('searchAvailablePackages', () => {

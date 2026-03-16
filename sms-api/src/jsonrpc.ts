@@ -54,6 +54,7 @@ type JsonRpcMessage =
 export type SuccessHandler = (result: unknown) => void;
 export type ErrorHandler = (error: SmsError) => void;
 export type ProgressHandler = (params: Record<string, unknown>) => void;
+export type MessageHandler = (params: Record<string, unknown>) => void;
 export type PromptHandler = (prompt: UserPrompt) => Promise<UserPromptReply>;
 
 interface PendingCall {
@@ -61,6 +62,7 @@ interface PendingCall {
   onSuccess: SuccessHandler;
   onError: ErrorHandler;
   onProgress?: ProgressHandler | undefined;
+  onMessage?: MessageHandler | undefined;
   onPrompt?: PromptHandler | undefined;
 }
 
@@ -85,12 +87,14 @@ function parsePromptType(raw: unknown): UserPromptType | undefined {
     return undefined;
   }
   const map: Record<string, UserPromptType> = {
-    Choice: UserPromptType.Choice,
-    Text: UserPromptType.Text,
-    DirectoryPath: UserPromptType.DirectoryPath,
-    FilePath: UserPromptType.FilePath
+    choice: UserPromptType.Choice,
+    text: UserPromptType.Text,
+    directorypath: UserPromptType.DirectoryPath,
+    directory: UserPromptType.DirectoryPath,
+    filepath: UserPromptType.FilePath,
+    file: UserPromptType.FilePath
   };
-  return map[raw];
+  return map[raw.toLowerCase()];
 }
 
 // ── JsonRpcDispatcher ────────────────────────────────────────────────────────
@@ -148,7 +152,8 @@ export class JsonRpcDispatcher {
     onSuccess: SuccessHandler,
     onError: ErrorHandler,
     onProgress?: ProgressHandler,
-    onPrompt?: PromptHandler
+    onPrompt?: PromptHandler,
+    onMessage?: MessageHandler
   ): string {
     const id = randomUUID();
     const request: JsonRpcRequest = {
@@ -157,7 +162,14 @@ export class JsonRpcDispatcher {
       method,
       params
     };
-    this.pending.set(id, { id, onSuccess, onError, onProgress, onPrompt });
+    this.pending.set(id, {
+      id,
+      onSuccess,
+      onError,
+      onProgress,
+      onMessage,
+      onPrompt
+    });
     this.send(request);
     return id;
   }
@@ -192,6 +204,20 @@ export class JsonRpcDispatcher {
       const call = this.pending.get(callId);
       if (call?.onProgress && params) {
         call.onProgress(params);
+      }
+      return;
+    }
+
+    // Message notification: { method: "service/message", params: { id, message } }
+    if (isNotification(msg) && msg.method === 'service/message') {
+      const params = msg.params as Record<string, unknown> | undefined;
+      const callId = params?.id as string | undefined;
+      if (!callId) {
+        return;
+      }
+      const call = this.pending.get(callId);
+      if (call?.onMessage && params) {
+        call.onMessage(params);
       }
       return;
     }
@@ -260,7 +286,8 @@ export class JsonRpcDispatcher {
       title: (params.title as string | undefined) ?? '',
       message: (params.message as string | undefined) ?? '',
       defaultAnswer: (params.defaultAnswer as string | undefined) ?? '',
-      choices
+      choices,
+      placeholderText: (params.placeHolderText as string | undefined) ?? ''
     };
 
     void call.onPrompt(prompt).then((reply) => {

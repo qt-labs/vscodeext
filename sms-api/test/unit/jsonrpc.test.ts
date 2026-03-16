@@ -321,4 +321,178 @@ describe('JsonRpcDispatcher', () => {
     assert.deepEqual(await result1D.promise, { answer: 'one' });
     assert.deepEqual(await result2D.promise, { answer: 'two' });
   });
+
+  // ── Service message notification ────────────────────────────────────────────
+
+  it('onMessage is called when server sends a service/message notification', async () => {
+    const messageD = deferred<string>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {},
+      undefined,
+      undefined,
+      (params) => messageD.resolve(params.message as string)
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      method: 'service/message',
+      params: { id: payload.id, message: 'Starting download phase' }
+    });
+
+    const message = await messageD.promise;
+    assert.equal(message, 'Starting download phase');
+  });
+
+  // ── Case-insensitive prompt types ───────────────────────────────────────────
+
+  it('handles lowercase prompt type "choice" from server', async () => {
+    const promptD = deferred<UserPrompt>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {},
+      undefined,
+      async (prompt) => {
+        promptD.resolve(prompt);
+        return { kind: 'choice', choice: 'Yes' };
+      }
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      method: 'service/question',
+      id: payload.id as string,
+      params: {
+        type: 'choice',
+        id: 'test_prompt',
+        title: 'Test',
+        message: 'Accept?',
+        defaultAnswer: 'No',
+        choices: 'Yes,No'
+      }
+    });
+
+    const prompt = await promptD.promise;
+    assert.equal(prompt.type, UserPromptType.Choice);
+    assert.equal(prompt.id, 'test_prompt');
+  });
+
+  it('handles lowercase prompt type "file" as FilePath', async () => {
+    const promptD = deferred<UserPrompt>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {},
+      undefined,
+      async (prompt) => {
+        promptD.resolve(prompt);
+        return { kind: 'text', text: '/tmp/myfile' };
+      }
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      method: 'service/question',
+      id: payload.id as string,
+      params: {
+        type: 'file',
+        id: 'file_prompt',
+        title: 'Select file',
+        message: 'Pick a file',
+        defaultAnswer: '',
+        choices: ''
+      }
+    });
+
+    const prompt = await promptD.promise;
+    assert.equal(prompt.type, UserPromptType.FilePath);
+  });
+
+  it('handles lowercase prompt type "directory" as DirectoryPath', async () => {
+    const promptD = deferred<UserPrompt>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {},
+      undefined,
+      async (prompt) => {
+        promptD.resolve(prompt);
+        return { kind: 'text', text: '/tmp' };
+      }
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      method: 'service/question',
+      id: payload.id as string,
+      params: {
+        type: 'directory',
+        id: 'dir_prompt',
+        title: 'Select directory',
+        message: 'Pick a directory',
+        defaultAnswer: '',
+        choices: ''
+      }
+    });
+
+    const prompt = await promptD.promise;
+    assert.equal(prompt.type, UserPromptType.DirectoryPath);
+  });
+
+  // ── Placeholder text ────────────────────────────────────────────────────────
+
+  it('parses placeHolderText from prompt params', async () => {
+    const promptD = deferred<UserPrompt>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {},
+      undefined,
+      async (prompt) => {
+        promptD.resolve(prompt);
+        return { kind: 'text', text: 'my answer' };
+      }
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      method: 'service/question',
+      id: payload.id as string,
+      params: {
+        type: 'text',
+        id: 'text_prompt',
+        title: 'Enter value',
+        message: 'Provide a value',
+        defaultAnswer: '',
+        choices: '',
+        placeHolderText: 'Type here...'
+      }
+    });
+
+    const prompt = await promptD.promise;
+    assert.equal(prompt.placeholderText, 'Type here...');
+    assert.equal(prompt.type, UserPromptType.Text);
+  });
 });
