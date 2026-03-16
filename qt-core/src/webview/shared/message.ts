@@ -41,7 +41,15 @@ export enum CommandId {
   QmlTraceSelectFolder,
   QmlTraceGetWorkspaceFolders,
 
+  // examples browser
+  ExBrowserGetPackages,
+  ExBrowserGetExamples,
+  ExBrowserSelectPackage,
+  ExBrowserResolveImageUrl,
+  ExBrowserRunActionOnExample,
+
   // common
+  CommonOpenFolder,
   CommonVscodeThemeChanged
 }
 

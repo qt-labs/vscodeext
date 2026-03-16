@@ -267,7 +267,7 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
       try {
         await vscode.post(CommandId.UiSaveOpenInPreference, String(args));
       } catch (e) {
-        reportUiError('Error saving openIn preference', e);
+        reportUiError('Cannot save openIn preference', e);
       }
       break;
 
@@ -281,7 +281,7 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
           }
         })
         .catch((e) => {
-          reportUiError('Error selecting working dir', e);
+          reportUiError('Cannot select working dir', e);
         });
       break;
 
@@ -299,7 +299,7 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
           openIn: input.states.openIn
         });
       } catch (e) {
-        reportUiError('Error creating item', e);
+        reportUiError('Cannot create item', e);
       }
       break;
   }

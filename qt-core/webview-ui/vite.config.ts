@@ -19,7 +19,8 @@ export default defineConfig({
         assetFileNames: 'index[extname]',
         chunkFileNames: 'chunk.js'
       }
-    }
+    },
+    chunkSizeWarningLimit: 600
   },
   resolve: {
     alias: {

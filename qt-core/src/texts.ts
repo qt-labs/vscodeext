@@ -8,3 +8,12 @@ export const newItem = {
     ' and check the terminal for error messages',
   workingDirDialogTitle: 'Select directory'
 };
+
+export const exBrowser = {
+  tabText: 'Qt examples',
+
+  specialCategory: {
+    all: 'All',
+    featured: 'Featured'
+  }
+};

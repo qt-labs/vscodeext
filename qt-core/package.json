@@ -95,6 +95,11 @@
         "command": "qt-core.openInLinguist",
         "title": "%qt-core.command.openInLinguist.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.openExamplesBrowser",
+        "title": "%qt-core.command.openExamplesBrowser.title%",
+        "category": "Qt"
       }
     ],
     "customEditors": [

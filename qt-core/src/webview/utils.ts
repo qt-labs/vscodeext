@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
+import * as vscode from 'vscode';
 import * as dotenv from 'dotenv';
 import {
   Uri,
@@ -18,6 +19,7 @@ export interface WebviewAppConfig {
   jsFile: string;
   cssFile: string;
   context: Context;
+  additionalResourceRoots?: vscode.Uri[];
 }
 
 export const basicWebviewAppConfig = {
@@ -79,7 +81,8 @@ export function createWebviewOptions(config: WebviewAppConfig) {
     enableScripts: true,
     retainContextWhenHidden: true,
     localResourceRoots: [
-      Uri.joinPath(config.context.extensionUri, config.distDir)
+      Uri.joinPath(config.context.extensionUri, config.distDir),
+      ...(config.additionalResourceRoots ?? [])
     ]
   };
 }

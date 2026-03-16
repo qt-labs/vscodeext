@@ -174,3 +174,62 @@ export const qmltrace = {
     ['handlingsignal', 'Signal handling']
   ]
 }
+
+export const exBrowser = {
+  empty: {
+    title: 'No data available',
+    package: [
+      'Examples are loaded from the installation root or additional qtpaths',
+      'Adjust qt-core settings or check the directories.'
+    ],
+    example: 'Adjust filter settings or try other Qt versions from the navigation menu'
+  },
+
+  featuredBadge: 'Featured',
+
+  catalog: {
+    title: 'Catalog',
+    versions: 'Qt versions',
+    categories: 'Categories',
+    locationInfo: 'Examples come from the Qt installation folder and'
+      + 'any additional paths configured in settings.'
+      + 'To add more, open the Command Palette and search for \'Qt: Register Qt\''
+      + 'or edit settings manually.',
+    location: 'Location',
+    revealLocationTooltip: 'Reveal folder in the file manager'
+  },
+
+  tagCloud: {
+    title: 'Available tags'
+  },
+
+  details: {
+    newProject: {
+      button: 'New project',
+      tooltip: "Create a new project based on this example",
+      dependencyWarning: [
+        'The extension does not check whether the Qt modules and resources ',
+        'used in the example are available.',
+        'You might need to install and add them before running the example.'
+      ]
+    },
+    doc: {
+      button: 'Documentation',
+      tooltip: 'Open documentation in VS Code',
+      openExtTooltip: 'Open documentation in an external browser'
+    },
+    files: {
+      title: 'Project overview'
+    }
+  },
+
+  searchBox: {
+    defaultPlaceholder: 'Search in examples...',
+    placeholder: (category: string) => `Search in '${category}'`
+  },
+
+  projectToolbar: {
+    openInVscode: 'Open project in a new window',
+    reveal: 'Reveal project directory in the file manager',
+  }
+}

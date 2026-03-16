@@ -9,5 +9,6 @@
   "qt-core.command.registerQtByQtpaths.title": "Register Qt (by qtpaths or qmake)",
   "qt-core.command.createNewItem.title": "Create a new project or file",
   "qt-core.command.openInLinguist.title": "Open current file in Qt Linguist",
-  "qt-core.command.reportIssue.title": "Report an issue"
+  "qt-core.command.reportIssue.title": "Report an issue",
+  "qt-core.command.openExamplesBrowser.title": "Open Qt examples"
 }
