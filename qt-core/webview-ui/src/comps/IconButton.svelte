@@ -20,7 +20,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     visible = true,
     disabled = false,
     class: className = '',
+    contentClass = '',
     iconClass = '',
+    textClass = '',
     align = 'row' as 'row' | 'col',
     onClicked = () => {}
   } = $props();
@@ -40,15 +42,17 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   >
     {@const IconComp = icon}
     <div class={`
-      flex ${align === 'row' ? 'flex-row' : 'flex-col'} items-center
-      ${align === 'col' ? 'gap-1' : ''}
+      flex ${align === 'row' ? 'flex-row' : 'flex-col'}
+      items-center gap-2 ${contentClass}
     `}>
       {#if IconComp}
         <IconComp
           class={`${text.length === 0 ? '-m-1' : 'mr-1'} ${iconClass}`}
         />
       {/if}
-      {text}
+      {#if text.length !== 0}
+        <p class={textClass}>{text}</p>
+      {/if}
     </div>
   </Button>
 

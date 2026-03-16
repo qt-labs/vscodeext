@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-onl
 
 import _ from 'lodash';
-import { File } from '@lucide/svelte';
+import type { Component } from 'svelte';
 
 export interface PickerItem {
   text: string;
-  icon?: typeof File | undefined;
+  icon?: Component | undefined;
 }
 
 export class InputIssue {

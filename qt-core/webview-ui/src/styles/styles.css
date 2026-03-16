@@ -340,10 +340,18 @@ body.vscode-high-contrast .qt-button-contentOnly:hover {
   box-shadow: none;
 }
 
+.qt-picker-trigger p {
+  margin: 2px;
+}
+
 .qt-picker-trigger.active,
 .qt-picker-trigger:hover {
   @apply qt-button-base;
   line-height: 2;
+}
+
+.qt-picker-trigger:disabled {
+  color: var(--qt-disabled-foreground);
 }
 
 .qt-picker-trigger:focus-visible {

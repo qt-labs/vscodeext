@@ -7,12 +7,19 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { type Snippet } from 'svelte';
 
   let {
-    gap = true,
+    cols = 3 as (number | string),
     class: className = '',
     children = undefined as Snippet | undefined,
   } = $props();
+
+  const colStyle = $derived(
+    typeof cols === 'number' ? `repeat(${cols}, 1fr)` : cols
+  );
 </script>
 
-<div class={`flex flex-col ${gap ? 'gap-2' : ''} ${className}`}>
+<div
+  class={`grid ${className}`}
+  style={`grid-template-columns: ${colStyle}`}
+>
   {@render children?.()}
 </div>

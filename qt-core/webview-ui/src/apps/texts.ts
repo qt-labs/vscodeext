@@ -233,3 +233,67 @@ export const exBrowser = {
     reveal: 'Reveal project directory in the file manager',
   }
 }
+
+export const courses = {
+  empty: {
+    title: 'No courses available',
+    openAcademy: 'See courses on Qt Academy instead',
+    adjustFilter: 'Try adjusting the filter settings or the search keyword'
+  },
+
+  header: {
+    numCourses: (n: number) => n === 1 ? 'Course' : 'Courses',
+    sectionFilter: 'Filter',
+    sectionSearch: 'Search',
+    sectionSort: 'Sort',
+    openQtAcademy: 'Go to Qt Academy',
+    openQtAcademyTooltip: 'Open the Qt Academy website to browse courses in more detail',
+    searchPlaceHolder: 'Search for Qt Academy courses...'
+  },
+
+  details: {
+    title: 'Course details',
+    openButton: (type: string) => {
+      return `Open ${type === 'learningpath' ? 'learning path' : 'course'}`
+    },
+    objSectionTitle: 'Objectives',
+    descSectionTitle: 'Description',
+    releaseDatePrefix: 'Released on'
+  },
+
+  filter: {
+    title: 'Filter settings',
+    clearButton: 'Clear',
+    typePickerDefaultText: 'Type',
+    levelPickerDefaultText: 'Level'
+  },
+
+  typeText: (type: string) => {
+    const lc = type.toLowerCase();
+    return (
+      lc === 'course' ? 'Course' : (
+      lc === 'learningpath' ? 'Learning path' : ''
+    ))
+  },
+
+  levelText: (level: string) => {
+    const lc = level.toLowerCase();
+    return (
+      lc === 'basic' ? 'Basic' : (
+      lc === 'intermediate' ? 'Intermediate' : (
+      lc === 'advanced' ? 'Advanced' : '')
+    ))
+  },
+
+  sortPickerText: (sortBy: string) => {
+    const lc = sortBy.toLowerCase();
+    return (
+      lc === 'name' ? 'Name' : (
+      lc === 'newest' ? 'Newest' : (
+      lc === 'shortest' ? 'Shortest' : (
+      lc === 'enrolled' ? 'Most enrolled' : (
+      lc === 'reviews' ? 'Most reviewed' : (
+      lc === 'ratings' ? 'Highest rated' : ''
+    ))))))
+  }
+}

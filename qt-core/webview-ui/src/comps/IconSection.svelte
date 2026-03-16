@@ -8,11 +8,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { Check } from '@lucide/svelte';
 
   let {
-    icon = Check as (Component | undefined),
+    icon = Check as (Component | null),
     text = '',
     highlightText = false,
     children = undefined as Snippet | undefined,
     class: className = '',
+    style = '',
     iconClass = '',
     textClass = ''
   } = $props();
@@ -20,8 +21,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   const IconComp = $derived(icon);
 </script>
 
-<div class={`flex flex-row gap-2 items-center ${className}`}>
-  {#if IconComp}
+<div
+  class={`flex flex-row gap-2 items-center ${className}`}
+  {style}
+>
+  {#if icon !== undefined}
     <IconComp class={`shrink-0 ${iconClass}`}/>
   {/if}
 

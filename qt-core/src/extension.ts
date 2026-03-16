@@ -31,6 +31,7 @@ import {
 import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
 import { registerOpenExBrowserCommand } from '@/webview/ex-browser/controller';
+import { registerOpenCoursesBrowserCommand } from '@/webview/courses/controller';
 import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
 import { registerQmlTraceProvider } from '@/webview/qml-trace/editor-provider';
@@ -66,6 +67,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerRegisterQtByPathCommand(),
     registerOpenInLinguistCommand(),
     registerOpenExBrowserCommand(context),
+    registerOpenCoursesBrowserCommand(context),
     registerCreateNewItemPanelCommand(context),
     vscode.languages.registerColorProvider('qss', createColorProvider()),
     reportIssueCommand()

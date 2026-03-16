@@ -48,6 +48,10 @@ export enum CommandId {
   ExBrowserResolveImageUrl,
   ExBrowserRunActionOnExample,
 
+  // courses
+  CoursesGetCourses,
+  CoursesRunAction,
+
   // common
   CommonOpenFolder,
   CommonVscodeThemeChanged
