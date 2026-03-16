@@ -23,6 +23,7 @@ export type {
   UserPrompt,
   UserPromptReply,
   ProgressInfo,
+  MessageInfo,
   JobCallbacks
 } from './types';
 
@@ -39,5 +40,5 @@ export type { DecodedPacket, TransportOptions } from './transport';
 export { JsonRpcDispatcher } from './jsonrpc';
 
 // Public API
-export { Session, Packages } from './client';
+export { Session, Packages, Cache, Settings } from './client';
 export type { SessionEvents } from './client';
