@@ -29,6 +29,12 @@ type NewItemResponse struct {
 	DryRun     bool     `json:"dryRun" binding:"required"`
 }
 
+type ValidateRequest struct {
+	Type       string `json:"type"`
+	Name       string `json:"name"`
+	WorkingDir string `json:"workingDir"`
+}
+
 type PostNewItemContext struct {
 	name       string
 	workingDir string
@@ -89,15 +95,16 @@ func PostItems(c *gin.Context) {
 }
 
 func PostItemsValidate(c *gin.Context) {
-	context := PreparePostItemsContext(c)
-	if context == nil {
+	var req ValidateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		rest.ReplyErrorMsg(c, err.Error())
 		return
 	}
 
 	issues := generator.Validate(generator.ValidatorIn{
-		Name:       context.name,
-		WorkingDir: context.workingDir,
-		TypeId:     context.preset.GetTypeId(),
+		Name:       req.Name,
+		WorkingDir: req.WorkingDir,
+		TypeId:     preset.TargetTypeFromString(req.Type),
 	})
 
 	if len(issues) != 0 {
