@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import * as texts from '@/apps/texts';
 import { vscode } from '@/apps/vscode';
+import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
 import { CommandId, isErrorResponse } from '@shared/message';
 import { isPreset, isPresetArray } from './types.svelte';
 import { data, input, ui } from './states.svelte';
@@ -17,6 +18,9 @@ type ManageCustomPresetArgs =
 
 export async function onAppMount() {
   try {
+    input.onEvent(onInputFormEvent);
+    input.onValidate(validateInput);
+
     startLoading();
 
     await vscode.post(CommandId.UiCheckIfQtcliReady);
@@ -34,29 +38,6 @@ export async function onAppMount() {
 
 export function onModalClosed() {
   void vscode.post(CommandId.UiClosed);
-}
-
-export async function onWorkingDirBrowseClicked() {
-  const timeout = -1;
-  void vscode
-    .post(CommandId.UiSelectWorkingDir, input.workingDir, timeout)
-    .then((data) => {
-      if (typeof data === 'string' && input.workingDir != data) {
-        input.workingDir = data;
-        void validateInput();
-      }
-    })
-    .catch((e) => {
-      reportUiError('Error selecting working dir', e);
-    });
-}
-
-export async function onOpenInChanged(value: 'addToWorkspace' | 'newWindow') {
-  try {
-    await vscode.post(CommandId.UiSaveOpenInPreference, value);
-  } catch (e) {
-    reportUiError('Error saving openIn preference', e);
-  }
 }
 
 export async function setPresetType(type: string) {
@@ -117,50 +98,19 @@ async function refreshPresetDetails() {
   }
 }
 
-export async function createItemFromSelectedPreset() {
-  if (!data.selected.preset) return;
-
-  try {
-    await vscode.post(CommandId.UiItemCreationRequested, {
-      type: data.selected.type,
-      name: input.name,
-      workingDir: input.workingDir,
-      presetId: data.selected.preset?.id,
-      options: $state.snapshot(ui.unsavedOptionChanges),
-      saveProjectDir: input.saveProjectDir,
-      openIn: input.openIn
-    });
-  } catch (e) {
-    reportUiError('Error creating item', e);
-  }
-}
-
 export async function validateInput() {
   if (!data.serverReady) return;
 
-  const payload = {
-    name: input.name,
-    workingDir: input.workingDir,
-    presetId: data.selected.preset?.id
-  };
-
   try {
-    await vscode.post(CommandId.UiValidateInputs, payload);
-    clearInputErrors();
+    await vscode.post(CommandId.UiValidateInputs, {
+      type: data.selected.type,
+      name: input.states.name,
+      workingDir: input.states.workingDir,
+    });
+
+    input.clearIssues();
   } catch (e) {
-    clearInputErrors();
-
-    if (isErrorResponse(e)) {
-      e.details?.forEach(function (item) {
-        const field = item.field.toLowerCase();
-        if (field === 'name') input.issues.name.loadFrom(item);
-        if (field === 'workingdir') input.issues.workingDir.loadFrom(item);
-      });
-
-      ui.canCreate = !(
-        input.issues.name.isError() || input.issues.workingDir.isError()
-      );
-    }
+    input.applyValidationResult(isErrorResponse(e) ? e : undefined);
   }
 }
 
@@ -253,13 +203,16 @@ async function loadConfigsAndInitInputs() {
         ...r
       };
 
+      console.log("got:", r);
+      console.log("total: ", $state.snapshot(data.configs));
+
       loadDefautInputs();
-      
+
       // Load the saved openIn preference if it exists
       if ('openIn' in data.configs && data.configs.openIn) {
-        const savedValue = data.configs.openIn as 'addToWorkspace' | 'newWindow';
+        const savedValue = data.configs.openIn;
         if (savedValue === 'addToWorkspace' || savedValue === 'newWindow') {
-          input.openIn = savedValue;
+          input.states.openIn = savedValue;
         }
       }
     }
@@ -282,12 +235,12 @@ async function loadPresets() {
 }
 
 function loadDefautInputs() {
-  let candidate = data.selected.type === 'file'
+  const candidate = data.selected.type === 'file'
     ? data.configs.newFileBaseDir
     : data.configs.newProjectBaseDir;
 
-  if (input.workingDir !== candidate) {
-    input.workingDir = candidate;
+  if (input.states.workingDir !== candidate) {
+    input.states.workingDir = candidate;
   }
 }
 
@@ -303,10 +256,53 @@ function reportUiError(msg: string, e?: unknown) {
   void vscode.post(CommandId.UiHasError, `${msg}: ${detail}`);
 }
 
-function clearInputErrors() {
-  input.issues.name.clear();
-  input.issues.workingDir.clear();
-  ui.canCreate = true;
+
+export async function onInputFormEvent(type: NewItemForm.EventType, args?: unknown) {
+  switch (type) {
+    case 'inputChanged':
+      validateInput();
+      break;
+
+    case 'openInChanged':
+      try {
+        await vscode.post(CommandId.UiSaveOpenInPreference, String(args));
+      } catch (e) {
+        reportUiError('Error saving openIn preference', e);
+      }
+      break;
+
+    case 'browseClicked':
+      void vscode
+        .post(CommandId.UiSelectWorkingDir, input.states.workingDir, -1)
+        .then((data) => {
+          if (typeof data === 'string') {
+            input.states.workingDir = data;
+            validateInput();
+          }
+        })
+        .catch((e) => {
+          reportUiError('Error selecting working dir', e);
+        });
+      break;
+
+    case 'createClicked':
+      if (!data.selected.preset) return;
+
+      try {
+        await vscode.post(CommandId.UiItemCreationRequested, {
+          type: data.selected.type,
+          name: input.states.name,
+          workingDir: input.states.workingDir,
+          presetId: data.selected.preset?.id,
+          options: $state.snapshot(ui.unsavedOptionChanges),
+          saveProjectDir: input.states.saveProjectDir,
+          openIn: input.states.openIn
+        });
+      } catch (e) {
+        reportUiError('Error creating item', e);
+      }
+      break;
+  }
 }
 
 // loading mask

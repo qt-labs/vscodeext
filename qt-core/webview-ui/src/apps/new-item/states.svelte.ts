@@ -1,7 +1,8 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { type Preset, InputIssue, PresetWrapper } from './types.svelte';
+import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
+import { type Preset, PresetWrapper } from './types.svelte';
 
 export const data = $state({
   serverReady: false,
@@ -18,28 +19,17 @@ export const data = $state({
   }
 });
 
-export const input = $state({
-  name: 'untitled',
-  workingDir: '',
-  saveProjectDir: false,
-  openIn: 'newWindow' as 'addToWorkspace' | 'newWindow',
-
-  issues: {
-    name: new InputIssue(),
-    workingDir: new InputIssue()
-  }
-});
+export const input = NewItemForm.createController();
 
 export const ui = $state({
   loading: {
     busy: false,
     error: undefined as unknown,
     forceHidden: false,
-    delayedTimerId: null as NodeJS.Timeout | null
+    delayedTimerId: null as (ReturnType<typeof setTimeout>) | null
   },
 
   activeDialog: undefined as 'create' | 'rename' | 'delete' | undefined,
 
-  canCreate: true,
   unsavedOptionChanges: {} as Record<string, unknown>
 });

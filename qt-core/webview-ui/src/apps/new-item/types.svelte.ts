@@ -1,8 +1,6 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import _ from 'lodash';
-
 export interface Preset {
   id: string;
   name: string;
@@ -87,25 +85,6 @@ export class PresetWrapper {
 
   public setData(data: Preset | undefined) {
     this._raw = data;
-  }
-}
-
-export class InputIssue {
-  public level = $state('');
-  public message = $state('');
-
-  public clear() {
-    this.level = '';
-    this.message = '';
-  }
-
-  public loadFrom(data: object) {
-    this.level = _.get(data, 'level', this.level);
-    this.message = _.get(data, 'message', this.message);
-  }
-
-  public isError(): boolean {
-    return this.level.toLocaleLowerCase() === 'error';
   }
 }
 
