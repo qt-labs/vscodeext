@@ -146,6 +146,7 @@ export interface UserPrompt {
   readonly message: string;
   readonly defaultAnswer: string;
   readonly choices: string[];
+  readonly placeholderText: string;
 }
 
 export type UserPromptReply =
@@ -166,10 +167,16 @@ export enum JobStatus {
 
 export interface ProgressInfo {
   readonly progress: number; // 0.0 – 1.0
+  readonly message?: string;
+}
+
+export interface MessageInfo {
+  readonly message: string;
 }
 
 export interface JobCallbacks {
   onProgress?: (info: ProgressInfo) => void;
+  onMessage?: (info: MessageInfo) => void;
   onPrompt?: (prompt: UserPrompt) => Promise<UserPromptReply>;
 }
 
@@ -196,12 +203,17 @@ export const IPC = {
     listInstalled: 'packages/list',
     search: 'packages/search',
     listUpdates: 'packages/updates',
-    showInfo: 'packages/info'
+    showInfo: 'packages/info',
+    updateCache: 'cache/update',
+    clearCache: 'cache/clear',
+    setSetting: 'settings/set',
+    getSetting: 'settings/get'
   },
 
   notifications: {
     progress: 'service/progress',
-    question: 'service/question'
+    question: 'service/question',
+    message: 'service/message'
   },
 
   nameVersionSeparator: '@'
