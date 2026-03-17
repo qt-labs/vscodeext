@@ -4,8 +4,8 @@
 import * as childProcess from 'child_process';
 
 import { createLogger } from 'qt-lib';
-import { PySideEnv } from './env';
-import { PySideCommandBuilder } from './builder';
+import { PySideEnv } from './env.mjs';
+import { PySideCommandBuilder } from './builder.js';
 
 const logger = createLogger('runner');
 

@@ -4,11 +4,11 @@
 import * as vscode from 'vscode';
 
 import { createLogger } from 'qt-lib';
-import { TaskId, type ProjectToolAction } from './types';
-import { PySideProject } from './project';
-import { projectManager } from './extension';
-import { PySideCommandBuilder } from './builder';
-import * as consts from './constants';
+import { TaskId, type ProjectToolAction } from './types.js';
+import { PySideProject } from './project.mjs';
+import { projectManager } from './extension.mjs';
+import { PySideCommandBuilder } from './builder.js';
+import * as consts from './constants.js';
 
 const logger = createLogger('task');
 

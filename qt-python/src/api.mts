@@ -4,8 +4,8 @@ import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 import { glob } from 'glob';
 
-import * as consts from '@/constants';
-import { projectManager } from './extension';
+import * as consts from '@/constants.js';
+import { projectManager } from './extension.mjs';
 import {
   PYSIDE_MIN_VERSION_RUN_ARGS,
   compareVersions,
@@ -13,8 +13,8 @@ import {
   PySideProject as PySideProjectAPI,
   createLogger
 } from 'qt-lib';
-import { PySideCommandBuilder } from './builder';
-import { PySideProject } from './project';
+import { PySideCommandBuilder } from './builder.js';
+import { PySideProject } from './project.mjs';
 
 const logger = createLogger('api');
 
