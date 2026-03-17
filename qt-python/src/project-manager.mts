@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import { ProjectManager } from 'qt-lib';
-import { PySideProject } from './project';
+import { PySideProject } from './project.mjs';
 
 export class PySideProjectManager extends ProjectManager<PySideProject> {
   constructor(override readonly context: vscode.ExtensionContext) {

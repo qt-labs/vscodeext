@@ -9,10 +9,10 @@ import {
 } from '@vscode/python-extension';
 
 import { isError, OSExeSuffix, createLogger } from 'qt-lib';
-import { PipPackageInfo } from './types';
-import { PySideCommandRunner } from './runner';
-import * as utils from './utils';
-import * as consts from './constants';
+import { PipPackageInfo } from './types.js';
+import { PySideCommandRunner } from './runner.mjs';
+import * as utils from './utils.js';
+import * as consts from './constants.js';
 
 const logger = createLogger('env');
 

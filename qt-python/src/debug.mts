@@ -4,9 +4,9 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { TaskId } from './types';
-import { findTaskFullName } from './task';
-import * as consts from './constants';
+import { TaskId } from './types.js';
+import { findTaskFullName } from './task.mjs';
+import * as consts from './constants.js';
 
 export class PySideDebugConfigProvider
   implements vscode.DebugConfigurationProvider

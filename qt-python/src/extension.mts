@@ -15,12 +15,12 @@ import {
   getLogOutputChannel,
   telemetry
 } from 'qt-lib';
-import { PySideTaskProvider } from './task';
-import { PySideDebugConfigProvider } from './debug';
-import { PySideProjectManager } from './project-manager';
-import * as consts from '@/constants';
-import { onInstallPySide6Command } from './installer';
-import { PySideAPIImpl } from './api';
+import { PySideTaskProvider } from './task.mjs';
+import { PySideDebugConfigProvider } from './debug.mjs';
+import { PySideProjectManager } from './project-manager.mjs';
+import * as consts from '@/constants.js';
+import { onInstallPySide6Command } from './installer.mjs';
+import { PySideAPIImpl } from './api.mjs';
 
 const logger = createLogger('extension');
 

@@ -11,16 +11,16 @@ import {
   QtInsRootConfigName,
   compareVersions
 } from 'qt-lib';
-import { PySideEnv } from './env';
-import { PySideProject } from './project';
+import { PySideEnv } from './env.mjs';
+import { PySideProject } from './project.mjs';
 import {
   PySideCommandRunner,
   PySideCommandRunOptions as RunOptions
-} from './runner';
-import { coreApi, projectManager } from './extension';
-import { normalizeDriveLetter } from './utils';
-import * as texts from './texts';
-import * as consts from './constants';
+} from './runner.mjs';
+import { coreApi, projectManager } from './extension.mjs';
+import { normalizeDriveLetter } from './utils.js';
+import * as texts from './texts.js';
+import * as consts from './constants.js';
 
 const logger = createLogger('installer');
 

@@ -16,11 +16,11 @@ import {
   CoreKey,
   QtWorkspaceFeatures
 } from 'qt-lib';
-import { PySideEnv } from './env';
-import { PySideProjectInfo } from './types';
-import { pyApi, coreApi } from './extension';
-import * as texts from '@/texts';
-import * as consts from '@/constants';
+import { PySideEnv } from './env.mjs';
+import { PySideProjectInfo } from './types.js';
+import { pyApi, coreApi } from './extension.mjs';
+import * as texts from '@/texts.js';
+import * as consts from '@/constants.js';
 
 type Folder = vscode.WorkspaceFolder;
 type Context = vscode.ExtensionContext;
