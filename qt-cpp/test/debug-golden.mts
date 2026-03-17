@@ -438,7 +438,9 @@ function decodeXmlEntities(input: string): string {
     '&quot;': '"',
     '&apos;': "'"
   };
-  return input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
+  const decoded = input.replace(/&(lt|gt|amp|quot|apos);/g, (m) => map[m] ?? m);
+  // NatVis placeholder normalization
+  return decoded.replace(/##NAMESPACE##::/g, '');
 }
 
 /**
