@@ -134,7 +134,7 @@ async function runPipShowAndParseInfo(env: PySideEnv, name: string) {
     runner.onStdout(logIndented);
     runner.onStderr(logIndented);
 
-    const lines = await runner.run(`pip show ${name}`, { useVenv: true });
+    const lines = await runner.run(`pip show ${name}`, { useVenv: true, timeoutMs: 5000 });
     lines.forEach((line) => {
       const [key, value] = line.split(': ');
       if (key && value) {
