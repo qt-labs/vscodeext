@@ -12,6 +12,7 @@ const logger = createLogger('runner');
 export interface PySideCommandRunOptions {
   useVenv?: boolean;
   cwd?: string;
+  timeoutMs?: number;
 }
 
 export class PySideCommandRunner {
@@ -45,10 +46,15 @@ export class PySideCommandRunner {
     const errPromise = streamToLines(proc.stderr, this._onStderr);
 
     await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        proc.kill();
-        reject(new Error('Process timed out after 5 seconds'));
-      }, 3_000);
+      let timeout: NodeJS.Timeout | undefined;
+
+      const timeoutMs = options?.timeoutMs;
+      if (timeoutMs) {
+        timeout = setTimeout(() => {
+          proc.kill();
+          reject(new Error(`Process timed out after ${String(timeoutMs)} milliseconds`));
+        }, timeoutMs);
+      }
 
       proc.on('error', (err) => {
         clearTimeout(timeout);
