@@ -29,6 +29,7 @@ on:
             - qt-cpp
             - qt-qml
             - qt-ui
+            - qt-python
 
 jobs:
   tests:
@@ -101,11 +102,12 @@ jobs:
       - name: Prepare NatVis files
         run: npm run prepareNatvisFiles
       # Compile other extensions once (runtime build)
-      - name: Compile qt-cpp / qt-ui / qt-qml
+      - name: Compile qt-cpp / qt-ui / qt-qml / qt-python
         run: |
           npm --prefix qt-cpp run compile
           npm --prefix qt-ui  run compile
           npm --prefix qt-qml run compile
+          npm --prefix qt-python run compile
 
 
       # Install Qt using a community-maintained action.
@@ -222,6 +224,10 @@ jobs:
             if should_run qt-ui; then
               run_cmd "${XVFB[@]}" npm --prefix qt-ui run test:only
             fi
+
+            if should_run qt-python; then
+              run_cmd "${XVFB[@]}" npm --prefix qt-python run test:only
+            fi
           else
             if should_run qt-core; then
               run_cmd npm --prefix qt-core run test:only
@@ -237,5 +243,9 @@ jobs:
 
             if should_run qt-ui; then
               run_cmd npm --prefix qt-ui run test:only
+            fi
+
+            if should_run qt-python; then
+              run_cmd npm --prefix qt-python run test:only
             fi
           fi

@@ -18,6 +18,7 @@
     "test:qt-cpp": "ts-node ./scripts/test.ts --extension=\"qt-cpp\"",
     "test:qt-qml": "ts-node ./scripts/test.ts --extension=\"qt-qml\"",
     "test:qt-ui": "ts-node ./scripts/test.ts --extension=\"qt-ui\"",
+    "test:qt-python": "ts-node ./scripts/test.ts --extension=\"qt-python\"",
     "test:all": "ts-node ./scripts/test.ts --extension=\"all\"",
     "lint": "npm run prettierWrite && eslint scripts --fix --cache",
     "lint:qt-core": "cd qt-core && npm run lint",

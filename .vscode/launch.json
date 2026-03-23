@@ -71,6 +71,18 @@
       "preLaunchTask": "npm qt-cpp watch and test"
     },
     {
+      "name": "Run Extension Tests qt-python",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+              "--extensionDevelopmentPath=${workspaceFolder}/qt-python",
+              "--extensionTestsPath=${workspaceFolder}/qt-python/out/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-python/out/test/**/*.js"],
+      "preLaunchTask": "npm qt-python watch and test"
+    },
+    {
       "name": "Run Extension Tests qt-cpp build",
       "type": "extensionHost",
       "request": "launch",

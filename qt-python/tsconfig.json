@@ -11,7 +11,7 @@
     "outDir": "out",
     "lib": ["ES2022", "DOM"],
     "sourceMap": true,
-    "rootDirs": ["src"],
+    "rootDirs": ["src", "test"],
     "strict": true /* enable all strict type-checking options */,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
@@ -29,5 +29,6 @@
       "@util/*": ["./src/util/*"]
     }
   },
-  "include": ["src/**/*"]
+  "exclude": ["node_modules", ".vscode-test"],
+  "include": ["src/**/*", "test/**/*"]
 }
