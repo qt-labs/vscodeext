@@ -34,6 +34,12 @@ import {
   disposePreviewManager
 } from '@/preview/preview.mjs';
 import {
+  registerStartQmlProfilerCommand,
+  registerAttachQmlProfilerCommand,
+  registerStopQmlProfilerCommand,
+  disposeProfilerManager
+} from '@/profiler/profiler.mjs';
+import {
   acquirePortTaskProvider,
   AcquirePortTaskProvider
 } from './tasks/acquire-port.mjs';
@@ -90,7 +96,10 @@ export async function activate(context: vscode.ExtensionContext) {
     registerAttachQmlPreviewCommand(),
     registerStopQmlPreviewCommand(),
     registerReloadQmlPreviewCommand(),
-    registerClearQmlPreviewCacheCommand()
+    registerClearQmlPreviewCacheCommand(),
+    registerStartQmlProfilerCommand(),
+    registerAttachQmlProfilerCommand(),
+    registerStopQmlProfilerCommand()
   );
   taskProviders.push(
     vscode.tasks.registerTaskProvider(
@@ -120,6 +129,7 @@ export function deactivate() {
   telemetry.dispose();
   projectManager.dispose();
   disposePreviewManager();
+  disposeProfilerManager();
   for (const provider of taskProviders) {
     provider.dispose();
   }
