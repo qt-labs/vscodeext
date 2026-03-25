@@ -80,6 +80,23 @@
         "command": "qt-qml.clearQmlPreviewCache",
         "title": "%qt-qml.command.clearQmlPreviewCache.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-qml.startQmlProfiler",
+        "title": "%qt-qml.command.startQmlProfiler.title%",
+        "category": "Qt",
+        "icon": "$(record)"
+      },
+      {
+        "command": "qt-qml.attachQmlProfiler",
+        "title": "%qt-qml.command.attachQmlProfiler.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-qml.stopQmlProfiler",
+        "title": "%qt-qml.command.stopQmlProfiler.title%",
+        "category": "Qt",
+        "icon": "$(debug-stop)"
       }
     ],
     "menus": {
@@ -107,6 +124,18 @@
         {
           "command": "qt-qml.attachQmlPreview",
           "when": "!qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.startQmlProfiler",
+          "when": "!qt-qml.qmlProfilerRunning && qt-qml.qmlPreviewLaunchEnabled"
+        },
+        {
+          "command": "qt-qml.attachQmlProfiler",
+          "when": "!qt-qml.qmlProfilerRunning"
+        },
+        {
+          "command": "qt-qml.stopQmlProfiler",
+          "when": "qt-qml.qmlProfilerRunning"
         }
       ],
       "editor/title": [
@@ -124,6 +153,16 @@
           "command": "qt-qml.stopQmlPreview",
           "when": "resourceLangId == qml && qt-qml.qmlPreviewRunning",
           "group": "navigation@1"
+        },
+        {
+          "command": "qt-qml.startQmlProfiler",
+          "when": "resourceLangId == qml && !qt-qml.qmlProfilerRunning && qt-qml.qmlPreviewLaunchEnabled",
+          "group": "navigation@3"
+        },
+        {
+          "command": "qt-qml.stopQmlProfiler",
+          "when": "resourceLangId == qml && qt-qml.qmlProfilerRunning",
+          "group": "navigation@3"
         }
       ]
     },
@@ -271,6 +310,15 @@
           },
           "default": [],
           "description": "Default command line arguments to pass to the QML Preview application when started from commands (not used for tasks).",
+          "scope": "machine-overridable"
+        },
+        "qt-qml.profiler.args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra command line arguments to pass to the application when starting QML Profiler.",
           "scope": "machine-overridable"
         }
       }
