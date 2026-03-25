@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import { spawnSync } from 'child_process';
 import {
   Trace,
+  State,
   ServerOptions,
   LanguageClient,
   LanguageClientOptions
@@ -222,8 +223,8 @@ export class Qmlls {
       QMLLS_CONFIG,
       this._folder
     );
-    if (this._client?.isRunning()) {
-      logger.info('QML Language Server is already running');
+    if (this._client?.needsStop()) {
+      logger.info('QML Language Server is already running or starting');
       return;
     }
     if (!configs.get<boolean>('enabled', false)) {
@@ -416,18 +417,37 @@ export class Qmlls {
 
   public async stop() {
     if (this._client) {
-      if (this._client.isRunning()) {
+      if (this._client.needsStop()) {
         logger.info(`Stopping QML Language Server: "${this._folder.name}"`);
-        await this._client
-          .stop()
-          .then(() => {
-            logger.info(`QML Language Server stopped: "${this._folder.name}"`);
-          })
-          .catch((e: unknown) => {
-            logger.error(
-              `QML Language Server stop failed: "${this._folder.name}", ${String(e)}`
-            );
-          });
+        // LanguageClient.stop() throws when called in the "starting" state.
+        // Calling start() on an already-starting client is idempotent — it
+        // returns the existing in-progress promise, letting us wait for the
+        // startup to complete before we can safely call stop().
+        if (this._client.state === State.Starting) {
+          logger.info(
+            `Waiting for QML Language Server to finish starting before stopping: "${this._folder.name}"`
+          );
+          try {
+            await this._client.start();
+          } catch {
+            // If start fails, the client transitions to StartFailed state
+            // and no longer needs to be stopped.
+          }
+        }
+        if (this._client.isRunning()) {
+          await this._client
+            .stop()
+            .then(() => {
+              logger.info(
+                `QML Language Server stopped: "${this._folder.name}"`
+              );
+            })
+            .catch((e: unknown) => {
+              logger.error(
+                `QML Language Server stop failed: "${this._folder.name}", ${String(e)}`
+              );
+            });
+        }
       }
 
       this._client = undefined;
