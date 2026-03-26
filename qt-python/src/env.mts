@@ -41,10 +41,6 @@ export class PySideEnv {
       : '';
   }
 
-  get interpreterPath(): string | undefined {
-    return this._pyEnv?.executable.uri?.fsPath;
-  }
-
   public async refresh(pyApi: PyApi) {
     const allEnvs = pyApi.environments;
     const activeEnvPath = allEnvs.getActiveEnvironmentPath(this._folder);
