@@ -233,6 +233,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
   private readonly _session: QmlDebugSession;
   private _onShutdownEngine: (() => void) | undefined;
   private readonly _connectionTimer: Timer = new Timer();
+  private readonly _fileNotFoundWarned = new Set<string>();
   constructor(session: QmlDebugSession) {
     super('V8Debugger', new QmlDebugConnection());
     this._ui = new QmlEngineUI();
@@ -463,13 +464,19 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
         })
         .map(async (frame) => {
           const physicalPath = await fileFinder.findFile(frame.script);
-          if (!physicalPath) {
-            const err =
+
+          if (!physicalPath && !this._fileNotFoundWarned.has(frame.script)) {
+            const warning =
               `Cannot find physical path for: "${frame.script}".` +
               ' Use "buildDirs" to set the build directories in "launch.json".';
-            throw new Error(err);
+
+            this.ui.showWarning(warning);
+            this._fileNotFoundWarned.add(frame.script);
           }
-          const parsedPath = path.parse(physicalPath);
+
+          const parsedPath = physicalPath
+            ? path.parse(physicalPath)
+            : path.parse(frame.script);
           return new StackFrame(
             frame.index,
             frame.func,

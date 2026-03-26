@@ -53,6 +53,10 @@ export class QmlEngineUI {
     this.removeWaitingForDebugger();
     void vscode.window.showErrorMessage(message);
   }
+  showWarning(message: string) {
+    void this;
+    void vscode.window.showWarningMessage(message);
+  }
   dispose() {
     this.removeWaitingForDebugger();
   }
