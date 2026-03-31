@@ -17,8 +17,9 @@ export enum ErrorCategory {
   Filesystem = 8,
   Configuration = 9,
   UserCanceled = 10,
-  Service = 11,
-  Unknown = 12
+  ServiceLifecycle = 11,
+  Service = 12,
+  Unknown = 13
 }
 
 export enum ErrorCode {
@@ -34,7 +35,8 @@ export enum ErrorCode {
   UnknownCommand = 2000,
   InvalidArguments = 2001,
   InvalidResponseFormat = 2002,
-  UnknownResponseType = 2003,
+  InvalidRequestFormat = 2003,
+  UnknownResponseType = 2004,
 
   // Authentication [3000-3999]
   MissingToken = 3000,
@@ -48,8 +50,9 @@ export enum ErrorCode {
 
   // Network [6000-6999]
   HostNotFound = 6000,
-  SslVerifyError = 6001,
-  ProxyError = 6002,
+  NetworkError = 6001,
+  SslVerifyError = 6002,
+  ProxyError = 6003,
 
   // Cache [7000-7999]
   InvalidCache = 7000,
@@ -64,11 +67,17 @@ export enum ErrorCode {
   // Cancellation [10000-10999]
   UserCancelled = 10000,
 
-  // Service [11000-11999]
-  InternalError = 11000,
+  // Service lifecycle [11000-11999]
+  ServiceNotFound = 11000,
+  ServiceStartFailed = 11001,
+  ServiceStartTimeout = 11002,
+  ServiceStopFailed = 11003,
+
+  // Service [12000-12999]
+  InternalError = 12000,
 
   // Unknown
-  UnknownError = 12000
+  UnknownError = 13000
 }
 
 export interface SmsError {
@@ -119,7 +128,8 @@ export interface PackageFilters {
   hostArch?: string;
   targetArch?: string;
   compiler?: string;
-  version?: string;
+  packageVersion?: string;
+  packageId?: string;
   author?: string;
   product?: string;
   module?: string;
@@ -197,6 +207,7 @@ export const IPC = {
   methods: {
     install: 'packages/install',
     download: 'packages/download',
+    createOffline: 'packages/create-offline',
     update: 'packages/update',
     remove: 'packages/remove',
     purge: 'packages/purge',
