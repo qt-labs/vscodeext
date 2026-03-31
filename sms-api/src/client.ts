@@ -5,6 +5,10 @@
 
 import { EventEmitter } from 'events';
 import { Socket } from 'net';
+import { spawn, type ChildProcess } from 'child_process';
+import * as fs from 'fs';
+import * as net from 'net';
+import * as path from 'path';
 
 import { connectSocket, type TransportOptions } from './transport';
 import {
@@ -191,6 +195,171 @@ export class Session extends EventEmitter {
   }
 }
 
+// ── ServiceLauncher ──────────────────────────────────────────────────────────
+
+export interface ServiceLauncherOptions {
+  /** Absolute path to QtSoftwareManagementService executable. */
+  serviceBin?: string;
+  /** Socket path used for health-checking whether the service is running. */
+  socketPath?: string;
+  /** Maximum time (ms) to wait for the service socket after launch. */
+  startupTimeoutMs?: number;
+  /** Interval (ms) between socket-ready polls during startup. */
+  pollIntervalMs?: number;
+}
+
+export interface ServiceLauncherEvents {
+  errorOccurred: (error: SmsError) => void;
+}
+
+export class ServiceLauncher extends EventEmitter {
+  private _lastError: SmsError | undefined;
+  private _serviceProcess: ChildProcess | undefined;
+  private readonly _serviceBin: string | undefined;
+  private readonly _socketPath: string;
+  private readonly _startupTimeoutMs: number;
+  private readonly _pollIntervalMs: number;
+
+  constructor(opts?: ServiceLauncherOptions) {
+    super();
+    this._serviceBin = opts?.serviceBin;
+    this._socketPath = opts?.socketPath ?? IPC.defaultSocket;
+    this._startupTimeoutMs = opts?.startupTimeoutMs ?? 10_000;
+    this._pollIntervalMs = opts?.pollIntervalMs ?? 100;
+  }
+
+  get lastError(): SmsError | undefined {
+    return this._lastError;
+  }
+
+  /**
+   * Start the service if it is not already running.
+   * Returns `true` when a running service is confirmed on the socket.
+   */
+  async startService(): Promise<boolean> {
+    if (await this.isServiceRunning()) {
+      return true;
+    }
+
+    const binPath = this.resolveServiceBin();
+    if (!binPath) {
+      this.setError({
+        category: ErrorCategory.ServiceLifecycle,
+        code: ErrorCode.ServiceNotFound,
+        message: 'Cannot find service executable'
+      });
+      return false;
+    }
+
+    return this.launchAndWait(binPath);
+  }
+
+  stopService(): boolean {
+    if (this._serviceProcess && !this._serviceProcess.killed) {
+      this._serviceProcess.kill('SIGTERM');
+      this._serviceProcess = undefined;
+      return true;
+    }
+    return false;
+  }
+
+  async isServiceRunning(): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+      const socket = net.createConnection({ path: this._socketPath });
+      socket.once('connect', () => {
+        socket.destroy();
+        resolve(true);
+      });
+      socket.once('error', () => {
+        socket.destroy();
+        resolve(false);
+      });
+    });
+  }
+
+  // ── Internals ──────────────────────────────────────────────────────────
+
+  private resolveServiceBin(): string | undefined {
+    // 1. Explicit path
+    if (this._serviceBin && fs.existsSync(this._serviceBin)) {
+      return this._serviceBin;
+    }
+
+    // 2. Next to current process executable
+    const exeDir = path.dirname(process.execPath);
+    const candidateName =
+      process.platform === 'win32'
+        ? 'QtSoftwareManagementService.exe'
+        : 'QtSoftwareManagementService';
+    const candidate = path.join(exeDir, candidateName);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+
+    return this._serviceBin; // may be undefined
+  }
+
+  private async launchAndWait(binPath: string): Promise<boolean> {
+    if (!fs.existsSync(binPath)) {
+      this.setError({
+        category: ErrorCategory.ServiceLifecycle,
+        code: ErrorCode.ServiceNotFound,
+        message: `Cannot find service executable: ${binPath}`
+      });
+      return false;
+    }
+
+    try {
+      this._serviceProcess = spawn(binPath, [], {
+        stdio: 'ignore',
+        detached: true
+      });
+      this._serviceProcess.unref();
+    } catch {
+      this.setError({
+        category: ErrorCategory.ServiceLifecycle,
+        code: ErrorCode.ServiceStartFailed,
+        message: `Cannot start service process: ${binPath}`
+      });
+      return false;
+    }
+
+    // Poll for the service socket
+    const ready = await this.pollForSocket();
+    if (ready) {
+      this._lastError = undefined;
+      return true;
+    }
+
+    this.setError({
+      category: ErrorCategory.ServiceLifecycle,
+      code: ErrorCode.ServiceStartTimeout,
+      message: `Service started but socket not available within ${String(this._startupTimeoutMs)} ms`
+    });
+    return false;
+  }
+
+  private async pollForSocket(): Promise<boolean> {
+    const start = Date.now();
+    while (Date.now() - start < this._startupTimeoutMs) {
+      await ServiceLauncher.sleepMs(this._pollIntervalMs);
+      if (await this.isServiceRunning()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static async sleepMs(ms: number): Promise<void> {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+  private setError(error: SmsError): void {
+    this._lastError = error;
+    this.emit('errorOccurred', error);
+  }
+}
+
 // ── Packages ─────────────────────────────────────────────────────────────────
 
 export class Packages {
@@ -222,6 +391,19 @@ export class Packages {
   ): Promise<string> {
     return this.performPackageTransaction(
       IPC.methods.download,
+      packages,
+      options,
+      callbacks
+    );
+  }
+
+  async createOffline(
+    packages: PackageReference[],
+    options?: PackageRequestOptions,
+    callbacks?: JobCallbacks
+  ): Promise<string> {
+    return this.performPackageTransaction(
+      IPC.methods.createOffline,
       packages,
       options,
       callbacks
