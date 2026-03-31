@@ -40,5 +40,9 @@ export type { DecodedPacket, TransportOptions } from './transport';
 export { JsonRpcDispatcher } from './jsonrpc';
 
 // Public API
-export { Session, Packages, Cache, Settings } from './client';
-export type { SessionEvents } from './client';
+export { Session, ServiceLauncher, Packages } from './client';
+export type {
+  SessionEvents,
+  ServiceLauncherOptions,
+  ServiceLauncherEvents
+} from './client';

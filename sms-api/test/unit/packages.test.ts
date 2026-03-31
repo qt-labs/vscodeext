@@ -45,6 +45,12 @@ const COMMANDS: PackageCommand[] = [
       p.download([{ id: 'qt6-base', version: '6.10' }], undefined, cb)
   },
   {
+    name: 'createOffline',
+    method: 'packages/create-offline',
+    invoke: (p, cb) =>
+      p.createOffline([{ id: 'qt6-base', version: '6.10' }], undefined, cb)
+  },
+  {
     name: 'remove',
     method: 'packages/remove',
     invoke: (p, cb) =>
@@ -478,6 +484,34 @@ describe('Packages', () => {
       assert.equal(result.length, 2);
       assert.equal(result[0].id, 'qt6-base');
       assert.equal(result[1].id, 'qt6-charts');
+    });
+
+    it('sends packageVersion and packageId filter keys', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.searchAvailablePackages({
+        packageVersion: '6.10',
+        packageId: 'qt6-base'
+      });
+
+      const { payload, conn } = await msgPromise;
+      const params = payload.params as Record<string, unknown>;
+      const filters = params.filters as Record<string, string>[];
+      const keys = filters.map((f) => Object.keys(f)[0]);
+      assert.ok(
+        keys.includes('packageVersion'),
+        'packageVersion filter should be present'
+      );
+      assert.ok(
+        keys.includes('packageId'),
+        'packageId filter should be present'
+      );
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { packages: [] }
+      });
+      await resultPromise;
     });
   });
 
