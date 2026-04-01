@@ -39,6 +39,8 @@ import {
   encodeJsonPacket,
   PacketReader,
   type DecodedPacket,
+  type PackageData,
+  type PackageReference,
   type SmsError
 } from '../src';
 
@@ -167,9 +169,13 @@ function launchService(binPath: string): ChildProcess {
   }
 
   log(`Launching service: ${binPath}`);
+  log(`  Mock HOME: ${MOCK_HOME_DIR}`);
+  fs.rmSync(MOCK_HOME_DIR, { recursive: true, force: true });
+  fs.mkdirSync(MOCK_HOME_DIR, { recursive: true });
   const child = spawn(binPath, [], {
     stdio: ['ignore', 'pipe', 'pipe'],
-    detached: false
+    detached: false,
+    env: { ...process.env, HOME: MOCK_HOME_DIR }
   });
 
   child.stdout?.on('data', (data: Buffer) => {
@@ -326,6 +332,188 @@ async function testRawJsonRpcCall(session: Session): Promise<void> {
   }
 }
 
+const INSTALL_TIMEOUT_MS = 120_000;
+const MOCK_HOME_DIR = path.resolve(__dirname, '..', 'test', 'integration');
+const INSTALL_OUTPUT_DIR = path.join(MOCK_HOME_DIR, 'Qt');
+const INSTALL_JOURNAL_DIR = path.join(
+  MOCK_HOME_DIR,
+  '.local',
+  'share',
+  'QtSoftwareManagementService'
+);
+const INSTALL_JOURNAL_PATH = path.join(
+  INSTALL_JOURNAL_DIR,
+  'installationJournal.json'
+);
+
+// Tracks the package installed during the test run
+let installedPackageId: string | undefined;
+let installedPackageVersion: string | undefined;
+
+async function testInstallFirstAvailablePackage(
+  packages: Packages
+): Promise<void> {
+  log(`  -> Searching for available packages...`);
+  let available: PackageData[];
+  try {
+    available = await withTimeout(
+      packages.searchAvailablePackages({}),
+      DEFAULT_CALL_TIMEOUT_MS,
+      'search available'
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Could not list packages for install test: ${msg}`);
+  }
+
+  if (available.length === 0) {
+    log(`  -> No packages returned by search, nothing to install`);
+    return;
+  }
+
+  const pkg = available[0]!;
+  log(
+    `  -> Found ${String(available.length)} package(s), installing first: ${pkg.id}@${pkg.version}`
+  );
+  await testInstallPackage(packages, pkg.id, pkg.version);
+  installedPackageId = pkg.id;
+  installedPackageVersion = pkg.version;
+}
+
+async function testInstallPackage(
+  packages: Packages,
+  pkgId: string,
+  pkgVersion: string | undefined
+): Promise<void> {
+  const ref: PackageReference = pkgVersion
+    ? { id: pkgId, version: pkgVersion }
+    : { id: pkgId };
+
+  const label = pkgVersion ? `${pkgId}@${pkgVersion}` : pkgId;
+  log(`  -> Installing ${label}...`);
+  log(`  -> Expected output directory: ${INSTALL_OUTPUT_DIR}`);
+
+  const result = await withTimeout(
+    packages.install(
+      [ref],
+      { timeoutMs: INSTALL_TIMEOUT_MS },
+      {
+        onProgress: ({ progress, message }) => {
+          const pct = (progress * 100).toFixed(1);
+          const detail = message ? ` — ${message}` : '';
+          log(`  [progress] ${pct}%${detail}`);
+        },
+        onMessage: ({ message }) => {
+          log(`  [message] ${message}`);
+        },
+        onPrompt: async (prompt) => {
+          log(`  [prompt] "${prompt.title}": ${prompt.message}`);
+          if (prompt.choices.length > 0) {
+            const choice = prompt.choices[0] ?? prompt.defaultAnswer;
+            log(
+              `  [prompt] choices: [${prompt.choices.join(', ')}] — auto-selecting "${choice}"`
+            );
+            return { kind: 'choice', choice };
+          }
+          log(
+            `  [prompt] defaultAnswer: "${prompt.defaultAnswer}" — auto-replying`
+          );
+          return { kind: 'text', text: prompt.defaultAnswer };
+        }
+      }
+    ),
+    INSTALL_TIMEOUT_MS + 5_000,
+    `install ${label}`
+  );
+
+  log(`  -> Install completed: ${result}`);
+}
+
+async function testVerifyInstallOutput(): Promise<void> {
+  // 1. Check that files were extracted to INSTALL_OUTPUT_DIR
+  if (!fs.existsSync(INSTALL_OUTPUT_DIR)) {
+    throw new Error(
+      `Install output directory does not exist: ${INSTALL_OUTPUT_DIR}`
+    );
+  }
+
+  const entries = fs.readdirSync(INSTALL_OUTPUT_DIR, {
+    recursive: true
+  }) as string[];
+  if (entries.length === 0) {
+    throw new Error(
+      `Install output directory is empty: ${INSTALL_OUTPUT_DIR}`
+    );
+  }
+
+  log(
+    `  -> ${String(entries.length)} file(s)/dir(s) in ${INSTALL_OUTPUT_DIR}:`
+  );
+  for (const entry of entries.slice(0, 20)) {
+    log(`     ${entry}`);
+  }
+  if (entries.length > 20) {
+    log(`     ... and ${String(entries.length - 20)} more`);
+  }
+
+  // 2. Check the installation journal records the package
+  if (!fs.existsSync(INSTALL_JOURNAL_PATH)) {
+    throw new Error(
+      `Installation journal not found: ${INSTALL_JOURNAL_PATH}`
+    );
+  }
+
+  const journalRaw = fs.readFileSync(INSTALL_JOURNAL_PATH, 'utf-8');
+  const journal = JSON.parse(journalRaw) as {
+    payload?: {
+      installed?: Array<{
+        productId: string;
+        productVersion: string;
+        packages?: Array<{
+          packageId: string;
+          packageVersion: string;
+        }>;
+      }>;
+    };
+  };
+
+  const installed = journal.payload?.installed;
+  if (!installed || installed.length === 0) {
+    throw new Error('Installation journal has no installed packages');
+  }
+
+  log(`  -> Journal has ${String(installed.length)} product(s) installed`);
+  for (const product of installed) {
+    log(
+      `     product: ${product.productId}@${product.productVersion} ` +
+        `(${String(product.packages?.length ?? 0)} package(s))`
+    );
+  }
+
+  // 3. Verify the package we installed is in the journal
+  if (installedPackageId) {
+    const found = installed.some((product) =>
+      product.packages?.some((pkg) => {
+        const idMatch = pkg.packageId === installedPackageId;
+        const versionMatch =
+          !installedPackageVersion ||
+          pkg.packageVersion === installedPackageVersion;
+        return idMatch && versionMatch;
+      })
+    );
+
+    if (!found) {
+      throw new Error(
+        `Installed package ${installedPackageId}@${installedPackageVersion ?? '?'} ` +
+          `not found in installation journal`
+      );
+    }
+    log(
+      `  -> Verified: ${installedPackageId}@${installedPackageVersion ?? '?'} found in journal`
+    );
+  }
+}
+
 async function testInstallNonExistentPackage(
   packages: Packages
 ): Promise<void> {
@@ -345,6 +533,18 @@ async function testInstallNonExistentPackage(
       throw err;
     }
     log(`  -> Got expected error: ${msg}`);
+  }
+}
+
+async function testListAllPackages(packages: Packages): Promise<void> {
+  const result = await withTimeout(
+    packages.searchAvailablePackages({}),
+    DEFAULT_CALL_TIMEOUT_MS,
+    'list all packages'
+  );
+  log(`  -> ${String(result.length)} package(s) available:`);
+  for (const pkg of result) {
+    log(`     ${pkg.id}@${pkg.version}`);
   }
 }
 
@@ -504,6 +704,7 @@ async function main(): Promise<void> {
 
     if (!session.isConnected) {
       skipTest('Raw JSON-RPC call', 'Not connected');
+      skipTest('API: list all packages', 'Not connected');
       skipTest('Install non-existent package', 'Not connected');
       skipTest('Search available packages', 'Not connected');
       skipTest('Create offline package', 'Not connected');
@@ -515,6 +716,15 @@ async function main(): Promise<void> {
 
       await runTest('Protocol: raw JSON-RPC packages/install', () =>
         testRawJsonRpcCall(session)
+      );
+      await runTest('API: list all packages', () =>
+        testListAllPackages(packages)
+      );
+      await runTest('API: install the first package', () =>
+        testInstallFirstAvailablePackage(packages)
+      );
+      await runTest('Verify: install output directory has content', () =>
+        testVerifyInstallOutput()
       );
       await runTest('API: install non-existent package', () =>
         testInstallNonExistentPackage(packages)
