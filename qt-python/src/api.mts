@@ -44,6 +44,8 @@ class PySideProjectWrapper implements PySideProjectAPI {
 
     let command = `${consts.PYSIDE_PROJECT_TOOL} run`;
     if (args?.length) {
+      command += ` "${this.folder.uri.fsPath}"`;
+      command += ` -- `;
       command += ` ${args.join(' ')}`;
     }
 
