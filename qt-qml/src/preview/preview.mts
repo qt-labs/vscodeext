@@ -250,7 +250,6 @@ async function launchPySidePreview(
   const allArgs = [previewArgs, ...additionalArgs];
 
   try {
-    let proc: ChildProcess | undefined;
     const project = projectManager.getProject(folder);
     const pySideProject = project?.pySideProject;
     if (!pySideProject) {
@@ -259,7 +258,7 @@ async function launchPySidePreview(
     if (pySideProject.supportsProjectRunArgs()) {
       // PySide >= 6.10.3: pass args via pyside6-project run <args>
       logger.info('Using pyside6-project run with args');
-      proc = pySideProject.runProject(allArgs);
+      previewProcess = pySideProject.runProject(allArgs);
     } else {
       // PySide < 6.10.3: replicate pyside6-project run manually:
       // build the project, then run the main file with args.
@@ -294,18 +293,24 @@ async function launchPySidePreview(
         return false;
       }
 
-      proc = pySideProject.runFile(absFilePath, allArgs);
+      previewProcess = pySideProject.runFile(absFilePath, allArgs);
     }
 
-    if (!proc || proc.killed || proc.pid === undefined) {
+    if (
+      !previewProcess ||
+      previewProcess.killed ||
+      previewProcess.pid === undefined
+    ) {
       logger.error('Failed to start PySide preview process');
       manager.dispose();
       ui.showFailedToStart(new Error('Process failed to start'));
       return false;
     }
-    logger.info(`PySide preview process started with PID: ${String(proc.pid)}`);
+    logger.info(
+      `PySide preview process started with PID: ${String(previewProcess.pid)}`
+    );
 
-    setupProcessForPreview(proc, manager, qmlFile, host, port);
+    setupProcessForPreview(previewProcess, manager, qmlFile, host, port);
     return true;
   } catch (err) {
     logger.error(`Failed to start PySide preview: ${String(err)}`);
