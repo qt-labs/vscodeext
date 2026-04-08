@@ -1,0 +1,105 @@
+{
+  "name": "qt-sms",
+  "displayName": "Qt Software Management Service",
+  "description": "Qt Software Management Service",
+  "version": "1.15.0",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "Qt",
+    "SMS",
+    "Package Manager"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "qt-sms.searchPackages",
+        "title": "%qt-sms.command.searchPackages.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sms.listInstalledPackages",
+        "title": "%qt-sms.command.listInstalledPackages.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sms.installPackage",
+        "title": "%qt-sms.command.installPackage.title%",
+        "category": "Qt"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Qt Software Management Service Configuration",
+      "properties": {
+        "qt-sms.serviceExecutablePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the path to the QtSoftwareManagementService executable",
+          "scope": "machine-overridable"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
+    "compile": "node ./esbuild.mjs",
+    "compile-test": "node ./esbuild.mjs --test",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "test:only": "npm run compile-test && cd ./out/test/ && node runTest.js",
+    "test": "npm run test:only --",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,mts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,mts,json,mjs,cjs}\"",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata",
+    "package": "vsce package --out out && rm commit"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "1.94.0",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
+    "glob": "^11.0.2",
+    "mocha": "^11.3.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "module-alias": "^2.2.3",
+    "qt-lib": "file:../qt-lib",
+    "sms-api": "file:../sms-api",
+    "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
+  }
+}

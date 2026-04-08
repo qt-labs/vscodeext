@@ -1,0 +1,5 @@
+{
+  "qt-sms.command.searchPackages.title": "SMS: Search available packages",
+  "qt-sms.command.listInstalledPackages.title": "SMS: List installed packages",
+  "qt-sms.command.installPackage.title": "SMS: Install package"
+}
