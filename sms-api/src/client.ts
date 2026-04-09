@@ -206,6 +206,10 @@ export interface ServiceLauncherOptions {
   startupTimeoutMs?: number;
   /** Interval (ms) between socket-ready polls during startup. */
   pollIntervalMs?: number;
+  /** Optional callback invoked with each line of stdout from the service. */
+  onStdout?: (line: string) => void;
+  /** Optional callback invoked with each line of stderr from the service. */
+  onStderr?: (line: string) => void;
 }
 
 export interface ServiceLauncherEvents {
@@ -219,6 +223,8 @@ export class ServiceLauncher extends EventEmitter {
   private readonly _socketPath: string;
   private readonly _startupTimeoutMs: number;
   private readonly _pollIntervalMs: number;
+  private readonly _onStdout: ((line: string) => void) | undefined;
+  private readonly _onStderr: ((line: string) => void) | undefined;
 
   constructor(opts?: ServiceLauncherOptions) {
     super();
@@ -226,6 +232,8 @@ export class ServiceLauncher extends EventEmitter {
     this._socketPath = opts?.socketPath ?? IPC.defaultSocket;
     this._startupTimeoutMs = opts?.startupTimeoutMs ?? 10_000;
     this._pollIntervalMs = opts?.pollIntervalMs ?? 100;
+    this._onStdout = opts?.onStdout;
+    this._onStderr = opts?.onStderr;
   }
 
   get lastError(): SmsError | undefined {
@@ -309,9 +317,12 @@ export class ServiceLauncher extends EventEmitter {
       return false;
     }
 
+    let earlyExit: { code: number | null; signal: string | null } | undefined;
+    const stderrChunks: string[] = [];
+
     try {
       this._serviceProcess = spawn(binPath, [], {
-        stdio: 'ignore',
+        stdio: ['ignore', 'pipe', 'pipe'],
         detached: true
       });
       this._serviceProcess.unref();
@@ -324,24 +335,81 @@ export class ServiceLauncher extends EventEmitter {
       return false;
     }
 
-    // Poll for the service socket
-    const ready = await this.pollForSocket();
+    // Capture stdout for diagnostics
+    this._serviceProcess.stdout?.on('data', (data: Buffer) => {
+      const text = data.toString();
+      for (const line of text.split('\n')) {
+        const trimmed = line.trimEnd();
+        if (trimmed.length > 0) {
+          this._onStdout?.(trimmed);
+        }
+      }
+    });
+
+    // Capture stderr for diagnostics
+    this._serviceProcess.stderr?.on('data', (data: Buffer) => {
+      const text = data.toString();
+      for (const line of text.split('\n')) {
+        const trimmed = line.trimEnd();
+        if (trimmed.length > 0) {
+          stderrChunks.push(trimmed);
+          this._onStderr?.(trimmed);
+        }
+      }
+    });
+
+    // Detect early exit so we can fail fast instead of polling until timeout
+    this._serviceProcess.once('exit', (code, signal) => {
+      earlyExit = { code, signal };
+    });
+
+    // Poll for the service socket, aborting if the process exits
+    const ready = await this.pollForSocket(() => earlyExit !== undefined);
     if (ready) {
       this._lastError = undefined;
       return true;
     }
 
-    this.setError({
-      category: ErrorCategory.ServiceLifecycle,
-      code: ErrorCode.ServiceStartTimeout,
-      message: `Service started but socket not available within ${String(this._startupTimeoutMs)} ms`
-    });
+    // Build a useful error message
+    let detail: string;
+    if (earlyExit) {
+      const exitInfo = earlyExit.signal
+        ? `signal ${earlyExit.signal}`
+        : `code ${String(earlyExit.code)}`;
+      const stderr =
+        stderrChunks.length > 0
+          ? `\nService stderr:\n  ${stderrChunks.join('\n  ')}`
+          : '';
+      detail = `Service process exited (${exitInfo}) before socket became available${stderr}`;
+      this.setError({
+        category: ErrorCategory.ServiceLifecycle,
+        code: ErrorCode.ServiceStartFailed,
+        message: detail
+      });
+    } else {
+      const stderr =
+        stderrChunks.length > 0
+          ? `\nService stderr:\n  ${stderrChunks.join('\n  ')}`
+          : '';
+      detail = `Service started but socket not available within ${String(this._startupTimeoutMs)} ms${stderr}`;
+      this.setError({
+        category: ErrorCategory.ServiceLifecycle,
+        code: ErrorCode.ServiceStartTimeout,
+        message: detail
+      });
+    }
+
     return false;
   }
 
-  private async pollForSocket(): Promise<boolean> {
+  private async pollForSocket(
+    abortEarly?: () => boolean
+  ): Promise<boolean> {
     const start = Date.now();
     while (Date.now() - start < this._startupTimeoutMs) {
+      if (abortEarly?.()) {
+        return false;
+      }
       await ServiceLauncher.sleepMs(this._pollIntervalMs);
       if (await this.isServiceRunning()) {
         return true;
