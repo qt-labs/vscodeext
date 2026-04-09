@@ -51,7 +51,16 @@ async function withService<T>(
   action: (session: Session, packages: Packages) => Promise<T>
 ): Promise<T | undefined> {
   const serviceBin = getServiceExecutablePath();
-  const launcher = new ServiceLauncher(serviceBin ? { serviceBin } : undefined);
+  const serviceLogger = createLogger('service');
+  const launcher = new ServiceLauncher({
+    ...(serviceBin ? { serviceBin } : {}),
+    onStdout: (line) => {
+      serviceLogger.info(line);
+    },
+    onStderr: (line) => {
+      serviceLogger.warn(line);
+    }
+  });
 
   const started = await vscode.window.withProgress(
     {
