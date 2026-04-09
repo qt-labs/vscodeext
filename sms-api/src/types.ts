@@ -202,7 +202,8 @@ export enum SessionState {
 // ── IPC Constants ────────────────────────────────────────────────────────────
 
 export const IPC = {
-  defaultSocket: 'qtclient_socket',
+  //TODO: Find a OS agnostic way to define the socket path
+  defaultSocket: '/tmp/qtclient_socket',
 
   methods: {
     install: 'packages/install',
