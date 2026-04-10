@@ -43,11 +43,18 @@ body {
   --qt-checker-color1: var(--color-gray-700);
   --qt-checker-color2: var(--color-gray-800);
   --qt-disabled-foreground: var(--vscode-disabledForeground);
+
+  --qt-active-color: var(--vscode-button-background);
+  --qt-inactive-color: var(--vscode-disabledForeground);
 }
 
 body[data-vscode-theme-kind*='light'] {
   --qt-checker-color1: var(--color-gray-200);
   --qt-checker-color2: var(--color-gray-300);
+}
+
+body[data-vscode-theme-kind*='high-contrast'] {
+  --qt-active-color: var(--vscode-button-border);
 }
 
 /* utilities */
@@ -438,6 +445,10 @@ body.vscode-high-contrast .qt-item:hover {
   font-size: 1.05rem;
 }
 
+.qt-label.bright {
+  color: var(--vscode-settings-headerForeground);
+}
+
 .qt-label.dimmed {
   color: var(--qt-disabled-foreground);
 }
@@ -502,9 +513,9 @@ body.vscode-high-contrast .qt-item:hover {
 
 .qt-badge {
   @apply qt-badge-base;
-  color: var(--qt-primary-foreground);
+  color: var(--qt-active-color);
   background: transparent;
-  border: 1px solid var(--qt-outline);
+  border: 1px solid var(--qt-active-color);
 }
 
 .qt-badge-primary {
@@ -544,6 +555,18 @@ body.vscode-high-contrast .qt-item:hover {
     var(--qt-checker-color1) 0 25%,
     var(--qt-checker-color2) 0 50%
   ) 50% / 4px 4px
+}
+
+.qt-warning {
+  color: var(--qt-info-foreground);
+  background-color: var(--qt-info-background);
+  border: 1px solid var(--qt-info-border);
+}
+
+.qt-error {
+  color: var(--qt-error-foreground);
+  background-color: var(--qt-error-background);
+  border: 1px solid var(--qt-error-border);
 }
 
 /*

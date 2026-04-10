@@ -105,6 +105,11 @@
         "command": "qt-core.openCoursesBrowser",
         "title": "%qt-core.command.openCoursesBrowser.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.openWelcomePage",
+        "title": "%qt-core.command.openWelcomePage.title%",
+        "category": "Qt"
       }
     ],
     "customEditors": [
@@ -299,6 +304,12 @@
           "default": true,
           "description": "Turn off the QRC editor to open .qrc files in the default text editor",
           "scope": "machine-overridable"
+        },
+        "qt-core.showWelcomePageOnActivation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show welcome page when the extension gets activated",
+          "scope": "machine-overridable"
         }
       }
     },
@@ -347,6 +358,7 @@
     "@types/sinon": "^17.0.4",
     "@types/vscode": "^1.94.0",
     "@types/which": "^3.0.4",
+    "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
     "@vscode/test-cli": "^0.0.11",
@@ -372,6 +384,7 @@
     "lodash-es": "^4.17.21",
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
+    "rss-parser": "^3.13.0",
     "typescript": "^5.6.3",
     "which": "^5.0.0"
   },
