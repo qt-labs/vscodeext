@@ -155,18 +155,13 @@ async function ensureServiceStopped(socketPath: string): Promise<void> {
   // Kill any QtSoftwareManagementService processes (exclude our own PID)
   try {
     const ourPid = String(process.pid);
-    const allPids = execSync(
-      'pgrep -x QtSoftwareManagementService',
-      { encoding: 'utf-8' }
-    ).trim();
+    const allPids = execSync('pgrep -x QtSoftwareManagementService', {
+      encoding: 'utf-8'
+    }).trim();
     if (allPids.length > 0) {
-      const pidsToKill = allPids
-        .split('\n')
-        .filter((pid) => pid !== ourPid);
+      const pidsToKill = allPids.split('\n').filter((pid) => pid !== ourPid);
       if (pidsToKill.length > 0) {
-        log(
-          `  Killing leftover service PIDs: ${pidsToKill.join(', ')}`
-        );
+        log(`  Killing leftover service PIDs: ${pidsToKill.join(', ')}`);
         execSync(`kill ${pidsToKill.join(' ')}`);
         await new Promise((r) => setTimeout(r, 2000));
       }
@@ -257,9 +252,7 @@ async function testIsServiceRunning(config: TestConfig): Promise<void> {
 
   const running = await launcher.isServiceRunning();
   if (!running) {
-    throw new Error(
-      'isServiceRunning() returned false for a running service'
-    );
+    throw new Error('isServiceRunning() returned false for a running service');
   }
   log(`  -> isServiceRunning() correctly returned true`);
 }
@@ -278,16 +271,12 @@ async function testIsServiceStoppedAfterStop(
   // Wait for the socket to become unavailable
   const stopped = await waitForServiceStop(config.socketPath, 10_000);
   if (!stopped) {
-    throw new Error(
-      'Service still responding on socket after stopService()'
-    );
+    throw new Error('Service still responding on socket after stopService()');
   }
   log(`  -> Service is no longer running on socket`);
 }
 
-async function testStartWithInvalidBinary(
-  config: TestConfig
-): Promise<void> {
+async function testStartWithInvalidBinary(config: TestConfig): Promise<void> {
   const launcher = new ServiceLauncher({
     serviceBin: '/nonexistent/path/to/QtSoftwareManagementService',
     socketPath: config.socketPath,
@@ -496,9 +485,8 @@ async function main(): Promise<void> {
       }
     });
 
-    await runTest(
-      'ServiceLauncher: service stopped after stopService()',
-      () => testIsServiceStoppedAfterStop(config)
+    await runTest('ServiceLauncher: service stopped after stopService()', () =>
+      testIsServiceStoppedAfterStop(config)
     );
 
     // Clean up lock and socket before next group
