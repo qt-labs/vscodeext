@@ -402,9 +402,7 @@ export class ServiceLauncher extends EventEmitter {
     return false;
   }
 
-  private async pollForSocket(
-    abortEarly?: () => boolean
-  ): Promise<boolean> {
+  private async pollForSocket(abortEarly?: () => boolean): Promise<boolean> {
     const start = Date.now();
     while (Date.now() - start < this._startupTimeoutMs) {
       if (abortEarly?.()) {
