@@ -205,7 +205,7 @@ describe('JsonRpcDispatcher', () => {
     assert.equal(reply.id, reqId); // original request id is preserved
     const result = reply.result as Record<string, string>;
     assert.equal(result.id, 'license_agreement_gplv3');
-    assert.equal(result.reply_choice, 'Yes');
+    assert.equal(result.replyChoice, 'Yes');
   });
 
   // ── User prompt: cancel ─────────────────────────────────────────────────────
