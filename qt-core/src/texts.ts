@@ -21,3 +21,7 @@ export const exBrowser = {
 export const Courses = {
   tabText: 'Qt Academy courses'
 };
+
+export const WelcomePage = {
+  tabText: 'Welcome'
+};

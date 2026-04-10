@@ -52,6 +52,11 @@ export enum CommandId {
   CoursesGetCourses,
   CoursesRunAction,
 
+  // welcome page
+  WelcomeGetData,
+  WelcomeHandleConfig,
+  WelcomeRunAction,
+
   // common
   CommonOpenFolder,
   CommonVscodeThemeChanged

@@ -297,3 +297,59 @@ export const courses = {
     ))))))
   }
 }
+
+export const welcome = {
+  title: 'Qt Extension for VS Code',
+
+  versions: {
+    title: 'Qt extension status',
+    btnRefresh: 'Refresh',
+    notInstalled: 'not installed',
+    mismatchError: 'Some versions are inconsistent'
+  },
+
+  getStarted: {
+    title: 'Get started',
+
+    newProject: {
+      title: 'New project',
+      description: 'Start from a template'
+    },
+
+    examples: {
+      title: 'Examples',
+      description: 'Browse installed Qt examples and create a project'
+    },
+
+    documenation: {
+      title: 'Documentation',
+      description: 'Browse online documentation'
+    },
+
+    bugreport: {
+      title: 'Bug report',
+      description: 'Report bugs or issues'
+    },
+
+    links: {
+      doc: {
+        getStarted: 'Getting started',
+        tutorial: 'Tutorials',
+        howto: 'How to'
+      },
+
+      qt: {
+        download: 'Download Qt',
+        academy: 'Qt academy',
+        documentation: 'Qt documentation',
+        python: 'Qt for Python'
+      }
+    }
+  },
+
+  blogTitle: 'Blogs',
+  videoTitle: 'Videos',
+  showAll: 'Show all',
+  checkShowOnActivation: 'Show welcome page on activation',
+  emptyData: 'No data available'
+}
