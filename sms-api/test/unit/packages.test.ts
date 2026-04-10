@@ -248,7 +248,7 @@ describe('Packages', () => {
         assert.equal(reply.id, reqId);
         const replyResult = reply.result as Record<string, string>;
         assert.equal(replyResult.id, 'license_agreement_gplv3');
-        assert.equal(replyResult.reply_choice, 'Yes');
+        assert.equal(replyResult.replyChoice, 'Yes');
 
         // Server completes the operation
         server.sendJsonRpc(conn, {
