@@ -367,8 +367,8 @@ async function testInstallFirstAvailablePackage(
   }
 
   if (available.length === 0) {
-    log(`  -> No packages returned by search, nothing to install`);
-    return;
+    // log(`  -> No packages returned by search, nothing to install`);
+    throw new Error(`No packages returned by search, cannot test install`);
   }
 
   const pkg = available[0]!;
@@ -441,9 +441,7 @@ async function testVerifyInstallOutput(): Promise<void> {
     recursive: true
   }) as string[];
   if (entries.length === 0) {
-    throw new Error(
-      `Install output directory is empty: ${INSTALL_OUTPUT_DIR}`
-    );
+    throw new Error(`Install output directory is empty: ${INSTALL_OUTPUT_DIR}`);
   }
 
   log(
@@ -458,9 +456,7 @@ async function testVerifyInstallOutput(): Promise<void> {
 
   // 2. Check the installation journal records the package
   if (!fs.existsSync(INSTALL_JOURNAL_PATH)) {
-    throw new Error(
-      `Installation journal not found: ${INSTALL_JOURNAL_PATH}`
-    );
+    throw new Error(`Installation journal not found: ${INSTALL_JOURNAL_PATH}`);
   }
 
   const journalRaw = fs.readFileSync(INSTALL_JOURNAL_PATH, 'utf-8');
@@ -542,6 +538,9 @@ async function testListAllPackages(packages: Packages): Promise<void> {
     DEFAULT_CALL_TIMEOUT_MS,
     'list all packages'
   );
+  if (result.length === 0) {
+    throw new Error(`No packages returned by search, expected some packages`);
+  }
   log(`  -> ${String(result.length)} package(s) available:`);
   for (const pkg of result) {
     log(`     ${pkg.id}@${pkg.version}`);
@@ -553,7 +552,7 @@ async function testSearchAvailablePackages(packages: Packages): Promise<void> {
   const callTimeout = DEFAULT_CALL_TIMEOUT_MS;
   try {
     const result = await withTimeout(
-      packages.searchAvailablePackages({ hostOs: 'linux' }),
+      packages.searchAvailablePackages(),
       callTimeout,
       'search available'
     );
