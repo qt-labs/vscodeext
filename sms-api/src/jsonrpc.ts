@@ -304,9 +304,9 @@ export class JsonRpcDispatcher {
       } else {
         const result: Record<string, string> = { id: prompt.id };
         if (reply.kind === 'choice') {
-          result.reply_choice = reply.choice;
+          result.replyChoice = reply.choice;
         } else {
-          result.reply_text = reply.text;
+          result.replyText = reply.text;
         }
         const resp: JsonRpcSuccessResponse = {
           jsonrpc: '2.0',
