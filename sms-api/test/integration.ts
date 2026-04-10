@@ -335,12 +335,16 @@ async function testRawJsonRpcCall(session: Session): Promise<void> {
 const INSTALL_TIMEOUT_MS = 120_000;
 const MOCK_HOME_DIR = path.resolve(__dirname, '..', 'test', 'integration');
 const INSTALL_OUTPUT_DIR = path.join(MOCK_HOME_DIR, 'Qt');
-const INSTALL_JOURNAL_DIR = path.join(
-  MOCK_HOME_DIR,
-  '.local',
-  'share',
-  'QtSoftwareManagementService'
-);
+// Qt's QStandardPaths::AppLocalDataLocation resolves differently per platform:
+//   macOS:   ~/Library/Application Support/<AppName>
+//   Linux:   ~/.local/share/<AppName>
+//   Windows: ~/AppData/Local/<AppName>
+const INSTALL_JOURNAL_DIR =
+  process.platform === 'darwin'
+    ? path.join(MOCK_HOME_DIR, 'Library', 'Application Support', 'QtSoftwareManagementService')
+    : process.platform === 'win32'
+      ? path.join(MOCK_HOME_DIR, 'AppData', 'Local', 'QtSoftwareManagementService')
+      : path.join(MOCK_HOME_DIR, '.local', 'share', 'QtSoftwareManagementService');
 const INSTALL_JOURNAL_PATH = path.join(
   INSTALL_JOURNAL_DIR,
   'installationJournal.json'
@@ -454,7 +458,14 @@ async function testVerifyInstallOutput(): Promise<void> {
     log(`     ... and ${String(entries.length - 20)} more`);
   }
 
-  // 2. Check the installation journal records the package
+  // 2. Check the installation journal records the package.
+  // On macOS, Qt's QStandardPaths::AppLocalDataLocation uses NSSearchPathForDirectoriesInDomains
+  // which ignores the HOME env var override, so the journal is always written to the real
+  // ~/Library/Application Support/ and cannot be redirected to MOCK_HOME_DIR in tests.
+  // if (process.platform === 'darwin') {
+  //   log(`  -> Skipping journal check on macOS (QStandardPaths ignores HOME override)`);
+  //   return;
+  // }
   if (!fs.existsSync(INSTALL_JOURNAL_PATH)) {
     throw new Error(`Installation journal not found: ${INSTALL_JOURNAL_PATH}`);
   }
