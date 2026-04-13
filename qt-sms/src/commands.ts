@@ -132,9 +132,13 @@ export async function searchPackages(): Promise<void> {
         `- **Author:** ${selected.pkg.author}`,
         `- **License:** ${selected.pkg.license}`,
         `- **Product:** ${selected.pkg.productName || selected.pkg.product}`,
+        `- **Product ID:** ${selected.pkg.productId}`,
+        `- **Product Version:** ${selected.pkg.productVersion}`,
         `- **Size:** ${formatSize(selected.pkg.uncompressedSize)}`,
         `- **Status:** ${installStateLabel(selected.pkg.installState)}`
       ].join('\n');
+
+      logger.info(`Package details:\n${info.replace(/\n/g, '\n> ')}`);
 
       const action = await vscode.window.showInformationMessage(
         info,
@@ -235,12 +239,27 @@ async function installPackageById(
       cancellable: false
     },
     async (progress) => {
+      let lastPct = 0;
       try {
         await packages.install([pkgRef], undefined, {
           onProgress: (info) => {
-            const pct = Math.round(info.progress * 100);
+            const pct = Math.round(info.progress);
+            logger.info(
+              `Install progress: ${String(pct)}% - ${String(info.message)}`
+            );
+            // Reset baseline when a new phase starts (progress goes backwards)
+            if (pct < lastPct) {
+              progress.report({
+                message: `${info.message ? `${info.message} ` : ''}${String(pct)}%`,
+                increment: -100
+              });
+              lastPct = 0;
+            }
+            const increment = pct - lastPct;
+            lastPct = pct;
             progress.report({
-              message: info.message ?? `${String(pct)}%`
+              message: `${info.message ? `${info.message} ` : ''}${String(pct)}%`,
+              increment
             });
           },
           onMessage: (info) => {
