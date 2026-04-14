@@ -295,39 +295,49 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qLine',
     type: 'QLine',
     value: '{ start point = { x = 0, y = 1 }, end point = { x = 42, y = 43 } }',
-    knownProblem: {
-      linux:
-        'On Linux/GDB with Qt 6.10, QLine NatVis depends on QPoint formatting for pt1/pt2; ' +
-        'since QPoint NatVis collapses to "{...}", QLine also renders as ' +
-        '"{ start point = { x = {...}, y = {...} }, end point = { x = {...}, y = {...} } }" ' +
-        'instead of numeric coordinates.',
-      darwin:
-        'On macOS/LLDB with Qt 6.10, QLine NatVis depends on QPoint formatting for pt1/pt2; ' +
-        'since QPoint NatVis collapses to "{...}", QLine also renders as "{ start point = { x = {...}, y = {...} }, ... }" ' +
-        'instead of numeric coordinates.',
-      win32:
-        'Qt 6.10 on Windows wraps the underlying integer fields used by the QLine NatVis rule ' +
-        '(e.g. QPoint/QSize internal members), so the debugger prints nested wrappers like "{m_i=...}" ' +
-        'instead of plain integers. This indicates the NatVis rule is not producing the intended ' +
-        'formatting on win32 with Qt 6.10'
-    }
+    children: [
+      {
+        name: '[start point]',
+        value: '{ x = 0, y = 1 }',
+        knownProblem: {
+          darwin:
+            'LLDB does not reliably enumerate NatVis Synthetic children; ' +
+            'the [start point] node is missing from the expanded QLine on macOS.',
+          linux:
+            'GDB does not reliably enumerate NatVis Synthetic children; ' +
+            'the [start point] node is missing from the expanded QLine on Linux.'
+        },
+        children: [
+          { name: '[x]', value: '0' },
+          { name: '[y]', value: '1' }
+        ]
+      },
+      {
+        name: '[end point]',
+        value: '{ x = 42, y = 43 }',
+        knownProblem: {
+          darwin:
+            'LLDB does not reliably enumerate NatVis Synthetic children; ' +
+            'the [end point] node is missing from the expanded QLine on macOS.',
+          linux:
+            'GDB does not reliably enumerate NatVis Synthetic children; ' +
+            'the [end point] node is missing from the expanded QLine on Linux.'
+        },
+        children: [
+          { name: '[x]', value: '42' },
+          { name: '[y]', value: '43' }
+        ]
+      }
+    ]
   },
   {
     name: 'coreTypes.qPoint',
     type: 'QPoint',
     value: '{ x = 24, y = 48 }',
-    knownProblem: {
-      linux:
-        'On Linux/GDB with Qt 6.10, QPoint NatVis does not evaluate the integer members reliably; ' +
-        'the debugger collapses x/y to "{...}" instead of printing numeric values.',
-      darwin:
-        'On macOS/LLDB with Qt 6.10, QPoint NatVis does not evaluate the integer members reliably; ' +
-        'the debugger collapses the fields to "{...}" instead of printing numeric x/y.',
-      win32:
-        'Qt 6.10 on Windows wraps QPoint integer members (xp/yp), so the NatVis DisplayString ' +
-        'renders as "{ x = {m_i=...}, y = {m_i=...} }" instead of plain integers. NatVis rule needs ' +
-        'an update for Qt 6.10.1 win32.'
-    }
+    children: [
+      { name: '[x]', value: '24' },
+      { name: '[y]', value: '48' }
+    ]
   },
   {
     name: 'coreTypes.qPointF',
@@ -348,22 +358,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qRect',
     type: 'QRect',
     value: '{ x = 5, y = 6, width = 41, height = 42 }',
-    knownProblem: {
-      linux:
-        'On Linux/GDB with Qt 6.10, QRect NatVis arithmetic fails: expressions like ' +
-        '"x2 - x1 + 1" and "y2 - y1 + 1" trigger GDB internal errors ' +
-        '(incompatible overload candidates proposed), so the formatted rectangle ' +
-        'cannot be produced.',
-      darwin:
-        'On macOS/LLDB with Qt 6.10, QRect NatVis DisplayString arithmetic fails because the members ' +
-        'participate in checked-integer wrappers; evaluating "x2 - x1 + 1" triggers an LLDB error ' +
-        '(invalid operands to binary expression involving QtPrivate::QCheckedIntegers::QCheckedInt<int>), ' +
-        'so the formatted "{ x=..., y=..., width=..., height=... }" string cannot be produced.',
-      win32:
-        'Qt 6.10 on Windows wraps QRect integer members (x1/y1/x2/y2), so the NatVis rule does not ' +
-        'format the rectangle as "{ x = ..., y = ..., width = ..., height = ... }" and instead exposes ' +
-        'wrapped internals like "{m_i=...}". NatVis rule needs a Qt 6.10.1 win32-compatible accessor.'
-    }
+    children: [
+      { name: '[x]', value: '5' },
+      { name: '[y]', value: '6' },
+      { name: '[width]', value: '41' },
+      { name: '[height]', value: '42' }
+    ]
   },
   {
     name: 'coreTypes.qRectF',
@@ -380,18 +380,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qSize',
     type: 'QSize',
     value: '{ width = 42, height = 43 }',
-    knownProblem: {
-      linux:
-        'On Linux/GDB with Qt 6.10, QSize NatVis does not evaluate the integer members reliably; ' +
-        'the debugger collapses width/height to "{...}" instead of numeric values.',
-      darwin:
-        'On macOS/LLDB with Qt 6.10, QSize NatVis does not evaluate the integer members reliably; ' +
-        'the debugger collapses width/height to "{...}" instead of printing numeric values.',
-      win32:
-        'Qt 6.10.1 on Windows wraps QSize integer members (wd/ht), so the NatVis DisplayString shows ' +
-        '"{ width = {m_i=...}, height = {m_i=...} }" instead of plain integers. NatVis rule needs ' +
-        'a Qt 6.10.1 win32-compatible accessor.'
-    }
+    children: [
+      { name: '[width]', value: '42' },
+      { name: '[height]', value: '43' }
+    ]
   },
   {
     name: 'coreTypes.qSizeF',
