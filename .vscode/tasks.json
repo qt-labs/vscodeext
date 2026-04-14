@@ -34,7 +34,11 @@
         "isDefault": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/qt-cpp"
+        "cwd": "${workspaceFolder}/qt-cpp",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/c"]
+        }
       }
     },
     {
