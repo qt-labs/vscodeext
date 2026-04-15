@@ -10,6 +10,7 @@ export {
   InstallState,
   UserPromptType,
   JobStatus,
+  ProgressType,
   SessionState,
   IPC
 } from './types';

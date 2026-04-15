@@ -175,7 +175,15 @@ export enum JobStatus {
   Canceled = 'Canceled'
 }
 
+export enum ProgressType {
+  Download = 'download',
+  Install = 'install',
+  Remove = 'remove',
+  Query = 'query'
+}
+
 export interface ProgressInfo {
+  readonly type: ProgressType;
   readonly progress: number; // 0.0 – 1.0
   readonly message?: string;
 }
