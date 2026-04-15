@@ -8,7 +8,10 @@ import {
   ServiceLauncher,
   Packages,
   type PackageData,
+  type UserPrompt,
+  type UserPromptReply,
   InstallState,
+  UserPromptType,
   ProgressType
 } from 'sms-api';
 
@@ -45,6 +48,71 @@ function installStateLabel(state: InstallState): string {
       return '$(arrow-up) Update available';
     case InstallState.Uninstalled:
       return '$(circle-outline) Not installed';
+  }
+}
+
+async function handleUserPrompt(prompt: UserPrompt): Promise<UserPromptReply> {
+  switch (prompt.type) {
+    case UserPromptType.Choice: {
+      const items = prompt.choices.map((choice) => ({
+        label: choice,
+        picked: choice === prompt.defaultAnswer
+      }));
+      const picked = await vscode.window.showQuickPick(items, {
+        title: prompt.title,
+        placeHolder: prompt.message || prompt.placeholderText
+      });
+      if (!picked) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'choice', choice: picked.label };
+    }
+    case UserPromptType.Text: {
+      const value = await vscode.window.showInputBox({
+        title: prompt.title,
+        prompt: prompt.message,
+        value: prompt.defaultAnswer,
+        placeHolder: prompt.placeholderText
+      });
+      if (value === undefined) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'text', text: value };
+    }
+    case UserPromptType.DirectoryPath: {
+      const dirOpts: vscode.OpenDialogOptions = {
+        title: prompt.title || prompt.message,
+        canSelectFiles: false,
+        canSelectFolders: true,
+        canSelectMany: false
+      };
+      if (prompt.defaultAnswer) {
+        dirOpts.defaultUri = vscode.Uri.file(prompt.defaultAnswer);
+      }
+      const dirUris = await vscode.window.showOpenDialog(dirOpts);
+      const dirUri = dirUris?.[0];
+      if (!dirUri) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'text', text: dirUri.fsPath };
+    }
+    case UserPromptType.FilePath: {
+      const fileOpts: vscode.OpenDialogOptions = {
+        title: prompt.title || prompt.message,
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false
+      };
+      if (prompt.defaultAnswer) {
+        fileOpts.defaultUri = vscode.Uri.file(prompt.defaultAnswer);
+      }
+      const fileUris = await vscode.window.showOpenDialog(fileOpts);
+      const fileUri = fileUris?.[0];
+      if (!fileUri) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'text', text: fileUri.fsPath };
+    }
   }
 }
 
@@ -250,7 +318,7 @@ async function installPackageById(
                 ? 'Downloading'
                 : info.type === ProgressType.Install
                   ? 'Installing'
-                  : info.message ?? '';
+                  : (info.message ?? '');
             logger.info(
               `Install progress (${info.type}): ${String(pct)}% - ${phase}`
             );
@@ -271,7 +339,8 @@ async function installPackageById(
           },
           onMessage: (info) => {
             logger.info(`Install: ${info.message}`);
-          }
+          },
+          onPrompt: handleUserPrompt
         });
         void vscode.window.showInformationMessage(
           `Successfully installed ${pkg.name || pkg.id}`
