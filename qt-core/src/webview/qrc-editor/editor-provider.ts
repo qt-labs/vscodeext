@@ -17,7 +17,8 @@ import { EXTENSION_ID } from '@/constants';
 import {
   createWebviewHtml,
   createWebviewOptions,
-  basicWebviewAppConfig
+  basicWebviewAppConfig,
+  createWebviewPanelIcons
 } from '@/webview/utils';
 import { QrcDocsManager } from './docs-manager';
 import { QrcEditorController } from './controller';
@@ -97,16 +98,16 @@ class QrcEditorProvider implements CustomTextEditorProvider {
       ...basicWebviewAppConfig
     };
 
-    const view = panel.webview;
-    view.html = createWebviewHtml(view, config);
-    view.options = createWebviewOptions(config);
+    panel.iconPath = createWebviewPanelIcons(this._context);
+    panel.webview.html = createWebviewHtml(panel.webview, config);
+    panel.webview.options = createWebviewOptions(config);
 
     // doc
     this._docsManager.add(doc);
 
     // controller
     const controller = new QrcEditorController(
-      view,
+      panel.webview,
       this._docsManager,
       doc.uri.fsPath
     );

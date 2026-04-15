@@ -11,7 +11,8 @@ import * as texts from '@/texts';
 import {
   createWebviewHtml,
   createWebviewOptions,
-  basicWebviewAppConfig
+  basicWebviewAppConfig,
+  createWebviewPanelIcons
 } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
@@ -51,6 +52,7 @@ export class NewItemPanel {
       ...basicWebviewAppConfig
     };
 
+    panel.iconPath = createWebviewPanelIcons(context);
     panel.webview.html = createWebviewHtml(panel.webview, config);
     panel.webview.options = createWebviewOptions(config);
 
