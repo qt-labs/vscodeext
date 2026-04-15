@@ -171,7 +171,13 @@ export async function searchPackages(): Promise<void> {
         title: 'Searching available packages...',
         cancellable: false
       },
-      async () => packages.searchAvailablePackages()
+      async () =>
+        packages.searchAvailablePackages(undefined, undefined, {
+          onMessage: (info) => {
+            logger.info(`searchAvailablePackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
     );
 
     if (results.length === 0) {
@@ -232,7 +238,13 @@ export async function listInstalledPackages(): Promise<void> {
         title: 'Listing installed packages...',
         cancellable: false
       },
-      async () => packages.listInstalledPackages()
+      async () =>
+        packages.listInstalledPackages(undefined, undefined, {
+          onMessage: (info) => {
+            logger.info(`listInstalledPackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
     );
 
     if (results.length === 0) {
@@ -262,7 +274,13 @@ export async function installPackage(): Promise<void> {
         title: 'Fetching available packages...',
         cancellable: false
       },
-      async () => packages.searchAvailablePackages()
+      async () =>
+        packages.searchAvailablePackages(undefined, undefined, {
+          onMessage: (info) => {
+            logger.info(`searchAvailablePackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
     );
 
     const uninstalled = results.filter(
@@ -338,7 +356,7 @@ async function installPackageById(
             });
           },
           onMessage: (info) => {
-            logger.info(`Install: ${info.message}`);
+            logger.info(`InstallPackageById: ${info.message}`);
           },
           onPrompt: handleUserPrompt
         });
