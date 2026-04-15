@@ -1,0 +1,54 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-tutorials-build-run-qt-example.html
+    \previouspage vscodeext-tutorials.html
+    \nextpage vscodeext-how-tos.html
+
+    \ingroup vscodeext-tutorials
+
+    \title Tutorial: Build and run Qt examples
+
+    This tutorial illustrates how you can open Qt examples in VS Code.
+    To test that your \l{Get and Install Qt with \QOI}{\QOI} installation is
+    successful, open an existing example application project, and then build and
+    run it.
+
+    \section1 Before you start
+
+    Before you start, you have to:
+
+    \list
+        \li \l {Installation}{Install \QVSC}
+        \li \l {Register Qt installations}
+    \endlist
+
+    \section1 Open a Qt example
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and then select
+            \uicontrol {Qt: Open Qt examples}.
+            \image {vscodeext-qt-examples.webp} {List of Qt examples}
+            If you cannot see any examples, check that the list of
+            \uicontrol {Qt versions} is not empty.
+        \li Select an example in the list of examples.
+
+            You can also use tags to filter examples.
+        \li Select \uicontrol {New project} to create a new project based on the
+            example project.
+            \image {vscodeext-qt-examples-new-project.webp} {Creating a new project based on a Qt example}
+        \li In \uicontrol {Name}, enter a name for the project.
+        \li Select \uicontrol {Open in new window}.
+            \image {vscodeext-qt-examples-open-in-new-window.webp} {Opening the example project in a new window}
+        \li Select a kit for for building and running the project.
+        \li Select
+            \inlineimage {run_project.png} {Launch the selected target in the terminal window}
+            on the status bar.
+        \li Select the executable as the launch target to build and run the
+            project.
+    \endlist
+
+    \sa {Installation}, {Register Qt installations}, {Tutorials},
+    {Create Qt projects}
+*/
