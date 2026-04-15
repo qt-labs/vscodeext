@@ -8,7 +8,8 @@ import {
   ServiceLauncher,
   Packages,
   type PackageData,
-  InstallState
+  InstallState,
+  ProgressType
 } from 'sms-api';
 
 import { createLogger } from 'qt-lib';
@@ -244,13 +245,19 @@ async function installPackageById(
         await packages.install([pkgRef], undefined, {
           onProgress: (info) => {
             const pct = Math.round(info.progress);
+            const phase =
+              info.type === ProgressType.Download
+                ? 'Downloading'
+                : info.type === ProgressType.Install
+                  ? 'Installing'
+                  : info.message ?? '';
             logger.info(
-              `Install progress: ${String(pct)}% - ${String(info.message)}`
+              `Install progress (${info.type}): ${String(pct)}% - ${phase}`
             );
             // Reset baseline when a new phase starts (progress goes backwards)
             if (pct < lastPct) {
               progress.report({
-                message: `${info.message ? `${info.message} ` : ''}${String(pct)}%`,
+                message: `${phase ? `${phase} ` : ''}${String(pct)}%`,
                 increment: -100
               });
               lastPct = 0;
@@ -258,7 +265,7 @@ async function installPackageById(
             const increment = pct - lastPct;
             lastPct = pct;
             progress.report({
-              message: `${info.message ? `${info.message} ` : ''}${String(pct)}%`,
+              message: `${phase ? `${phase} ` : ''}${String(pct)}%`,
               increment
             });
           },
