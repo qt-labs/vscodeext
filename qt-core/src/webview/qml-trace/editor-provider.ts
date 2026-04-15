@@ -16,7 +16,8 @@ import { EXTENSION_ID } from '@/constants';
 import {
   createWebviewHtml,
   createWebviewOptions,
-  basicWebviewAppConfig
+  basicWebviewAppConfig,
+  createWebviewPanelIcons
 } from '@/webview/utils';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { QmlTraceDoc } from './doc';
@@ -66,9 +67,9 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
       ...basicWebviewAppConfig
     };
 
-    const view = panel.webview;
-    view.html = createWebviewHtml(view, config);
-    view.options = createWebviewOptions(config);
+    panel.iconPath = createWebviewPanelIcons(this._context);
+    panel.webview.html = createWebviewHtml(panel.webview, config);
+    panel.webview.options = createWebviewOptions(config);
 
     // controller
     const socketId = generateSocketId('qml-trace');
@@ -77,7 +78,7 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
 
     const controller = new QmlTraceController(
       doc,
-      view,
+      panel.webview,
       qtcliServer.socketName,
       this._context
     );

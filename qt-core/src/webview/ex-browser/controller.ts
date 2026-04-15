@@ -11,7 +11,8 @@ import {
   WebviewAppConfig,
   createWebviewHtml,
   createWebviewOptions,
-  basicWebviewAppConfig
+  basicWebviewAppConfig,
+  createWebviewPanelIcons
 } from '@/webview/utils';
 import * as texts from '@/texts';
 import { ExDataManager } from './data-manager';
@@ -61,6 +62,7 @@ export class ExBrowserController {
       ]
     };
 
+    panel.iconPath = createWebviewPanelIcons(context);
     panel.webview.html = createWebviewHtml(panel.webview, config);
     panel.webview.options = createWebviewOptions(config);
 
