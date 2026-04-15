@@ -16,8 +16,10 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import { Packages, Session } from '../../src/client';
 import {
   ErrorCode,
+  ProgressType,
   type JobCallbacks,
   type PackageReference,
+  type ProgressInfo,
   type UserPrompt,
   UserPromptType
 } from '../../src/types';
@@ -120,12 +122,12 @@ describe('Packages', () => {
 
   describe('command methods — progress', () => {
     for (const cmd of COMMANDS) {
-      it(`${cmd.name}: calls onProgress callback from service/progress notification`, async () => {
-        const progressD = deferred<number>();
+      it(`${cmd.name}: calls onProgress callback with typed progress from service/progress notification`, async () => {
+        const progressD = deferred<ProgressInfo>();
 
         const msgPromise = server.nextMessage();
         const resultPromise = cmd.invoke(packages, {
-          onProgress: ({ progress }) => progressD.resolve(progress)
+          onProgress: (info) => progressD.resolve(info)
         });
 
         const { payload, conn } = await msgPromise;
@@ -134,11 +136,12 @@ describe('Packages', () => {
         server.sendJsonRpc(conn, {
           jsonrpc: '2.0',
           method: 'service/progress',
-          params: { id: reqId, progress: 0.5, details: 'Downloading' }
+          params: { id: reqId, progress: 0.5, type: 'download', details: 'Downloading' }
         });
 
-        const progress = await progressD.promise;
-        assert.equal(progress, 0.5);
+        const info = await progressD.promise;
+        assert.equal(info.progress, 0.5);
+        assert.equal(info.type, ProgressType.Download);
 
         // Complete the operation
         server.sendJsonRpc(conn, {
@@ -413,8 +416,8 @@ describe('Packages', () => {
   // ── progress with message field ────────────────────────────────────────────
 
   describe('command methods — progress with message', () => {
-    it('install: progress notification includes message field', async () => {
-      const progressD = deferred<{ progress: number; message?: string }>();
+    it('install: progress notification includes message field and type', async () => {
+      const progressD = deferred<ProgressInfo>();
 
       const msgPromise = server.nextMessage();
       const resultPromise = packages.install(
@@ -431,12 +434,124 @@ describe('Packages', () => {
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
         method: 'service/progress',
-        params: { id: reqId, progress: 0.5, message: 'Extracting archives' }
+        params: { id: reqId, progress: 0.5, type: 'install', message: 'Extracting archives' }
       });
 
       const info = await progressD.promise;
       assert.equal(info.progress, 0.5);
       assert.equal(info.message, 'Extracting archives');
+      assert.equal(info.type, ProgressType.Install);
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        result: { message: 'Done' }
+      });
+      await resultPromise;
+    });
+  });
+
+  // ── progress type parsing ─────────────────────────────────────────────────
+
+  describe('command methods — progress type parsing', () => {
+    const progressTypeTests: { typeStr: string; expected: ProgressType }[] = [
+      { typeStr: 'download', expected: ProgressType.Download },
+      { typeStr: 'install', expected: ProgressType.Install },
+      { typeStr: 'remove', expected: ProgressType.Remove },
+      { typeStr: 'query', expected: ProgressType.Query }
+    ];
+
+    for (const { typeStr, expected } of progressTypeTests) {
+      it(`parses progress type "${typeStr}" as ProgressType.${typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}`, async () => {
+        const progressD = deferred<ProgressInfo>();
+
+        const msgPromise = server.nextMessage();
+        const resultPromise = packages.install(
+          [{ id: 'qt6-base', version: '6.10' }],
+          undefined,
+          {
+            onProgress: (info) => progressD.resolve(info)
+          }
+        );
+
+        const { payload, conn } = await msgPromise;
+        const reqId = payload.id as string;
+
+        server.sendJsonRpc(conn, {
+          jsonrpc: '2.0',
+          method: 'service/progress',
+          params: { id: reqId, progress: 0.25, type: typeStr }
+        });
+
+        const info = await progressD.promise;
+        assert.equal(info.type, expected);
+        assert.equal(info.progress, 0.25);
+
+        server.sendJsonRpc(conn, {
+          jsonrpc: '2.0',
+          id: reqId,
+          result: { message: 'Done' }
+        });
+        await resultPromise;
+      });
+    }
+
+    it('defaults to ProgressType.Download when type field is missing', async () => {
+      const progressD = deferred<ProgressInfo>();
+
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.install(
+        [{ id: 'qt6-base', version: '6.10' }],
+        undefined,
+        {
+          onProgress: (info) => progressD.resolve(info)
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      const reqId = payload.id as string;
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        method: 'service/progress',
+        params: { id: reqId, progress: 0.75 }
+      });
+
+      const info = await progressD.promise;
+      assert.equal(info.type, ProgressType.Download);
+      assert.equal(info.progress, 0.75);
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        result: { message: 'Done' }
+      });
+      await resultPromise;
+    });
+
+    it('defaults to ProgressType.Download for unrecognized type string', async () => {
+      const progressD = deferred<ProgressInfo>();
+
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.install(
+        [{ id: 'qt6-base', version: '6.10' }],
+        undefined,
+        {
+          onProgress: (info) => progressD.resolve(info)
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      const reqId = payload.id as string;
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        method: 'service/progress',
+        params: { id: reqId, progress: 0.3, type: 'unknown_type' }
+      });
+
+      const info = await progressD.promise;
+      assert.equal(info.type, ProgressType.Download);
 
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
