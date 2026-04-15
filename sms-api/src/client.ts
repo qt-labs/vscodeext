@@ -30,6 +30,7 @@ import {
   ErrorCategory,
   ErrorCode,
   InstallState,
+  ProgressType,
   IPC
 } from './types';
 
@@ -55,12 +56,26 @@ function filtersToJson(filters?: PackageFilters): unknown[] {
   return arr;
 }
 
+function parseProgressType(raw: unknown): ProgressType {
+  if (typeof raw !== 'string') {
+    return ProgressType.Download;
+  }
+  const map: Record<string, ProgressType> = {
+    download: ProgressType.Download,
+    install: ProgressType.Install,
+    remove: ProgressType.Remove,
+    query: ProgressType.Query
+  };
+  return map[raw.toLowerCase()] ?? ProgressType.Download;
+}
+
 function buildProgressInfo(
   progressParams: Record<string, unknown>
 ): ProgressInfo {
   const progress = (progressParams.progress as number | undefined) ?? 0;
   const message = progressParams.message as string | undefined;
-  const info: ProgressInfo = { progress };
+  const type = parseProgressType(progressParams.type);
+  const info: ProgressInfo = { type, progress };
   if (message !== undefined) {
     (info as { message: string }).message = message;
   }
