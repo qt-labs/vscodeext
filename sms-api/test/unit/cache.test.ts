@@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
 import { Cache, Session } from '../../src/client';
+import { ProgressType } from '../../src/types';
 import { MockServer, deferred } from './mockserver';
 
 describe('Cache', () => {
@@ -80,11 +81,11 @@ describe('Cache', () => {
     });
 
     it('calls onProgress callback from service/progress notification', async () => {
-      const progressD = deferred<number>();
+      const progressD = deferred<{ progress: number; type: string }>();
 
       const msgPromise = server.nextMessage();
       const resultPromise = cache.updateCache({
-        onProgress: ({ progress }) => progressD.resolve(progress)
+        onProgress: (info) => progressD.resolve({ progress: info.progress, type: info.type })
       });
 
       const { payload, conn } = await msgPromise;
@@ -93,11 +94,12 @@ describe('Cache', () => {
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
         method: 'service/progress',
-        params: { id: reqId, progress: 0.75, message: 'Fetching metadata' }
+        params: { id: reqId, progress: 0.75, type: 'query', message: 'Fetching metadata' }
       });
 
-      const progress = await progressD.promise;
-      assert.equal(progress, 0.75);
+      const result = await progressD.promise;
+      assert.equal(result.progress, 0.75);
+      assert.equal(result.type, ProgressType.Query);
 
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
