@@ -16,7 +16,6 @@ import {
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
   cmakeConfigForWorkspace,
-  getPlatformCMakeGenerator,
   prepareStandardCMakeArgs,
   readCMakeCacheVar,
   selectAndApplyKit
@@ -38,8 +37,6 @@ describe('build: minimal Qt project (index-build)', function () {
     const projectDir = wsFolder.uri.fsPath;
     console.log('Using projectDir:', projectDir);
     const buildDir = await cleanBuildDir(projectDir);
-
-    await cmakeConfigurator.set('generator', getPlatformCMakeGenerator());
 
     await selectAndApplyKit();
 
