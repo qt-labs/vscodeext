@@ -19,6 +19,10 @@ import {
 
 const QT_INS_ROOT_CONFIG_NAME = 'qtInstallationRoot';
 
+export function getPlatformCMakeGenerator(): string {
+  return process.platform === 'win32' ? 'Ninja' : 'Unix Makefiles';
+}
+
 /**
  * Parse a CLI argument by name (e.g., --qt-root or --qt-root=/path)
  */

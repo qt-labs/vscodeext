@@ -293,10 +293,6 @@ export function cmakeConfigForWorkspace(ws: vscode.WorkspaceFolder) {
   return new CMakeConfigurator(ws);
 }
 
-export function getPlatformCMakeGenerator(): string {
-  return process.platform === 'win32' ? 'Ninja' : 'Unix Makefiles';
-}
-
 /**
  * Reads a specific variable value from a CMake build directory's `CMakeCache.txt` file.
  *

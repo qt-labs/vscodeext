@@ -10,7 +10,8 @@ import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron';
 import {
   setupTestInfrastructure,
   setupVSCodeSettings,
-  installRequiredExtensions
+  installRequiredExtensions,
+  getPlatformCMakeGenerator
 } from './runTestHelper.mjs';
 
 async function main() {
@@ -46,6 +47,18 @@ async function main() {
     // Node 16+: recursive copy
     await fsp.cp(projectDir, tmpProject, { recursive: true });
     console.log('[runTest] Copied project to temp dir:', tmpProject);
+
+    // Set the generator in workspace settings before VS Code starts so that
+    // a runtime cmake.generator change doesn't trigger a driver reload
+    // before a kit is selected (which causes "No usable generator found").
+    const wsSettingsPath = path.join(tmpProject, '.vscode', 'settings.json');
+    const wsSettings = JSON.parse(await fsp.readFile(wsSettingsPath, 'utf-8'));
+    wsSettings['cmake.generator'] = getPlatformCMakeGenerator();
+    await fsp.writeFile(
+      wsSettingsPath,
+      JSON.stringify(wsSettings, null, 2),
+      'utf-8'
+    );
 
     // Run the integration tests (no need to pass launchArgs; we reused the same dirs)
     try {
