@@ -15,7 +15,6 @@ export {
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
   cmakeConfigForWorkspace,
-  getPlatformCMakeGenerator,
   readCMakeCacheVar,
   prepareStandardCMakeArgs,
   selectAndApplyKit,
