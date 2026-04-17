@@ -10,6 +10,7 @@ export const LOG_NAME = 'qt-python';
 export const COMMAND_PREFIX = 'qt-python';
 export const COMMAND_SHOW_LOG = 'showLogOutputChannel';
 export const COMMAND_INSTALL_PYSIDE = 'installPySide6'; // contributes > commands
+export const COMMAND_CREATE_UV_ENV = 'createUvEnv'; // contributes > commands
 export const COMMAND_PYTHON_CREATE_ENV = 'python.createEnvironment';
 export const COMMAND_PYTHON_SELECT_PYTHON = 'python.setInterpreter';
 export const COMMAND_RESTART_QMLLS = 'qt-qml.restartQmlls';
@@ -31,5 +32,8 @@ export const TOML_KEY_PROJECT_FILES = 'tool.pyside6-project.files';
 export const PYSIDE_PROJECT_TOOL = 'pyside6-project';
 export const MAINT_WHEEL_DIR_NAME = 'QtForPython';
 
+export const UV_DEFAULT_VENV_DIR = '.venv';
+
 // contributes > configruation
+export const CONFIG_PREFER_UV = 'preferUv';
 export const CONFIG_DO_NOT_WARN_OLD_PROJECTS = 'doNotWarnAboutOldStyleProjects';

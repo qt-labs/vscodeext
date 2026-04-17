@@ -19,7 +19,7 @@ import { PySideTaskProvider } from './task.mjs';
 import { PySideDebugConfigProvider } from './debug.mjs';
 import { PySideProjectManager } from './project-manager.mjs';
 import * as consts from '@/constants.js';
-import { onInstallPySide6Command } from './installer.mjs';
+import { onInstallPySide6Command, onCreateUvEnvCommand } from './installer.mjs';
 import { PySideAPIImpl } from './api.mjs';
 
 const logger = createLogger('extension');
@@ -100,7 +100,8 @@ function initCommands(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     register(consts.COMMAND_SHOW_LOG, onShowLog, false),
-    register(consts.COMMAND_INSTALL_PYSIDE, onInstallPySide6Command)
+    register(consts.COMMAND_INSTALL_PYSIDE, onInstallPySide6Command),
+    register(consts.COMMAND_CREATE_UV_ENV, onCreateUvEnvCommand)
   );
 }
 
