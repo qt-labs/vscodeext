@@ -3,6 +3,7 @@
 
 import _ from 'lodash';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import type { JPathOrMatcher } from 'fast-xml-parser';
 
 import {
   type RccTag,
@@ -26,7 +27,7 @@ const xmlOptions = {
   // tag
   isArray: (
     tagName: string,
-    _jPath: string,
+    _jPath: JPathOrMatcher,
     _isLeafNode: boolean,
     _isAttribute: boolean
   ): boolean => {

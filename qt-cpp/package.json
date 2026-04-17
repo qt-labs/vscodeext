@@ -336,6 +336,9 @@
     "vscode-cmake-tools": "^1.5.0"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.3"
+    "mocha": {
+      "diff": "^8.0.3",
+      "serialize-javascript": "^7.0.5"
+    }
   }
 }
