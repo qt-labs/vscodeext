@@ -18,8 +18,21 @@ export const install = {
       `Cannot find a virtual environment for '${folder}'. ` +
       'Create or select a virtual environment first',
     buttonCreateEnv: 'Create environment',
+    buttonCreateUvEnv: 'Create with uv',
     buttonSelectEnv: 'Select interpreter',
-    linkShowLog: 'Show logs'
+    linkShowLog: 'Show logs',
+    creatingUvVenv: 'Creating virtual environment with uv...',
+    uvVenvCreated: (folder: string, venv: string) =>
+      `Virtual environment '${venv}' created for '${folder}' using uv`,
+    uvVenvFailed: (folder: string) =>
+      `Cannot create virtual environment for '${folder}' using uv`,
+    uvNotFound:
+      'uv is not installed or not on PATH. ' +
+      'Install it from https://docs.astral.sh/uv/ or use the standard environment creator instead',
+    uvVenvExists: (folder: string, venv: string) =>
+      `Virtual environment '${venv}' already exists in '${folder}'. Overwrite it?`,
+    buttonOverwrite: 'Overwrite',
+    buttonCancel: 'Cancel'
   },
   placeHolder: {
     selectFolder: 'Select a folder',
