@@ -4,6 +4,23 @@ This file contains the licenses for third-party software used in this product.
 
 ---------------------------------------------------------
 
+text-codec 0.2.2 - MIT
+https://github.com/Borewit/text-codec#readme
+
+The MIT License (MIT)
+
+Copyright © 2025 Borewit
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 colors 1.6.0 - MIT
 https://github.com/DABH/colors.js#readme
 
@@ -66,7 +83,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-core 1.6.0 - MIT
+core 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -95,7 +112,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-diff 1.6.0 - MIT
+diff 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -124,7 +141,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-file-ops 1.6.0 - MIT
+file-ops 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -153,7 +170,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-js-bmp 1.6.0 - MIT
+js-bmp 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -182,7 +199,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-js-gif 1.6.0 - MIT
+js-gif 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -211,7 +228,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-js-jpeg 1.6.0 - MIT
+js-jpeg 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -240,7 +257,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-js-png 1.6.0 - MIT
+js-png 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -269,7 +286,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-js-tiff 1.6.0 - MIT
+js-tiff 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -298,7 +315,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-blit 1.6.0 - MIT
+plugin-blit 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -327,7 +344,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-blur 1.6.0 - MIT
+plugin-blur 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -356,7 +373,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-circle 1.6.0 - MIT
+plugin-circle 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -385,7 +402,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-color 1.6.0 - MIT
+plugin-color 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -414,7 +431,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-contain 1.6.0 - MIT
+plugin-contain 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -443,7 +460,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-cover 1.6.0 - MIT
+plugin-cover 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -472,7 +489,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-crop 1.6.0 - MIT
+plugin-crop 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -501,7 +518,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-displace 1.6.0 - MIT
+plugin-displace 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -530,7 +547,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-dither 1.6.0 - MIT
+plugin-dither 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -559,7 +576,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-fisheye 1.6.0 - MIT
+plugin-fisheye 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -588,7 +605,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-flip 1.6.0 - MIT
+plugin-flip 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -617,7 +634,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-hash 1.6.0 - MIT
+plugin-hash 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -646,7 +663,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-mask 1.6.0 - MIT
+plugin-mask 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -675,7 +692,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-print 1.6.0 - MIT
+plugin-print 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -704,7 +721,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-quantize 1.6.0 - MIT
+plugin-quantize 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -733,7 +750,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-resize 1.6.0 - MIT
+plugin-resize 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -762,7 +779,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-rotate 1.6.0 - MIT
+plugin-rotate 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -791,7 +808,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-plugin-threshold 1.6.0 - MIT
+plugin-threshold 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -820,7 +837,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-types 1.6.0 - MIT
+types 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -849,7 +866,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-utils 1.6.0 - MIT
+utils 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -1166,6 +1183,57 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
+entities 1.1.0 - MIT
+https://github.com/nodable/val-parsers#readme
+
+MIT License
+
+Copyright (c) 2026 Nodable
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+inflate 0.4.1 - MIT
+https://github.com/Borewit/tokenizer-inflate#readme
+
+Copyright (c) 2024, Borewit
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 token 0.3.0 - MIT
 https://github.com/Borewit/tokenizer-token#readme
 
@@ -1408,7 +1476,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-axios 1.13.5 - MIT
+axios 1.15.0 - MIT
 https://github.com/axios/axios#readme
 
 # Copyright (c) 2014-present Matt Zabriskie & Collaborators
@@ -1735,6 +1803,34 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+debug 4.4.3 - MIT
+https://github.com/debug-js/debug#readme
+
+(The MIT License)
+
+Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2018-2021 Josh Junon
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the 'Software'), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ---------------------------------------------------------
@@ -2081,7 +2177,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-fast-xml-builder 1.0.0 - MIT
+fast-xml-builder 1.1.5 - MIT
 https://github.com/NaturalIntelligence/fast-xml-builder#readme
 
 MIT License
@@ -2110,7 +2206,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-fast-xml-parser 5.4.2 - MIT
+fast-xml-parser 5.6.0 - MIT
 https://github.com/NaturalIntelligence/fast-xml-parser#readme
 
 MIT License
@@ -2169,7 +2265,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-file-type 16.5.4 - MIT
+file-type 21.3.4 - MIT
 https://github.com/sindresorhus/file-type#readme
 
 MIT License
@@ -2216,7 +2312,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-follow-redirects 1.15.11 - MIT
+follow-redirects 1.16.0 - MIT
 https://github.com/follow-redirects/follow-redirects#readme
 
 Copyright 2014–present Olivier Lalonde <olalonde@gmail.com>, James Talmage <james@talmage.io>, Ruben Verborgh
@@ -2669,7 +2765,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-jimp 1.6.0 - MIT
+jimp 1.6.1 - MIT
 https://github.com/jimp-dev/jimp#readme
 
 MIT License
@@ -2746,7 +2842,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-lodash-es 4.17.23 - MIT
+lodash-es 4.18.1 - MIT
 https://github.com/lodash/lodash#readme
 
 Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
@@ -2801,7 +2897,7 @@ terms above.
 
 ---------------------------------------------------------
 
-lodash 4.17.23 - MIT
+lodash 4.18.1 - MIT
 https://github.com/lodash/lodash#readme
 
 Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
@@ -3234,12 +3330,12 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-peek-readable 4.1.0 - MIT
-https://github.com/Borewit/peek-readable#readme
+path-expression-matcher 1.5.0 - MIT
+https://github.com/NaturalIntelligence/path-expression-matcher#readme
 
-The MIT License
+MIT License
 
-Copyright (c) 2010-2017 Borewit
+Copyright (c) 2024
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3248,16 +3344,16 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---------------------------------------------------------
 
@@ -3372,7 +3468,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-proxy-from-env 1.1.0 - MIT
+proxy-from-env 2.1.0 - MIT
 https://github.com/Rob--W/proxy-from-env#readme
 
 The MIT License
@@ -3505,87 +3601,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 """
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-readable-stream 4.7.0 - MIT
-https://github.com/nodejs/readable-stream#readme
-
-Node.js is licensed for use as follows:
-
-"""
-Copyright Node.js contributors. All rights reserved.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
-"""
-
-This license applies to parts of Node.js originating from the
-https://github.com/joyent/node repository:
-
-"""
-Copyright Joyent, Inc. and other Node contributors. All rights reserved.
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-IN THE SOFTWARE.
-"""
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-readable-web-to-node-stream 3.0.4 - MIT
-https://github.com/Borewit/readable-web-to-node-stream#readme
-
-This software is released under the MIT license:
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
@@ -3756,7 +3771,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-simple-xml-to-json 1.2.3 - MIT
+simple-xml-to-json 1.2.7 - MIT
 https://github.com/nirgit/simple-xml-to-json#readme
 
 MIT License
@@ -3868,7 +3883,7 @@ IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-strnum 2.1.2 - MIT
+strnum 2.2.3 - MIT
 https://github.com/NaturalIntelligence/strnum#readme
 
 MIT License
@@ -3897,53 +3912,31 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-strnum 2.2.0 - MIT
-https://github.com/NaturalIntelligence/strnum#readme
-
-MIT License
-
-Copyright (c) 2021 Natural Intelligence
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-strtok3 6.3.0 - MIT
+strtok3 10.3.5 - MIT
 https://github.com/Borewit/strtok3#readme
 
-Copyright (c) 2017, Borewit
-All rights reserved.
+MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
-rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
-persons to whom the Software is furnished to do so, subject to the following conditions:
+Copyright © 2026 Borewit
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-Software.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ---------------------------------------------------------
 
 ---------------------------------------------------------
@@ -4004,16 +3997,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-token-types 4.2.1 - MIT
+token-types 6.1.2 - MIT
 https://github.com/Borewit/token-types#readme
 
-Copyright 2017 Borewit
+The MIT License (MIT)
+
+Copyright © 2026 Borewit
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 ---------------------------------------------------------
 
 ---------------------------------------------------------
@@ -4124,6 +4120,23 @@ If the Work includes a "NOTICE" text file as part of its distribution, then any 
 9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
 END OF TERMS AND CONDITIONS
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+uint8array-extras 1.5.0 - MIT
+https://github.com/sindresorhus/uint8array-extras#readme
+
+MIT License
+
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 

@@ -1500,7 +1500,7 @@ THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-devalue 5.6.3 - MIT
+devalue 5.7.1 - MIT
 https://github.com/sveltejs/devalue#readme
 
 Copyright (c) 2018-19 [these people](https://github.com/rich-harris/devalue/graphs/contributors)
@@ -1515,7 +1515,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-dompurify 3.3.3 - (MPL-2.0 OR Apache-2.0)
+dompurify 3.4.0 - (MPL-2.0 OR Apache-2.0)
 https://github.com/cure53/DOMPurify#readme
 
 DOMPurify

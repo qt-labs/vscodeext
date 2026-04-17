@@ -3,6 +3,7 @@
 
 import _ from 'lodash';
 import { XMLParser } from 'fast-xml-parser';
+import type { JPathOrMatcher } from 'fast-xml-parser';
 
 import { fsFile } from '@/fs-utils';
 import { ExEntry } from '@/webview/shared/ex-browser';
@@ -24,7 +25,7 @@ const xmlOptions = {
   // tag
   isArray: (
     tagName: string,
-    _jPath: string,
+    _jPath: JPathOrMatcher,
     _isLeafNode: boolean,
     _isAttribute: boolean
   ): boolean => {
