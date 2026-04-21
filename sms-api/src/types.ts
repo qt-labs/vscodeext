@@ -207,6 +207,19 @@ export enum SessionState {
   Error = 'Error'
 }
 
+// ── Settings types ────────────────────────────────────────────────────────────
+
+/**
+ * Persistence tier for a settings entry.
+ * Mirrors C++ `SettingsType` in ipcconstants.h.
+ */
+export enum SettingsPersistence {
+  /** Session-scoped; lost when the service exits. */
+  Temporary = 0,
+  /** Written to disk; survives service restarts. */
+  Persistent = 1
+}
+
 // ── IPC Constants ────────────────────────────────────────────────────────────
 
 export const IPC = {
@@ -234,6 +247,10 @@ export const IPC = {
     progress: 'service/progress',
     question: 'service/question',
     message: 'service/message'
+  },
+
+  settingsKeys: {
+    installationPath: 'installationPath'
   },
 
   nameVersionSeparator: '@'

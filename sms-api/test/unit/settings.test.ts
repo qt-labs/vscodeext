@@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
 import { Settings, Session } from '../../src/client';
+import { SettingsPersistence } from '../../src/types';
 import { MockServer, deferred } from './mockserver';
 
 describe('Settings', () => {
@@ -36,11 +37,12 @@ describe('Settings', () => {
   // ── setSetting ─────────────────────────────────────────────────────────────
 
   describe('setSetting', () => {
-    it('sends settings/set method with key-value params and resolves with message', async () => {
+    it('sends settings/set with tiered format (key, value, type) and resolves with message', async () => {
       const msgPromise = server.nextMessage();
       const resultPromise = settings.setSetting(
         'proxy_url',
-        'http://proxy:8080'
+        'http://proxy:8080',
+        SettingsPersistence.Temporary
       );
 
       const { payload, conn } = await msgPromise;
@@ -48,11 +50,17 @@ describe('Settings', () => {
       assert.equal(payload.method, 'settings/set');
       assert.ok(typeof payload.id === 'string' && payload.id.length > 0);
 
-      // Verify the params contain the key-value pair
-      const params = payload.params as Record<string, string>[];
+      // Verify the params use the tiered format
+      const params = payload.params as {
+        key: string;
+        value: string;
+        type: number;
+      }[];
       assert.ok(Array.isArray(params));
       assert.equal(params.length, 1);
-      assert.equal(params[0].proxy_url, 'http://proxy:8080');
+      assert.equal(params[0].key, 'proxy_url');
+      assert.equal(params[0].value, 'http://proxy:8080');
+      assert.equal(params[0].type, SettingsPersistence.Temporary);
 
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
@@ -62,6 +70,26 @@ describe('Settings', () => {
 
       const result = await resultPromise;
       assert.equal(result, 'Setting for key proxy_url updated successfully');
+    });
+
+    it('defaults to Temporary persistence when not specified', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = settings.setSetting('key', 'value');
+
+      const { payload, conn } = await msgPromise;
+      const params = payload.params as {
+        key: string;
+        value: string;
+        type: number;
+      }[];
+      assert.equal(params[0].type, SettingsPersistence.Temporary);
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { message: 'ok' }
+      });
+      await resultPromise;
     });
 
     it('rejects with error when setting is not permitted', async () => {
@@ -106,15 +134,16 @@ describe('Settings', () => {
   // ── getSetting ─────────────────────────────────────────────────────────────
 
   describe('getSetting', () => {
-    it('sends settings/get method with key and resolves with value', async () => {
+    it('sends settings/get with key array and resolves with value', async () => {
       const msgPromise = server.nextMessage();
       const resultPromise = settings.getSetting('proxy_url');
 
       const { payload, conn } = await msgPromise;
       assert.equal(payload.method, 'settings/get');
 
-      const params = payload.params as Record<string, string>;
-      assert.equal(params.key, 'proxy_url');
+      const params = payload.params as string[];
+      assert.ok(Array.isArray(params));
+      assert.equal(params[0], 'proxy_url');
 
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
@@ -148,6 +177,60 @@ describe('Settings', () => {
       );
       assert.ok(err instanceof Error);
       assert.equal(err.message, 'No such setting key exists');
+    });
+  });
+
+  // ── setInstallationPath ────────────────────────────────────────────────────
+
+  describe('setInstallationPath', () => {
+    it('sends settings/set with installationPath key and Persistent type', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = settings.setInstallationPath('/opt/qt');
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'settings/set');
+
+      const params = payload.params as {
+        key: string;
+        value: string;
+        type: number;
+      }[];
+      assert.equal(params[0].key, 'installationPath');
+      assert.equal(params[0].value, '/opt/qt');
+      assert.equal(params[0].type, SettingsPersistence.Persistent);
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { message: 'ok' }
+      });
+
+      const result = await resultPromise;
+      assert.equal(result, 'ok');
+    });
+  });
+
+  // ── getInstallationPath ────────────────────────────────────────────────────
+
+  describe('getInstallationPath', () => {
+    it('sends settings/get with installationPath key and returns the path', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = settings.getInstallationPath();
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'settings/get');
+
+      const params = payload.params as string[];
+      assert.equal(params[0], 'installationPath');
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { installationPath: '/opt/qt' }
+      });
+
+      const result = await resultPromise;
+      assert.equal(result, '/opt/qt');
     });
   });
 });

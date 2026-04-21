@@ -31,6 +31,7 @@ import {
   ErrorCode,
   InstallState,
   ProgressType,
+  SettingsPersistence,
   IPC
 } from './types';
 
@@ -818,12 +819,17 @@ export class Settings {
     this.session = session;
   }
 
+  /**
+   * Set a setting using the tiered wire format.
+   * Each entry carries a key, value, and persistence type.
+   */
   async setSetting(
     key: string,
     value: string,
+    persistence: SettingsPersistence = SettingsPersistence.Temporary,
     callbacks?: JobCallbacks
   ): Promise<string> {
-    const params = [{ [key]: value }];
+    const params = [{ key, value, type: persistence }];
 
     return this.callService<string>(
       IPC.methods.setSetting,
@@ -837,7 +843,7 @@ export class Settings {
   }
 
   async getSetting(key: string, callbacks?: JobCallbacks): Promise<string> {
-    const params = { key };
+    const params = [key];
 
     return this.callService<string>(
       IPC.methods.getSetting,
@@ -846,6 +852,30 @@ export class Settings {
         const obj = result as Record<string, unknown>;
         return (obj[key] as string | undefined) ?? '';
       },
+      callbacks
+    );
+  }
+
+  /**
+   * Get the current installation path from the service.
+   * Convenience wrapper around getSetting.
+   */
+  async getInstallationPath(callbacks?: JobCallbacks): Promise<string> {
+    return this.getSetting(IPC.settingsKeys.installationPath, callbacks);
+  }
+
+  /**
+   * Set the installation path on the service.
+   * Persisted across service restarts.
+   */
+  async setInstallationPath(
+    path: string,
+    callbacks?: JobCallbacks
+  ): Promise<string> {
+    return this.setSetting(
+      IPC.settingsKeys.installationPath,
+      path,
+      SettingsPersistence.Persistent,
       callbacks
     );
   }

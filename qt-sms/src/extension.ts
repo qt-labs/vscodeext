@@ -14,7 +14,8 @@ import { EXTENSION_ID } from '@/constants';
 import {
   searchPackages,
   listInstalledPackages,
-  installPackage
+  installPackage,
+  setInstallationPath
 } from '@/commands';
 
 const logger = createLogger('extension');
@@ -45,6 +46,10 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.installPackage`,
       installPackage
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.setInstallationPath`,
+      setInstallationPath
     )
   );
 
