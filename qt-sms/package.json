@@ -49,6 +49,16 @@
         "command": "qt-sms.setInstallationPath",
         "title": "%qt-sms.command.setInstallationPath.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-sms.login",
+        "title": "%qt-sms.command.login.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sms.logout",
+        "title": "%qt-sms.command.logout.title%",
+        "category": "Qt"
       }
     ],
     "configuration": {
