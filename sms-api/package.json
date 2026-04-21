@@ -14,6 +14,7 @@
     "pretest": "npm run compile && npm run lint",
     "test:integration": "npm run compile-test && node out/test/integration.js",
     "test:integration:launcher": "npm run compile-test && node out/test/integration-launcher.js",
+    "test:integration:auth": "npm run compile-test && node out/test/integration-auth.js",
     "test:unit": "npm run compile-test && node --test --test-reporter spec out/test/unit/*.test.js",
     "ci-lint": "npm run prettierCheck && eslint . ",
     "lint": "npm run prettierWrite && eslint . --fix --cache",

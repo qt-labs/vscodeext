@@ -207,6 +207,38 @@ export enum SessionState {
   Error = 'Error'
 }
 
+// ── Authentication types ─────────────────────────────────────────────────────
+
+/**
+ * Mirrors C++ `QtAccount::State`.
+ */
+export enum AuthState {
+  LoggedOut = 'LoggedOut',
+  LoggingIn = 'LoggingIn',
+  LoggedIn = 'LoggedIn',
+  Error = 'Error'
+}
+
+/**
+ * Mirrors C++ `QtAccount::LoginError`.
+ */
+export enum LoginError {
+  None = 0,
+  EmptyCredentials = 1,
+  NetworkError = 2,
+  SslError = 3,
+  InvalidResponse = 4,
+  InvalidCredentials = 5,
+  ServerError = 6,
+  HttpsRequired = 7
+}
+
+export interface AuthCredentials {
+  readonly email: string;
+  readonly jwt: string;
+  readonly userId: string;
+}
+
 // ── Settings types ────────────────────────────────────────────────────────────
 
 /**

@@ -2,5 +2,7 @@
   "qt-sms.command.searchPackages.title": "SMS: Search available packages",
   "qt-sms.command.listInstalledPackages.title": "SMS: List installed packages",
   "qt-sms.command.installPackage.title": "SMS: Install package",
-  "qt-sms.command.setInstallationPath.title": "SMS: Set installation path"
+  "qt-sms.command.setInstallationPath.title": "SMS: Set installation path",
+  "qt-sms.command.login.title": "SMS: Login to Qt Account",
+  "qt-sms.command.logout.title": "SMS: Logout from Qt Account"
 }

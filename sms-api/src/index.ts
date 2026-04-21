@@ -13,6 +13,8 @@ export {
   ProgressType,
   SettingsPersistence,
   SessionState,
+  AuthState,
+  LoginError,
   IPC
 } from './types';
 export type {
@@ -26,7 +28,8 @@ export type {
   UserPromptReply,
   ProgressInfo,
   MessageInfo,
-  JobCallbacks
+  JobCallbacks,
+  AuthCredentials
 } from './types';
 
 // Transport (for advanced / testing use)
@@ -48,3 +51,7 @@ export type {
   ServiceLauncherOptions,
   ServiceLauncherEvents
 } from './client';
+
+// Authentication
+export { QtAccountStorage, QtAccount } from './qt-account';
+export type { QtAccountEvents, LogLevel, LogCallback } from './qt-account';
