@@ -11,6 +11,7 @@ export {
   UserPromptType,
   JobStatus,
   ProgressType,
+  SettingsPersistence,
   SessionState,
   IPC
 } from './types';
@@ -41,7 +42,7 @@ export type { DecodedPacket, TransportOptions } from './transport';
 export { JsonRpcDispatcher } from './jsonrpc';
 
 // Public API
-export { Session, ServiceLauncher, Packages } from './client';
+export { Session, ServiceLauncher, Packages, Settings } from './client';
 export type {
   SessionEvents,
   ServiceLauncherOptions,
