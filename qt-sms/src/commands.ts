@@ -7,6 +7,7 @@ import {
   Session,
   ServiceLauncher,
   Packages,
+  Settings,
   type PackageData,
   type UserPrompt,
   type UserPromptReply,
@@ -15,8 +16,12 @@ import {
   ProgressType
 } from 'sms-api';
 
-import { createLogger } from 'qt-lib';
-import { EXTENSION_ID, CONF_SERVICE_EXECUTABLE_PATH } from '@/constants';
+import { createLogger, resolveConfiguration } from 'qt-lib';
+import {
+  EXTENSION_ID,
+  CONF_SERVICE_EXECUTABLE_PATH,
+  CONF_INSTALLATION_PATH
+} from '@/constants';
 
 const logger = createLogger('commands');
 
@@ -152,6 +157,15 @@ async function withService<T>(
   const session = new Session();
   try {
     await session.connectToService();
+
+    const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+    const rawInstallPath = config.get<string>(CONF_INSTALLATION_PATH);
+    if (rawInstallPath) {
+      const installPath = resolveConfiguration(rawInstallPath);
+      const settings = new Settings(session);
+      await settings.setInstallationPath(installPath);
+    }
+
     const packages = new Packages(session);
     return await action(session, packages);
   } catch (err) {
@@ -371,4 +385,35 @@ async function installPackageById(
       }
     }
   );
+}
+
+export async function setInstallationPath(): Promise<void> {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const currentPath = config.get<string>(CONF_INSTALLATION_PATH) ?? '';
+
+  const dirUris = await vscode.window.showOpenDialog({
+    title: 'Select installation directory',
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
+    ...(currentPath ? { defaultUri: vscode.Uri.file(currentPath) } : {})
+  });
+  const dirUri = dirUris?.[0];
+  if (!dirUri) {
+    return;
+  }
+
+  await config.update(
+    CONF_INSTALLATION_PATH,
+    dirUri.fsPath,
+    vscode.ConfigurationTarget.Global
+  );
+
+  await withService(async (session) => {
+    const settings = new Settings(session);
+    await settings.setInstallationPath(dirUri.fsPath);
+    void vscode.window.showInformationMessage(
+      `Installation path set to: ${dirUri.fsPath}`
+    );
+  });
 }

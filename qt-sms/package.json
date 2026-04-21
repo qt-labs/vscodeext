@@ -44,6 +44,11 @@
         "command": "qt-sms.installPackage",
         "title": "%qt-sms.command.installPackage.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-sms.setInstallationPath",
+        "title": "%qt-sms.command.setInstallationPath.title%",
+        "category": "Qt"
       }
     ],
     "configuration": {
@@ -54,6 +59,12 @@
           "type": "string",
           "default": "",
           "description": "Specify the path to the QtSoftwareManagementService executable",
+          "scope": "machine-overridable"
+        },
+        "qt-sms.installationPath": {
+          "type": "string",
+          "default": "",
+          "description": "Default installation path for Qt packages",
           "scope": "machine-overridable"
         }
       }
