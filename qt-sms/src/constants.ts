@@ -4,3 +4,4 @@
 export * from 'qt-lib/src/constants';
 export const EXTENSION_ID = 'qt-sms';
 export const CONF_SERVICE_EXECUTABLE_PATH = 'serviceExecutablePath';
+export const CONF_INSTALLATION_PATH = 'installationPath';
