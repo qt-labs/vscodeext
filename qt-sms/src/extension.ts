@@ -40,6 +40,42 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const authProvider = registerAuthenticationProvider(context);
 
+  // Track login state via VS Code context key
+  const setLoggedIn = (value: boolean) =>
+    void vscode.commands.executeCommand(
+      'setContext',
+      `${EXTENSION_ID}.isLoggedIn`,
+      value
+    );
+
+  // Check login status at startup
+  const sessions = await authProvider.getSessions();
+  if (sessions.length > 0 && sessions[0]) {
+    logger.info(`Already logged in as ${sessions[0].account.label}`);
+    setLoggedIn(true);
+  } else {
+    logger.info('No active session, attempting to renew stored credentials');
+    const renewed = await authProvider.tryRenewSession();
+    if (renewed) {
+      logger.info(`Session renewed for ${renewed.account.label}`);
+      setLoggedIn(true);
+    } else {
+      logger.info('No stored credentials found, user is not logged in');
+      setLoggedIn(false);
+    }
+  }
+
+  // Keep context key in sync when sessions change
+  context.subscriptions.push(
+    authProvider.onDidChangeSessions((e) => {
+      if (e.added && e.added.length > 0) {
+        setLoggedIn(true);
+      } else if (e.removed && e.removed.length > 0) {
+        setLoggedIn(false);
+      }
+    })
+  );
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.searchPackages`,
@@ -76,11 +112,10 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () => {
-      const sessions = await authProvider.getSessions();
-      for (const session of sessions) {
-        await authProvider.removeSession(session.id);
+      const ss = await authProvider.getSessions();
+      for (const s of ss) {
+        await authProvider.removeSession(s.id);
       }
-      void vscode.window.showInformationMessage('Logged out of Qt Account');
     })
   );
 

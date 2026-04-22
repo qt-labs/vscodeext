@@ -139,12 +139,12 @@ function extractUserId(jwt: string): string {
  */
 function legacyStoragePath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env['APPDATA'] ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
     return path.join(appData, 'Qt', 'qtaccount.ini');
   }
   // Linux/macOS: ~/.local/share/Qt/qtaccount.ini
   const dataDir =
-    process.env['XDG_DATA_HOME'] ?? path.join(os.homedir(), '.local', 'share');
+    process.env.XDG_DATA_HOME ?? path.join(os.homedir(), '.local', 'share');
   return path.join(dataDir, 'Qt', 'qtaccount.ini');
 }
 
@@ -157,7 +157,7 @@ function legacyStoragePath(): string {
  */
 function qtCompanySettingsPath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env['APPDATA'] ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
     return path.join(appData, QTCOMPANY_ORG, QTCOMPANY_FILE);
   }
   if (process.platform === 'darwin') {
@@ -171,7 +171,7 @@ function qtCompanySettingsPath(): string {
   }
   // Linux
   const dataDir =
-    process.env['XDG_DATA_HOME'] ?? path.join(os.homedir(), '.local', 'share');
+    process.env.XDG_DATA_HOME ?? path.join(os.homedir(), '.local', 'share');
   return path.join(dataDir, QTCOMPANY_ORG, QTCOMPANY_FILE);
 }
 
@@ -226,10 +226,10 @@ export class QtAccountStorage {
       this._email = group[INI_KEY_EMAIL] ?? '';
       this._jwt = group[INI_KEY_JWT] ?? '';
       this._userId = group[INI_KEY_USER_ID] ?? '';
-      this.log('info', `Loaded credentials for ${this._email} from ${filePath}`);
+      this.log('info', `Loaded credentials for "${this._email}" from "${filePath}"`);
       return true;
     } catch {
-      this.log('warn', `Failed to read ${filePath}`);
+      this.log('warn', `Failed to read "${filePath}"`);
       return false;
     }
   }
@@ -239,7 +239,7 @@ export class QtAccountStorage {
    */
   loadFromQtCompany(): boolean {
     const p = qtCompanySettingsPath();
-    this.log('info', `Loading QtCompany credentials from ${p}`);
+    this.log('info', `Loading QtCompany credentials from "${p}"`);
     return this.loadQtCompanyFromPath(p);
   }
 
@@ -250,16 +250,16 @@ export class QtAccountStorage {
       const ini = parseIni(content);
       const group = ini[AUTH_GROUP];
       if (!group) {
-        this.log('warn', `No [${AUTH_GROUP}] group in ${filePath}`);
+        this.log('warn', `No [${AUTH_GROUP}] group in "${filePath}"`);
         return false;
       }
       this._email = group[INI_KEY_EMAIL] ?? '';
       this._jwt = group[INI_KEY_JWT] ?? '';
       this._userId = group[INI_KEY_USER_ID] ?? '';
-      this.log('info', `Loaded credentials for ${this._email} from ${filePath}`);
+      this.log('info', `Loaded credentials for "${this._email}" from "${filePath}"`);
       return true;
     } catch {
-      this.log('warn', `Failed to read ${filePath}`);
+      this.log('warn', `Failed to read "${filePath}"`);
       return false;
     }
   }
@@ -301,7 +301,7 @@ export class QtAccountStorage {
       fs.writeFileSync(filePath, content, { mode: 0o600 });
       return true;
     } catch {
-      this.log('error', `Failed to save credentials to ${filePath}`);
+      this.log('error', `Failed to save credentials to "${filePath}"`);
       return false;
     }
   }
@@ -339,7 +339,7 @@ export class QtAccountStorage {
       fs.writeFileSync(filePath, content, { mode: 0o600 });
       return true;
     } catch {
-      this.log('error', `Failed to save QtCompany credentials to ${filePath}`);
+      this.log('error', `Failed to save QtCompany credentials to "${filePath}"`);
       return false;
     }
   }
@@ -397,9 +397,9 @@ export class QtAccount {
   private readonly _storage: QtAccountStorage;
   private readonly _serverUrl: string;
   private readonly _listeners: {
-    stateChanged: Array<(state: AuthState) => void>;
-    loginSucceeded: Array<(credentials: AuthCredentials) => void>;
-    loginFailed: Array<(error: LoginError, message: string) => void>;
+    stateChanged: ((state: AuthState) => void)[];
+    loginSucceeded: ((credentials: AuthCredentials) => void)[];
+    loginFailed: ((error: LoginError, message: string) => void)[];
   } = {
     stateChanged: [],
     loginSucceeded: [],
@@ -496,8 +496,8 @@ export class QtAccount {
    * Login using environment variables QT_ACCOUNT_LOGIN_EMAIL / QT_ACCOUNT_LOGIN_PASSWORD.
    */
   async loginUsingEnvVariables(): Promise<AuthCredentials | undefined> {
-    const email = process.env['QT_ACCOUNT_LOGIN_EMAIL'];
-    const password = process.env['QT_ACCOUNT_LOGIN_PASSWORD'];
+    const email = process.env.QT_ACCOUNT_LOGIN_EMAIL;
+    const password = process.env.QT_ACCOUNT_LOGIN_PASSWORD;
     if (!email || !password) {
       this.log('info', 'No env credentials found (QT_ACCOUNT_LOGIN_EMAIL / QT_ACCOUNT_LOGIN_PASSWORD)');
       return undefined;
@@ -529,7 +529,7 @@ export class QtAccount {
   }
 
   private fail(error: LoginError, message: string): never {
-    this.log('error', `Auth failed (${error}): ${message}`);
+    this.log('error', `Auth failed (${String(error)}): ${message}`);
     this._lastError = error;
     this._lastErrorMessage = message;
     this.setState(AuthState.Error);
@@ -606,10 +606,10 @@ export class QtAccount {
       return this.fail(LoginError.InvalidResponse, 'Invalid JSON in login response');
     }
 
-    const jwt = typeof obj['jwt'] === 'string' ? obj['jwt'] : '';
+    const jwt = typeof obj.jwt === 'string' ? obj.jwt : '';
     if (!jwt) {
       const serverMessage =
-        typeof obj['message'] === 'string' ? obj['message'] : 'Unexpected reply';
+        typeof obj.message === 'string' ? obj.message : 'Unexpected reply';
       return this.fail(LoginError.InvalidResponse, serverMessage);
     }
 
@@ -643,7 +643,7 @@ export class QtAccount {
 
 // ── HTTP helper ──────────────────────────────────────────────────────────────
 
-function httpPost(
+async function httpPost(
   url: string,
   body: Record<string, string>
 ): Promise<string> {

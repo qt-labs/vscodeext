@@ -15,7 +15,19 @@ const logger = createLogger('auth');
 
 function logCallback(tag: string) {
   return (level: LogLevel, message: string) => {
-    logger[level](`[${tag}] ${message}`);
+    switch (level) {
+      case 'error':
+        logger.error(`[${tag}] ${message}`);
+        break;
+      case 'warn':
+        logger.warn(`[${tag}] ${message}`);
+        break;
+      case 'info':
+        logger.info(`[${tag}] ${message}`);
+        break;
+      default:
+        logger.info(`[${tag}] ${message}`);
+    }
   };
 }
 
@@ -166,7 +178,10 @@ export class QtAccountAuthenticationProvider
         changed: []
       });
 
-      logger.info('Logged out of Qt Account');
+      logger.info(`Logged out of Qt Account (${removed.account.label})`);
+      void vscode.window.showInformationMessage(
+        `Logged out of Qt Account (${removed.account.label})`
+      );
     }
     return Promise.resolve();
   }
