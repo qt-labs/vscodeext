@@ -4,7 +4,7 @@
   "types": "out/index.d.ts",
   "files": [
     "out"
-  ],
+  ],sssss
   "scripts": {
     "all_dev": "ts-node ./scripts/all_dev.ts --extension=\"all\"",
     "all": "npm ci && concurrently \"npm run build:qt-cli\" \"npm run ci:qt-lib && npm run compile:qt-lib && npm run prepareNatvisFiles && npm run ci:all && npm run ci-lint:all && npm run package:all && npm run install-ext:all_sync\"",
