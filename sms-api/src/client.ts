@@ -23,6 +23,9 @@ import {
   type PackageUpdate,
   type PackageFilters,
   type PackageRequestOptions,
+  type PackageRequirements,
+  type LicenseAgreement,
+  type UnsatisfiedRule,
   type ProgressInfo,
   type MessageInfo,
   type JobCallbacks,
@@ -99,6 +102,44 @@ function parsePackageData(obj: Record<string, unknown>): PackageData {
     uncompressedSize: (obj.uncompressedSize as number | undefined) ?? 0,
     installState:
       (obj.installState as InstallState | undefined) ?? InstallState.Uninstalled
+  };
+}
+
+function parseLicenseAgreement(obj: Record<string, unknown>): LicenseAgreement {
+  return {
+    id: (obj.id as string | undefined) ?? '',
+    title: (obj.title as string | undefined) ?? '',
+    text: (obj.text as string | undefined) ?? '',
+    acceptText: (obj.acceptText as string | undefined) ?? '',
+    rejectText: (obj.rejectText as string | undefined) ?? ''
+  };
+}
+
+function parseUnsatisfiedRule(obj: Record<string, unknown>): UnsatisfiedRule {
+  const rule = (obj.rule as Record<string, unknown> | undefined) ?? {};
+  const pkgs =
+    (obj.packages as Record<string, unknown>[] | undefined) ?? [];
+
+  const ruleType = (rule.ruleType as string | undefined) ?? '';
+  return {
+    ruleId: (rule.ruleId as string | undefined) ?? '',
+    ruleType,
+    conditionType: (rule.conditionType as string | undefined) ?? '',
+    conditionId: (rule.conditionId as string | undefined) ?? '',
+    packages: pkgs.map((p) => {
+      const ref: PackageReference = {
+        id: (p.packageId as string | undefined) ?? ''
+      };
+      const ver = p.packageVersion as string | undefined;
+      if (ver) {
+        (ref as { version: string }).version = ver;
+      }
+      return ref;
+    }),
+    userMessage:
+      ruleType === 'visibility'
+        ? 'Package not available for your account'
+        : `Installation blocked by rule: ${ruleType}`
   };
 }
 
@@ -532,6 +573,35 @@ export class Packages {
 
   // ── Query commands ─────────────────────────────────────────────────────
 
+  async fetchRequirements(
+    packages?: PackageReference[],
+    options?: PackageRequestOptions,
+    callbacks?: JobCallbacks
+  ): Promise<PackageRequirements> {
+    const params: Record<string, unknown> = {};
+    if (packages && packages.length > 0) {
+      params.packages = packages.map(formatPackageRef);
+    }
+    Packages.applyTimeout(params, options);
+
+    return this.callService<PackageRequirements>(
+      IPC.methods.fetchRequirements,
+      params,
+      (result) => {
+        const obj = result as Record<string, unknown>;
+        const agreements =
+          (obj.agreements as Record<string, unknown>[] | undefined) ?? [];
+        const rules =
+          (obj.unsatisfiedRules as Record<string, unknown>[] | undefined) ?? [];
+        return {
+          licenseAgreements: agreements.map(parseLicenseAgreement),
+          unsatisfiedRules: rules.map(parseUnsatisfiedRule)
+        };
+      },
+      callbacks
+    );
+  }
+
   async searchAvailablePackages(
     filters?: PackageFilters,
     options?: PackageRequestOptions,
@@ -622,6 +692,12 @@ export class Packages {
     }
     if (options?.timeoutMs) {
       params.timeout = String(options.timeoutMs);
+    }
+    if (options?.preAnsweredAgreements) {
+      params.answers = options.preAnsweredAgreements.map((a) => ({
+        id: a.id,
+        answer: a.answer
+      }));
     }
 
     return this.callService<string>(
