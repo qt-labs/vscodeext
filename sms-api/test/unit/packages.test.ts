@@ -562,6 +562,119 @@ describe('Packages', () => {
     });
   });
 
+  // ── fetchRequirements ──────────────────────────────────────────────────
+
+  describe('fetchRequirements', () => {
+    it('sends packages/requirements and parses agreements and rules', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.fetchRequirements([
+        { id: 'qt6-base', version: '6.10' }
+      ]);
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/requirements');
+
+      const params = payload.params as Record<string, unknown>;
+      const pkgs = params.packages as string[];
+      assert.equal(pkgs.length, 1);
+      assert.equal(pkgs[0], 'qt6-base@6.10');
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: {
+          agreements: [
+            {
+              id: 'gplv3',
+              title: 'GPLv3 License',
+              text: 'Full license text...',
+              acceptText: 'Accept',
+              rejectText: 'Decline'
+            }
+          ],
+          unsatisfiedRules: [
+            {
+              rule: {
+                ruleId: 'rule-1',
+                ruleType: 'visibility',
+                conditionType: 'account',
+                conditionId: 'enterprise'
+              },
+              packages: [
+                { packageId: 'qt6-enterprise', packageVersion: '6.10' }
+              ]
+            }
+          ]
+        }
+      });
+
+      const result = await resultPromise;
+      assert.equal(result.licenseAgreements.length, 1);
+      assert.equal(result.licenseAgreements[0].id, 'gplv3');
+      assert.equal(result.licenseAgreements[0].title, 'GPLv3 License');
+      assert.equal(result.licenseAgreements[0].acceptText, 'Accept');
+      assert.equal(result.licenseAgreements[0].rejectText, 'Decline');
+
+      assert.equal(result.unsatisfiedRules.length, 1);
+      assert.equal(result.unsatisfiedRules[0].ruleId, 'rule-1');
+      assert.equal(result.unsatisfiedRules[0].ruleType, 'visibility');
+      assert.equal(result.unsatisfiedRules[0].packages.length, 1);
+      assert.equal(result.unsatisfiedRules[0].packages[0].id, 'qt6-enterprise');
+      assert.equal(
+        result.unsatisfiedRules[0].userMessage,
+        'Package not available for your account'
+      );
+    });
+
+    it('returns empty arrays when service has no requirements', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.fetchRequirements();
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/requirements');
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: {}
+      });
+
+      const result = await resultPromise;
+      assert.equal(result.licenseAgreements.length, 0);
+      assert.equal(result.unsatisfiedRules.length, 0);
+    });
+
+    it('sends preAnsweredAgreements in install when provided', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.install(
+        [{ id: 'qt6-base', version: '6.10' }],
+        {
+          preAnsweredAgreements: [
+            { id: 'gplv3', answer: 'Accept' }
+          ]
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/install');
+
+      const params = payload.params as Record<string, unknown>;
+      const answers = params.answers as { id: string; answer: string }[];
+      assert.equal(answers.length, 1);
+      assert.equal(answers[0].id, 'gplv3');
+      assert.equal(answers[0].answer, 'Accept');
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { message: 'Installed' }
+      });
+
+      const result = await resultPromise;
+      assert.equal(result, 'Installed');
+    });
+  });
+
   // ── testPackageListQuery ─────────────────────────────────────────────────
 
   describe('searchAvailablePackages', () => {
