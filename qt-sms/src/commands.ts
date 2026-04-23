@@ -9,6 +9,8 @@ import {
   Packages,
   Settings,
   type PackageData,
+  type LicenseAgreement,
+  type LicenseAnswer,
   type UserPrompt,
   type UserPromptReply,
   InstallState,
@@ -119,6 +121,22 @@ async function handleUserPrompt(prompt: UserPrompt): Promise<UserPromptReply> {
       return { kind: 'text', text: fileUri.fsPath };
     }
   }
+}
+
+async function showLicenseAgreement(
+  agreement: LicenseAgreement
+): Promise<boolean> {
+  const detail = agreement.text
+    ? `${agreement.text.substring(0, 2000)}${agreement.text.length > 2000 ? '\n\n...(truncated)' : ''}`
+    : agreement.title;
+
+  const choice = await vscode.window.showInformationMessage(
+    agreement.title,
+    { modal: true, detail },
+    agreement.acceptText,
+    agreement.rejectText
+  );
+  return choice === agreement.acceptText;
 }
 
 async function withService<T>(
@@ -333,6 +351,54 @@ async function installPackageById(
 ): Promise<void> {
   const pkgRef = { id: pkg.id, version: pkg.version };
 
+  // Fetch requirements (license agreements, unsatisfied rules).
+  // The service may not support this in online mode yet, so treat
+  // failure as "no pre-flight requirements" and let install handle
+  // any prompts interactively via service/question.
+  const preAnswers: LicenseAnswer[] = [];
+  try {
+    const requirements = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Checking requirements...',
+        cancellable: false
+      },
+      async () =>
+        packages.fetchRequirements([pkgRef], undefined, {
+          onMessage: (info) => {
+            logger.info(`fetchRequirements: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
+    );
+
+    // Block if there are unsatisfied rules
+    if (requirements.unsatisfiedRules.length > 0) {
+      const messages = requirements.unsatisfiedRules.map((r) => r.userMessage);
+      void vscode.window.showErrorMessage(
+        `Cannot install ${pkg.name || pkg.id}: ${messages.join('; ')}`
+      );
+      return;
+    }
+
+    // Present license agreements
+    for (const agreement of requirements.licenseAgreements) {
+      const accepted = await showLicenseAgreement(agreement);
+      if (!accepted) {
+        void vscode.window.showInformationMessage('Installation cancelled.');
+        return;
+      }
+      preAnswers.push({ id: agreement.id, answer: agreement.acceptText });
+    }
+  } catch {
+    logger.info(
+      'fetchRequirements not supported by service; skipping pre-flight check'
+    );
+  }
+
+  const options =
+    preAnswers.length > 0 ? { preAnsweredAgreements: preAnswers } : undefined;
+
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
@@ -342,7 +408,7 @@ async function installPackageById(
     async (progress) => {
       let lastPct = 0;
       try {
-        await packages.install([pkgRef], undefined, {
+        await packages.install([pkgRef], options, {
           onProgress: (info) => {
             const pct = Math.round(info.progress);
             const phase =
@@ -379,9 +445,9 @@ async function installPackageById(
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        void vscode.window.showErrorMessage(
-          `Failed to install ${pkg.name || pkg.id}: ${msg}`
-        );
+        const errMsg = `Failed to install ${pkg.name || pkg.id}: ${msg}`;
+        logger.error(errMsg);
+        void vscode.window.showErrorMessage(errMsg);
       }
     }
   );
