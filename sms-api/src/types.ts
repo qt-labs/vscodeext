@@ -128,6 +128,8 @@ export interface PackageFilters {
   hostArch?: string;
   targetArch?: string;
   compiler?: string;
+  packageType?: string
+  packagePresentation?: string;
   packageVersion?: string;
   packageId?: string;
   author?: string;
