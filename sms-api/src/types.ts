@@ -140,6 +140,36 @@ export interface PackageFilters {
 
 export interface PackageRequestOptions {
   timeoutMs?: number;
+  preAnsweredAgreements?: LicenseAnswer[];
+}
+
+// ── Requirements types ───────────────────────────────────────────────────────
+
+export interface LicenseAgreement {
+  readonly id: string;
+  readonly title: string;
+  readonly text: string;
+  readonly acceptText: string;
+  readonly rejectText: string;
+}
+
+export interface UnsatisfiedRule {
+  readonly ruleId: string;
+  readonly ruleType: string;
+  readonly conditionType: string;
+  readonly conditionId: string;
+  readonly packages: PackageReference[];
+  readonly userMessage: string;
+}
+
+export interface PackageRequirements {
+  readonly licenseAgreements: LicenseAgreement[];
+  readonly unsatisfiedRules: UnsatisfiedRule[];
+}
+
+export interface LicenseAnswer {
+  readonly id: string;
+  readonly answer: string;
 }
 
 // ── User Prompt ──────────────────────────────────────────────────────────────
@@ -271,6 +301,7 @@ export const IPC = {
     search: 'packages/search',
     listUpdates: 'packages/updates',
     showInfo: 'packages/info',
+    fetchRequirements: 'packages/requirements',
     updateCache: 'cache/update',
     clearCache: 'cache/clear',
     setSetting: 'settings/set',
