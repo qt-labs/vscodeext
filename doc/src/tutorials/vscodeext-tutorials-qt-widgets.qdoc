@@ -10,6 +10,9 @@
 
     \title Tutorial: Qt Widgets application
 
+    \brief Create a project using a project wizard and design a widget-based UI
+    using \QD.
+
     This tutorial illustrates how to use \QVSC to create a
     \l [QtWidgets] {Qt Widgets} application. You'll create a project
     using a project wizard and design a widget-based UI using \QD.
@@ -44,9 +47,8 @@
     To create a Qt Widgets application project in Visual Studio Code:
 
     \list 1
-        \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Create a new project or file}.
-        \li In \uicontrol {Project}, select \uicontrol {Qt Widgets project}.
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
+        \li In \uicontrol {Project}, select \uicontrol {Qt Widgets application}.
             \image {vscodeext-create-new-project.webp} {Create a new project or file}
         \li In \uicontrol {Base class}, select \uicontrol {QWidget} as the base
             class type.

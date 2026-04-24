@@ -11,7 +11,7 @@
     With \QVSC, you can develop \l [QtWidgets] {Qt Widgets}{widget-based} and
     \l [QtQuick] {Qt Quick} applications for the desktop and web.
 
-    \image vscodeext-overview.webp {Qt source code open in the VS Code editor}
+    \image {vscodeext-overview.webp} {Welcome page}
 
     You can install Qt extension packs and individual extensions depending on
     what kind of applications you develop.
@@ -56,7 +56,7 @@
     \section1 Python development
 
     With the Qt Python extension pack, you can develop \l {Qt for Python}
-    projects with VS Code and Python.
+    projects with VS Code and Python:
 
     \list
         \li Install PySide6 packages

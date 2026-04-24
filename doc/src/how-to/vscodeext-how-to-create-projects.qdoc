@@ -14,8 +14,7 @@
     To create a project, select a preset for a particular project type:
 
     \list 1
-        \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Create a new project or file}.
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
         \li In \uicontrol {Project}, select the project type.
             \image {vscodeext-create-new-project.webp} {Create a new project or file}
         \li In \uicontrol {Name}, enter a name for the project.

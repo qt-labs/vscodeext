@@ -10,6 +10,8 @@
 
     \title Tutorial: Build and run Qt examples
 
+    \brief Open a Qt example to build and run it from VS Code.
+
     This tutorial illustrates how you can open Qt examples in VS Code.
     To test that your \l{Get and Install Qt with \QOI}{\QOI} installation is
     successful, open an existing example application project, and then build and
@@ -27,8 +29,7 @@
     \section1 Open a Qt example
 
     \list 1
-        \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Open Qt examples}.
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {Examples}.
             \image {vscodeext-qt-examples.webp} {List of Qt examples}
             If you cannot see any examples, check that the list of
             \uicontrol {Qt versions} is not empty.

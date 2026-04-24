@@ -23,8 +23,7 @@
     To create a new QRC file:
 
     \list 1
-        \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Create a new project or file}.
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
         \li In \uicontrol {File}, select \uicontrol {Qt resource file}.
             \image {vscodeext-create-new-qrc-file.webp} {Qt resource file selected in the New item view}
         \li In \uicontrol {Name}, enter a name for the file.

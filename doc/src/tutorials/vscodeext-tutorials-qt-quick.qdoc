@@ -10,6 +10,9 @@
 
     \title Tutorial: Qt Quick application
 
+    \brief Create a project using a project wizard and design a UI using
+    Qt Quick Controls.
+
     This tutorial illustrates how to use \QVSC to create a
     \l [QtQuick] {Qt Quick} application. You'll create a project using a
     project wizard and design a UI using \l {Qt Quick Controls}. Also, you'll
@@ -33,8 +36,7 @@
     To create a Qt Quick project in Visual Studio Code:
 
     \list 1
-        \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Create a new project or file}.
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
         \li In \uicontrol {Project}, select \uicontrol {Qt Quick application}.
             \image {vscodeext-create-new-project-quick.webp} {A Qt Quick application in the New item view}
         \li In \uicontrol {Name}, enter \c QuickAddressBook.

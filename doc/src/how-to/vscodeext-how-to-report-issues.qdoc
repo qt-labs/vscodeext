@@ -16,8 +16,8 @@
     \l {Qt project bug tracker}:
 
     \list 1
-        \li Go to \uicontrol {Command Palette}, and then select
-            \uicontrol {Qt: Report an issue} to open the bug tracker.
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {Bug report}
+            to open the bug tracker.
         \li In \uicontrol {Project}, select \uicontrol {VS Code Extension}.
             \image {qt-project-bug-tracker.webp} {Qt project bug tracker}
         \li In \uicontrol {Issue Type}, select the type of the issue.
