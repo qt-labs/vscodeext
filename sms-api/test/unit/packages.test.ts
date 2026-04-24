@@ -661,10 +661,10 @@ describe('Packages', () => {
       assert.equal(payload.method, 'packages/install');
 
       const params = payload.params as Record<string, unknown>;
-      const answers = params.answers as { id: string; answer: string }[];
+      const answers = params.answers as { id: string; replyChoice: string }[];
       assert.equal(answers.length, 1);
       assert.equal(answers[0].id, 'gplv3');
-      assert.equal(answers[0].answer, 'Accept');
+      assert.equal(answers[0].replyChoice, 'Accept');
 
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',

@@ -362,9 +362,6 @@ async function installPackageById(
                 : info.type === ProgressType.Install
                   ? 'Installing'
                   : (info.message ?? '');
-            logger.info(
-              `Install progress (${info.type}): ${String(pct)}% - ${phase}`
-            );
             // Reset baseline when a new phase starts (progress goes backwards)
             if (pct < lastPct) {
               progress.report({
