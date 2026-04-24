@@ -10,13 +10,15 @@ import {
   initLogger,
   telemetry
 } from 'qt-lib';
-import { EXTENSION_ID } from '@/constants';
+import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import {
   searchPackages,
   listInstalledPackages,
   installPackage,
-  setInstallationPath
+  setInstallationPath,
+  onInstallationPathChanged
 } from '@/commands';
+import { disconnect } from '@/service-connection';
 import {
   registerAuthenticationProvider,
   AUTH_PROVIDER_ID
@@ -116,6 +118,11 @@ export async function activate(context: vscode.ExtensionContext) {
       for (const s of ss) {
         await authProvider.removeSession(s.id);
       }
+    }),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {
+        void onInstallationPathChanged();
+      }
     })
   );
 
@@ -125,5 +132,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
+  disconnect();
   telemetry.dispose();
 }
