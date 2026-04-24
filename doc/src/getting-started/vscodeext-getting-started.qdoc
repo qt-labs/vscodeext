@@ -18,8 +18,11 @@
 
     \list 1
         \li Install \QVSC.
-        \li Open a folder that contains a Qt example (that has a
-            \c {CMakeLists.txt} file) from your Qt installation.
+        \li Go to \uicontrol {Welcome}.
+            \image {vscodeext-overview.webp} {Welcome page}
+        \li Select \uicontrol {Examples} to open a Qt example.
+            \image {vscodeext-qt-examples.webp} {List of Qt examples}
+            For more information, see \l {Tutorial: Build and run Qt examples}.
         \li Go to \uicontrol {Command Palette}, and select
             \uicontrol {Qt: Register Qt installation} to register a Qt version.
         \li Go to \uicontrol {Command Palette} and select
@@ -38,6 +41,22 @@
     You can now select a tutorial to follow to learn about developing
     Qt applications. Use project wizard templates to create your own
     application projects.
+
+    \section1 Enroll to Qt Academy courses
+
+    Go to \uicontrol {Welcome}, and then select \uicontrol {Qt academy} to
+    browse courses.
+
+    \image {vscodeext-qt-academy.webp} {Qt Academy courses view}
+
+    You can:
+
+    \list
+        \li Search for courses.
+        \li Filter courses by type and level.
+        \li Sort courses by name and other criteria.
+        \li Go to Qt Academy to browse the whole course catalog.
+    \endlist
 
     \sa {Installation}, {Register Qt installations}, {Tutorials},
     {Create Qt projects}
