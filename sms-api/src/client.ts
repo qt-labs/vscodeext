@@ -110,6 +110,7 @@ function parseLicenseAgreement(obj: Record<string, unknown>): LicenseAgreement {
     id: (obj.id as string | undefined) ?? '',
     title: (obj.title as string | undefined) ?? '',
     text: (obj.text as string | undefined) ?? '',
+    format: (obj.format as string | undefined) ?? '',
     acceptText: (obj.acceptText as string | undefined) ?? '',
     rejectText: (obj.rejectText as string | undefined) ?? ''
   };

@@ -149,6 +149,7 @@ export interface LicenseAgreement {
   readonly id: string;
   readonly title: string;
   readonly text: string;
+  readonly format: string;
   readonly acceptText: string;
   readonly rejectText: string;
 }
