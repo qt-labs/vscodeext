@@ -89,7 +89,7 @@
           "type": "string",
           "default": "",
           "description": "Default installation path for Qt packages",
-          "scope": "machine-overridable"
+          "scope": "application"
         }
       }
     }
