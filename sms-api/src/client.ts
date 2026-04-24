@@ -697,7 +697,7 @@ export class Packages {
     if (options?.preAnsweredAgreements) {
       params.answers = options.preAnsweredAgreements.map((a) => ({
         id: a.id,
-        answer: a.answer
+        replyChoice: a.answer
       }));
     }
 
