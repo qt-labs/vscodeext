@@ -135,7 +135,7 @@
     "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
-    "@vscode/vsce": "^3.6.0",
+    "@vscode/vsce": "^3.9.1",
     "concurrently": "^8.2.2",
     "dotenv": "^16.5.0",
     "eslint": "^8.57.1",
