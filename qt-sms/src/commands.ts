@@ -4,8 +4,6 @@
 import * as vscode from 'vscode';
 
 import {
-  Session,
-  ServiceLauncher,
   Packages,
   Settings,
   type PackageData,
@@ -19,19 +17,10 @@ import {
 } from 'sms-api';
 
 import { createLogger, resolveConfiguration } from 'qt-lib';
-import {
-  EXTENSION_ID,
-  CONF_SERVICE_EXECUTABLE_PATH,
-  CONF_INSTALLATION_PATH
-} from '@/constants';
+import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
+import { ensureConnected } from '@/service-connection';
 
 const logger = createLogger('commands');
-
-function getServiceExecutablePath(): string | undefined {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const exePath = config.get<string>(CONF_SERVICE_EXECUTABLE_PATH);
-  return exePath && exePath.length > 0 ? exePath : undefined;
-}
 
 function formatSize(bytes: number): string {
   if (bytes === 0) {
@@ -140,63 +129,21 @@ async function showLicenseAgreement(
 }
 
 async function withService<T>(
-  action: (session: Session, packages: Packages) => Promise<T>
+  action: (packages: Packages) => Promise<T>
 ): Promise<T | undefined> {
-  const serviceBin = getServiceExecutablePath();
-  const serviceLogger = createLogger('service');
-  const launcher = new ServiceLauncher({
-    ...(serviceBin ? { serviceBin } : {}),
-    onStdout: (line) => {
-      serviceLogger.info(line);
-    },
-    onStderr: (line) => {
-      serviceLogger.warn(line);
-    }
-  });
-
-  const started = await vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: 'Starting Qt Software Management Service...',
-      cancellable: false
-    },
-    async () => launcher.startService()
-  );
-
-  if (!started) {
-    const err = launcher.lastError;
-    void vscode.window.showErrorMessage(
-      `Failed to start service: ${err?.message ?? 'Unknown error'}. ` +
-        `Check the "qt-sms.serviceExecutablePath" setting.`
-    );
-    return undefined;
-  }
-
-  const session = new Session();
   try {
-    await session.connectToService();
-
-    const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-    const rawInstallPath = config.get<string>(CONF_INSTALLATION_PATH);
-    if (rawInstallPath) {
-      const installPath = resolveConfiguration(rawInstallPath);
-      const settings = new Settings(session);
-      await settings.setInstallationPath(installPath);
-    }
-
+    const session = await ensureConnected();
     const packages = new Packages(session);
-    return await action(session, packages);
+    return await action(packages);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     void vscode.window.showErrorMessage(`Service error: ${msg}`);
     return undefined;
-  } finally {
-    session.disconnectFromService();
   }
 }
 
 export async function searchPackages(): Promise<void> {
-  await withService(async (_session, packages) => {
+  await withService(async (packages) => {
     const results = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -263,7 +210,7 @@ export async function searchPackages(): Promise<void> {
 }
 
 export async function listInstalledPackages(): Promise<void> {
-  await withService(async (_session, packages) => {
+  await withService(async (packages) => {
     const results = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -299,7 +246,7 @@ export async function listInstalledPackages(): Promise<void> {
 }
 
 export async function installPackage(): Promise<void> {
-  await withService(async (_session, packages) => {
+  await withService(async (packages) => {
     const results = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -352,48 +299,40 @@ async function installPackageById(
   const pkgRef = { id: pkg.id, version: pkg.version };
 
   // Fetch requirements (license agreements, unsatisfied rules).
-  // The service may not support this in online mode yet, so treat
-  // failure as "no pre-flight requirements" and let install handle
-  // any prompts interactively via service/question.
   const preAnswers: LicenseAnswer[] = [];
-  try {
-    const requirements = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Checking requirements...',
-        cancellable: false
-      },
-      async () =>
-        packages.fetchRequirements([pkgRef], undefined, {
-          onMessage: (info) => {
-            logger.info(`fetchRequirements: ${info.message}`);
-          },
-          onPrompt: handleUserPrompt
-        })
-    );
+  const requirements = await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: 'Checking requirements...',
+      cancellable: false
+    },
+    async () =>
+      packages.fetchRequirements([pkgRef], undefined, {
+        onMessage: (info) => {
+          logger.info(`fetchRequirements: ${info.message}`);
+        },
+        onPrompt: handleUserPrompt
+      })
+  );
 
-    // Block if there are unsatisfied rules
-    if (requirements.unsatisfiedRules.length > 0) {
-      const messages = requirements.unsatisfiedRules.map((r) => r.userMessage);
-      void vscode.window.showErrorMessage(
-        `Cannot install ${pkg.name || pkg.id}: ${messages.join('; ')}`
-      );
+  // Block if there are unsatisfied rules
+  // TODO: Enable this later on
+  // if (requirements.unsatisfiedRules.length > 0) {
+  //   const messages = requirements.unsatisfiedRules.map((r) => r.userMessage);
+  //   void vscode.window.showErrorMessage(
+  //     `Cannot install ${pkg.name || pkg.id}: ${messages.join('; ')}`
+  //   );
+  //   return;
+  // }
+
+  // Present license agreements
+  for (const agreement of requirements.licenseAgreements) {
+    const accepted = await showLicenseAgreement(agreement);
+    if (!accepted) {
+      void vscode.window.showInformationMessage('Installation cancelled.');
       return;
     }
-
-    // Present license agreements
-    for (const agreement of requirements.licenseAgreements) {
-      const accepted = await showLicenseAgreement(agreement);
-      if (!accepted) {
-        void vscode.window.showInformationMessage('Installation cancelled.');
-        return;
-      }
-      preAnswers.push({ id: agreement.id, answer: agreement.acceptText });
-    }
-  } catch {
-    logger.info(
-      'fetchRequirements not supported by service; skipping pre-flight check'
-    );
+    preAnswers.push({ id: agreement.id, answer: agreement.acceptText });
   }
 
   const options =
@@ -408,6 +347,12 @@ async function installPackageById(
     async (progress) => {
       let lastPct = 0;
       try {
+        // log options
+        logger.info(
+          `Installing package ${pkg.name || pkg.id} with options: ${JSON.stringify(
+            options
+          )}`
+        );
         await packages.install([pkgRef], options, {
           onProgress: (info) => {
             const pct = Math.round(info.progress);
@@ -469,17 +414,36 @@ export async function setInstallationPath(): Promise<void> {
     return;
   }
 
-  await config.update(
-    CONF_INSTALLATION_PATH,
-    dirUri.fsPath,
-    vscode.ConfigurationTarget.Global
-  );
+  await validateAndSetInstallationPath(dirUri.fsPath);
+}
 
-  await withService(async (session) => {
+export async function onInstallationPathChanged(): Promise<void> {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawPath) {
+    return;
+  }
+  const installPath = resolveConfiguration(rawPath);
+  await validateAndSetInstallationPath(installPath);
+}
+
+async function validateAndSetInstallationPath(path: string): Promise<void> {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+
+  try {
+    const session = await ensureConnected();
     const settings = new Settings(session);
-    await settings.setInstallationPath(dirUri.fsPath);
-    void vscode.window.showInformationMessage(
-      `Installation path set to: ${dirUri.fsPath}`
+    await settings.setInstallationPath(path);
+    await config.update(
+      CONF_INSTALLATION_PATH,
+      path,
+      vscode.ConfigurationTarget.Global
     );
-  });
+    void vscode.window.showInformationMessage(
+      `Installation path set to: ${path}`
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    void vscode.window.showErrorMessage(`Invalid installation path: ${msg}`);
+  }
 }

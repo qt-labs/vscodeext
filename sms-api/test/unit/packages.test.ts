@@ -588,6 +588,7 @@ describe('Packages', () => {
               id: 'gplv3',
               title: 'GPLv3 License',
               text: 'Full license text...',
+              format: 'txt',
               acceptText: 'Accept',
               rejectText: 'Decline'
             }
@@ -614,6 +615,7 @@ describe('Packages', () => {
       assert.equal(result.licenseAgreements[0].title, 'GPLv3 License');
       assert.equal(result.licenseAgreements[0].acceptText, 'Accept');
       assert.equal(result.licenseAgreements[0].rejectText, 'Decline');
+      assert.equal(result.licenseAgreements[0].format, 'txt');
 
       assert.equal(result.unsatisfiedRules.length, 1);
       assert.equal(result.unsatisfiedRules[0].ruleId, 'rule-1');
