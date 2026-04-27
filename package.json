@@ -78,7 +78,7 @@
     "ci:qt-cpp": "cd qt-cpp && npm ci",
     "ci:qt-python": "cd qt-python && npm ci",
     "ci:qt-ui": "cd qt-ui && npm ci",
-    "ci:qt-sms": "cd qt-sms && npm ci",
+    "ci:qt-sms": "cd qt-sms && npm run ci:all",
     "ci:qt-lib": "cd qt-lib && npm ci",
     "ci:sms-api": "cd sms-api && npm ci",
     "ci:all": "npm ci && concurrently \"npm run ci:qt-lib\" \"npm run ci:qt-core\" \"npm run ci:qt-cpp\" \"npm run ci:qt-python\" \"npm run ci:qt-ui\" \"npm run ci:qt-qml\" \"npm run ci:qt-sms\"",

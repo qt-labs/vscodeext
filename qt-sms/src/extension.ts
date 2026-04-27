@@ -18,7 +18,8 @@ import {
   setInstallationPath,
   onInstallationPathChanged,
   login,
-  logout
+  logout,
+  setExtensionContext
 } from '@/commands';
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
@@ -31,6 +32,8 @@ export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
   logger.info(`Activating ${context.extension.id}`);
   telemetry.activate(context);
+
+  setExtensionContext(context);
 
   coreAPI = await getCoreApi();
   if (!coreAPI) {
