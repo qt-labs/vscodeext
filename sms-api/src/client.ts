@@ -946,12 +946,12 @@ export class Settings {
    * Persisted across service restarts.
    */
   async setInstallationPath(
-    path: string,
+    InsPath: string,
     callbacks?: JobCallbacks
   ): Promise<string> {
     return this.setSetting(
       IPC.settingsKeys.installationPath,
-      path,
+      InsPath,
       SettingsPersistence.Persistent,
       callbacks
     );
