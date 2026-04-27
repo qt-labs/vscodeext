@@ -7,7 +7,6 @@ import {
   Packages,
   Settings,
   type PackageData,
-  type LicenseAgreement,
   type LicenseAnswer,
   type UserPrompt,
   type UserPromptReply,
@@ -23,8 +22,15 @@ import {
   AUTH_PROVIDER_ID,
   type QtAccountAuthenticationProvider
 } from '@/auth-provider';
+import { showLicenseAgreementPanel } from '@/license-panel';
 
 const logger = createLogger('commands');
+
+let extensionContext: vscode.ExtensionContext | undefined;
+
+export function setExtensionContext(ctx: vscode.ExtensionContext): void {
+  extensionContext = ctx;
+}
 
 function formatSize(bytes: number): string {
   if (bytes === 0) {
@@ -114,22 +120,6 @@ async function handleUserPrompt(prompt: UserPrompt): Promise<UserPromptReply> {
       return { kind: 'text', text: fileUri.fsPath };
     }
   }
-}
-
-async function showLicenseAgreement(
-  agreement: LicenseAgreement
-): Promise<boolean> {
-  const detail = agreement.text
-    ? `${agreement.text.substring(0, 2000)}${agreement.text.length > 2000 ? '\n\n...(truncated)' : ''}`
-    : agreement.title;
-
-  const choice = await vscode.window.showInformationMessage(
-    agreement.title,
-    { modal: true, detail },
-    agreement.acceptText,
-    agreement.rejectText
-  );
-  return choice === agreement.acceptText;
 }
 
 async function withService<T>(
@@ -337,14 +327,25 @@ async function installPackageById(
   //   return;
   // }
 
-  // Present license agreements
-  for (const agreement of requirements.licenseAgreements) {
-    const accepted = await showLicenseAgreement(agreement);
+  // Present license agreements in a webview panel
+  if (requirements.licenseAgreements.length > 0) {
+    if (!extensionContext) {
+      void vscode.window.showErrorMessage(
+        'Extension context not available for license UI.'
+      );
+      return;
+    }
+    const accepted = await showLicenseAgreementPanel(
+      extensionContext,
+      requirements.licenseAgreements
+    );
     if (!accepted) {
       void vscode.window.showInformationMessage('Installation cancelled.');
       return;
     }
-    preAnswers.push({ id: agreement.id, answer: agreement.acceptText });
+    for (const agreement of requirements.licenseAgreements) {
+      preAnswers.push({ id: agreement.id, answer: agreement.acceptText });
+    }
   }
 
   const options =

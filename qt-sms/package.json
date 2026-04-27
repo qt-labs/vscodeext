@@ -95,8 +95,13 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
-    "compile": "node ./esbuild.mjs",
+    "build:webview": "cd webview-ui && npm run build",
+    "ci:webview": "cd webview-ui && npm ci",
+    "ci:all": "npm run ci:webview && npm ci",
+    "install:webview": "cd webview-ui && npm install",
+    "install:all": "npm run install:webview && npm install",
+    "vscode:prepublish": "npm run build:webview && cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
+    "compile": "npm run build:webview && node ./esbuild.mjs",
     "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
