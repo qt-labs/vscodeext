@@ -1,0 +1,21 @@
+{
+  "name": "qt-sms-webview-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "svelte": "^5.19.6"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tsconfig/svelte": "^5.0.4",
+    "svelte-check": "^4.1.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.1.0"
+  }
+}
