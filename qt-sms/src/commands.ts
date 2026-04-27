@@ -457,13 +457,11 @@ async function validateAndSetInstallationPath(path: string): Promise<void> {
   }
 }
 
-export async function login(): Promise<void> {
+export async function login(
+  authProvider: QtAccountAuthenticationProvider
+): Promise<void> {
   try {
-    await vscode.authentication.getSession(
-      AUTH_PROVIDER_ID,
-      [AUTH_PROVIDER_ID],
-      { createIfNone: true }
-    );
+    await authProvider.createSession([AUTH_PROVIDER_ID]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg !== 'Login cancelled') {
