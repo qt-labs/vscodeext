@@ -94,7 +94,9 @@ export async function activate(context: vscode.ExtensionContext) {
       `${EXTENSION_ID}.setInstallationPath`,
       setInstallationPath
     ),
-    vscode.commands.registerCommand(`${EXTENSION_ID}.login`, login),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.login`, async () =>
+      login(authProvider)
+    ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () =>
       logout(authProvider)
     ),
