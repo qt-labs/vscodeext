@@ -25,6 +25,7 @@ function getServiceExecutablePath(): string | undefined {
 
 export async function ensureConnected(): Promise<Session> {
   if (session?.isConnected) {
+    logger.info('Already connected to service');
     return session;
   }
 
@@ -67,10 +68,20 @@ export async function ensureConnected(): Promise<Session> {
 
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   const rawInstallPath = config.get<string>(CONF_INSTALLATION_PATH);
+  const settings = new Settings(session);
+
   if (rawInstallPath) {
     const installPath = resolveConfiguration(rawInstallPath);
-    const settings = new Settings(session);
-    await settings.setInstallationPath(installPath);
+    const serviceInstallPath = await settings.getInstallationPath();
+    if (serviceInstallPath !== installPath) {
+      logger.info(
+        `Installation path mismatch: service="${serviceInstallPath}", ` +
+          `setting="${installPath}". Updating service.`
+      );
+      await settings.setInstallationPath(installPath);
+    } else {
+      logger.info(`installationPath: "${installPath}"`);
+    }
   }
 
   return session;
