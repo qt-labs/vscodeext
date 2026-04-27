@@ -151,12 +151,16 @@ export async function searchPackages(): Promise<void> {
         cancellable: false
       },
       async () =>
-        packages.searchAvailablePackages(undefined, undefined, {
-          onMessage: (info) => {
-            logger.info(`searchAvailablePackages: ${info.message}`);
-          },
-          onPrompt: handleUserPrompt
-        })
+        packages.searchAvailablePackages(
+          { packagePresentation: 'monolith' },
+          undefined,
+          {
+            onMessage: (info) => {
+              logger.info(`searchAvailablePackages: ${info.message}`);
+            },
+            onPrompt: handleUserPrompt
+          }
+        )
     );
 
     if (results.length === 0) {
@@ -254,12 +258,16 @@ export async function installPackage(): Promise<void> {
         cancellable: false
       },
       async () =>
-        packages.searchAvailablePackages(undefined, undefined, {
-          onMessage: (info) => {
-            logger.info(`searchAvailablePackages: ${info.message}`);
-          },
-          onPrompt: handleUserPrompt
-        })
+        packages.searchAvailablePackages(
+          { packagePresentation: 'monolith' },
+          undefined,
+          {
+            onMessage: (info) => {
+              logger.info(`searchAvailablePackages: ${info.message}`);
+            },
+            onPrompt: handleUserPrompt
+          }
+        )
     );
 
     const uninstalled = results.filter(
