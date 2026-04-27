@@ -19,6 +19,10 @@ import {
 import { createLogger, resolveConfiguration } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import { ensureConnected } from '@/service-connection';
+import {
+  AUTH_PROVIDER_ID,
+  type QtAccountAuthenticationProvider
+} from '@/auth-provider';
 
 const logger = createLogger('commands');
 
@@ -450,5 +454,31 @@ async function validateAndSetInstallationPath(path: string): Promise<void> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     void vscode.window.showErrorMessage(`Invalid installation path: ${msg}`);
+  }
+}
+
+export async function login(): Promise<void> {
+  try {
+    await vscode.authentication.getSession(
+      AUTH_PROVIDER_ID,
+      [AUTH_PROVIDER_ID],
+      { createIfNone: true }
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg !== 'Login cancelled') {
+      const errMsg = `Qt Account login failed: ${msg}`;
+      logger.error(errMsg);
+      void vscode.window.showErrorMessage(errMsg);
+    }
+  }
+}
+
+export async function logout(
+  authProvider: QtAccountAuthenticationProvider
+): Promise<void> {
+  const sessions = await authProvider.getSessions();
+  for (const s of sessions) {
+    await authProvider.removeSession(s.id);
   }
 }

@@ -16,13 +16,12 @@ import {
   listInstalledPackages,
   installPackage,
   setInstallationPath,
-  onInstallationPathChanged
+  onInstallationPathChanged,
+  login,
+  logout
 } from '@/commands';
 import { disconnect } from '@/service-connection';
-import {
-  registerAuthenticationProvider,
-  AUTH_PROVIDER_ID
-} from '@/auth-provider';
+import { registerAuthenticationProvider } from '@/auth-provider';
 
 const logger = createLogger('extension');
 
@@ -95,30 +94,10 @@ export async function activate(context: vscode.ExtensionContext) {
       `${EXTENSION_ID}.setInstallationPath`,
       setInstallationPath
     ),
-    vscode.commands.registerCommand(`${EXTENSION_ID}.login`, async () => {
-      try {
-        await vscode.authentication.getSession(
-          AUTH_PROVIDER_ID,
-          [AUTH_PROVIDER_ID],
-          {
-            createIfNone: true
-          }
-        );
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        if (msg !== 'Login cancelled') {
-          void vscode.window.showErrorMessage(
-            `Qt Account login failed: ${msg}`
-          );
-        }
-      }
-    }),
-    vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () => {
-      const ss = await authProvider.getSessions();
-      for (const s of ss) {
-        await authProvider.removeSession(s.id);
-      }
-    }),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.login`, login),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () =>
+      logout(authProvider)
+    ),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {
         void onInstallationPathChanged();
