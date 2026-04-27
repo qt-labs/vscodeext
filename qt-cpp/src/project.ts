@@ -97,9 +97,11 @@ export class CppProject implements Project {
 
     if (usePresets) {
       logger.info('Using CMake presets');
+      telemetry.sendConfig('UsingCMakePresets');
       this._type = CppProjectType.Presets;
     } else {
       logger.info('Using Kit configuration');
+      telemetry.sendConfig('UsingKitConfiguration');
       this._type = CppProjectType.Kit;
     }
     logger.info(
