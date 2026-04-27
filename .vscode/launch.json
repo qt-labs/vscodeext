@@ -47,6 +47,14 @@
       "preLaunchTask": "npm qt-python watch"
     },
     {
+      "name": "Run qt-sms",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-sms"],
+      "outFiles": ["${workspaceFolder}/qt-sms/out/**/*.js"],
+      "preLaunchTask": "npm qt-sms watch"
+    },
+    {
       "name": "Run Extension Tests qt-core",
       "type": "extensionHost",
       "request": "launch",
