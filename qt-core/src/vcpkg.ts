@@ -69,10 +69,7 @@ function containsQtPath(qtPath: string, additionalQtPaths: QtAdditionalPath[]) {
 }
 
 function isVCPKGInstalled(): boolean {
-  if (commandExists.sync('vcpkg')) {
-    return true;
-  }
-  return false;
+  return commandExists.sync('vcpkg');
 }
 
 function getDoNotAskForVCPKG(): boolean {
