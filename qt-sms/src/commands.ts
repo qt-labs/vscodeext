@@ -27,9 +27,16 @@ import { showLicenseAgreementPanel } from '@/license-panel';
 const logger = createLogger('commands');
 
 let extensionContext: vscode.ExtensionContext | undefined;
+let authProviderInstance: QtAccountAuthenticationProvider | undefined;
 
 export function setExtensionContext(ctx: vscode.ExtensionContext): void {
   extensionContext = ctx;
+}
+
+export function setAuthProvider(
+  provider: QtAccountAuthenticationProvider
+): void {
+  authProviderInstance = provider;
 }
 
 function formatSize(bytes: number): string {
@@ -243,6 +250,20 @@ export async function listInstalledPackages(): Promise<void> {
   });
 }
 
+async function requireLogin(): Promise<boolean> {
+  const sessions = await authProviderInstance?.getSessions();
+  if (sessions && sessions.length > 0) {
+    return true;
+  }
+  if (!authProviderInstance) {
+    void vscode.window.showErrorMessage('Auth provider not available.');
+    return false;
+  }
+  await login(authProviderInstance);
+  const updated = await authProviderInstance.getSessions();
+  return updated.length > 0;
+}
+
 export async function installPackage(): Promise<void> {
   await withService(async (packages) => {
     const results = await vscode.window.withProgress(
@@ -298,6 +319,10 @@ async function installPackageById(
   packages: Packages,
   pkg: PackageData
 ): Promise<void> {
+  if (!(await requireLogin())) {
+    return;
+  }
+
   const pkgRef = { id: pkg.id, version: pkg.version };
 
   // Fetch requirements (license agreements, unsatisfied rules).
@@ -354,7 +379,7 @@ async function installPackageById(
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: `Installing ${pkg.name || pkg.id}...`,
+      title: `Installing ${pkg.name || pkg.id}`,
       cancellable: false
     },
     async (progress) => {
