@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 
 import {
   Packages,
@@ -15,7 +16,13 @@ import {
   ProgressType
 } from 'sms-api';
 
-import { createLogger, resolveConfiguration } from 'qt-lib';
+import {
+  createLogger,
+  resolveConfiguration,
+  findQtPathsInInstallationPath,
+  CORE_EXTENSION_ID,
+  AdditionalQtPathsName
+} from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import { ensureConnected } from '@/service-connection';
 import {
@@ -315,6 +322,46 @@ export async function installPackage(): Promise<void> {
   });
 }
 
+function registerInstalledQtPaths(): void {
+  const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const installRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
+  if (!installRoot || !fs.existsSync(installRoot)) {
+    logger.warn(
+      'Installation path not set or does not exist, skipping Qt registration'
+    );
+    return;
+  }
+
+  const qtpathsExe = findQtPathsInInstallationPath(installRoot);
+  if (!qtpathsExe) {
+    logger.info('No qtpaths found in installation path');
+    return;
+  }
+
+  const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
+  const existing = coreConfig.inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  const alreadyRegistered = currentPaths.some(
+    (p) =>
+      (typeof p === 'string' ? p : (p as { path: string }).path) === qtpathsExe
+  );
+
+  if (alreadyRegistered) {
+    logger.info(`Qt installation already registered: ${qtpathsExe}`);
+    return;
+  }
+
+  const updated = [...currentPaths, { path: qtpathsExe }];
+  void coreConfig.update(
+    AdditionalQtPathsName,
+    updated,
+    vscode.ConfigurationTarget.Global
+  );
+  logger.info(`Registered Qt installation: ${qtpathsExe}`);
+}
+
 async function installPackageById(
   packages: Packages,
   pkg: PackageData
@@ -423,6 +470,7 @@ async function installPackageById(
         void vscode.window.showInformationMessage(
           `Successfully installed ${pkg.name || pkg.id}`
         );
+        registerInstalledQtPaths();
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         const errMsg = `Failed to install ${pkg.name || pkg.id}: ${msg}`;
