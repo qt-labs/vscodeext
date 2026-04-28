@@ -19,7 +19,8 @@ import {
   onInstallationPathChanged,
   login,
   logout,
-  setExtensionContext
+  setExtensionContext,
+  setAuthProvider
 } from '@/commands';
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
@@ -43,6 +44,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   const authProvider = registerAuthenticationProvider(context);
+  setAuthProvider(authProvider);
 
   // Track login state via VS Code context key
   const setLoggedIn = (value: boolean) =>
