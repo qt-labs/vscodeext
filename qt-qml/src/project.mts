@@ -178,7 +178,7 @@ export class QMLProject implements Project {
     this.qmlls.clearImportPaths();
     this.qmlls.docsPath = undefined;
     if (this.qtpathsExe) {
-      const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe);
+      const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe).info;
       if (!info) {
         throw new Error('Cannot find Qt info');
       }

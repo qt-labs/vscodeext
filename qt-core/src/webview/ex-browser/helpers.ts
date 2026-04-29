@@ -42,8 +42,8 @@ export function findAllPackagePools(): ExPackagePoolDir[] {
 
   getCurrentGlobalAdditionalQtPaths().forEach((p) => {
     const info = coreAPI?.getQtInfoFromPath(p.path);
-    if (info) {
-      const docs = info.get('QT_INSTALL_DOCS'); // .../Qt/Docs/Qt-x.y.z
+    if (info?.info) {
+      const docs = info.info.get('QT_INSTALL_DOCS'); // .../Qt/Docs/Qt-x.y.z
       const parent = docs ? path.dirname(path.dirname(docs)) : '';
 
       found.push({
