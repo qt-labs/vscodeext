@@ -46,7 +46,7 @@ export async function locateDesignerFromKit(
 }
 
 export async function locateDesignerFromQtPaths(qtPaths: string) {
-  const info = coreAPI?.getQtInfoFromPath(qtPaths);
+  const info = coreAPI?.getQtInfoFromPath(qtPaths).info;
   if (!info) {
     return undefined;
   }

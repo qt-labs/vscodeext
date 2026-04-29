@@ -93,7 +93,7 @@ function getQtDirFromQtPaths(pathsExe: string, toolchainFile?: string) {
     }
     return false;
   };
-  const info = coreAPI?.getQtInfoFromPath(pathsExe);
+  const info = coreAPI?.getQtInfoFromPath(pathsExe).info;
   const paths: string[] = [];
   if (info) {
     const keys = info.data;
@@ -205,7 +205,7 @@ export function registerKitDirectoryCommand() {
 }
 
 async function findQtPluginPath(qtpaths: string) {
-  const info = coreAPI?.getQtInfoFromPath(qtpaths);
+  const info = coreAPI?.getQtInfoFromPath(qtpaths).info;
   if (info) {
     const buildType = await vscode.commands.executeCommand('cmake.buildType');
     let pluginPath = info.get('QT_INSTALL_PLUGINS');
@@ -280,7 +280,7 @@ function isVCPKGToolchainFile(toolchainFile: string) {
 }
 
 async function getQmlImportPathFromQtPaths(qtpaths: string) {
-  const info = coreAPI?.getQtInfoFromPath(qtpaths);
+  const info = coreAPI?.getQtInfoFromPath(qtpaths).info;
   if (!info) {
     return undefined;
   }

@@ -41,8 +41,8 @@ export function mangleQtInstallation(qtInsRoot: string, installation: string) {
   const qtPaths = findQtPathsInInstallationPath(installation);
   if (qtPaths) {
     const qtInfo = coreAPI?.getQtInfoFromPath(qtPaths);
-    if (qtInfo) {
-      const archInfo = getArchInfoFromQtInfo(qtInfo);
+    if (qtInfo?.info) {
+      const archInfo = getArchInfoFromQtInfo(qtInfo.info);
       if (archInfo) {
         return kitName + '-' + archInfo;
       }

@@ -115,7 +115,7 @@ function getLinguistExePath(selectedQtBinPath: string) {
 }
 
 async function locateLinguistFromQtPaths(selectedQtPaths: string) {
-  const qtInfo = coreAPI?.getQtInfoFromPath(selectedQtPaths);
+  const qtInfo = coreAPI?.getQtInfoFromPath(selectedQtPaths).info;
   if (!qtInfo) {
     return undefined;
   }

@@ -88,6 +88,11 @@ export class QtInfo {
   }
 }
 
+export interface QtInfoResult {
+  info?: QtInfo;
+  err?: Error;
+}
+
 export interface CoreAPI {
   notify(config: QtWorkspaceConfigMessage): void;
   getValue<T>(
@@ -100,8 +105,8 @@ export interface CoreAPI {
     value: ConfigType
   ): void;
   onValueChanged: vscode.Event<QtWorkspaceConfigMessage>;
-  getQtInfo(qtPathsExecutable: QtAdditionalPath): QtInfo | undefined;
-  getQtInfoFromPath(qtPathsExe: string): QtInfo | undefined;
+  getQtInfo(qtPathsExecutable: QtAdditionalPath): QtInfoResult;
+  getQtInfoFromPath(qtPathsExe: string): QtInfoResult;
   reset(): void;
 }
 

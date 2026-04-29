@@ -12,6 +12,7 @@ import {
   QtWorkspaceConfig,
   QtWorkspaceConfigMessage,
   QtInfo,
+  QtInfoResult,
   QtAdditionalPath,
   ConfigType
 } from 'qt-lib';
@@ -152,15 +153,15 @@ export class CoreAPIImpl implements CoreAPI {
   // kit configuration. So, we should be able to obtain the QtInfo from the path
   // directly. `getQtInfoFromPath` might lose some information like the name of
   // the kit, and whether it is a VCPKG kit or not.
-  getQtInfoFromPath(qtPathsExe: string): QtInfo | undefined {
+  getQtInfoFromPath(qtPathsExe: string): QtInfoResult {
     return this.getQtInfo({ path: qtPathsExe });
   }
-  getQtInfo(qtAdditionalPath: QtAdditionalPath): QtInfo | undefined {
+  getQtInfo(qtAdditionalPath: QtAdditionalPath): QtInfoResult {
     let result = this._qtInfoCache.get(qtAdditionalPath.path);
     if (result) {
       result.name = qtAdditionalPath.name;
       result.isVCPKG = qtAdditionalPath.isVCPKG;
-      return result;
+      return { info: result };
     }
 
     result = new QtInfo(
@@ -182,8 +183,15 @@ export class CoreAPIImpl implements CoreAPI {
           timeout: 1000
         }
       );
-      if (retOldQtPaths.error ?? retOldQtPaths.status !== 0) {
-        return undefined;
+      if (retOldQtPaths.error) {
+        return { err: retOldQtPaths.error };
+      }
+      if (retOldQtPaths.status !== 0) {
+        return {
+          err: new Error(
+            `"${qtAdditionalPath.path} --binaries-dir" exited with code ${String(retOldQtPaths.status)}`
+          )
+        };
       }
       const outputOldQtPaths = retOldQtPaths.stdout;
       const qmakePath = path.join(outputOldQtPaths.trim(), 'qmake');
@@ -191,12 +199,25 @@ export class CoreAPIImpl implements CoreAPI {
         encoding: 'utf8',
         timeout: 1000
       });
-      if (retQmake.error ?? retQmake.status !== 0) {
-        return undefined;
+      if (retQmake.error) {
+        return { err: retQmake.error };
+      }
+      if (retQmake.status !== 0) {
+        return {
+          err: new Error(
+            `"${qmakePath} -query" exited with code ${String(retQmake.status)}`
+          )
+        };
       }
       output = retQmake.stdout;
-    } else if (retFristTry.error ?? retFristTry.status !== 0) {
-      return undefined;
+    } else if (retFristTry.error) {
+      return { err: retFristTry.error };
+    } else if (retFristTry.status !== 0) {
+      return {
+        err: new Error(
+          `"${qtAdditionalPath.path} -query" exited with code ${String(retFristTry.status)}`
+        )
+      };
     } else {
       output = retFristTry.stdout;
     }
@@ -250,6 +271,6 @@ export class CoreAPIImpl implements CoreAPI {
       result.set('MSVC_PATCH_VERSION', msvcVersion.patch.toString());
     }
     this._qtInfoCache.set(qtAdditionalPath.path, result);
-    return result;
+    return { info: result };
   }
 }

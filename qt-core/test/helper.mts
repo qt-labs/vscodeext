@@ -593,7 +593,7 @@ export function setupGetQtInfoStub(
   coreAPI: CoreAPI,
   qtInfo: QtInfo
 ): sinon.SinonStub {
-  return sb.stub(coreAPI, 'getQtInfo').returns(qtInfo);
+  return sb.stub(coreAPI, 'getQtInfo').returns({ info: qtInfo });
 }
 
 // Cache the in-flight or resolved CoreAPIImpl so repeated calls are fast

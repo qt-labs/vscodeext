@@ -336,13 +336,19 @@ export class KitManager {
       : undefined;
     for (const p of qtPaths) {
       const qtInfo = coreAPI?.getQtInfo(p);
-      if (!qtInfo) {
-        const warningMessage = `qtPaths info not found for "${p.path}".`;
+      if (!qtInfo?.info) {
+        let warningMessage = `qtPaths info not found for "${p.path}".`;
+        if (qtInfo?.err) {
+          warningMessage += ` Error: "${qtInfo.err.message}"`;
+        }
         void vscode.window.showWarningMessage(warningMessage);
         logger.info(warningMessage);
         continue;
       }
-      const kit = KitManager.generateKitFromQtInfo(qtInfo, await cmakeKits);
+      const kit = KitManager.generateKitFromQtInfo(
+        qtInfo.info,
+        await cmakeKits
+      );
       for await (const k of kit) {
         logger.info('newKit: ' + JSON.stringify(k));
         if (k) {
@@ -981,7 +987,7 @@ function analyzeToolchain(kit: Kit) {
     // TODO: parse qconfig.pri to get more detailed info
     if (!toolchainType) {
       const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
-      toolchainType = qtInfo?.get('QMAKE_XSPEC');
+      toolchainType = qtInfo?.info?.get('QMAKE_XSPEC');
     }
   }
 

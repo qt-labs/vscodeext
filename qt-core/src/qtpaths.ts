@@ -67,12 +67,13 @@ export function checkQtpathsInEnvPath(): void {
     logger.info('No qtpaths or qmake found in PATH');
     return;
   }
-  const info = coreAPI?.getQtInfo({ path: exePath });
-  if (!info) {
+  const ret = coreAPI?.getQtInfo({ path: exePath });
+  if (!ret?.info) {
     logger.error(`Failed to get Qt info for ${exePath}`);
+    logger.error(String(ret?.err));
     return;
   }
-  const name = generateDefaultQtPathsName(info) + '_from_PATH';
+  const name = generateDefaultQtPathsName(ret.info) + '_from_PATH';
   const qtPath: QtAdditionalPath = { path: exePath, name: name };
   const currentQtPaths = getCurrentGlobalAdditionalQtPaths();
   if (currentQtPaths.some((p) => p.path === qtPath.path)) {
@@ -92,7 +93,7 @@ export function addQtPathToSettings(qtPath: QtAdditionalPath) {
     AdditionalQtPathsName
   );
   let valueToSet: (string | object)[] = [];
-  const info = coreAPI?.getQtInfo(qtPath);
+  const info = coreAPI?.getQtInfo(qtPath).info;
   if (!info) {
     throw new Error(`Failed to get Qt info for ${qtPath.path}`);
   }

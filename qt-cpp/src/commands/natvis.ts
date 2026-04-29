@@ -61,7 +61,7 @@ export function registerNatvisCommand() {
           throw new Error(error);
         }
         const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
-        const majorVersion = qtInfo?.get('QT_VERSION')?.split('.')[0];
+        const majorVersion = qtInfo?.info?.get('QT_VERSION')?.split('.')[0];
         if (!majorVersion) {
           throw new Error('Cannot determine the major version');
         }

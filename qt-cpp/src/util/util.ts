@@ -38,7 +38,7 @@ export function QtVersionFromKit(kit: Kit) {
   const qtPathsExe = getQtPathsExe(kit);
   if (qtPathsExe) {
     const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
-    return qtInfo?.get('QT_VERSION');
+    return qtInfo?.info?.get('QT_VERSION');
   }
   return undefined;
 }
