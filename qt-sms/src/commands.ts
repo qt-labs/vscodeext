@@ -389,15 +389,18 @@ async function installPackageById(
       })
   );
 
-  // Block if there are unsatisfied rules
-  // TODO: Enable this later on
-  // if (requirements.unsatisfiedRules.length > 0) {
-  //   const messages = requirements.unsatisfiedRules.map((r) => r.userMessage);
-  //   void vscode.window.showErrorMessage(
-  //     `Cannot install ${pkg.name || pkg.id}: ${messages.join('; ')}`
-  //   );
-  //   return;
-  // }
+  // Block only on non-resolvable rules (e.g. visibility restrictions).
+  // Rules with conditionType "la_accepted" are resolved by the LA flow below.
+  const hardBlockers = requirements.unsatisfiedRules.filter(
+    (r) => !r.isResolvableByUser
+  );
+  if (hardBlockers.length > 0) {
+    const messages = hardBlockers.map((r) => r.userMessage);
+    void vscode.window.showErrorMessage(
+      `Cannot install ${pkg.name || pkg.id}: ${messages.join('; ')}`
+    );
+    return;
+  }
 
   // Present license agreements in a webview panel
   if (requirements.licenseAgreements.length > 0) {

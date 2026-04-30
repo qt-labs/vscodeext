@@ -23,7 +23,7 @@ describe('Cache', () => {
   beforeEach(async () => {
     server = new MockServer();
     await server.listen();
-    session = new Session(server.socketPath);
+    session = new Session('test', server.socketPath);
     session.on('error', () => {});
     await session.connectToService();
     cache = new Cache(session);

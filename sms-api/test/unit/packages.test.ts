@@ -81,7 +81,7 @@ describe('Packages', () => {
   beforeEach(async () => {
     server = new MockServer();
     await server.listen();
-    session = new Session(server.socketPath);
+    session = new Session('test', server.socketPath);
     session.on('error', () => {}); // Suppress for connection-drop tests
     await session.connectToService();
     packages = new Packages(session);
