@@ -9,7 +9,8 @@ import { createLogger, resolveConfiguration } from 'qt-lib';
 import {
   EXTENSION_ID,
   CONF_SERVICE_EXECUTABLE_PATH,
-  CONF_INSTALLATION_PATH
+  CONF_INSTALLATION_PATH,
+  CONF_USER_AGENT
 } from '@/constants';
 
 const logger = createLogger('service-connection');
@@ -61,7 +62,7 @@ export async function ensureConnected(): Promise<Session> {
   }
 
   if (!session) {
-    session = new Session();
+    session = new Session(CONF_USER_AGENT);
   }
 
   await session.connectToService();
