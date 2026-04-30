@@ -103,10 +103,12 @@ export class JsonRpcDispatcher {
   private readonly socket: net.Socket;
   private readonly reader = new PacketReader();
   private readonly pending = new Map<string, PendingCall>();
+  private readonly userAgent: string | undefined;
   private disposed = false;
 
-  constructor(socket: net.Socket) {
+  constructor(socket: net.Socket, userAgent?: string) {
     this.socket = socket;
+    this.userAgent = userAgent;
 
     socket.on('data', (chunk: Buffer) => {
       this.reader.feed(chunk);
@@ -156,12 +158,15 @@ export class JsonRpcDispatcher {
     onMessage?: MessageHandler
   ): string {
     const id = randomUUID();
-    const request: JsonRpcRequest = {
+    const request: Record<string, unknown> = {
       jsonrpc: '2.0',
       id,
       method,
       params
     };
+    if (this.userAgent) {
+      request.userAgent = this.userAgent;
+    }
     this.pending.set(id, {
       id,
       onSuccess,
@@ -170,7 +175,7 @@ export class JsonRpcDispatcher {
       onMessage,
       onPrompt
     });
-    this.send(request);
+    this.send(request as unknown as JsonRpcMessage);
     return id;
   }
 

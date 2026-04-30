@@ -68,6 +68,21 @@ describe('JsonRpcDispatcher', () => {
     assert.deepEqual((payload.params as Record<string, unknown>).packages, []);
   });
 
+  it('call() stamps userAgent on outbound requests when provided', async () => {
+    // Create a dispatcher with a user-agent
+    const uaDispatcher = new JsonRpcDispatcher(clientSocket, 'qt-sms');
+    const msgPromise = server.nextMessage();
+    uaDispatcher.call(
+      'packages/install',
+      { packages: [] },
+      () => {},
+      () => {}
+    );
+    const { payload } = await msgPromise;
+    assert.equal(payload.userAgent, 'qt-sms');
+    uaDispatcher.dispose();
+  });
+
   it('call() returns the generated request id', async () => {
     const msgPromise = server.nextMessage();
     const id = dispatcher.call(
