@@ -402,6 +402,11 @@ async function installPackageById(
     return;
   }
 
+  for (const agreement of requirements.licenseAgreements) {
+    logger.info(`Accepted license agreement: ${agreement.id}`);
+    logger.info(`Agreement title: ${agreement.title}`);
+  }
+
   // Present license agreements in a webview panel
   if (requirements.licenseAgreements.length > 0) {
     if (!extensionContext) {
