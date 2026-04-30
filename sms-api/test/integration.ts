@@ -662,7 +662,7 @@ async function testReconnect(
   }
 
   // Reconnect with a fresh session
-  const session2 = new Session(socketPath, timeoutMs);
+  const session2 = new Session('integration-test', socketPath, timeoutMs);
   await session2.connectToService();
   if (session2.state !== SessionState.Connected) {
     throw new Error(`Expected Connected on reconnect, got ${session2.state}`);
@@ -701,7 +701,7 @@ async function main(): Promise<void> {
     }
 
     // ── Connection tests ──
-    const session = new Session(socketPath, config.connectTimeoutMs);
+    const session = new Session('integration-test', socketPath, config.connectTimeoutMs);
 
     session.on('stateChanged', (state: SessionState) => {
       log(`  [session] state -> ${state}`);
