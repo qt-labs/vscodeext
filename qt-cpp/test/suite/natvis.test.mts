@@ -21,7 +21,8 @@ import {
   stopDebugSession,
   getLocals,
   getQtCppSnippetDebugConfiguration,
-  getFlattenedLocals
+  getFlattenedLocals,
+  warmUpNatvisDisplay
 } from '../debug-helper.mts';
 import type { DebugVariable } from '../debug-helper.mts';
 import {
@@ -353,6 +354,11 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
 
       const stop = stops[0]!;
       const frameId = stop.frameId!;
+      // Warm up NatVis DisplayString evaluation: expand locals then issue a
+      // Watch-context evaluate for each. This forces vsdbg to resolve deferred
+      // DisplayString expressions before we read the final variable values.
+      // (Windows/cppvsdbg only — no-op on other platforms.)
+      await warmUpNatvisDisplay(session, frameId);
       // Fetch Locals from the top frame
       const locals = await getLocals(session, frameId);
       dlog('Locals at top frame:', locals.map((v: any) => v.name).join(', '));

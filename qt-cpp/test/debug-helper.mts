@@ -336,6 +336,64 @@ export async function startDebugAndWaitForStop(
   return { session, stops };
 }
 
+/**
+ * Warm up NatVis DisplayString evaluation for all top-level local variables.
+ *
+ * vsdbg (the debug engine backing cppvsdbg) defers NatVis DisplayString
+ * evaluation for certain expression types — notably pointer casts — when Qt
+ * PDBs are loaded. This causes DisplayString fields to render empty on the
+ * initial variables request even though the Expand items evaluate correctly.
+ *
+ * This helper reproduces the two-step manual workaround that forces evaluation:
+ *   1. Expand each top-level variable (issue a `variables` request on its
+ *      variablesReference). Expansion alone is sometimes sufficient to trigger
+ *      type resolution for nested types.
+ *   2. Issue a DAP `evaluate` request with context "watch" for each top-level
+ *      variable. This is the programmatic equivalent of typing an expression
+ *      in the Watch panel, which forces vsdbg to fully resolve and cache the
+ *      NatVis DisplayString.
+ *
+ * After this call, a subsequent `variables` or `getFlattenedLocals` request
+ * will return the correct DisplayStrings for the affected types.
+ *
+ * This is a workaround for a vsdbg behaviour, not a fix. It is guarded to
+ * Windows only since the issue is specific to cppvsdbg / vsdbg.
+ *
+ * @param session Active VS Code debug session.
+ * @param frameId Stack frame identifier obtained from a `stopped` event.
+ */
+export async function warmUpNatvisDisplay(
+  session: vscode.DebugSession,
+  frameId: number
+): Promise<void> {
+  if (process.platform !== 'win32') return;
+
+  const topLocals = await getLocals(session, frameId);
+
+  // Step 1: expand each top-level variable to trigger type resolution
+  for (const v of topLocals) {
+    if (v.variablesReference && v.variablesReference > 0) {
+      try {
+        await session.customRequest('variables', {
+          variablesReference: v.variablesReference
+        });
+      } catch {}
+    }
+  }
+
+  // Step 2: issue a Watch-context evaluate for each top-level variable to
+  // force vsdbg to evaluate deferred NatVis DisplayString expressions
+  for (const v of topLocals) {
+    try {
+      await session.customRequest('evaluate', {
+        expression: (v as any).evaluateName ?? v.name,
+        frameId,
+        context: 'watch'
+      });
+    } catch {}
+  }
+}
+
 // --- Graceful termination ----------------------------------------------------
 export async function stopDebugSession(session?: vscode.DebugSession) {
   if (!session) return;
