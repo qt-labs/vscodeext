@@ -409,7 +409,10 @@ export class QtAccount {
   onLog: LogCallback | undefined;
 
   constructor(options?: { serverUrl?: string; storagePath?: string }) {
-    this._serverUrl = options?.serverUrl ?? AUTH_SERVER;
+    this._serverUrl =
+      options?.serverUrl ??
+      process.env.QT_ACCOUNT_SERVER_URL ??
+      AUTH_SERVER;
     this._storage = new QtAccountStorage();
     this.log('info', `Initializing (server: ${this._serverUrl})`);
     if (options?.storagePath) {
