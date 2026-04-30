@@ -122,10 +122,11 @@ function parseUnsatisfiedRule(obj: Record<string, unknown>): UnsatisfiedRule {
     (obj.packages as Record<string, unknown>[] | undefined) ?? [];
 
   const ruleType = (rule.ruleType as string | undefined) ?? '';
+  const conditionType = (rule.conditionType as string | undefined) ?? '';
   return {
     ruleId: (rule.ruleId as string | undefined) ?? '',
     ruleType,
-    conditionType: (rule.conditionType as string | undefined) ?? '',
+    conditionType,
     conditionId: (rule.conditionId as string | undefined) ?? '',
     packages: pkgs.map((p) => {
       const ref: PackageReference = {
@@ -140,7 +141,8 @@ function parseUnsatisfiedRule(obj: Record<string, unknown>): UnsatisfiedRule {
     userMessage:
       ruleType === 'visibility'
         ? 'Package not available for your account'
-        : `Installation blocked by rule: ${ruleType}`
+        : `Installation blocked by rule: ${ruleType}`,
+    isResolvableByUser: conditionType === 'la_accepted'
   };
 }
 
@@ -158,9 +160,11 @@ export class Session extends EventEmitter {
   private _socket: Socket | undefined;
   private readonly _socketPath: string;
   private readonly _connectTimeoutMs: number;
+  private readonly _userAgent: string;
 
-  constructor(socketPath?: string, connectTimeoutMs?: number) {
+  constructor(userAgent?: string, socketPath?: string, connectTimeoutMs?: number) {
     super();
+    this._userAgent = userAgent ?? 'sms-api';
     this._socketPath = socketPath ?? IPC.defaultSocket;
     this._connectTimeoutMs = connectTimeoutMs ?? 5000;
   }
@@ -175,6 +179,10 @@ export class Session extends EventEmitter {
 
   get isConnected(): boolean {
     return this._state === SessionState.Connected;
+  }
+
+  get userAgent(): string {
+    return this._userAgent;
   }
 
   /** Internal – used by Packages to access the dispatcher. */
@@ -199,7 +207,7 @@ export class Session extends EventEmitter {
       } satisfies TransportOptions);
 
       this._socket = socket;
-      this._dispatcher = new JsonRpcDispatcher(socket);
+      this._dispatcher = new JsonRpcDispatcher(socket, this._userAgent);
 
       // Observe connection interruption
       socket.once('close', () => {

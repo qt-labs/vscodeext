@@ -22,7 +22,7 @@ describe('Session', () => {
     const server = new MockServer();
     await server.listen();
 
-    const session = new Session(server.socketPath);
+    const session = new Session('test', server.socketPath);
     const stateChanges: SessionState[] = [];
     session.on('stateChanged', (s: SessionState) => stateChanges.push(s));
 
@@ -46,7 +46,7 @@ describe('Session', () => {
     const server = new MockServer();
     await server.listen();
 
-    const session = new Session(server.socketPath);
+    const session = new Session('test', server.socketPath);
     await session.connectToService();
 
     const disconnectedPromise = new Promise<void>((resolve) =>
@@ -66,7 +66,7 @@ describe('Session', () => {
   // ── testConnectFailure ─────────────────────────────────────────────────────
 
   it('connect failure sets state to Error and emits error event', async () => {
-    const session = new Session('/tmp/sms-nonexistent-socket-zzz');
+    const session = new Session('test', '/tmp/sms-nonexistent-socket-zzz');
     const stateChanges: SessionState[] = [];
     const errors: unknown[] = [];
 
@@ -87,7 +87,7 @@ describe('Session', () => {
     const server = new MockServer();
     await server.listen();
 
-    const session = new Session(server.socketPath);
+    const session = new Session('test', server.socketPath);
     await session.connectToService();
     assert.equal(server.connections.length, 1);
 
@@ -105,7 +105,7 @@ describe('Session', () => {
     const server = new MockServer();
     await server.listen();
 
-    const session = new Session(server.socketPath);
+    const session = new Session('test', server.socketPath);
     await session.connectToService();
     assert.equal(session.state, SessionState.Connected);
 

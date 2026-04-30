@@ -47,6 +47,7 @@ export enum ErrorCode {
   // Package [5000-5999]
   NoSuchPackage = 5000,
   InvalidMetadata = 5001,
+  UnsatisfiedRequirements = 5002,
 
   // Network [6000-6999]
   HostNotFound = 6000,
@@ -161,6 +162,7 @@ export interface UnsatisfiedRule {
   readonly conditionId: string;
   readonly packages: PackageReference[];
   readonly userMessage: string;
+  readonly isResolvableByUser: boolean;
 }
 
 export interface PackageRequirements {
