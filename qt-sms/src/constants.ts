@@ -6,3 +6,6 @@ export const EXTENSION_ID = 'qt-sms';
 export const CONF_SERVICE_EXECUTABLE_PATH = 'serviceExecutablePath';
 export const CONF_INSTALLATION_PATH = 'installationPath';
 export const CONF_USER_AGENT = 'qt-visual-studio-code-gui';
+export const CONF_RESET_LICENSE_AFTER_INSTALL = 'resetLicenseBeforeInstall';
+export const DEFAULT_BACKEND_URL =
+  'https://qt-dependency-management-poc-66bc7c80a932.herokuapp.com';
