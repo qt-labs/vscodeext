@@ -16,6 +16,7 @@
   "engines": {
     "vscode": "^1.94.0"
   },
+  "preview": true,
   "categories": [
     "Other"
   ],
@@ -89,6 +90,12 @@
           "type": "string",
           "default": "",
           "description": "Default installation path for Qt packages",
+          "scope": "machine-overridable"
+        },
+        "qt-sms.resetLicenseBeforeInstall": {
+          "type": "boolean",
+          "default": false,
+          "description": "Reset license agreement consents after each install so the license review is always shown (alpha testing)",
           "scope": "machine-overridable"
         }
       }
