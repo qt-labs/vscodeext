@@ -120,6 +120,7 @@ jobs:
           target: desktop
           arch:   ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' ||
                     matrix.os == 'macos-latest'   && 'clang_64'          || 'linux_gcc_64' }}
+          modules: ${{ matrix.os == 'windows-latest' && 'debug_info' || '' }}
           dir: ${{ github.workspace }}
           cache: true
 
