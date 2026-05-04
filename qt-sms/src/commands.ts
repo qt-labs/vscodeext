@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as https from 'https';
 
 import {
   Packages,
@@ -23,7 +24,12 @@ import {
   CORE_EXTENSION_ID,
   AdditionalQtPathsName
 } from 'qt-lib';
-import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
+import {
+  EXTENSION_ID,
+  CONF_INSTALLATION_PATH,
+  CONF_RESET_LICENSE_AFTER_INSTALL,
+  DEFAULT_BACKEND_URL
+} from '@/constants';
 import { ensureConnected } from '@/service-connection';
 import {
   AUTH_PROVIDER_ID,
@@ -362,6 +368,86 @@ function registerInstalledQtPaths(): void {
   logger.info(`Registered Qt installation: ${qtpathsExe}`);
 }
 
+// Known license agreement IDs from the backend (alpha testing).
+const KNOWN_LICENSE_AGREEMENT_IDS = [
+  'Qt Enterprise License Agreement@1',
+  'Mingw-w64 License Agreement@1',
+  'Ninja License Agreement@1',
+  'CMake License Agreement@1'
+];
+
+/**
+ * Reset license agreement consents via the backend API so that the user is
+ * prompted again on the next install. Only active when the
+ * `qt-sms.resetLicenseBeforeInstall` setting is enabled.
+ */
+async function resetLicenseConsents(): Promise<void> {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  if (!config.get<boolean>(CONF_RESET_LICENSE_AFTER_INSTALL)) {
+    return;
+  }
+
+  const sessions = await authProviderInstance?.getSessions();
+  const jwt = sessions?.[0]?.accessToken;
+  if (!jwt) {
+    logger.warn('Cannot reset license consents: no active session');
+    return;
+  }
+
+  const backendUrl = process.env.QIC_SERVICE_URL ?? DEFAULT_BACKEND_URL;
+
+  for (const agreementId of KNOWN_LICENSE_AGREEMENT_IDS) {
+    try {
+      await postConsentReset(backendUrl, jwt, agreementId);
+      logger.info(`Reset license consent for "${agreementId}"`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`Failed to reset consent for "${agreementId}": ${msg}`);
+    }
+  }
+}
+
+async function postConsentReset(
+  backendUrl: string,
+  jwt: string,
+  agreementId: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ agreementId, accepted: false });
+    const url = new URL('/api/v1/license-agreements/consent', backendUrl);
+
+    const req = https.request(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          Authorization: `Bearer ${jwt}`
+        }
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk: Buffer) => {
+          data += chunk.toString();
+        });
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            reject(
+              new Error(`HTTP ${String(res.statusCode)}: ${data.slice(0, 200)}`)
+            );
+          }
+        });
+      }
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 async function installPackageById(
   packages: Packages,
   pkg: PackageData
@@ -369,6 +455,7 @@ async function installPackageById(
   if (!(await requireLogin())) {
     return;
   }
+  await resetLicenseConsents();
 
   const pkgRef = { id: pkg.id, version: pkg.version };
 
