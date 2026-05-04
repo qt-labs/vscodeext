@@ -260,17 +260,58 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QJsonDocument',
     value: {
       darwin: '{...}',
-      win32: '{d=unique_ptr {...} }',
+      win32: '{[0]= "JSON Test Pattern pass1" [1]= {["object with 1 member"]= {[0]= "array with 1 element" } } [2]=...}',
       linux: ''
     },
     children: [
       {
         name: '[0]',
-        value: '<unvalidated>',
+        value: '"JSON Test Pattern pass1"',
         knownProblem: {
-          all:
-            'QJsonDocument NatVis Expand depends on a Qt6Cored.dll intrinsic / MSVC-only internals; ' +
-            'child expansion is unreliable under LLDB/GDB and on win32 CI, so children are not validated.'
+          darwin:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate these expressions.',
+          linux:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; GDB cannot evaluate these expressions.'
+        }
+      },
+      {
+        name: '[4]',
+        value: '-42',
+        knownProblem: {
+          darwin:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate these expressions.',
+          linux:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; GDB cannot evaluate these expressions.'
+        }
+      },
+      {
+        name: '[5]',
+        value: 'true',
+        knownProblem: {
+          darwin:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate these expressions.',
+          linux:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; GDB cannot evaluate these expressions.'
+        }
+      },
+      {
+        name: '[6]',
+        value: 'false',
+        knownProblem: {
+          darwin:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate these expressions.',
+          linux:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; GDB cannot evaluate these expressions.'
+        }
+      },
+      {
+        name: '[7]',
+        value: 'null',
+        knownProblem: {
+          darwin:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate these expressions.',
+          linux:
+            'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; GDB cannot evaluate these expressions.'
         }
       }
     ]
@@ -281,7 +322,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: {
       darwin: '{empty}',
       linux: '{empty}',
-      win32: '{d=empty }'
+      win32: 'empty'
     },
     knownProblem: {
       darwin:
@@ -923,7 +964,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: {
       darwin: '{...}',
       linux: 'null',
-      win32: '{n=0 container=0xADDR <NULL> t=Null (278) }'
+      win32: 'null'
     },
     children: [
       {
@@ -931,7 +972,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: {
           darwin: '{...}',
           linux: 'null',
-          win32: '{n=0 container=0xADDR <NULL> t=Null (278) }'
+          win32: 'null'
         },
         knownProblem: {
           all: 'QJsonValue Expand surfaces the internal value via ExpandedItem; debugger presentation varies across adapters.'
