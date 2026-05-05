@@ -1455,28 +1455,68 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qHostAddressIpv4',
     type: 'QHostAddress',
-    value: 'undefined',
+    value: '127.0.0.1',
     knownProblem: {
       darwin:
-        'QHostAddress NatVis does not provide a DisplayString under LLDB; value is reported as undefined.',
+        'QHostAddress NatVis uses raw memory offsets; LLDB cannot evaluate the intrinsics so the DisplayString is not shown.',
       linux:
-        'QHostAddress NatVis does not provide a DisplayString under GDB; value is reported as undefined.',
-      win32:
-        'QHostAddress NatVis has no DisplayString; debugger reports undefined.'
-    }
+        'QHostAddress NatVis uses raw memory offsets; GDB cannot evaluate the intrinsics so the DisplayString is not shown.'
+    },
+    children: [
+      {
+        name: 'scopeId',
+        value: '<NULL>',
+        knownProblem: {
+          darwin:
+            'QHostAddress NatVis children are not materialized under LLDB.',
+          linux:
+            'QHostAddress NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: 'protocol',
+        value: 'IPv4Protocol (0)',
+        knownProblem: {
+          darwin:
+            'QHostAddress NatVis children are not materialized under LLDB.',
+          linux:
+            'QHostAddress NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'coreTypes.qHostAddressIpv6',
     type: 'QHostAddress',
-    value: 'undefined',
+    value: '0000:0000:0000:0000:0000:0000:0000:0001',
     knownProblem: {
       darwin:
-        'QHostAddress NatVis does not provide a DisplayString under LLDB; value is reported as undefined.',
+        'QHostAddress NatVis uses raw memory offsets; LLDB cannot evaluate the intrinsics so the DisplayString is not shown.',
       linux:
-        'QHostAddress NatVis does not provide a DisplayString under GDB; value is reported as undefined.',
-      win32:
-        'QHostAddress NatVis has no DisplayString; debugger reports undefined.'
-    }
+        'QHostAddress NatVis uses raw memory offsets; GDB cannot evaluate the intrinsics so the DisplayString is not shown.'
+    },
+    children: [
+      {
+        name: 'scopeId',
+        value: '<NULL>',
+        knownProblem: {
+          darwin:
+            'QHostAddress NatVis children are not materialized under LLDB.',
+          linux:
+            'QHostAddress NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: 'protocol',
+        value: 'IPv6Protocol (1)',
+        knownProblem: {
+          darwin:
+            'QHostAddress NatVis children are not materialized under LLDB.',
+          linux:
+            'QHostAddress NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qImageArgb32',
