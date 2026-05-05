@@ -158,7 +158,10 @@ export function stripUnstable(s: string): string {
  */
 function normalizeFloats(raw: string): string {
   // Match things like 5.1, 5.0999999999999996, 4.2000000000000002, -3.14, etc.
-  return raw.replace(/-?\d+\.\d+(?:\d+)?/g, (match) => {
+  // Negative lookbehind (?<!\.) and lookahead (?!\.\d) prevent matching individual
+  // components of dotted-notation values such as IP addresses (127.0.0.1) or
+  // version strings, where each segment would otherwise be treated as a float.
+  return raw.replace(/(?<!\.)-?\d+\.\d+(?:\d+)?(?!\.\d)/g, (match) => {
     const n = Number(match);
     if (!Number.isFinite(n)) {
       return match;
