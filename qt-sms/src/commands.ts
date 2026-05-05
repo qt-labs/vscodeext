@@ -602,12 +602,14 @@ export async function onInstallationPathChanged(): Promise<void> {
     return;
   }
   const installPath = resolveConfiguration(rawPath);
-  await validateAndSetInstallationPath(installPath);
+  const session = await ensureConnected();
+  const settings = new Settings(session);
+  await settings.setInstallationPath(installPath);
+  logger.info(`Installation path updated: ${installPath}`);
 }
 
 async function validateAndSetInstallationPath(path: string): Promise<void> {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-
   try {
     const session = await ensureConnected();
     const settings = new Settings(session);
