@@ -1779,22 +1779,81 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qSizePolicy',
     type: 'QSizePolicy',
-    value: '{ horizontal = Expanding, vertical = Minimum }',
+    value: '{ horizontal = Expanding (7), vertical = Minimum (1), type = DefaultType (1) }',
     knownProblem: {
       darwin:
-        'LLDB fails to evaluate QSizePolicy NatVis intrinsics. The DisplayString relies on ' +
-        'internal enum types (Policy) and bitfields that are not visible to the expression ' +
-        'evaluator, resulting in evaluation errors and a fallback to "undefined".',
+        'LLDB fails to evaluate QSizePolicy NatVis intrinsics so neither the DisplayString ' +
+        'nor children are materialized.',
       linux:
-        'GDB cannot evaluate the QSizePolicy NatVis DisplayString in some configurations. ' +
-        'The evaluator fails to create internal variable objects (-var-create) and cannot ' +
-        'resolve symbols like ControlType, producing errors in-place of the horizontal/vertical ' +
-        'policy names.',
-      win32:
-        'The MSVC debug engine (cppvsdbg) fails to resolve QSizePolicy enum values when evaluating ' +
-        'the NatVis DisplayString. As a result, the horizontal/vertical fields render empty, and ' +
-        'the summary degrades to blank placeholders instead of policy names.'
-    }
+        'GDB fails to evaluate QSizePolicy NatVis intrinsics so neither the DisplayString ' +
+        'nor children are materialized.'
+    },
+    children: [
+      {
+        name: '[vertical policy]',
+        value: 'QSizePolicy::Policy::Minimum (1)',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[horizontal policy]',
+        value: 'QSizePolicy::Policy::Expanding (7)',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[control type]',
+        value: 'QSizePolicy::ControlType::DefaultType (1)',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[expanding directions]',
+        value: 'Qt::Horizontal (1)',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[vertical stretch]',
+        value: '3',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[horizontal stretch]',
+        value: '7',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[has height for width]',
+        value: 'false',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[has width for height]',
+        value: 'false',
+        knownProblem: {
+          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          linux: 'QSizePolicy NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'quickTypes.qQuickItem',
