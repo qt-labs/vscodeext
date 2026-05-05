@@ -1,6 +1,7 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as https from 'https';
 import * as vscode from 'vscode';
 
 import {
@@ -10,6 +11,7 @@ import {
   type LogLevel
 } from 'sms-api';
 import { createLogger } from 'qt-lib';
+import { ALPHA_ALLOWLIST_URL } from '@/constants';
 
 const logger = createLogger('auth');
 
@@ -107,6 +109,31 @@ export class QtAccountAuthenticationProvider
 
     if (!email) {
       throw new Error('Login cancelled');
+    }
+
+    // Check alpha access allowlist before attempting login
+    let allowlist: string[];
+    try {
+      allowlist = await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Checking alpha access...',
+          cancellable: false
+        },
+        async () => fetchAlphaAllowlist()
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error(`Failed to fetch alpha allowlist: ${msg}`);
+      throw new Error(
+        'Unable to verify alpha access. Please check your internet connection.'
+      );
+    }
+
+    if (!allowlist.includes(email.toLowerCase())) {
+      const errMsg = `Qt Account "${email}" is not in the alpha access list.`;
+      logger.error(errMsg);
+      throw new Error(errMsg);
     }
 
     const password = await vscode.window.showInputBox({
@@ -216,6 +243,26 @@ export class QtAccountAuthenticationProvider
       return undefined;
     }
   }
+}
+
+async function fetchAlphaAllowlist(): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    https
+      .get(ALPHA_ALLOWLIST_URL as string, (res) => {
+        let data = '';
+        res.on('data', (chunk: string) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          const emails = data
+            .split('\n')
+            .map((line) => line.trim().toLowerCase())
+            .filter((line) => line.length > 0);
+          resolve(emails);
+        });
+      })
+      .on('error', reject);
+  });
 }
 
 function credentialsToSession(
