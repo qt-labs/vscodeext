@@ -1330,7 +1330,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '(null)',
     knownProblem: {
       win32:
-        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
+        'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
+        'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
+        '(d.packedType << 2 bit-shift then a DLL-qualified cast) ' +
+        'and falls back to raw "{d={...}}".'
     },
     children: [{ name: '[expect_none]', value: '' }]
   },
@@ -1344,7 +1347,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux:
         "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       win32:
-        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
+        'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
+        'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
+        '(d.packedType << 2 bit-shift then a DLL-qualified cast) ' +
+        'and falls back to raw "{d={...}}".'
     }
   },
   {
@@ -1357,7 +1363,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux:
         "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       win32:
-        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
+        'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
+        'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
+        '(d.packedType << 2 bit-shift then a DLL-qualified cast) ' +
+        'and falls back to raw "{d={...}}".'
     }
   },
   {
@@ -1370,7 +1379,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux:
         "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       win32:
-        'On win32 CI, QVariant NatVis is not applied; debugger shows raw internal "{d={...}}" structure instead of DisplayString.'
+        'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
+        'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
+        '(d.packedType << 2 bit-shift then a DLL-qualified cast) ' +
+        'and falls back to raw "{d={...}}".'
     }
   },
   // QFlags (NatVis for QFlags<*> is numeric: {($T1)i})
