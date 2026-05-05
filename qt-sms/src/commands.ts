@@ -330,7 +330,13 @@ export async function installPackage(): Promise<void> {
 
 function registerInstalledQtPaths(): void {
   const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const installRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
+  const rawInstallRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawInstallRoot) {
+    logger.warn('Installation path not set, skipping Qt registration');
+    return;
+  }
+  const installRoot = resolveConfiguration(rawInstallRoot);
+
   if (!installRoot || !fs.existsSync(installRoot)) {
     logger.warn(
       'Installation path not set or does not exist, skipping Qt registration'
@@ -605,7 +611,6 @@ export async function onInstallationPathChanged(): Promise<void> {
   const session = await ensureConnected();
   const settings = new Settings(session);
   await settings.setInstallationPath(installPath);
-  logger.info(`Installation path updated: ${installPath}`);
 }
 
 async function validateAndSetInstallationPath(path: string): Promise<void> {
