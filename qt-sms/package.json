@@ -84,19 +84,19 @@
           "type": "string",
           "default": "",
           "description": "Specify the path to the QtSoftwareManagementService executable",
-          "scope": "machine-overridable"
+          "scope": "machine"
         },
         "qt-sms.installationPath": {
           "type": "string",
           "default": "~/Qt_sm_alpha",
           "description": "Default installation path for Qt packages",
-          "scope": "machine-overridable"
+          "scope": "machine"
         },
         "qt-sms.resetLicenseBeforeInstall": {
           "type": "boolean",
           "default": false,
           "description": "Reset license agreement consents after each install so the license review is always shown (alpha testing)",
-          "scope": "machine-overridable"
+          "scope": "machine"
         }
       }
     }
