@@ -1414,33 +1414,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreStateTypes.qAtomicPtr',
     type: 'QBasicAtomicPointer<int>',
-    value: '0xADDR',
-    knownProblem: {
-      darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
-      linux:
-        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.',
-      win32:
-        'On win32 CI, atomic pointer formatting differs (shows "{123}" / raw) instead of address-like DisplayString.'
-    }
-  },
-  {
-    name: 'coreStateTypes.qAtomicVoidPtr',
-    type: 'QBasicAtomicPointer<void>',
-    value: '0xADDR',
-    knownProblem: {
-      darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
-      linux:
-        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.',
-      win32:
-        'On win32 CI, atomic pointer formatting differs (shows empty string / raw) instead of address-like DisplayString.'
-    }
-  },
-  {
-    name: 'coreStateTypes.qAtomicPtrNull',
-    type: 'QBasicAtomicPointer<int>',
-    value: 'empty',
+    value: '{123}',
     knownProblem: {
       darwin:
         'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
@@ -1450,8 +1424,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     children: [{ name: '[expect_none]' }]
   },
   {
-    name: 'coreStateTypes.qAtomicVoidPtrNull',
-    type: 'QBasicAtomicPointer<void>',
+    name: 'coreStateTypes.qAtomicPtrNull',
+    type: 'QBasicAtomicPointer<int>',
     value: 'empty',
     knownProblem: {
       darwin:
