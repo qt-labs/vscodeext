@@ -1702,59 +1702,98 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'guiTypes.qVector2D',
     type: 'QVector2D',
-    value: '(1, 2)',
+    value: '{ x = 1, y = 2 }',
     knownProblem: {
-      darwin:
-        'On macOS, LLDB sometimes does not apply the QVector2D NatVis DisplayString ' +
-        'and falls back to a raw field view instead of the expected "(x, y)" ' +
-        'summary.',
-      linux:
-        'On Linux, GDB does not consistently apply the QVector2D NatVis DisplayString ' +
-        'and falls back to a raw field-based representation instead of the expected ' +
-        '"(x, y)" summary.',
-      win32:
-        'The QVector2D NatVis DisplayString is not applied; ' +
-        'the debugger shows the raw field-based representation instead of the ' +
-        'expected "(x, y)" summary.'
-    }
+      darwin: 'LLDB does not reliably apply the QVector2D NatVis DisplayString on macOS.',
+      linux: 'GDB does not reliably apply the QVector2D NatVis DisplayString on Linux.'
+    },
+    children: [
+      {
+        name: '[x]', value: '1',
+        knownProblem: {
+          darwin: 'QVector2D NatVis children are not materialized under LLDB.',
+          linux: 'QVector2D NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[y]', value: '2',
+        knownProblem: {
+          darwin: 'QVector2D NatVis children are not materialized under LLDB.',
+          linux: 'QVector2D NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qVector3D',
     type: 'QVector3D',
-    value: '(1, 2, 3)',
+    value: '{ x = 1, y = 2, z = 3 }',
     knownProblem: {
-      darwin:
-        'On macOS, LLDB sometimes does not apply the QVector3D NatVis DisplayString ' +
-        'and falls back to a raw field view instead of the expected "(x, y, z)" ' +
-        'summary.',
-      linux:
-        'On Linux, GDB does not consistently apply the QVector3D NatVis DisplayString ' +
-        'and falls back to a raw field-based representation instead of the expected ' +
-        '"(x, y, z)" summary.',
-      win32:
-        'The QVector3D NatVis DisplayString is not applied; ' +
-        'the debugger shows the raw field-based representation instead of the ' +
-        'expected "(x, y, z)" summary.'
-    }
+      darwin: 'LLDB does not reliably apply the QVector3D NatVis DisplayString on macOS.',
+      linux: 'GDB does not reliably apply the QVector3D NatVis DisplayString on Linux.'
+    },
+    children: [
+      {
+        name: '[x]', value: '1',
+        knownProblem: {
+          darwin: 'QVector3D NatVis children are not materialized under LLDB.',
+          linux: 'QVector3D NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[y]', value: '2',
+        knownProblem: {
+          darwin: 'QVector3D NatVis children are not materialized under LLDB.',
+          linux: 'QVector3D NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[z]', value: '3',
+        knownProblem: {
+          darwin: 'QVector3D NatVis children are not materialized under LLDB.',
+          linux: 'QVector3D NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qVector4D',
     type: 'QVector4D',
-    value: '(1, 2, 3, 4)',
+    value: '{ x = 1, y = 2, z = 3, w = 4 }',
     knownProblem: {
-      darwin:
-        'On macOS, LLDB sometimes does not apply the QVector4D NatVis DisplayString ' +
-        'and falls back to a raw field view instead of the expected "(x, y, z, w)" ' +
-        'summary.',
-      linux:
-        'On Linux, GDB does not consistently apply the QVector4D NatVis DisplayString ' +
-        'and falls back to a raw field-based representation instead of the expected ' +
-        '"(x, y, z, w)" summary.',
-      win32:
-        'On Windows CI, the QVector4D NatVis DisplayString is not applied; ' +
-        'the debugger shows the raw field-based representation instead of the ' +
-        'expected "(x, y, z, w)" summary.'
-    }
+      darwin: 'LLDB does not reliably apply the QVector4D NatVis DisplayString on macOS.',
+      linux: 'GDB does not reliably apply the QVector4D NatVis DisplayString on Linux.'
+    },
+    children: [
+      {
+        name: '[x]', value: '1',
+        knownProblem: {
+          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
+          linux: 'QVector4D NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[y]', value: '2',
+        knownProblem: {
+          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
+          linux: 'QVector4D NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[z]', value: '3',
+        knownProblem: {
+          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
+          linux: 'QVector4D NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[w]', value: '4',
+        knownProblem: {
+          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
+          linux: 'QVector4D NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qMatrix4x4',
