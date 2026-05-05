@@ -108,7 +108,7 @@ inline CoreTypes::CoreTypes()
                                    QTimeZone(12 * 3600 + 34 * 60 + 56)))
     , qDateTimeDefault() // default-constructed
     , qTime(12, 34, 56)
-    , qDir(QDir::currentPath())
+    , qDir(QStringLiteral("qt-cpp/res/natvis"))
     , qFile(QCoreApplication::applicationFilePath())
     , qFileInfo(QCoreApplication::applicationFilePath())
     , qFlags(SelectionFlag::SelectCurrent | SelectionFlag::SelectAll)
