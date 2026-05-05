@@ -1367,30 +1367,51 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreStateTypes.qFlagsNone',
     type: 'QFlags<*>',
-    value: '0',
+    value: 'None (0)',
     knownProblem: {
       darwin:
-        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
+        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the named-flags DisplayString.',
       linux:
-        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.',
-      win32:
-        'QFlags<*> NatVis is not applied on win32; value falls back to "None (0)" instead of the numeric DisplayString.'
-    }
+        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the named-flags DisplayString.'
+    },
+    children: [
+      {
+        name: '[value]',
+        value: 'None (0)',
+        knownProblem: {
+          darwin:
+            'QFlags<*> NatVis is not applied under LLDB; child [value] is not formatted as named flags.',
+          linux:
+            'QFlags<*> NatVis is not applied under GDB; child [value] is not formatted as named flags.'
+        }
+      }
+    ]
   },
   {
     // This is the typedef created by Q_DECLARE_FLAGS(CoreStateFlags, CoreStateFlag)
-    // NatVis applies via the underlying QFlags<*> rule.
+    // NatVis applies via the underlying QFlags<*> rule: {($T1)i} casts the
+    // internal int to the enum type, producing "Read | Write (3)" on Windows.
     name: 'coreStateTypes.qFlags',
     type: 'QFlags<*>',
-    value: '3',
+    value: 'Read | Write (3)',
     knownProblem: {
       darwin:
-        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
+        'QFlags<*> NatVis is not applied under LLDB; value falls back to {...} instead of the named-flags DisplayString.',
       linux:
-        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the numeric DisplayString.',
-      win32:
-        'QFlags<*> NatVis is not applied on win32; value falls back to "Read | Write (3)" instead of the numeric DisplayString.'
-    }
+        'QFlags<*> NatVis is not applied under GDB; value falls back to "" instead of the named-flags DisplayString.'
+    },
+    children: [
+      {
+        name: '[value]',
+        value: 'Read | Write (3)',
+        knownProblem: {
+          darwin:
+            'QFlags<*> NatVis is not applied under LLDB; child [value] is not formatted as named flags.',
+          linux:
+            'QFlags<*> NatVis is not applied under GDB; child [value] is not formatted as named flags.'
+        }
+      }
+    ]
   },
   // Atomics
   {
