@@ -1592,21 +1592,30 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'guiTypes.qPixmap',
     type: 'QPixmap',
-    value: '4x3',
+    value: 'empty',
     knownProblem: {
       darwin:
-        'LLDB does not reliably apply the QPixmap NatVis DisplayString on macOS; ' +
-        'it often falls back to an opaque "{...}" representation instead of the ' +
-        'expected "{width}x{height}" summary.',
+        'QPixmap NatVis uses Qt6Gui.dll-qualified intrinsics; LLDB cannot resolve them ' +
+        'so neither the DisplayString nor children are materialized.',
       linux:
-        'GDB does not reliably apply the QPixmap NatVis DisplayString on Linux; ' +
-        'the value may remain empty instead of showing the expected ' +
-        '"{width}x{height}" summary.',
-      win32:
-        'The QPixmap NatVis DisplayString is not reliably applied; ' +
-        'the debugger falls back to an internal "{data={...}}" representation ' +
-        'instead of the expected "{width}x{height}" summary.'
-    }
+        'QPixmap NatVis uses Qt6Gui.dll-qualified intrinsics; GDB cannot resolve them ' +
+        'so neither the DisplayString nor children are materialized.'
+    },
+    children: [
+      {
+        // [type] is a <Synthetic> that hardcodes "UINT8" without reading any memory,
+        // so it always succeeds even when the backing QRasterPlatformPixmap is inaccessible.
+        // All other QImage children (width/height/data/stride/channels) use p()->field reads
+        // through the chained d()->image pointer; when d() fails those reads produce
+        // "Unable to read memory" and are not tested.
+        name: '[type]',
+        value: 'UINT8',
+        knownProblem: {
+          darwin: 'QPixmap NatVis children are not materialized under LLDB.',
+          linux: 'QPixmap NatVis children are not materialized under GDB.'
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qPolygon',
