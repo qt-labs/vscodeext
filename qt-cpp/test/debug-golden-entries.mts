@@ -74,9 +74,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
@@ -93,9 +95,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
@@ -112,9 +116,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
@@ -131,9 +137,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
@@ -161,9 +169,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
@@ -180,9 +190,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
@@ -199,9 +211,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
         '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d={...}}" representation instead of a formatted date-time.'
+        'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
+        'and the debugger falls back to a raw "{d={...}}" representation. ' +
+        'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
+        'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
+        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
     }
   },
   {
