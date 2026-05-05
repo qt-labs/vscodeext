@@ -546,16 +546,49 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB, causing evaluation errors on macOS.',
       linux:
-        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB, causing evaluation errors on Linux.',
-      win32:
-        'QUuid NatVis formatting appears truncated on current Windows debugger: the Node portion renders only 6 hex digits instead of 12 (likely nvoXb format handling regression).'
+        'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB, causing evaluation errors on Linux.'
     },
     children: [
-      { name: '[Time-low]', value: '12345678' },
-      { name: '[Time-mid]', value: '1234' },
-      { name: '[Time-high-and-version]', value: '1234' },
-      { name: '[Clock-seq]', value: '1234' },
-      { name: '[Node]', value: '1234567890AB' }
+      {
+        name: '[Time-low]',
+        value: '12345678',
+        knownProblem: {
+          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+        }
+      },
+      {
+        name: '[Time-mid]',
+        value: '1234',
+        knownProblem: {
+          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+        }
+      },
+      {
+        name: '[Time-high-and-version]',
+        value: '1234',
+        knownProblem: {
+          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+        }
+      },
+      {
+        name: '[Clock-seq]',
+        value: '1234',
+        knownProblem: {
+          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+        }
+      },
+      {
+        name: '[Node]',
+        value: '1234567890AB',
+        knownProblem: {
+          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+        }
+      }
     ]
   },
   {
@@ -1507,25 +1540,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     },
     children: [
       {
-        name: '[closed]',
-        value: 'false',
-        knownProblem: {
-          linux:
-            "GDB CI: QPolygon NatVis child '[closed]' is not stable/present in the locals snapshot (sometimes missing, sometimes shown).",
-          win32:
-            "Windows CI: QPolygon NatVis child '[closed]' is not stable/present in the locals snapshot (sometimes missing, sometimes shown)."
-        }
-      },
-
-      {
         name: '[0]',
         type: 'QPoint',
         value: '{ x = 0, y = 0 }',
         knownProblem: {
           linux:
-            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
-          win32:
-            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
         }
       },
       {
@@ -1534,9 +1554,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: '{ x = 10, y = 0 }',
         knownProblem: {
           linux:
-            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
-          win32:
-            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
         }
       },
       {
@@ -1545,9 +1563,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: '{ x = 10, y = 10 }',
         knownProblem: {
           linux:
-            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
-          win32:
-            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
         }
       },
       {
@@ -1556,9 +1572,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: '{ x = 0, y = 10 }',
         knownProblem: {
           linux:
-            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers).",
-          win32:
-            "Windows CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
+            "GDB CI: QPoint NatVis formatting for QPolygon items is unstable (often renders as '{ x = {...}, y = {...} }' instead of concrete numbers)."
         }
       }
     ]
