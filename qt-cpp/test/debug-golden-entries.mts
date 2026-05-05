@@ -1304,9 +1304,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux:
         'QObject NatVis relies on Windows-only Qt6Cored.dll intrinsics (QObjectPrivate via d_ptr), so GDB cannot evaluate objectName DisplayString.',
       win32:
-        'NatVis loads, but required private symbols/fields are not available ' +
-        '(Qt build lacks full private debug info), so DisplayString evaluation fails and the debugger ' +
-        'falls back to a raw "{d_ptr={...}}" representation instead of objectName.'
+        'QObject DisplayString remains unresolved on Windows even with Qt PDB files loaded ' +
+        'and an explicit Watch-context evaluation of the QObjectPrivate cast expression. ' +
+        'vsdbg does not evaluate the objectName DisplayString for QObject in this configuration.'
     }
   },
   // QVariant
