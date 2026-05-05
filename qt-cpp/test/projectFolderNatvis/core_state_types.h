@@ -58,11 +58,9 @@ public:
 
     // Non-null pointers
     qAtomicPtr.storeRelaxed(&support_atomicTarget);
-    qAtomicVoidPtr.storeRelaxed(static_cast<void*>(&support_atomicTarget));
 
     // Null pointers (NatVis: empty)
     qAtomicPtrNull.storeRelaxed(nullptr);
-    qAtomicVoidPtrNull.storeRelaxed(nullptr);
   }
 
   // QObject (object identity / runtime state)
@@ -86,9 +84,11 @@ public:
 
   // Non-null atomic pointers
   QBasicAtomicPointer<int> qAtomicPtr;
-  QBasicAtomicPointer<void> qAtomicVoidPtr;
 
   // Null atomic pointers (NatVis: empty)
   QBasicAtomicPointer<int> qAtomicPtrNull;
-  QBasicAtomicPointer<void> qAtomicVoidPtrNull;
+  // NOTE: QBasicAtomicPointer<void> is intentionally not included here.
+  // Its DisplayString is the raw pointer address (non-deterministic) and its
+  // Expand produces no children since void* cannot be dereferenced.  It is
+  // listed in SKIP_COVERAGE_BASES in debug-golden.mts instead.
 };

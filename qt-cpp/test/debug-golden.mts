@@ -12,8 +12,9 @@ import type { DebugVariable } from './debug-helper.mts';
  * indirectly when the corresponding public-facing Qt types are present in the snapshot.
  *
  * Notes:
- * - We intentionally do NOT skip QBasicAtomicPointer<void>. If it is uncovered, add a
- *   top-level sample variable to exercise it.
+ * - QBasicAtomicPointer<void> is skipped: its DisplayString is the raw pointer address
+ *   (non-deterministic) and its Expand produces no children since void* cannot be
+ *   dereferenced.  No fixture variable exercises it.
  * - QPropertyData<*> is skipped until the test validates Expand/children. Today we only
  *   validate root DisplayString values, so requiring QPropertyData<*> would be misleading.
  */
@@ -40,7 +41,12 @@ export const SKIP_COVERAGE_BASES: ReadonlySet<string> = new Set<string>([
   'QStringRef',
 
   // Qt internal helper template; not a direct “fixture type”
-  'QSpecialInteger<*>'
+  'QSpecialInteger<*>',
+
+  // QBasicAtomicPointer<void>: DisplayString is the raw pointer address (non-deterministic)
+  // and Expand produces no children since void* cannot be dereferenced.  No fixture variable
+  // is provided; coverage is intentionally skipped.
+  'QBasicAtomicPointer<void>'
 ]);
 
 export const SKIP_COVERAGE_REASONS: ReadonlyMap<string, string> = new Map([
@@ -95,6 +101,10 @@ export const SKIP_COVERAGE_REASONS: ReadonlyMap<string, string> = new Map([
   [
     'QSpecialInteger<*>',
     'Internal Qt helper template; usually only appears as an implementation detail inside other Qt types (not a top-level fixture variable).'
+  ],
+  [
+    'QBasicAtomicPointer<void>',
+    'DisplayString is the raw pointer address (non-deterministic) and Expand produces no children since void* cannot be dereferenced; no fixture variable is provided.'
   ]
 ]);
 
