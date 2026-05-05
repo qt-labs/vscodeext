@@ -1521,21 +1521,59 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'guiTypes.qImageArgb32',
     type: 'QImage',
-    value: '4x3',
+    value: '{ 4x3 }',
     knownProblem: {
       darwin:
         'LLDB does not reliably apply the QImage NatVis DisplayString on macOS; ' +
         'it often falls back to an opaque "{...}" representation instead of the ' +
-        'expected "{width}x{height}" summary.',
+        'expected "{ WxH }" summary.',
       linux:
         'GDB does not reliably apply the QImage NatVis DisplayString on Linux; ' +
         'the value may remain empty instead of showing the expected ' +
-        '"{width}x{height}" summary.',
-      win32:
-        'The QImage NatVis DisplayString is not reliably applied; ' +
-        'the debugger often reports the image as "empty" instead of showing the ' +
-        'expected "{width}x{height}" summary.'
-    }
+        '"{ WxH }" summary.'
+    },
+    children: [
+      {
+        name: '[width]',
+        value: '4',
+        knownProblem: {
+          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+        }
+      },
+      {
+        name: '[height]',
+        value: '3',
+        knownProblem: {
+          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+        }
+      },
+      {
+        name: '[stride]',
+        value: '16',
+        knownProblem: {
+          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+        }
+      },
+      {
+        name: '[type]',
+        value: 'UINT8',
+        knownProblem: {
+          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+        }
+      },
+      {
+        name: '[channels]',
+        value: '4',
+        knownProblem: {
+          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+        }
+      }
+    ]
   },
   {
     name: 'guiTypes.qPixmap',
