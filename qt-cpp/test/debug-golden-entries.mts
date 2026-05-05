@@ -218,27 +218,23 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qFile',
     type: 'QFile',
-    value: '"/path/to/normalize/projectFolderNatvis"',
+    value: 'qt-cpp/res/natvis/qt6.natvis',
     knownProblem: {
       darwin:
         'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so LLDB cannot evaluate d().',
       linux:
-        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so GDB cannot evaluate d().',
-      win32:
-        'natvis is loaded, but DisplayString evaluation fails (likely due to absent private symbols or reduced PDBs), leading to fallback raw formatting.'
+        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so GDB cannot evaluate d().'
     }
   },
   {
     name: 'coreTypes.qFileInfo',
     type: 'QFileInfo',
-    value: '"/path/to/normalize/projectFolderNatvis"',
+    value: 'qt-cpp/res/natvis/qt6.natvis',
     knownProblem: {
       darwin:
         'natvis rules reference Windows-only Qt6Cored.dll symbols, so LLDB cannot compute the d() intrinsic.',
       linux:
-        'natvis rules reference Windows-only Qt6Cored.dll symbols, so GDB cannot compute the d() intrinsic.',
-      win32:
-        'natvis loads, but DisplayString fails because required private types or fields (QFileInfoPrivate) are not available in the CI Qt build, forcing the debugger to show raw {d_ptr={...}} output.'
+        'natvis rules reference Windows-only Qt6Cored.dll symbols, so GDB cannot compute the d() intrinsic.'
     }
   },
   {
