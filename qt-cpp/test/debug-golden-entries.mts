@@ -207,14 +207,12 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qDir',
     type: 'QDir',
-    value: '"/path/to/normalize/projectFolderNatvis"',
+    value: 'qt-cpp/res/natvis',
     knownProblem: {
       darwin:
         'natvis expressions reference Windows-only modules (Qt6Cored.dll), so LLDB cannot resolve the intrinsic d().',
       linux:
-        'natvis expressions reference Windows-only modules (Qt6Cored.dll), so GDB cannot resolve the intrinsic d().',
-      win32:
-        'natvis loads, but DisplayString fails due to missing or incompatible private symbols (QDirPrivate) or incomplete PDBs, causing fallback to raw {d_ptr={...}} output.'
+        'natvis expressions reference Windows-only modules (Qt6Cored.dll), so GDB cannot resolve the intrinsic d().'
     }
   },
   {

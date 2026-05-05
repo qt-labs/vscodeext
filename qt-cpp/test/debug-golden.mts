@@ -121,6 +121,16 @@ export function stripUnstable(s: string): string {
     s
       // hex pointers/addresses
       .replace(/0x[0-9a-fA-F]+/g, '0xADDR')
+      // Normalize absolute filesystem paths that contain a 'qt-cpp' directory
+      // component so golden values are stable across machines and CI environments
+      // where the absolute checkout path differs.
+      //   Windows:  "C:\Users\runner\...\qt-cpp\res\natvis"
+      //   Linux/Mac: "/home/runner/work/.../qt-cpp/res/natvis"
+      // Both become: "qt-cpp/res/natvis"
+      .replace(
+        /(?:[A-Za-z]:[/\\]|\/)[^"]*[/\\]qt-cpp([/\\][^"]*)/g,
+        (_m, rest: string) => 'qt-cpp' + rest.replace(/\\/g, '/')
+      )
       // repeated spaces/tabs
       .replace(/[ \t]+/g, ' ')
       // trailing spaces before newlines
