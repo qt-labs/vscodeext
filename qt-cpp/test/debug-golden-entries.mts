@@ -266,7 +266,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     children: [
       {
         name: '[0]',
-        value: '"JSON Test Pattern pass1"',
+        value: 'JSON Test Pattern pass1',
         knownProblem: {
           darwin:
             'QJsonDocument NatVis Expand depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate these expressions.',
@@ -922,20 +922,42 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qJsonArray',
     type: 'QJsonArray',
-    value: {
-      darwin: '{...}',
-      linux: '',
-      win32: '{a={...} }'
+    value: '{[0]=1 [1]= "two" [2]=3 }',
+    knownProblem: {
+      darwin:
+        'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so the value falls back to raw struct display.',
+      linux:
+        'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so the value falls back to raw struct display.'
     },
     children: [
       {
         name: '[0]',
-        value: '<unvalidated>',
+        value: '1',
         knownProblem: {
-          all:
-            'QJsonArray NatVis expands via an Intrinsic referencing Qt6Cored.dll; ' +
-            'this is not reliable under LLDB/GDB, and is also unreliable on win32 CI. ' +
-            'Child expansion is therefore not validated.'
+          darwin:
+            'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[1]',
+        value: 'two',
+        knownProblem: {
+          darwin:
+            'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[2]',
+        value: '3',
+        knownProblem: {
+          darwin:
+            'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonArray NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so children do not materialize.'
         }
       }
     ]
@@ -943,17 +965,32 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qJsonObject',
     type: 'QJsonObject',
-    value: {
-      darwin: '{...}',
-      linux: '',
-      win32: '{o={...} }'
+    value: '{["a"]=1 ["b"]=2 }',
+    knownProblem: {
+      darwin:
+        'QJsonObject NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so the value falls back to raw struct display.',
+      linux:
+        'QJsonObject NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so the value falls back to raw struct display.'
     },
     children: [
       {
-        name: '[0]',
-        value: '',
+        name: '["a"]',
+        value: '1',
         knownProblem: {
-          all: 'QJsonObject Expand depends on Intrinsic cbor() using Qt6Cored.dll symbols; evaluation is unreliable on darwin/linux and on win32 CI. Children validation is disabled.'
+          darwin:
+            'QJsonObject NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonObject NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '["b"]',
+        value: '2',
+        knownProblem: {
+          darwin:
+            'QJsonObject NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonObject NatVis Expand uses an Intrinsic referencing Qt6Cored.dll; GDB cannot resolve this symbol so children do not materialize.'
         }
       }
     ]
@@ -966,19 +1003,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       linux: 'null',
       win32: 'null'
     },
-    children: [
-      {
-        name: 'value',
-        value: {
-          darwin: '{...}',
-          linux: 'null',
-          win32: 'null'
-        },
-        knownProblem: {
-          all: 'QJsonValue Expand surfaces the internal value via ExpandedItem; debugger presentation varies across adapters.'
-        }
-      }
-    ]
+    children: [{ name: '[expect_none]', value: '' }]
   },
   {
     name: 'containerTypes.qJsonValueInt',
@@ -986,19 +1011,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '42',
     knownProblem: {
       darwin:
-        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
-      win32:
-        "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
+        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.'
     },
-    children: [
-      {
-        name: 'value',
-        value: '42',
-        knownProblem: {
-          all: 'QJsonValue Expand surfaces the internal value via ExpandedItem; debugger presentation varies across adapters.'
-        }
-      }
-    ]
+    children: [{ name: '[expect_none]', value: '' }]
   },
   {
     name: 'containerTypes.qJsonValueString',
@@ -1008,10 +1023,40 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       linux:
-        'QJsonValue NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object.',
-      win32:
-        "NatVis DisplayString '{value}' is not applied: debugger shows internal QJsonValue fields (n/container/t) instead of the scalar value."
-    }
+        'QJsonValue NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object.'
+    },
+    children: [
+      {
+        name: '[0]',
+        value: "'f'",
+        knownProblem: {
+          darwin:
+            'QJsonValue String Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonValue String Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[4]',
+        value: "'y'",
+        knownProblem: {
+          darwin:
+            'QJsonValue String Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonValue String Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[8]',
+        value: "'o'",
+        knownProblem: {
+          darwin:
+            'QJsonValue String Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QJsonValue String Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qCborMapEmpty',
@@ -1021,30 +1066,39 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.',
       linux:
-        'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.',
-      win32:
-        'QCborMap NatVis uses Qt6Cored.dll intrinsics, but intrinsic evaluation is unreliable in VS Code tests, so the "empty" DisplayString is not shown.'
-    }
+        'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.'
+    },
+    children: [{ name: '[expect_none]', value: '' }]
   },
   {
     name: 'containerTypes.qCborMap',
     type: 'QCborMap',
-    value: {
-      darwin: '{...}',
-      linux: '',
-      win32: '{d={...} }'
+    value: '{["k1"]=1 ["k2"]= "two" }',
+    knownProblem: {
+      darwin:
+        'QCborMap NatVis Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so the value falls back to raw struct display.',
+      linux:
+        'QCborMap NatVis Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so the value falls back to raw struct display.'
     },
     children: [
       {
-        name: '[k1]',
+        name: '["k1"]',
         value: '1',
         knownProblem: {
           darwin:
-            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; LLDB evaluation is unreliable so key/value children do not materialize.',
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so key/value children do not materialize.',
           linux:
-            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; GDB evaluation is unreliable so key/value children do not materialize.',
-          win32:
-            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics (Qt6Cored.dll!QCborContainerPrivate / QtCbor::Element). On Windows CI these symbols are not reliably resolvable, so map key/value children do not materialize.'
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so key/value children do not materialize.'
+        }
+      },
+      {
+        name: '["k2"]',
+        value: 'two',
+        knownProblem: {
+          darwin:
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so key/value children do not materialize.',
+          linux:
+            'QCborMap expands via QCborContainerPrivate view(map) using Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so key/value children do not materialize.'
         }
       }
     ]
@@ -1052,15 +1106,14 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qCborValueNull',
     type: 'QCborValue',
-    value: 'null',
+    value: 'undefined',
     knownProblem: {
       darwin:
         'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       linux:
-        'NatVis formatting is currently unreliable under GDB; value collapses to "undefined".',
-      win32:
-        "NatVis DisplayString '{value}' is not applied: debugger shows internal QCborValue fields (n/container/t) instead of the scalar value."
-    }
+        'NatVis formatting is currently unreliable under GDB; value collapses to "undefined".'
+    },
+    children: [{ name: '[expect_none]', value: '' }]
   },
   {
     name: 'containerTypes.qCborValueString',
@@ -1070,10 +1123,40 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       darwin:
         'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
       linux:
-        'NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object.',
-      win32:
-        "NatVis DisplayString '{value}' is not applied: debugger shows internal QCborValueString fields (n/container/t) instead of the scalar value."
-    }
+        'NatVis formatting is currently unreliable under GDB; -var-create: unable to create variable object.'
+    },
+    children: [
+      {
+        name: '[0]',
+        value: "'f'",
+        knownProblem: {
+          darwin:
+            'QCborValue String Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QCborValue String Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[4]',
+        value: "'y'",
+        knownProblem: {
+          darwin:
+            'QCborValue String Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QCborValue String Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[8]',
+        value: "'o'",
+        knownProblem: {
+          darwin:
+            'QCborValue String Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QCborValue String Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qByteArrayList',
@@ -1126,15 +1209,45 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qCborArray',
     type: 'QCborArray',
-    value: 'unknown_invalid',
+    value: '{[0]=1 [1]= "two" [2]=true }',
     knownProblem: {
-      win32:
-        'NatVis for QCborArray relies on a Windows-specific intrinsic (Qt6Cored.dll); visualization is fragile and not reliably applied by the debugger.',
       darwin:
         'NatVis for QCborArray uses a Windows-only intrinsic (Qt6Cored.dll), so the rule cannot be evaluated on macOS.',
       linux:
         'NatVis for QCborArray uses a Windows-only intrinsic (Qt6Cored.dll), so the rule cannot be evaluated on Linux.'
-    }
+    },
+    children: [
+      {
+        name: '[0]',
+        value: '1',
+        knownProblem: {
+          darwin:
+            'QCborArray Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QCborArray Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[1]',
+        value: 'two',
+        knownProblem: {
+          darwin:
+            'QCborArray Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QCborArray Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      },
+      {
+        name: '[2]',
+        value: 'true',
+        knownProblem: {
+          darwin:
+            'QCborArray Expand uses Qt6Cored.dll intrinsics; LLDB cannot resolve this symbol so children do not materialize.',
+          linux:
+            'QCborArray Expand uses Qt6Cored.dll intrinsics; GDB cannot resolve this symbol so children do not materialize.'
+        }
+      }
+    ]
   },
   {
     name: 'containerTypes.qCborValueInt',
@@ -1142,9 +1255,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '42',
     knownProblem: {
       darwin:
-        'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque {...} form.',
-      win32:
-        'QCborValue NatVis currently fails. Debugger provides: n=42 container=0xADDR <NULL> t=Integer (0) instead of just "42".'
+        'QCborValue NatVis formatting is currently unreliable under LLDB; value often collapses to an opaque {...} form.'
     },
     children: [
       {
