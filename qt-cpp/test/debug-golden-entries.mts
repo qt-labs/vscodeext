@@ -1811,9 +1811,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         '"-var-create: unable to create variable object", so the expected QQuickItemPrivate summary ' +
         '(x/y/width/height) is not available at the root.',
       win32:
-        'The debugger shows an opaque "{...}" placeholder for QQuickItem instead of evaluating the ' +
-        'delegated NatVis DisplayString `{d_ptr.d,na}`. As a result, the expected QQuickItemPrivate ' +
-        'summary (x/y/width/height) is not produced at the root.'
+        'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QQuickItem correctly; ' +
+        'with a clang-cl binary vsdbg cannot evaluate the delegated DisplayString {d_ptr.d,na} ' +
+        'and falls back to an opaque "{...}" placeholder. ' +
+        'Explicit Watch casts through Qt6Quickd.dll!QQuickItemPrivate also echo back unevaluated.'
     }
   },
   {
