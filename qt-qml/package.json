@@ -28,7 +28,10 @@
   ],
   "qna": "marketplace",
   "pricing": "Free",
-  "activationEvents": [],
+  "activationEvents": [
+    "workspaceContains:**/*.qtd",
+    "workspaceContains:**/*.qzt"
+  ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
@@ -97,6 +100,11 @@
         "title": "%qt-qml.command.stopQmlProfiler.title%",
         "category": "Qt",
         "icon": "$(debug-stop)"
+      },
+      {
+        "command": "qt-qml.downloadQmlTraceViewer",
+        "title": "%qt-qml.command.downloadQmlTraceViewer.title%",
+        "category": "Qt"
       }
     ],
     "menus": {
@@ -318,7 +326,13 @@
             "type": "string"
           },
           "default": [],
-          "description": "Extra command line arguments to pass to the application when starting QML Profiler.",
+          "description": "Extra command line arguments to pass to the application when starting QML Profiler",
+          "scope": "machine-overridable"
+        },
+        "qt-qml.profiler.customTraceViewerExePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the custom QML trace viewer executable path",
           "scope": "machine-overridable"
         }
       }

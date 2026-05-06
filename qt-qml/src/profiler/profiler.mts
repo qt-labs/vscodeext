@@ -11,7 +11,8 @@ import {
   telemetry,
   PySideProject,
   QtWorkspaceFeatures,
-  CoreKey
+  CoreKey,
+  getQtQmlApi
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
@@ -233,14 +234,9 @@ async function onRecordingCompleted(
   cleanupSession();
 
   // Automatically open the trace file in the profiler viewer
-  try {
-    await vscode.commands.executeCommand(
-      'vscode.openWith',
-      vscode.Uri.file(filePath),
-      'qt-core.qmlTrace'
-    );
-  } catch (err) {
-    logger.warn('Could not auto-open trace file:', String(err));
+  const api = (await getQtQmlApi())?.traceFile;
+  if (api) {
+    api.open(vscode.Uri.file(filePath));
   }
 }
 

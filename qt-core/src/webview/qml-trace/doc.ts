@@ -2,15 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import { getQtQmlApi } from 'qt-lib';
 
 export class QmlTraceDoc implements vscode.CustomDocument {
-  private readonly _uri: vscode.Uri;
-  private readonly _context: vscode.ExtensionContext;
-
-  constructor(uri: vscode.Uri, context: vscode.ExtensionContext) {
-    this._uri = uri;
-    this._context = context;
-  }
+  constructor(private readonly _uri: vscode.Uri) {}
 
   // eslint-disable-next-line
   public dispose() {}
@@ -19,18 +14,16 @@ export class QmlTraceDoc implements vscode.CustomDocument {
     return this._uri;
   }
 
-  get additionalDirs() {
-    return this._context.globalState.get<string[]>(this._stateKey()) ?? [];
+  public async getAdditionalDirs() {
+    const qmlApi = await getQtQmlApi();
+    return qmlApi ? qmlApi.traceFile.getAdditionalDirs(this._uri) : [];
   }
 
-  public setAdditionalDirs(dirs: string[]): Thenable<void> {
-    const value = dirs.map((d) => d.trim()).filter((d) => d.length > 0);
-    // TODO: check if having a valid dir pattern
-
-    return this._context.globalState.update(this._stateKey(), value);
-  }
-
-  private _stateKey() {
-    return `qmlTrace.additionalDirs:${this._uri.fsPath}`;
+  public async setAdditionalDirs(dirs: string[]) {
+    const qmlApi = await getQtQmlApi();
+    if (qmlApi) {
+      const value = dirs.map((d) => d.trim()).filter((d) => d.length > 0);
+      qmlApi.traceFile.setAdditionalDirs(this._uri, value);
+    }
   }
 }

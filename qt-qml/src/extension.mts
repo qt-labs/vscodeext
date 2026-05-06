@@ -43,6 +43,8 @@ import {
   acquirePortTaskProvider,
   AcquirePortTaskProvider
 } from './tasks/acquire-port.mjs';
+import { registerTraceViewerCommand } from './traceviewer/installer.mts';
+import { QtQmlAPIImpl } from './api.mts';
 
 export let projectManager: QMLProjectManager;
 export let coreAPI: CoreAPI | undefined;
@@ -99,7 +101,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerClearQmlPreviewCacheCommand(),
     registerStartQmlProfilerCommand(),
     registerAttachQmlProfilerCommand(),
-    registerStopQmlProfilerCommand()
+    registerStopQmlProfilerCommand(),
+    registerTraceViewerCommand(context)
   );
   taskProviders.push(
     vscode.tasks.registerTaskProvider(
@@ -111,6 +114,11 @@ export async function activate(context: vscode.ExtensionContext) {
   projectManager.getConfigValues();
   projectManager.updateQmllsParams();
   startQmlls();
+
+  const api = new QtQmlAPIImpl(context);
+  context.subscriptions.push(api);
+
+  return api;
 }
 
 function startQmlls() {

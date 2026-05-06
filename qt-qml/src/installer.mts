@@ -318,7 +318,7 @@ async function downloadWithProgress(url: string, destPath: string) {
   };
 
   const options = {
-    title: 'Acquiring QML language server',
+    title: 'Downloading QML language server',
     location: vscode.ProgressLocation.Notification,
     cancellable: true
   };
