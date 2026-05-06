@@ -25,3 +25,8 @@ export const Courses = {
 export const WelcomePage = {
   tabText: 'Welcome'
 };
+
+export const qmlTrace = {
+  tabText: 'QML trace',
+  folderSelectTitle: 'Select directory'
+};

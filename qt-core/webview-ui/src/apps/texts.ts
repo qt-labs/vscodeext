@@ -107,46 +107,13 @@ export const qrc = {
 }
 
 export const qmltrace = {
-  noData: 'No data available',
-  noLabels: '(none)',
-  rootLabel: 'All operations',
-  mergedLabel: 'Various Events',
-
-  header: {
-    buttons: {
-      time: 'Total time',
-      memory: 'Memory',
-      alloc: 'Allocations'
-    },
-
-    tooltips: {
-      filter: 'Show/hide filter dialog',
-      zoomIn: 'Zoom to fit (or double-click the cell)',
-      zoomOut: 'Zoom out to parent',
-      zoomOutFull: 'Zoom out to full view',
-      config: 'Open configuration settings',
-      jsonc: 'Open flame graph as a JSONC document',
-      openAsText: 'Open in text editor'
-    }
+  buttons: {
+    openTrace: 'Open with QML trace viewer',
+    openTraceAsText: 'Open as text'
   },
 
-  detailsOverlay: {
-    title: 'Trace details',
-    label: 'Label',
-    details: 'Details',
-    feature: 'Feature',
-    calls: 'Total calls',
-    time: 'Total time',
-    meanTime: 'Mean time',
-    memory: 'Memory',
-    alloc: "Allocations",
-    loc: 'Location'
-  },
-
-  featuresOverlay: {
-    title: 'Filter',
-    clearButton: 'Clear',
-    selectAllButton: 'Select all'
+  tooltips: {
+    openConfigDialog: 'Open configuration dialog'
   },
 
   configDialog: {

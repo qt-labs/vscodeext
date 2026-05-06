@@ -5,44 +5,80 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { MessageCircleWarning } from '@lucide/svelte';
+  import { ExternalLink, Settings } from '@lucide/svelte';
 
   import '@/styles/app.css';
-  import * as texts from '@/apps/texts';
-  import LoadingMask from '@/comps/LoadingMask.svelte';
-
+  import IconButton from '@/comps/IconButton.svelte';
+  import QmlTraceConfigDialog from './QmlTraceConfigDialog.svelte';
+  import { qmltrace as texts } from '@/apps/texts';
   import { data, ui } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
-  import QmlTraceHeader from './QmlTraceHeader.svelte';
-  import QmlTraceFlameView from './QmlTraceFlameView.svelte';
-  import QmlTraceAllOverlays from './QmlTraceAllOverlays.svelte';
 
-  onMount(async () => {
-    void viewlogic.onAppMount();
-  });
+  onMount(viewlogic.onAppMount);
 </script>
 
 <div class='w-screen h-screen p-2 flex flex-col gap-2'>
-  <QmlTraceHeader />
-
-  <div class='grow min-h-0 relative'>
-    {#if ((data.flame?.metadata.height ?? 0) === 0) && !ui.task.busy}
-      <div class="w-full h-full flex flex-row items-center justify-center gap-3">
-        <MessageCircleWarning class='medium'/>
-        {texts.qmltrace.noData}
-      </div>
-    {:else}
-      <QmlTraceFlameView />
+  <div class='
+    w-[300px] h-full
+    flex flex-col mx-auto gap-1 justify-center
+  '>
+    {@render RunViewerButton()}
+    {@render ConfigAndOpenAsTextButton()}
+    {#if ui.overlays.config.visible}
+      <div class='h-[300px]'></div>
     {/if}
-
-    <QmlTraceAllOverlays class="z-10" />
   </div>
 
-  <LoadingMask
-    busy={ui.task.busy}
-    error={ui.task.error}
-    forceHidden={ui.task.isDebouncing}
-    busyText={texts.loading.busy}
-    closeText={texts.loading.close}
-  />
+  {#if ui.overlays.config.visible}
+    <div class="absolute grow min-w-0 pointer-events-auto">
+      <QmlTraceConfigDialog />
+    </div>
+  {/if}
 </div>
+
+{#snippet RunViewerButton()}
+  <button class='
+    qt-button
+    w-full min-h-[60px]
+    flex flex-row justify-center items-center gap-4 px-5
+    bg-amber-600
+  '
+    onclick={() => {
+      void viewlogic.openFileInTraceViewer();
+    }}
+  >
+    <ExternalLink/>
+    <p>{texts.buttons.openTrace}</p>
+  </button>
+{/snippet}
+
+{#snippet ConfigAndOpenAsTextButton()}
+  <div class='flex flex-row items-center'>
+    {#if data.configs.fileName.endsWith('.qtd')}
+    {@render OpenAsTextButton()}
+    {/if}
+
+    <div class='grow'></div>
+    <IconButton
+      flat
+      square
+      class="!w-0 !border-none"
+      icon={Settings}
+      tooltip={texts.tooltips.openConfigDialog}
+      onClicked={() => {
+        ui.overlays.config.visible = !ui.overlays.config.visible;
+      }}
+    />
+  </div>
+{/snippet}
+
+{#snippet OpenAsTextButton()}
+  <button
+    class='underline underline-offset-3 text-gray-500 cursor-pointer'
+    onclick={() => {
+      void viewlogic.openFileInTextEditor();
+    }}
+  >
+    {texts.buttons.openTraceAsText}
+  </button>
+{/snippet}

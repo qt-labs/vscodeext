@@ -11,6 +11,7 @@
   "qt-qml.command.startQmlProfiler.title": "Profile QML application",
   "qt-qml.command.attachQmlProfiler.title": "Attach to running QML application for profiling",
   "qt-qml.command.stopQmlProfiler.title": "Stop QML Profiler",
+  "qt-qml.command.downloadQmlTraceViewer.title": "Download the most recent QML trace viewer",
   "qt-qml.task.previewLaunch.label": "Qt: QML Preview: Launch",
   "qt-qml.task.previewLaunch.description": "Launch a QML application with live preview support",
   "qt-qml.task.previewAttach.label": "Qt: QML Preview: Attach",

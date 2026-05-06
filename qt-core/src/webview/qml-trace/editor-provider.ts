@@ -11,17 +11,17 @@ import {
   CustomDocumentOpenContext
 } from 'vscode';
 
-import { telemetry } from 'qt-lib';
-import { EXTENSION_ID } from '@/constants';
+import { getQtQmlApi } from 'qt-lib';
 import {
   createWebviewHtml,
   createWebviewOptions,
   basicWebviewAppConfig,
   createWebviewPanelIcons
 } from '@/webview/utils';
-import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
+import { EXTENSION_ID } from '@/constants';
 import { QmlTraceDoc } from './doc';
 import { QmlTraceController } from './controller';
+import * as texts from '@/texts';
 
 export function registerQmlTraceProvider(context: ExtensionContext) {
   const type = `${EXTENSION_ID}.qmlTrace`;
@@ -42,6 +42,7 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
   // eslint-disable-next-line
   public dispose() {}
 
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   public openCustomDocument(
     uri: Uri,
     openContext: CustomDocumentOpenContext,
@@ -49,7 +50,7 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
   ): QmlTraceDoc | Thenable<QmlTraceDoc> {
     void openContext;
     void token;
-    return new QmlTraceDoc(uri, this._context);
+    return new QmlTraceDoc(uri);
   }
 
   public async resolveCustomEditor(
@@ -62,7 +63,7 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
     // view
     const config = {
       app: 'qml-trace',
-      title: 'QML trace',
+      title: texts.qmlTrace.tabText,
       context: this._context,
       ...basicWebviewAppConfig
     };
@@ -72,24 +73,14 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
     panel.webview.options = createWebviewOptions(config);
 
     // controller
-    const socketId = generateSocketId('qml-trace');
-    const qtcliServer = new QtcliRestServer(socketId);
-    await qtcliServer.start(this._context);
-
-    const controller = new QmlTraceController(
-      doc,
-      panel.webview,
-      qtcliServer.socketName,
-      this._context
-    );
-
+    const controller = new QmlTraceController(doc, panel);
     this._controllers.set(panel, controller);
-    panel.onDidDispose(() => {
+
+    panel.onDidDispose(async () => {
+      (await getQtQmlApi())?.traceFile.close(doc.uri);
       controller.dispose();
       this._controllers.delete(panel);
     });
-
-    telemetry.sendEvent('QMLTrace:resolveCustomEditor');
 
     return Promise.resolve();
   }
