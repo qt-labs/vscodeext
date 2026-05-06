@@ -150,19 +150,3 @@ GET {{baseUrl}}/ready HTTP/1.1
 
 ###
 DELETE {{baseUrl}}/server HTTP/1.1
-
-
-###
-### profile data
-###
-
-###
-PUT {{baseUrl}}/qmltraces/load HTTP/1.1
-Content-Type: application/json
-
-{
-    "filePath": "<absoulte path to a qmltrace (.qtd, .qzt) file>"
-}
-
-###
-GET {{baseUrl}}/qmltraces/flamegraph HTTP/1.1

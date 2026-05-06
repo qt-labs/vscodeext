@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"qtcli/common/utils"
 	"qtcli/newitem"
-	"qtcli/qmltrace"
 	"regexp"
 	"strconv"
 	"strings"
@@ -186,10 +185,6 @@ func createApiHandler() *gin.Engine {
 	// create item (project or file) & validation
 	v1.POST("/items", newitem.PostItems)
 	v1.POST("/items/validate", newitem.PostItemsValidate)
-
-	// qml trace
-	v1.PUT("/qmltraces/load", qmltrace.PutLoadTraceFile)
-	v1.GET("/qmltraces/flamegraph", qmltrace.GetFlameGraph)
 
 	// others
 	v1.GET("/ready", GetReady)
