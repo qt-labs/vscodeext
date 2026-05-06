@@ -289,9 +289,11 @@ export enum SettingsPersistence {
 
 // ── IPC Constants ────────────────────────────────────────────────────────────
 
+import * as os from 'os';
+import * as path from 'path';
+
 export const IPC = {
-  //TODO: Find a OS agnostic way to define the socket path
-  defaultSocket: '/tmp/qtclient_socket',
+  defaultSocket: path.join(os.tmpdir(), 'qtclient_socket'),
 
   methods: {
     install: 'packages/install',
