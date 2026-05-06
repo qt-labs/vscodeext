@@ -277,7 +277,12 @@ async function requireLogin(): Promise<boolean> {
   return updated.length > 0;
 }
 
-export async function installPackage(): Promise<void> {
+export interface InstallPackageArgs {
+  regex?: string;
+  version?: string;
+}
+
+export async function installPackage(args?: InstallPackageArgs): Promise<void> {
   await withService(async (packages) => {
     const results = await vscode.window.withProgress(
       {
@@ -298,18 +303,53 @@ export async function installPackage(): Promise<void> {
         )
     );
 
-    const uninstalled = results.filter(
+    let candidates = results.filter(
       (pkg: PackageData) => pkg.installState === InstallState.Uninstalled
     );
 
-    if (uninstalled.length === 0) {
+    if (args?.regex) {
+      const re = new RegExp(args.regex, 'i');
+      candidates = candidates.filter(
+        (pkg: PackageData) => re.test(pkg.name) || re.test(pkg.id)
+      );
+    }
+
+    if (candidates.length === 0) {
       void vscode.window.showInformationMessage(
         'No packages available for installation.'
       );
       return;
     }
 
-    const items = uninstalled.map((pkg: PackageData) => ({
+    if (args?.version === 'latest') {
+      const sorted = [...candidates].sort((a, b) =>
+        b.version.localeCompare(a.version, undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        })
+      );
+      const latest = sorted[0];
+      if (latest) {
+        await installPackageById(packages, latest);
+        return;
+      }
+    }
+
+    if (args?.version && args.version !== 'latest') {
+      const match = candidates.find(
+        (pkg: PackageData) => pkg.version === args.version
+      );
+      if (match) {
+        await installPackageById(packages, match);
+        return;
+      }
+      void vscode.window.showErrorMessage(
+        `No package found with version "${args.version}".`
+      );
+      return;
+    }
+
+    const items = candidates.map((pkg: PackageData) => ({
       label: pkg.name || pkg.id,
       description: pkg.version,
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
