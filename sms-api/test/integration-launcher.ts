@@ -23,6 +23,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 
 import {
@@ -44,7 +45,7 @@ interface TestConfig {
 function parseArgs(): TestConfig {
   const args = process.argv.slice(2);
   let serviceBin: string | undefined;
-  let socketPath = '/tmp/qtclient_socket';
+  let socketPath = path.join(os.tmpdir(), 'qtclient_socket');
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];

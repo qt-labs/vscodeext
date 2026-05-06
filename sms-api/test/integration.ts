@@ -28,6 +28,7 @@
 
 import { spawn, type ChildProcess } from 'child_process';
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -103,7 +104,7 @@ function fail(msg: string): never {
 }
 
 function defaultSocketPath(): string {
-  return '/tmp/qtclient_socket';
+  return path.join(os.tmpdir(), 'qtclient_socket');
 }
 
 /** Wraps a promise with a timeout so tests can't hang */
