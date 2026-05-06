@@ -241,7 +241,11 @@ export function normalizeValue(
   //   char16_t : "72 'H'"        -> "u'H'"
   //   char16_t : "U+0048 u'H'"   -> "u'H'"
   //   char16_t : "72 u'H'"       -> "u'H'"
-  if (typeText === 'char' || typeText === 'const char' || typeText === 'char16_t') {
+  if (
+    typeText === 'char' ||
+    typeText === 'const char' ||
+    typeText === 'char16_t'
+  ) {
     const wantUPrefix = typeText === 'char16_t';
 
     // If we already have u'X', keep it (char16_t) or strip u (char)
