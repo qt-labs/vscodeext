@@ -76,6 +76,27 @@
         }
       ]
     },
+    "walkthroughs": [
+      {
+        "id": "qt-sms.getStarted",
+        "title": "%qt-sms.walkthrough.getStarted.title%",
+        "description": "%qt-sms.walkthrough.getStarted.description%",
+        "steps": [
+          {
+            "id": "qt-sms.installQtFramework",
+            "title": "%qt-sms.walkthrough.installQtFramework.title%",
+            "description": "%qt-sms.walkthrough.installQtFramework.description%",
+            "media": {
+              "image": "res/walkthrough/install-qt.svg",
+              "altText": "Install Qt Framework"
+            },
+            "completionEvents": [
+              "onContext:qt-sms.packageInstalled"
+            ]
+          }
+        ]
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Qt Software Management Service Configuration",
