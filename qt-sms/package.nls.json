@@ -4,5 +4,9 @@
   "qt-sms.command.installPackage.title": "SMS: Install package",
   "qt-sms.command.setInstallationPath.title": "SMS: Set installation path",
   "qt-sms.command.login.title": "SMS: Login to Qt Account",
-  "qt-sms.command.logout.title": "SMS: Logout from Qt Account"
+  "qt-sms.command.logout.title": "SMS: Logout from Qt Account",
+  "qt-sms.walkthrough.getStarted.title": "Get started with Qt",
+  "qt-sms.walkthrough.getStarted.description": "Take your first steps in setting up a Qt project and unlock the full power of Qt's features with all the essential tools at your fingertips.",
+  "qt-sms.walkthrough.installQtFramework.title": "Install Qt Framework",
+  "qt-sms.walkthrough.installQtFramework.description": "To get started, you need to install Qt Framework.\n\nSelect from available versions.\n\n[Get latest Qt Framework](command:qt-sms.installPackage?%7B%22version%22%3A%22latest%22%7D)\n\n[Select version...](command:qt-sms.installPackage)"
 }
