@@ -78,7 +78,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -99,7 +99,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -120,7 +120,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -141,7 +141,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -173,7 +173,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -194,7 +194,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -215,7 +215,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
         'Hypothesis: QDateTime NatVis chains too many levels of DLL-qualified private intrinsics ' +
         'for vsdbg to resolve with a clang-cl binary, even with full debug info present ' +
-        '(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg\'s silent evaluation budget.)'
+        "(cl can evaluate QDateTime in isolation but also fails for these struct-member entries due to vsdbg's silent evaluation budget.)"
     }
   },
   {
@@ -268,7 +268,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QJsonDocument',
     value: {
       darwin: '{...}',
-      win32: '{[0]= "JSON Test Pattern pass1" [1]= {["object with 1 member"]= {[0]= "array with 1 element" } } [2]=...}',
+      win32:
+        '{[0]= "JSON Test Pattern pass1" [1]= {["object with 1 member"]= {[0]= "array with 1 element" } } [2]=...}',
       linux: ''
     },
     children: [
@@ -561,40 +562,50 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[Time-low]',
         value: '12345678',
         knownProblem: {
-          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
-          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+          darwin:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
         }
       },
       {
         name: '[Time-mid]',
         value: '1234',
         knownProblem: {
-          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
-          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+          darwin:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
         }
       },
       {
         name: '[Time-high-and-version]',
         value: '1234',
         knownProblem: {
-          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
-          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+          darwin:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
         }
       },
       {
         name: '[Clock-seq]',
         value: '1234',
         knownProblem: {
-          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
-          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+          darwin:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
         }
       },
       {
         name: '[Node]',
         value: '1234567890AB',
         knownProblem: {
-          darwin: 'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
-          linux:  'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
+          darwin:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by LLDB; children do not materialize.',
+          linux:
+            'QUuid NatVis uses Visual Studio–only format specifiers (Xb/nvoXb) unsupported by GDB; children do not materialize.'
         }
       }
     ]
@@ -1495,8 +1506,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         knownProblem: {
           darwin:
             'QHostAddress NatVis children are not materialized under LLDB.',
-          linux:
-            'QHostAddress NatVis children are not materialized under GDB.'
+          linux: 'QHostAddress NatVis children are not materialized under GDB.'
         }
       },
       {
@@ -1505,8 +1515,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         knownProblem: {
           darwin:
             'QHostAddress NatVis children are not materialized under LLDB.',
-          linux:
-            'QHostAddress NatVis children are not materialized under GDB.'
+          linux: 'QHostAddress NatVis children are not materialized under GDB.'
         }
       }
     ]
@@ -1528,8 +1537,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         knownProblem: {
           darwin:
             'QHostAddress NatVis children are not materialized under LLDB.',
-          linux:
-            'QHostAddress NatVis children are not materialized under GDB.'
+          linux: 'QHostAddress NatVis children are not materialized under GDB.'
         }
       },
       {
@@ -1538,8 +1546,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         knownProblem: {
           darwin:
             'QHostAddress NatVis children are not materialized under LLDB.',
-          linux:
-            'QHostAddress NatVis children are not materialized under GDB.'
+          linux: 'QHostAddress NatVis children are not materialized under GDB.'
         }
       }
     ]
@@ -1563,40 +1570,50 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[width]',
         value: '4',
         knownProblem: {
-          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+          darwin:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
         }
       },
       {
         name: '[height]',
         value: '3',
         knownProblem: {
-          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+          darwin:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
         }
       },
       {
         name: '[stride]',
         value: '16',
         knownProblem: {
-          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+          darwin:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
         }
       },
       {
         name: '[type]',
         value: 'UINT8',
         knownProblem: {
-          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+          darwin:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
         }
       },
       {
         name: '[channels]',
         value: '4',
         knownProblem: {
-          darwin: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux: 'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+          darwin:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+          linux:
+            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
         }
       }
     ]
@@ -1704,19 +1721,23 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVector2D',
     value: '{ x = 1, y = 2 }',
     knownProblem: {
-      darwin: 'LLDB does not reliably apply the QVector2D NatVis DisplayString on macOS.',
-      linux: 'GDB does not reliably apply the QVector2D NatVis DisplayString on Linux.'
+      darwin:
+        'LLDB does not reliably apply the QVector2D NatVis DisplayString on macOS.',
+      linux:
+        'GDB does not reliably apply the QVector2D NatVis DisplayString on Linux.'
     },
     children: [
       {
-        name: '[x]', value: '1',
+        name: '[x]',
+        value: '1',
         knownProblem: {
           darwin: 'QVector2D NatVis children are not materialized under LLDB.',
           linux: 'QVector2D NatVis children are not materialized under GDB.'
         }
       },
       {
-        name: '[y]', value: '2',
+        name: '[y]',
+        value: '2',
         knownProblem: {
           darwin: 'QVector2D NatVis children are not materialized under LLDB.',
           linux: 'QVector2D NatVis children are not materialized under GDB.'
@@ -1729,26 +1750,31 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVector3D',
     value: '{ x = 1, y = 2, z = 3 }',
     knownProblem: {
-      darwin: 'LLDB does not reliably apply the QVector3D NatVis DisplayString on macOS.',
-      linux: 'GDB does not reliably apply the QVector3D NatVis DisplayString on Linux.'
+      darwin:
+        'LLDB does not reliably apply the QVector3D NatVis DisplayString on macOS.',
+      linux:
+        'GDB does not reliably apply the QVector3D NatVis DisplayString on Linux.'
     },
     children: [
       {
-        name: '[x]', value: '1',
+        name: '[x]',
+        value: '1',
         knownProblem: {
           darwin: 'QVector3D NatVis children are not materialized under LLDB.',
           linux: 'QVector3D NatVis children are not materialized under GDB.'
         }
       },
       {
-        name: '[y]', value: '2',
+        name: '[y]',
+        value: '2',
         knownProblem: {
           darwin: 'QVector3D NatVis children are not materialized under LLDB.',
           linux: 'QVector3D NatVis children are not materialized under GDB.'
         }
       },
       {
-        name: '[z]', value: '3',
+        name: '[z]',
+        value: '3',
         knownProblem: {
           darwin: 'QVector3D NatVis children are not materialized under LLDB.',
           linux: 'QVector3D NatVis children are not materialized under GDB.'
@@ -1761,33 +1787,39 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVector4D',
     value: '{ x = 1, y = 2, z = 3, w = 4 }',
     knownProblem: {
-      darwin: 'LLDB does not reliably apply the QVector4D NatVis DisplayString on macOS.',
-      linux: 'GDB does not reliably apply the QVector4D NatVis DisplayString on Linux.'
+      darwin:
+        'LLDB does not reliably apply the QVector4D NatVis DisplayString on macOS.',
+      linux:
+        'GDB does not reliably apply the QVector4D NatVis DisplayString on Linux.'
     },
     children: [
       {
-        name: '[x]', value: '1',
+        name: '[x]',
+        value: '1',
         knownProblem: {
           darwin: 'QVector4D NatVis children are not materialized under LLDB.',
           linux: 'QVector4D NatVis children are not materialized under GDB.'
         }
       },
       {
-        name: '[y]', value: '2',
+        name: '[y]',
+        value: '2',
         knownProblem: {
           darwin: 'QVector4D NatVis children are not materialized under LLDB.',
           linux: 'QVector4D NatVis children are not materialized under GDB.'
         }
       },
       {
-        name: '[z]', value: '3',
+        name: '[z]',
+        value: '3',
         knownProblem: {
           darwin: 'QVector4D NatVis children are not materialized under LLDB.',
           linux: 'QVector4D NatVis children are not materialized under GDB.'
         }
       },
       {
-        name: '[w]', value: '4',
+        name: '[w]',
+        value: '4',
         knownProblem: {
           darwin: 'QVector4D NatVis children are not materialized under LLDB.',
           linux: 'QVector4D NatVis children are not materialized under GDB.'
@@ -1830,7 +1862,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qSizePolicy',
     type: 'QSizePolicy',
-    value: '{ horizontal = Expanding (7), vertical = Minimum (1), type = DefaultType (1) }',
+    value:
+      '{ horizontal = Expanding (7), vertical = Minimum (1), type = DefaultType (1) }',
     knownProblem: {
       darwin:
         'LLDB fails to evaluate QSizePolicy NatVis intrinsics so neither the DisplayString ' +
@@ -1844,7 +1877,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[vertical policy]',
         value: 'QSizePolicy::Policy::Minimum (1)',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1852,7 +1886,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[horizontal policy]',
         value: 'QSizePolicy::Policy::Expanding (7)',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1860,7 +1895,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[control type]',
         value: 'QSizePolicy::ControlType::DefaultType (1)',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1868,7 +1904,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[expanding directions]',
         value: 'Qt::Horizontal (1)',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1876,7 +1913,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[vertical stretch]',
         value: '3',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1884,7 +1922,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[horizontal stretch]',
         value: '7',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1892,7 +1931,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[has height for width]',
         value: 'false',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       },
@@ -1900,7 +1940,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[has width for height]',
         value: 'false',
         knownProblem: {
-          darwin: 'QSizePolicy NatVis children are not materialized under LLDB.',
+          darwin:
+            'QSizePolicy NatVis children are not materialized under LLDB.',
           linux: 'QSizePolicy NatVis children are not materialized under GDB.'
         }
       }
