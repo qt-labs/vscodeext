@@ -39,7 +39,7 @@ export async function ensureConnected(): Promise<Session> {
         serviceLogger.info(line);
       },
       onStderr: (line) => {
-        serviceLogger.warn(line);
+        serviceLogger.error(line);
       }
     });
   }
