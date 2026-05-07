@@ -567,7 +567,7 @@ async function installPackageById(
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: `Installing ${pkg.name || pkg.id}`,
+      title: `Installing ${pkg.name || pkg.id} ${pkg.version}`,
       cancellable: false
     },
     async (progress) => {
@@ -614,7 +614,7 @@ async function installPackageById(
         registerInstalledQtPaths();
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        const errMsg = `Failed to install ${pkg.name || pkg.id}: ${msg}`;
+        const errMsg = `Failed to install ${pkg.name || pkg.id} ${pkg.version} : ${msg}`;
         logger.error(errMsg);
         void vscode.window.showErrorMessage(errMsg);
       }
