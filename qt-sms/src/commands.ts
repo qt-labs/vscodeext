@@ -676,6 +676,13 @@ async function validateAndSetInstallationPath(path: string): Promise<void> {
 export async function login(
   authProvider: QtAccountAuthenticationProvider
 ): Promise<void> {
+  const sessions = await authProvider.getSessions();
+  if (sessions.length > 0 && sessions[0]) {
+    void vscode.window.showInformationMessage(
+      `Already signed in as ${sessions[0].account.label}`
+    );
+    return;
+  }
   try {
     await authProvider.createSession([AUTH_PROVIDER_ID]);
   } catch (err) {
