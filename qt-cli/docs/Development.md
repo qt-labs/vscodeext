@@ -80,3 +80,58 @@ Then run the tests in the `tests/e2e` directory.
 $ go build -C ./src -o ../tests
 $ go test -C ./tests/e2e -v
 ```
+
+## run.sh
+
+Use `run.sh` bash script to make frequent tasks easier.
+For example, use the `build` command to build qtcli for multiple platforms at once.
+
+```bash
+$ ./run.sh build
+```
+
+On your first build, you can install go packages/tools using `install-tools` command.
+```bash
+$ ./run.sh install-tools
+$ ./run.sh build
+```
+
+The `qtcli` command is useful when you want to quickly rebuild and run it with
+some arguments in one go,
+
+```bash
+$ ./run.sh qtcli preset ls
+>>> Building binaries...
+[Default] @projects/cpp/console
+[Default] @projects/cpp/qtquick
+[Default] @projects/cpp/qwidget
+[Default] @projects/python/qtquick
+[Default] @projects/python/qwidget
+[Default] @cpp/class
+[Default] @types/qml
+[Default] @types/qrc
+[Default] @types/ui
+```
+
+More commands are available and running `run.sh` without arguments will show the list.
+
+```bash
+$ chmod a+x run.sh
+$ ./run.sh
+
+Usage: ./run.sh <command>
+Commands:
+  build               build binaries, copy to qt-core/res/qtcli
+  test <unit|e2e|all> run test (default: all)
+  qtcli [args...]     run qtcli with given arguments after rebuilding the binary
+  gen-all             generate items from all presets for manual check
+  print-version       print current version
+  install-tools       install tools for build, license update, etc.
+  update-license      update license files
+  help                print help
+```
+
+## Further Reading
+
+- [REST API](RestApi.md) - Server management and REST API endpoints
+- [Templates](Templates.md) - Template syntax, configuration, and examples
