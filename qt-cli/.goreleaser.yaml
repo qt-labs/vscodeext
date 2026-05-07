@@ -29,11 +29,6 @@ builds:
       {{- .Arch }}-
       {{- .Version }}/qtcli
     no_unique_dist_dir: true
-    ignore:
-      - goos: linux
-        goarch: arm64
-      - goos: windows
-        goarch: arm64
 
 universal_binaries:
   - name_template: qtcli
