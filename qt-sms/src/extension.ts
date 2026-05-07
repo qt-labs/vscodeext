@@ -24,6 +24,7 @@ import {
 } from '@/commands';
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
+import { AccountViewProvider } from '@/account-view';
 
 const logger = createLogger('extension');
 
@@ -46,6 +47,15 @@ export async function activate(context: vscode.ExtensionContext) {
   const authProvider = registerAuthenticationProvider(context);
   setAuthProvider(authProvider);
 
+  // Activity bar account view
+  const accountViewProvider = new AccountViewProvider();
+  const accountTreeView = vscode.window.createTreeView(
+    `${EXTENSION_ID}.accountView`,
+    { treeDataProvider: accountViewProvider }
+  );
+  accountViewProvider.setTreeView(accountTreeView);
+  context.subscriptions.push(accountTreeView);
+
   // Track login state via VS Code context key
   const setLoggedIn = (value: boolean) =>
     void vscode.commands.executeCommand(
@@ -59,25 +69,35 @@ export async function activate(context: vscode.ExtensionContext) {
   if (sessions.length > 0 && sessions[0]) {
     logger.info(`Already logged in as ${sessions[0].account.label}`);
     setLoggedIn(true);
+    accountViewProvider.setSession(sessions[0]);
   } else {
     logger.info('No active session, attempting to renew stored credentials');
     const renewed = await authProvider.tryRenewSession();
     if (renewed) {
       logger.info(`Session renewed for ${renewed.account.label}`);
       setLoggedIn(true);
+      const renewedSessions = await authProvider.getSessions();
+      accountViewProvider.setSession(renewedSessions[0]);
     } else {
       logger.info('No stored credentials found, user is not logged in');
       setLoggedIn(false);
+      accountViewProvider.setSession(undefined);
     }
   }
 
-  // Keep context key in sync when sessions change
+  // Keep context key and account view in sync when sessions change
   context.subscriptions.push(
-    authProvider.onDidChangeSessions((e) => {
+    authProvider.onDidChangeSessions(async (e) => {
       if (e.added && e.added.length > 0) {
         setLoggedIn(true);
+        const currentSessions = await authProvider.getSessions();
+        accountViewProvider.setSession(currentSessions[0]);
       } else if (e.removed && e.removed.length > 0) {
         setLoggedIn(false);
+        accountViewProvider.setSession(undefined);
+      } else if (e.changed && e.changed.length > 0) {
+        const currentSessions = await authProvider.getSessions();
+        accountViewProvider.setSession(currentSessions[0]);
       }
     })
   );
@@ -104,6 +124,15 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () =>
       logout(authProvider)
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.openWalkthrough`,
+      () =>
+        void vscode.commands.executeCommand(
+          'workbench.action.openWalkthrough',
+          `theqtcompany.${EXTENSION_ID}#${EXTENSION_ID}.getStarted`,
+          false
+        )
     ),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {

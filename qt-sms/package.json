@@ -32,6 +32,43 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qt-sms",
+          "title": "Qt Package Manager",
+          "icon": "res/icons/qt-activitybar.svg"
+        }
+      ]
+    },
+    "views": {
+      "qt-sms": [
+        {
+          "id": "qt-sms.getStartedView",
+          "name": "%qt-sms.view.getStarted.name%"
+        },
+        {
+          "id": "qt-sms.accountView",
+          "name": "%qt-sms.view.account.name%"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "qt-sms.getStartedView",
+        "contents": "%qt-sms.view.getStarted.welcome%"
+      },
+      {
+        "view": "qt-sms.accountView",
+        "contents": "%qt-sms.view.account.welcomeLoggedOut%",
+        "when": "!qt-sms.isLoggedIn"
+      },
+      {
+        "view": "qt-sms.accountView",
+        "contents": "%qt-sms.view.account.welcomeLoggedIn%",
+        "when": "qt-sms.isLoggedIn"
+      }
+    ],
     "commands": [
       {
         "command": "qt-sms.searchPackages",
@@ -54,14 +91,21 @@
         "category": "Qt"
       },
       {
+        "command": "qt-sms.openWalkthrough",
+        "title": "%qt-sms.command.openWalkthrough.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-sms.login",
         "title": "%qt-sms.command.login.title%",
-        "category": "Qt"
+        "category": "Qt",
+        "icon": "$(sign-in)"
       },
       {
         "command": "qt-sms.logout",
         "title": "%qt-sms.command.logout.title%",
-        "category": "Qt"
+        "category": "Qt",
+        "icon": "$(sign-out)"
       }
     ],
     "menus": {
@@ -82,6 +126,18 @@
         "title": "%qt-sms.walkthrough.getStarted.title%",
         "description": "%qt-sms.walkthrough.getStarted.description%",
         "steps": [
+          {
+            "id": "qt-sms.signIn",
+            "title": "%qt-sms.walkthrough.signIn.title%",
+            "description": "%qt-sms.walkthrough.signIn.description%",
+            "media": {
+              "image": "res/walkthrough/install-qt.svg",
+              "altText": "Sign in to Qt Account"
+            },
+            "completionEvents": [
+              "onContext:qt-sms.isLoggedIn"
+            ]
+          },
           {
             "id": "qt-sms.installQtFramework",
             "title": "%qt-sms.walkthrough.installQtFramework.title%",
