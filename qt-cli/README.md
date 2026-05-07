@@ -55,7 +55,7 @@ $ ./qtcli new myapp
   → [Default] @projects/cpp/console
     [Default] @projects/cpp/qtquick
     [Default] @projects/cpp/qwidget
-    [Manually select features]     
+    [Manually select features]
 
   Use the arrow keys to move, Enter to select.
 ```
@@ -72,10 +72,10 @@ For example, to create a `myasset.qrc`, run `qtcli` with `new-file myasset` (wit
 $ ./qtcli new-file myasset
 ? Pick a preset
 
-    [Default] @types/qml      
-  → [Default] @types/qrc      
-    [Default] @types/ts       
-    [Default] @types/ui       
+    [Default] @types/qml
+  → [Default] @types/qrc
+    [Default] @types/ts
+    [Default] @types/ui
     [Manually select features]
 
   Use the arrow keys to move, Enter to select.
@@ -108,7 +108,7 @@ $ ./qtcli new myapp
 ✔ Use translation: Yes
 ✔ Target language (e.g. de, ko_KR): de
 ✔ Save for later use? Yes
-? Enter the preset name: my_console_app 
+? Enter the preset name: my_console_app
 ```
 
 The `my_console_app` preset will be at the top of the list next time you run `qtcli`.
@@ -118,10 +118,10 @@ $ ./qtcli new myapp2
 ? Pick a preset
 
   → my_console_app (projects/cpp/console)
-    [Default] @projects/cpp/console      
-    [Default] @projects/cpp/qtquick      
-    [Default] @projects/cpp/qwidget      
-    [Manually select features]           
+    [Default] @projects/cpp/console
+    [Default] @projects/cpp/qtquick
+    [Default] @projects/cpp/qwidget
+    [Manually select features]
 
   Use the arrow keys to move, Enter to select.
 ```
@@ -164,7 +164,7 @@ Select `qtcli preset --help` for more details.
 
 ## Development
 
-For more information about developing the Qt CLI tool, see [Development.md](Development.md).
+For more information about developing the Qt CLI tool, see [Development.md](./docs/Development.md).
 
 ## Issues
 
