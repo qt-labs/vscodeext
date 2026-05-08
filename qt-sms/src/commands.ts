@@ -553,7 +553,6 @@ async function installPackageById(
       requirements.licenseAgreements
     );
     if (!accepted) {
-      void vscode.window.showInformationMessage('Installation cancelled.');
       return;
     }
     for (const agreement of requirements.licenseAgreements) {
@@ -564,62 +563,141 @@ async function installPackageById(
   const options =
     preAnswers.length > 0 ? { preAnsweredAgreements: preAnswers } : undefined;
 
+  const pkgLabel = `${pkg.name || pkg.id} ${pkg.version}`;
+
+  // Two separate progress notifications: cancellable download, then non-cancellable install.
+  // We track which notification is active and swap when the phase changes.
+  type ProgressReporter = vscode.Progress<{
+    message?: string;
+    increment?: number;
+  }>;
+
+  let activeProgress: ProgressReporter | undefined;
+  let lastPct = 0;
+  let currentPhase: ProgressType | undefined;
+  let cancelledByUser = false;
+
+  // Resolvers to end each withProgress notification from outside
+  let endDownloadPhase: (() => void) | undefined;
+  let endInstallPhase: (() => void) | undefined;
+
+  const installDone = packages
+    .install([pkgRef], options, {
+      onProgress: (info) => {
+        const pct = Math.round(info.progress);
+        const phase = info.type;
+
+        // Switch from download to install notification when phase changes
+        if (phase !== currentPhase) {
+          currentPhase = phase;
+          lastPct = 0;
+
+          if (phase === ProgressType.Install) {
+            endDownloadPhase?.();
+            // Start install phase notification (non-cancellable)
+            void vscode.window.withProgress(
+              {
+                location: vscode.ProgressLocation.Notification,
+                title: `Installing ${pkgLabel}`,
+                cancellable: false
+              },
+              async (progress) =>
+                new Promise<void>((resolve) => {
+                  activeProgress = progress;
+                  endInstallPhase = resolve;
+                })
+            );
+          }
+        }
+
+        if (!activeProgress) {
+          return;
+        }
+
+        if (pct < lastPct) {
+          activeProgress.report({
+            message: `${String(pct)}%`,
+            increment: -100
+          });
+          lastPct = 0;
+        }
+        const increment = pct - lastPct;
+        lastPct = pct;
+        activeProgress.report({
+          message: `${String(pct)}%`,
+          increment
+        });
+      },
+      onMessage: (info) => {
+        logger.info(`InstallPackageById: ${info.message}`);
+      },
+      onPrompt: handleUserPrompt
+    })
+    .then(() => {
+      endDownloadPhase?.();
+      endInstallPhase?.();
+      void vscode.window.showInformationMessage(
+        `Successfully installed ${pkg.name || pkg.id}`
+      );
+      registerInstalledQtPaths();
+    })
+    .catch((err: unknown) => {
+      endDownloadPhase?.();
+      endInstallPhase?.();
+      if (cancelledByUser) {
+        return;
+      }
+      const msg = err instanceof Error ? err.message : String(err);
+      const errMsg = `Failed to install ${pkg.name || pkg.id} ${pkg.version} : ${msg}`;
+      logger.error(errMsg);
+      void vscode.window.showErrorMessage(errMsg);
+    });
+
+  // Start with the download phase notification (cancellable)
+  logger.info(
+    `Installing package ${pkg.name || pkg.id} with options: ${JSON.stringify(options)}`
+  );
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: `Installing ${pkg.name || pkg.id} ${pkg.version}`,
-      cancellable: false
+      title: `Downloading ${pkgLabel}`,
+      cancellable: true
     },
-    async (progress) => {
-      let lastPct = 0;
-      try {
-        // log options
-        logger.info(
-          `Installing package ${pkg.name || pkg.id} with options: ${JSON.stringify(
-            options
-          )}`
-        );
-        await packages.install([pkgRef], options, {
-          onProgress: (info) => {
-            const pct = Math.round(info.progress);
-            const phase =
-              info.type === ProgressType.Download
-                ? 'Downloading'
-                : info.type === ProgressType.Install
-                  ? 'Installing'
-                  : (info.message ?? '');
-            // Reset baseline when a new phase starts (progress goes backwards)
-            if (pct < lastPct) {
-              progress.report({
-                message: `${phase ? `${phase} ` : ''}${String(pct)}%`,
-                increment: -100
-              });
-              lastPct = 0;
-            }
-            const increment = pct - lastPct;
-            lastPct = pct;
-            progress.report({
-              message: `${phase ? `${phase} ` : ''}${String(pct)}%`,
-              increment
+    async (progress, token) =>
+      new Promise<void>((resolve) => {
+        activeProgress = progress;
+        endDownloadPhase = resolve;
+
+        token.onCancellationRequested(() => {
+          cancelledByUser = true;
+          logger.info('User cancelled installation');
+          packages
+            .cancel({
+              onMessage: (info) => {
+                logger.info(`cancel: ${info.message}`);
+              }
+            })
+            .then(() => {
+              logger.info('Installation cancelled successfully');
+            })
+            .catch((cancelErr: unknown) => {
+              const msg =
+                cancelErr instanceof Error
+                  ? cancelErr.message
+                  : String(cancelErr);
+              logger.error(`Failed to cancel installation: ${msg}`);
+              void vscode.window.showErrorMessage(
+                `Failed to cancel installation: ${msg}`
+              );
+            })
+            .finally(() => {
+              resolve();
             });
-          },
-          onMessage: (info) => {
-            logger.info(`InstallPackageById: ${info.message}`);
-          },
-          onPrompt: handleUserPrompt
         });
-        void vscode.window.showInformationMessage(
-          `Successfully installed ${pkg.name || pkg.id}`
-        );
-        registerInstalledQtPaths();
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        const errMsg = `Failed to install ${pkg.name || pkg.id} ${pkg.version} : ${msg}`;
-        logger.error(errMsg);
-        void vscode.window.showErrorMessage(errMsg);
-      }
-    }
+      })
   );
+
+  await installDone;
 }
 
 export async function setInstallationPath(): Promise<void> {
