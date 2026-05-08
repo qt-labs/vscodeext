@@ -441,6 +441,7 @@ async function resetLicenseConsents(): Promise<void> {
   }
 
   const backendUrl = process.env.QIC_SERVICE_URL ?? DEFAULT_BACKEND_URL;
+  logger.info(`backendUrl: ${backendUrl}`);
 
   for (const agreementId of KNOWN_LICENSE_AGREEMENT_IDS) {
     try {
