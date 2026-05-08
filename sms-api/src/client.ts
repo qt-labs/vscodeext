@@ -387,7 +387,7 @@ export class ServiceLauncher extends EventEmitter {
     const stderrChunks: string[] = [];
 
     try {
-      this._serviceProcess = spawn(binPath, [], {
+      this._serviceProcess = spawn(binPath, ['--no-console-log'], {
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: true
       });
@@ -576,6 +576,19 @@ export class Packages {
       IPC.methods.purge,
       [],
       options,
+      callbacks
+    );
+  }
+
+  /**
+   * Cancel the current in-flight package operation.
+   * Sends a cancel request to the service which aborts the active download.
+   */
+  async cancel(callbacks?: JobCallbacks): Promise<void> {
+    await this.callService(
+      IPC.methods.cancel,
+      {},
+      () => undefined,
       callbacks
     );
   }
