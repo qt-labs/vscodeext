@@ -307,6 +307,7 @@ export const IPC = {
     listUpdates: 'packages/updates',
     showInfo: 'packages/info',
     fetchRequirements: 'packages/requirements',
+    cancel: 'packages/cancel',
     updateCache: 'cache/update',
     clearCache: 'cache/clear',
     setSetting: 'settings/set',
