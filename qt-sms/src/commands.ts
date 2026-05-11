@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as https from 'https';
+import * as path from 'path';
 
 import {
   Packages,
@@ -368,7 +369,24 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
   });
 }
 
-function registerInstalledQtPaths(): void {
+function platformArch(): string {
+  switch (process.platform) {
+    case 'darwin':
+      return 'clang-universal';
+    case 'linux':
+      // TODO: Add support for other architectures
+      return 'gcc-x86_64';
+    case 'win32':
+      // TODO: Add Windows support with appropriate architecture labels
+      throw new Error(
+        'Windows is not supported in this version of the extension'
+      );
+    default:
+      return 'unknown';
+  }
+}
+
+function registerInstalledQtPaths(version: string): void {
   const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
   const rawInstallRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
   if (!rawInstallRoot) {
@@ -384,9 +402,15 @@ function registerInstalledQtPaths(): void {
     return;
   }
 
-  const qtpathsExe = findQtPathsInInstallationPath(installRoot);
+  // Folder structure: <installRoot>/QtFramework/<version>/<arch>/bin/qtpaths
+  const arch = platformArch();
+  const insPath = path.join(installRoot, 'QtFramework', version, arch);
+  logger.info(`Looking for Qt installation in ${insPath}`);
+  const qtpathsExe = findQtPathsInInstallationPath(insPath);
   if (!qtpathsExe) {
-    logger.info('No qtpaths found in installation path');
+    logger.info(
+      `No qtpaths found at QtFramework/${version}/${arch} in ${installRoot}`
+    );
     return;
   }
 
@@ -640,7 +664,7 @@ async function installPackageById(
       void vscode.window.showInformationMessage(
         `Successfully installed ${pkg.name || pkg.id}`
       );
-      registerInstalledQtPaths();
+      registerInstalledQtPaths(pkg.version);
     })
     .catch((err: unknown) => {
       endDownloadPhase?.();
@@ -732,19 +756,19 @@ export async function onInstallationPathChanged(): Promise<void> {
   await settings.setInstallationPath(installPath);
 }
 
-async function validateAndSetInstallationPath(path: string): Promise<void> {
+async function validateAndSetInstallationPath(insPath: string): Promise<void> {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   try {
     const session = await ensureConnected();
     const settings = new Settings(session);
-    await settings.setInstallationPath(path);
+    await settings.setInstallationPath(insPath);
     await config.update(
       CONF_INSTALLATION_PATH,
-      path,
+      insPath,
       vscode.ConfigurationTarget.Global
     );
     void vscode.window.showInformationMessage(
-      `Installation path set to: ${path}`
+      `Installation path set to: ${insPath}`
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
