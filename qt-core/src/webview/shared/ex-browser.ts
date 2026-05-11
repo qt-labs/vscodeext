@@ -79,6 +79,9 @@ export type ExPackageSourceType = 'insRoot' | 'qtpaths';
 export interface ExPackagePoolDir {
   fsPath: string;
   sourceType: ExPackageSourceType;
+  docsPath?: string;
+  examplesPath?: string;
+  qtVersion?: string;
 }
 
 export function isExPackagePoolDir(x: unknown): x is ExPackagePoolDir {
@@ -90,7 +93,10 @@ export function isExPackagePoolDir(x: unknown): x is ExPackagePoolDir {
   return (
     typeof o.fsPath === 'string' &&
     typeof o.sourceType === 'string' &&
-    (o.sourceType === 'insRoot' || o.sourceType === 'qtpaths')
+    (o.sourceType === 'insRoot' || o.sourceType === 'qtpaths') &&
+    (o.docsPath === undefined || typeof o.docsPath === 'string') &&
+    (o.examplesPath === undefined || typeof o.examplesPath === 'string') &&
+    (o.qtVersion === undefined || typeof o.qtVersion === 'string')
   );
 }
 

@@ -55,8 +55,12 @@ export class ExBrowserController {
         helpers.fallbackImageDir(context),
         ...sources.flatMap((s) => {
           return [
-            vscode.Uri.file(path.join(s.fsPath, consts.EX_DIR_NAME)),
-            vscode.Uri.file(path.join(s.fsPath, consts.DOCS_DIR_NAME))
+            vscode.Uri.file(
+              s.examplesPath ?? path.join(s.fsPath, consts.EX_DIR_NAME)
+            ),
+            vscode.Uri.file(
+              s.docsPath ?? path.join(s.fsPath, consts.DOCS_DIR_NAME)
+            )
           ];
         })
       ]
