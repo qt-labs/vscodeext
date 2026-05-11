@@ -12,7 +12,9 @@ import * as consts from './constants';
 export class ExPathsResolver {
   public constructor(
     private readonly _insRoot: string,
-    private readonly _qtVersionDir: string
+    private readonly _qtVersionDir: string,
+    private readonly _docsPath?: string,
+    private readonly _examplesPath?: string
   ) {}
 
   public resolve(e: ExEntry): ExResolvedPaths {
@@ -66,6 +68,13 @@ export class ExPathsResolver {
   }
 
   private _toAbsPath(type: 'docs' | 'examples', relPath: string): string {
+    if (type === 'docs' && this._docsPath) {
+      return path.join(this._docsPath, relPath);
+    }
+    if (type === 'examples' && this._examplesPath) {
+      return path.join(this._examplesPath, relPath);
+    }
+
     // input: qtscxml/images/calculator.png"
     // output: <insRoot>/Docs/<version>/<input>
     // output: <insRoot>/Examples/<version>/<input>

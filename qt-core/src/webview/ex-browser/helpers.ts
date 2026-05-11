@@ -17,7 +17,6 @@ import {
   ExBrowserViewConfig
 } from '@/webview/shared/ex-browser';
 import { fsDir } from '@/fs-utils';
-import * as consts from './constants';
 
 type Context = vscode.ExtensionContext;
 
@@ -44,21 +43,21 @@ export function findAllPackagePools(): ExPackagePoolDir[] {
     const info = coreAPI?.getQtInfoFromPath(p.path);
     if (info?.info) {
       const docs = info.info.get('QT_INSTALL_DOCS'); // .../Qt/Docs/Qt-x.y.z
+      const examples = info.info.get('QT_INSTALL_EXAMPLES');
+      const version = info.info.get('QT_VERSION');
       const parent = docs ? path.dirname(path.dirname(docs)) : '';
 
       found.push({
         sourceType: 'qtpaths',
-        fsPath: parent
+        fsPath: parent,
+        ...(docs ? { docsPath: docs } : {}),
+        ...(examples ? { examplesPath: examples } : {}),
+        ...(version ? { qtVersion: version } : {})
       });
     }
   });
 
-  return found.filter((loc) => {
-    return (
-      fsDir(loc.fsPath, consts.DOCS_DIR_NAME).exists() &&
-      fsDir(loc.fsPath, consts.EX_DIR_NAME).exists()
-    );
-  });
+  return found;
 }
 
 export function createNewProject(

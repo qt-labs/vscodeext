@@ -61,11 +61,17 @@ export class ExDataManager {
     this._resolvedPaths = {};
 
     const categoriesCollector = new catHelpers.CategoriesCollector();
-    const manifests = discoverManifestFiles(
-      path.join(p.poolDir.fsPath, consts.DOCS_DIR_NAME, p.subDir)
-    );
+    const docsDir =
+      p.poolDir.docsPath ??
+      path.join(p.poolDir.fsPath, consts.DOCS_DIR_NAME, p.subDir);
+    const manifests = discoverManifestFiles(docsDir);
 
-    const resolver = new ExPathsResolver(p.poolDir.fsPath, p.subDir);
+    const resolver = new ExPathsResolver(
+      p.poolDir.fsPath,
+      p.subDir,
+      p.poolDir.docsPath,
+      p.poolDir.examplesPath
+    );
 
     manifests.forEach((m) => {
       const files = parseManifestFile(m.absPath, m.type);
@@ -152,6 +158,23 @@ export function discoverManifestFiles(absPath: string) {
 
 export function readPackagesInfo(poolDir: ExPackagePoolDir): ExPackage[] {
   try {
+    if (poolDir.docsPath) {
+      const dir = fsDir(poolDir.docsPath);
+      if (!dir.exists()) {
+        return [];
+      }
+      const name = poolDir.qtVersion
+        ? `Qt-${poolDir.qtVersion}`
+        : path.basename(poolDir.docsPath);
+      return [
+        {
+          name,
+          subDir: name,
+          poolDir
+        }
+      ];
+    }
+
     const all = fsDir(poolDir.fsPath, consts.DOCS_DIR_NAME).subDirNames();
     const prefixLength = 'Qt-'.length;
     const regexQt6 = new RegExp(`^Qt-6\\.\\d+\\.\\d+$`);
