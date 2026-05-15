@@ -299,12 +299,19 @@ export async function startDebugAndWaitForStop(
   // over the network for every shared library (including the vDSO).
   // setupCommands execute too late — the download starts during program
   // loading, before our "set debuginfod enabled off" runs.
-  // Removing the variable from process.env prevents GDB from ever trying.
-  if (process.platform === 'linux' && process.env.DEBUGINFOD_URLS) {
+  //
+  // Deleting the env var is NOT enough: GDB 15.1 on Ubuntu 24.04 falls
+  // back to system-level config files (/etc/debuginfod/*.urls).
+  // Setting DEBUGINFOD_URLS to empty string explicitly means "no servers"
+  // per the libdebuginfod spec, overriding system defaults.
+  // DEBUGINFOD_TIMEOUT=1 is a safety net so any residual attempt fails fast.
+  if (process.platform === 'linux') {
+    const had = process.env.DEBUGINFOD_URLS;
+    process.env.DEBUGINFOD_URLS = '';
+    process.env.DEBUGINFOD_TIMEOUT = '1';
     console.log(
-      '[startDebugAndWaitForStop] unsetting DEBUGINFOD_URLS to prevent GDB from downloading debug info'
+      `[startDebugAndWaitForStop] disabled debuginfod (was: ${had ? `"${had}"` : '<unset>'})`
     );
-    delete process.env.DEBUGINFOD_URLS;
   }
 
   const t0 = Date.now();
