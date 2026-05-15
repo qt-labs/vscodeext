@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.15.0 (May 20, 2026)
+
+The same as `1.14.0`
+
 ## 1.14.0 (May 20, 2026)
 
 The same as `1.13.0`
