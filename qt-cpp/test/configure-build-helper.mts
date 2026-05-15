@@ -14,6 +14,7 @@ import {
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
   readCMakeCacheVar,
+  prepareCMakeQtEnvWithVersion,
   dlog
 } from './helper.mts';
 
@@ -236,6 +237,15 @@ export async function configureAndBuildMinimalQtProject(
 
   // Spy on error popups during configure/build
   const errSpy = sandbox.spy(vscode.window, 'showErrorMessage');
+
+  // Pin Qt6_DIR so CMake can find Qt even when CMake Tools ignores
+  // the kit's toolchainFile (which happens when compilers are also set).
+  const qtRoot = vscode.workspace
+    .getConfiguration('qt-core')
+    .get<string>('qtInstallationRoot');
+  if (typeof qtRoot === 'string' && qtRoot.trim() !== '') {
+    prepareCMakeQtEnvWithVersion({ topLevel: qtRoot, verbose: true });
+  }
 
   // ---- configure + build --------------------------------------------
   dlog(`${logPrefix} Running cmake.configure...`);
