@@ -1,4 +1,4 @@
-#include <QtCore/QCoreApplication>
+#include <QtGui/QGuiApplication>
 #include <QtCore/QString>
 #include <QtCore/QRect>
 #include <iostream>
@@ -10,7 +10,7 @@
 #include "quick_types.h"
 
 int main(int argc, char** argv) {
-  QCoreApplication app(argc, argv);
+  QGuiApplication app(argc, argv);
 
   auto coreTypes = CoreTypes();
   auto containerTypes = ContainerTypes();

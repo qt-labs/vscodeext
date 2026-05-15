@@ -166,6 +166,22 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
         visualizerFile: nvPath!
       };
 
+      // Linux/GDB: disable debuginfod and use offscreen platform plugin
+      if (process.platform === 'linux') {
+        (cfg as any).setupCommands = [
+          ...((cfg as any).setupCommands ?? []),
+          {
+            description: 'Disable debuginfod',
+            text: 'set debuginfod enabled off',
+            ignoreFailures: true
+          }
+        ];
+        (cfg as any).environment = [
+          ...((cfg as any).environment ?? []),
+          { name: 'QT_QPA_PLATFORM', value: 'offscreen' }
+        ];
+      }
+
       if (process.env.QT_TEST_DEBUG === '1') {
         dlog(
           '[snippet-test] Debug config type:',

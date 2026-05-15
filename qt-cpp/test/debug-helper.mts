@@ -175,6 +175,29 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
     }
   }
 
+  // Linux/GDB: disable debuginfod to prevent GDB from hanging while
+  // downloading debug symbols over the network (DEBUGINFOD_URLS is set
+  // on Ubuntu CI runners).
+  if (isLinux) {
+    (cfg as any).setupCommands = [
+      {
+        description: 'Enable pretty-printing for gdb',
+        text: '-enable-pretty-printing',
+        ignoreFailures: true
+      },
+      {
+        description: 'Disable debuginfod',
+        text: 'set debuginfod enabled off',
+        ignoreFailures: true
+      }
+    ];
+    // Ensure Qt uses the offscreen platform plugin so the debuggee
+    // does not depend on a live display server.
+    (cfg as any).environment = [
+      { name: 'QT_QPA_PLATFORM', value: 'offscreen' }
+    ];
+  }
+
   // 🔍 Log what we *intend* to launch (only when QT_TEST_DEBUG=1)
   if (process.env.QT_TEST_DEBUG === '1') {
     console.log(
@@ -259,8 +282,14 @@ export async function startDebugAndWaitForStop(
   }> = [];
 
   const done = new Promise<void>((resolve, reject) => {
+    const receivedEvents: string[] = [];
     const timer = setTimeout(
-      () => reject(new Error(`Timed out waiting for 'stopped'`)),
+      () =>
+        reject(
+          new Error(
+            `Timed out waiting for 'stopped' (received events: ${receivedEvents.join(', ') || 'none'})`
+          )
+        ),
       timeoutMs
     );
 
@@ -268,6 +297,10 @@ export async function startDebugAndWaitForStop(
       createDebugAdapterTracker: (s) => {
         session = s;
         const onMessageSend = async (m: any) => {
+          if (m?.event) {
+            receivedEvents.push(m.event);
+          }
+
           if (m?.event === 'stopped') {
             const reason: string | undefined = m?.body?.reason;
             let tid: number | undefined = m?.body?.threadId;
@@ -321,6 +354,17 @@ export async function startDebugAndWaitForStop(
             trackerDisp.dispose();
             reject(
               new Error('Debug session terminated before hitting a breakpoint')
+            );
+          }
+
+          if (m?.event === 'exited' && stops.length === 0) {
+            const exitCode = m?.body?.exitCode;
+            clearTimeout(timer);
+            trackerDisp.dispose();
+            reject(
+              new Error(
+                `Debug session exited (code=${exitCode}) before hitting a breakpoint`
+              )
             );
           }
         };
