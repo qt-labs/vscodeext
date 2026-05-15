@@ -294,6 +294,19 @@ export async function startDebugAndWaitForStop(
     frameId?: number;
   }> = [];
 
+  // GDB inherits the extension-host's environment.  On Ubuntu CI runners
+  // DEBUGINFOD_URLS is set, which makes GDB try to download debug symbols
+  // over the network for every shared library (including the vDSO).
+  // setupCommands execute too late — the download starts during program
+  // loading, before our "set debuginfod enabled off" runs.
+  // Removing the variable from process.env prevents GDB from ever trying.
+  if (process.platform === 'linux' && process.env.DEBUGINFOD_URLS) {
+    console.log(
+      '[startDebugAndWaitForStop] unsetting DEBUGINFOD_URLS to prevent GDB from downloading debug info'
+    );
+    delete process.env.DEBUGINFOD_URLS;
+  }
+
   const t0 = Date.now();
   const ts = () => `+${((Date.now() - t0) / 1000).toFixed(1)}s`;
   console.log(`[startDebugAndWaitForStop] starting (timeout=${timeoutMs}ms)`);
