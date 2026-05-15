@@ -200,22 +200,27 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
 
   // Always log the config so CI failures are diagnosable.
   console.log(
-    '[makeCppDebugConfig] platform:', process.platform,
-    '| type:', cfg.type,
-    '| MIMode:', (cfg as any).MIMode ?? '<none>',
-    '| miDebuggerPath:', (cfg as any).miDebuggerPath ?? '<none>'
+    '[makeCppDebugConfig] platform:',
+    process.platform,
+    '| type:',
+    cfg.type,
+    '| MIMode:',
+    (cfg as any).MIMode ?? '<none>',
+    '| miDebuggerPath:',
+    (cfg as any).miDebuggerPath ?? '<none>'
+  );
+  console.log('[makeCppDebugConfig] program:', cfg.program);
+  console.log(
+    '[makeCppDebugConfig] setupCommands:',
+    JSON.stringify((cfg as any).setupCommands ?? [])
   );
   console.log(
-    '[makeCppDebugConfig] program:', cfg.program
+    '[makeCppDebugConfig] environment:',
+    JSON.stringify((cfg as any).environment ?? [])
   );
   console.log(
-    '[makeCppDebugConfig] setupCommands:', JSON.stringify((cfg as any).setupCommands ?? [])
-  );
-  console.log(
-    '[makeCppDebugConfig] environment:', JSON.stringify((cfg as any).environment ?? [])
-  );
-  console.log(
-    '[makeCppDebugConfig] DEBUGINFOD_URLS:', process.env.DEBUGINFOD_URLS ?? '<unset>'
+    '[makeCppDebugConfig] DEBUGINFOD_URLS:',
+    process.env.DEBUGINFOD_URLS ?? '<unset>'
   );
   return cfg;
 }
@@ -311,7 +316,10 @@ export async function startDebugAndWaitForStop(
         const onMessageSend = async (m: any) => {
           if (m?.event) {
             receivedEvents.push(m.event);
-            console.log(`[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`, m?.body?.reason ? `(reason: ${m.body.reason})` : '');
+            console.log(
+              `[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`,
+              m?.body?.reason ? `(reason: ${m.body.reason})` : ''
+            );
           }
 
           if (m?.event === 'stopped') {
@@ -372,7 +380,9 @@ export async function startDebugAndWaitForStop(
 
           if (m?.event === 'exited' && stops.length === 0) {
             const exitCode = m?.body?.exitCode;
-            console.log(`[startDebugAndWaitForStop] ${ts()} program exited with code=${exitCode} before breakpoint`);
+            console.log(
+              `[startDebugAndWaitForStop] ${ts()} program exited with code=${exitCode} before breakpoint`
+            );
             clearTimeout(timer);
             trackerDisp.dispose();
             reject(
