@@ -300,31 +300,64 @@ export async function startDebugAndWaitForStop(
 
   const done = new Promise<void>((resolve, reject) => {
     const receivedEvents: string[] = [];
-    const timer = setTimeout(
-      () =>
-        reject(
-          new Error(
-            `Timed out waiting for 'stopped' (received events: ${receivedEvents.join(', ') || 'none'})`
-          )
-        ),
-      timeoutMs
-    );
+    let trackerDisp: vscode.Disposable | undefined;
 
-    const trackerDisp = vscode.debug.registerDebugAdapterTrackerFactory('*', {
+    const cleanup = () => {
+      clearTimeout(timer);
+      trackerDisp?.dispose();
+    };
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(
+        new Error(
+          `Timed out waiting for 'stopped' (received events: ${receivedEvents.join(', ') || 'none'})`
+        )
+      );
+    }, timeoutMs);
+
+    trackerDisp = vscode.debug.registerDebugAdapterTrackerFactory('*', {
       createDebugAdapterTracker: (s) => {
         session = s;
         const onMessageSend = async (m: any) => {
+          // Log ALL DAP events with details
           if (m?.event) {
             receivedEvents.push(m.event);
+
+            // Log output content so we can see GDB messages
+            if (m.event === 'output') {
+              const text = String(m?.body?.output ?? '').trim();
+              if (text) {
+                console.log(
+                  `[startDebugAndWaitForStop] ${ts()} DAP output [${m?.body?.category ?? '?'}]: ${text}`
+                );
+              }
+            } else {
+              console.log(
+                `[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`,
+                m?.body?.reason ? `(reason: ${m.body.reason})` : '',
+                m?.body?.exitCode != null
+                  ? `(exitCode: ${m.body.exitCode})`
+                  : ''
+              );
+            }
+          }
+
+          // Log DAP responses (especially errors and launch/configurationDone)
+          if (m?.type === 'response') {
+            const status = m.success === false ? 'FAILED' : 'ok';
             console.log(
-              `[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`,
-              m?.body?.reason ? `(reason: ${m.body.reason})` : ''
+              `[startDebugAndWaitForStop] ${ts()} DAP response: ${m.command} [${status}]`,
+              m.success === false ? `message: ${m.message}` : ''
             );
           }
 
           if (m?.event === 'stopped') {
             const reason: string | undefined = m?.body?.reason;
             let tid: number | undefined = m?.body?.threadId;
+            console.log(
+              `[startDebugAndWaitForStop] ${ts()} STOPPED reason=${reason} threadId=${tid}`
+            );
 
             try {
               if (tid == null) {
@@ -338,6 +371,9 @@ export async function startDebugAndWaitForStop(
                 reason !== 'breakpoint' &&
                 (opts?.continueUntilHits ?? 0) >= 0
               ) {
+                console.log(
+                  `[startDebugAndWaitForStop] ${ts()} auto-continuing past '${reason}' stop`
+                );
                 await s.customRequest('continue', { threadId: tid });
                 return;
               }
@@ -350,6 +386,9 @@ export async function startDebugAndWaitForStop(
                 threadId: tid,
                 frameId: f?.id
               });
+              console.log(
+                `[startDebugAndWaitForStop] ${ts()} breakpoint hit #${stops.length} at ${f?.source?.path}:${f?.line}`
+              );
 
               // continue to hit N stops if requested
               if (
@@ -360,19 +399,16 @@ export async function startDebugAndWaitForStop(
                 return;
               }
 
-              clearTimeout(timer);
-              trackerDisp.dispose();
+              cleanup();
               resolve();
             } catch (e) {
-              clearTimeout(timer);
-              trackerDisp.dispose();
+              cleanup();
               reject(e);
             }
           }
 
           if (m?.event === 'terminated' && stops.length === 0) {
-            clearTimeout(timer);
-            trackerDisp.dispose();
+            cleanup();
             reject(
               new Error('Debug session terminated before hitting a breakpoint')
             );
@@ -383,8 +419,7 @@ export async function startDebugAndWaitForStop(
             console.log(
               `[startDebugAndWaitForStop] ${ts()} program exited with code=${exitCode} before breakpoint`
             );
-            clearTimeout(timer);
-            trackerDisp.dispose();
+            cleanup();
             reject(
               new Error(
                 `Debug session exited (code=${exitCode}) before hitting a breakpoint`
