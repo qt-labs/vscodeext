@@ -63,6 +63,16 @@ setupSandboxLifecycleHooks(
 );
 
 before('cpptools is installed and activated', async () => {
+  // --- Environment diagnostics (always printed for CI visibility) ---
+  console.log('[natvis.test] === Environment diagnostics ===');
+  console.log('[natvis.test] platform:', process.platform, '| arch:', process.arch);
+  console.log('[natvis.test] DEBUGINFOD_URLS:', process.env.DEBUGINFOD_URLS ?? '<unset>');
+  console.log('[natvis.test] QT_QPA_PLATFORM:', process.env.QT_QPA_PLATFORM ?? '<unset>');
+  console.log('[natvis.test] DISPLAY:', process.env.DISPLAY ?? '<unset>');
+  console.log('[natvis.test] Qt6_DIR:', process.env.Qt6_DIR ?? '<unset>');
+  console.log('[natvis.test] QT_TEST_QT_ROOT:', process.env.QT_TEST_QT_ROOT ?? '<unset>');
+  console.log('[natvis.test] ================================');
+
   const ext = vscode.extensions.getExtension('ms-vscode.cpptools');
   expect(ext, 'ms-vscode.cpptools is not installed in the test host').to.exist;
 

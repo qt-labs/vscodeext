@@ -198,17 +198,25 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
     ];
   }
 
-  // 🔍 Log what we *intend* to launch (only when QT_TEST_DEBUG=1)
-  if (process.env.QT_TEST_DEBUG === '1') {
-    console.log(
-      '[natvis.test] Debug config type:',
-      cfg.type,
-      'MIMode:',
-      (cfg as any).MIMode ?? '<none>',
-      'MIDebuggerPath:',
-      (cfg as any).miDebuggerPath ?? '<none>'
-    );
-  }
+  // Always log the config so CI failures are diagnosable.
+  console.log(
+    '[makeCppDebugConfig] platform:', process.platform,
+    '| type:', cfg.type,
+    '| MIMode:', (cfg as any).MIMode ?? '<none>',
+    '| miDebuggerPath:', (cfg as any).miDebuggerPath ?? '<none>'
+  );
+  console.log(
+    '[makeCppDebugConfig] program:', cfg.program
+  );
+  console.log(
+    '[makeCppDebugConfig] setupCommands:', JSON.stringify((cfg as any).setupCommands ?? [])
+  );
+  console.log(
+    '[makeCppDebugConfig] environment:', JSON.stringify((cfg as any).environment ?? [])
+  );
+  console.log(
+    '[makeCppDebugConfig] DEBUGINFOD_URLS:', process.env.DEBUGINFOD_URLS ?? '<unset>'
+  );
   return cfg;
 }
 
@@ -281,6 +289,10 @@ export async function startDebugAndWaitForStop(
     frameId?: number;
   }> = [];
 
+  const t0 = Date.now();
+  const ts = () => `+${((Date.now() - t0) / 1000).toFixed(1)}s`;
+  console.log(`[startDebugAndWaitForStop] starting (timeout=${timeoutMs}ms)`);
+
   const done = new Promise<void>((resolve, reject) => {
     const receivedEvents: string[] = [];
     const timer = setTimeout(
@@ -299,6 +311,7 @@ export async function startDebugAndWaitForStop(
         const onMessageSend = async (m: any) => {
           if (m?.event) {
             receivedEvents.push(m.event);
+            console.log(`[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`, m?.body?.reason ? `(reason: ${m.body.reason})` : '');
           }
 
           if (m?.event === 'stopped') {
@@ -359,6 +372,7 @@ export async function startDebugAndWaitForStop(
 
           if (m?.event === 'exited' && stops.length === 0) {
             const exitCode = m?.body?.exitCode;
+            console.log(`[startDebugAndWaitForStop] ${ts()} program exited with code=${exitCode} before breakpoint`);
             clearTimeout(timer);
             trackerDisp.dispose();
             reject(
