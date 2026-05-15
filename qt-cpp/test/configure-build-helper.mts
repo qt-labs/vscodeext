@@ -248,8 +248,12 @@ export async function configureAndBuildMinimalQtProject(
   }
 
   // ---- configure + build --------------------------------------------
-  dlog(`${logPrefix} Running cmake.configure...`);
+  console.log(`${logPrefix} Running cmake.configure...`);
+  const cfgT0 = Date.now();
   const rcCfg = await vscode.commands.executeCommand<number>('cmake.configure');
+  console.log(
+    `${logPrefix} cmake.configure finished in ${((Date.now() - cfgT0) / 1000).toFixed(1)}s (rc=${rcCfg})`
+  );
   await waitForVSCodeIdle();
   expect(rcCfg, `${logPrefix} cmake.configure failed (rc=${rcCfg})`).to.equal(
     0
@@ -261,7 +265,12 @@ export async function configureAndBuildMinimalQtProject(
     readCMakeCacheVar(buildDir, 'Qt6_DIR') ?? '<unknown>'
   );
 
+  console.log(`${logPrefix} Running cmake.build...`);
+  const bldT0 = Date.now();
   const rcBuild = await vscode.commands.executeCommand<number>('cmake.build');
+  console.log(
+    `${logPrefix} cmake.build finished in ${((Date.now() - bldT0) / 1000).toFixed(1)}s (rc=${rcBuild})`
+  );
   await waitForVSCodeIdle();
   expect(rcBuild, `${logPrefix} cmake.build failed (rc=${rcBuild})`).to.equal(
     0

@@ -4,6 +4,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+const VERBOSE = process.env.QT_TEST_DEBUG === '1';
+
 /**
  * Debug-session utilities for qt-cpp NatVis integration tests.
  *
@@ -198,7 +200,7 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
     ];
   }
 
-  // Always log the config so CI failures are diagnosable.
+  // Log the config so CI failures are diagnosable.
   console.log(
     '[makeCppDebugConfig] platform:',
     process.platform,
@@ -207,20 +209,9 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
     '| MIMode:',
     (cfg as any).MIMode ?? '<none>',
     '| miDebuggerPath:',
-    (cfg as any).miDebuggerPath ?? '<none>'
-  );
-  console.log('[makeCppDebugConfig] program:', cfg.program);
-  console.log(
-    '[makeCppDebugConfig] setupCommands:',
-    JSON.stringify((cfg as any).setupCommands ?? [])
-  );
-  console.log(
-    '[makeCppDebugConfig] environment:',
-    JSON.stringify((cfg as any).environment ?? [])
-  );
-  console.log(
-    '[makeCppDebugConfig] DEBUGINFOD_URLS:',
-    process.env.DEBUGINFOD_URLS ?? '<unset>'
+    (cfg as any).miDebuggerPath ?? '<none>',
+    '| program:',
+    cfg.program
   );
   return cfg;
 }
@@ -340,35 +331,35 @@ export async function startDebugAndWaitForStop(
       createDebugAdapterTracker: (s) => {
         session = s;
         const onMessageSend = async (m: any) => {
-          // Log ALL DAP events with details
+          // Track all events for the timeout error message
           if (m?.event) {
             receivedEvents.push(m.event);
 
-            // Log output content so we can see GDB messages
-            if (m.event === 'output') {
-              const text = String(m?.body?.output ?? '').trim();
-              if (text) {
+            // Verbose DAP tracing (QT_TEST_DEBUG=1)
+            if (VERBOSE) {
+              if (m.event === 'output') {
+                const text = String(m?.body?.output ?? '').trim();
+                if (text) {
+                  console.log(
+                    `[startDebugAndWaitForStop] ${ts()} DAP output [${m?.body?.category ?? '?'}]: ${text}`
+                  );
+                }
+              } else if (
+                m.event !== 'stopped' &&
+                m.event !== 'exited' &&
+                m.event !== 'terminated'
+              ) {
                 console.log(
-                  `[startDebugAndWaitForStop] ${ts()} DAP output [${m?.body?.category ?? '?'}]: ${text}`
+                  `[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`
                 );
               }
-            } else {
-              console.log(
-                `[startDebugAndWaitForStop] ${ts()} DAP event: ${m.event}`,
-                m?.body?.reason ? `(reason: ${m.body.reason})` : '',
-                m?.body?.exitCode != null
-                  ? `(exitCode: ${m.body.exitCode})`
-                  : ''
-              );
             }
           }
 
-          // Log DAP responses (especially errors and launch/configurationDone)
-          if (m?.type === 'response') {
-            const status = m.success === false ? 'FAILED' : 'ok';
+          // Log DAP response failures unconditionally
+          if (m?.type === 'response' && m.success === false) {
             console.log(
-              `[startDebugAndWaitForStop] ${ts()} DAP response: ${m.command} [${status}]`,
-              m.success === false ? `message: ${m.message}` : ''
+              `[startDebugAndWaitForStop] ${ts()} DAP response FAILED: ${m.command} — ${m.message}`
             );
           }
 

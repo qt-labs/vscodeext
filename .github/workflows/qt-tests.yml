@@ -57,6 +57,12 @@ jobs:
       NATVIS_SHOW_SUMMARY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.natvis_show_summary || '' }}
       DBUS_SESSION_BUS_ADDRESS: "disabled:"
       NO_AT_BRIDGE: "1"
+      # Disable debuginfod on Ubuntu runners.  GDB 15.x inherits the
+      # runner's DEBUGINFOD_URLS and starts downloading debug info for
+      # every shared library *before* setupCommands can run
+      # "set debuginfod enabled off".  An empty value means "no servers"
+      # per the libdebuginfod spec, overriding /etc/debuginfod/*.urls.
+      DEBUGINFOD_URLS: ""
       TEST_SUITE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_suite || 'all' }}
 
     steps:

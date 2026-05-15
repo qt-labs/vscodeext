@@ -4,7 +4,6 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 
 import {
   setupSandboxLifecycleHooks,
@@ -63,29 +62,15 @@ setupSandboxLifecycleHooks(
 );
 
 before('cpptools is installed and activated', async () => {
-  // --- Environment diagnostics (always printed for CI visibility) ---
-  console.log('[natvis.test] === Environment diagnostics ===');
+  // One-line environment summary for CI visibility.
   console.log(
     '[natvis.test] platform:',
     process.platform,
     '| arch:',
-    process.arch
-  );
-  console.log(
-    '[natvis.test] DEBUGINFOD_URLS:',
+    process.arch,
+    '| DEBUGINFOD_URLS:',
     process.env.DEBUGINFOD_URLS ?? '<unset>'
   );
-  console.log(
-    '[natvis.test] QT_QPA_PLATFORM:',
-    process.env.QT_QPA_PLATFORM ?? '<unset>'
-  );
-  console.log('[natvis.test] DISPLAY:', process.env.DISPLAY ?? '<unset>');
-  console.log('[natvis.test] Qt6_DIR:', process.env.Qt6_DIR ?? '<unset>');
-  console.log(
-    '[natvis.test] QT_TEST_QT_ROOT:',
-    process.env.QT_TEST_QT_ROOT ?? '<unset>'
-  );
-  console.log('[natvis.test] ================================');
 
   const ext = vscode.extensions.getExtension('ms-vscode.cpptools');
   expect(ext, 'ms-vscode.cpptools is not installed in the test host').to.exist;
@@ -208,24 +193,17 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
 
       if (process.env.QT_TEST_DEBUG === '1') {
         dlog(
-          '[snippet-test] Debug config type:',
-          cfg.type,
-          'MIMode:',
-          (cfg as any).MIMode ?? '<none>',
-          'miDebuggerPath:',
-          (cfg as any).miDebuggerPath ?? '<none>'
+          '[snippet-test] Debug config from snippet (after patching):',
+          JSON.stringify(cfg, null, 2)
         );
       }
 
       console.log(
-        '[snippet-test] Debug config from snippet (after patching):',
-        JSON.stringify(cfg, null, 2)
-      );
-      const fsExists = fs.existsSync(cfg.program ?? '');
-      console.log(
-        '[snippet-test] program exists?',
-        fsExists,
-        'program =',
+        '[snippet-test] launching debug:',
+        cfg.type,
+        '| MIMode:',
+        (cfg as any).MIMode ?? '<none>',
+        '| program:',
         cfg.program
       );
       const timeoutMs = 60000;
