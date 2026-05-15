@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.15.0 (May 20, 2026)
+
+🎉 **Added**
+
+- Implement `uv` virtual environment creation
+- Introduce PySide API so that other extensions can integrate with PySide projects
+- Port `pyside6-project` run logic for older PySide versions than `6.10.3`
+- Add QML live preview support for PySide projects
+
+🐞 **Fixed**
+
+- Fix broken command when args are provided
+- Add timeout to prevent hanging on nested shells
+
 ## 1.14.0 (May 20, 2026)
 
 The same as `1.13.0`

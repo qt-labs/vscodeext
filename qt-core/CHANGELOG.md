@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.15.0 (May 20, 2026)
+
+🎉 **Added**
+
+- Add Welcome page
+- Add Qt Academy courses browser
+- Add Qt examples browser web application
+- Assign tab icons for web views
+- Replace built-in flame graph with external QML Trace Viewer launcher
+
 ## 1.14.0 (May 20, 2026)
 
 The same as `1.13.0`

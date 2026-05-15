@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.15.0 (May 20, 2026)
+
+🎉 **Added**
+
+- Introduce QML Profiler client for collecting trace events from running Qt applications
+- Add QML live preview support for PySide projects
+- Introduce QML Trace Viewer with automatic download and installation management
+
 ## 1.14.0 (May 20, 2026)
 
 The same as `1.13.0`
