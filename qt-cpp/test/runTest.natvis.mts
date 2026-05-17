@@ -18,6 +18,21 @@ const uninstallStdio = installStdioFilter();
 
 async function main() {
   try {
+    // On Linux CI, GDB 15.x inherits DEBUGINFOD_URLS from the runner
+    // environment and blocks while downloading debug info for every
+    // shared library.  Setting the env var here ensures the spawned
+    // VS Code process (and its native cpptools extension) sees it
+    // *before* GDB is ever launched.  Modifying process.env inside
+    // the extension host is too late — cpptools captures the env at
+    // VS Code startup.
+    if (process.platform === 'linux' && process.env.DEBUGINFOD_URLS) {
+      console.log(
+        '[runTest.natvis] Disabling debuginfod (was:',
+        JSON.stringify(process.env.DEBUGINFOD_URLS) + ')'
+      );
+      process.env.DEBUGINFOD_URLS = '';
+    }
+
     // The folder containing the Extension Manifest package.json
     // Passed to --extensionDevelopmentPath
     const extensionDevelopmentPath = path.resolve(__dirname, '../../');

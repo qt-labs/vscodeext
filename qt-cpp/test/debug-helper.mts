@@ -285,24 +285,15 @@ export async function startDebugAndWaitForStop(
     frameId?: number;
   }> = [];
 
-  // GDB inherits the extension-host's environment.  On Ubuntu CI runners
-  // DEBUGINFOD_URLS is set, which makes GDB try to download debug symbols
-  // over the network for every shared library (including the vDSO).
-  // setupCommands execute too late — the download starts during program
-  // loading, before our "set debuginfod enabled off" runs.
-  //
-  // Deleting the env var is NOT enough: GDB 15.1 on Ubuntu 24.04 falls
-  // back to system-level config files (/etc/debuginfod/*.urls).
-  // Setting DEBUGINFOD_URLS to empty string explicitly means "no servers"
-  // per the libdebuginfod spec, overriding system defaults.
-  // DEBUGINFOD_TIMEOUT=1 is a safety net so any residual attempt fails fast.
-  if (process.platform === 'linux') {
-    const had = process.env.DEBUGINFOD_URLS;
-    process.env.DEBUGINFOD_URLS = '';
-    process.env.DEBUGINFOD_TIMEOUT = '1';
+  // NOTE: The primary debuginfod fix lives in runTest.natvis.mts, which
+  // clears DEBUGINFOD_URLS *before* VS Code starts — that is the only
+  // point early enough to affect the native cpptools extension.
+  // The lines below are a defence-in-depth fallback.
+  if (process.platform === 'linux' && process.env.DEBUGINFOD_URLS) {
     console.log(
-      `[startDebugAndWaitForStop] disabled debuginfod (was: ${had ? `"${had}"` : '<unset>'})`
+      `[startDebugAndWaitForStop] WARNING: DEBUGINFOD_URLS still set to "${process.env.DEBUGINFOD_URLS}" — clearing (may not help)`
     );
+    process.env.DEBUGINFOD_URLS = '';
   }
 
   const t0 = Date.now();
