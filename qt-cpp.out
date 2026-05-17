@@ -1,0 +1,1173 @@
+
+> pretest:qt-cpp
+> cd qt-cpp && npm run pretest
+
+
+> qt-cpp@1.15.0 pretest
+> npm run compile && npm run lint
+
+
+> qt-cpp@1.15.0 compile
+> node ./esbuild.mjs
+
+build complete
+
+> qt-cpp@1.15.0 lint
+> npm run prettierWrite && eslint . --fix --cache
+
+
+> qt-cpp@1.15.0 prettierWrite
+> npm run prettierBase -- --write "**/*.{js,ts,mts,json,mjs,cjs}" --log-level silent
+
+
+> qt-cpp@1.15.0 prettierBase
+> prettier --config "../common/.prettierrc" --ignore-path "../common/.prettierignore" --cache --cache-strategy metadata --write **/*.{js,ts,mts,json,mjs,cjs} --log-level silent
+
+
+> test:qt-cpp
+> ts-node ./scripts/test.ts --extension="qt-cpp"
+
+
+=== Testing qt-cpp ===
+
+
+> qt-cpp@1.15.0 pretest
+> npm run compile && npm run lint
+
+
+> qt-cpp@1.15.0 compile
+> node ./esbuild.mjs
+
+build complete
+
+> qt-cpp@1.15.0 lint
+> npm run prettierWrite && eslint . --fix --cache
+
+
+> qt-cpp@1.15.0 prettierWrite
+> npm run prettierBase -- --write "**/*.{js,ts,mts,json,mjs,cjs}" --log-level silent
+
+
+> qt-cpp@1.15.0 prettierBase
+> prettier --config "../common/.prettierrc" --ignore-path "../common/.prettierignore" --cache --cache-strategy metadata --write **/*.{js,ts,mts,json,mjs,cjs} --log-level silent
+
+
+> qt-cpp@1.15.0 test
+> npm run prepare-vsix && npm run compile-test && npm run run-tests
+
+
+> qt-cpp@1.15.0 prepare-vsix
+> npm --prefix ../qt-core run package
+
+
+> qt-core@1.15.0 package
+> vsce package --out out && rm commit
+
+Executing prepublish script 'npm run vscode:prepublish'...
+
+> qt-core@1.15.0 vscode:prepublish
+> cross-env NODE_ENV=production npm run compile && git rev-parse HEAD > commit
+
+
+> qt-core@1.15.0 compile
+> npm run build:webview && node ./esbuild.mjs
+
+
+> qt-core@1.15.0 build:webview
+> cd webview-ui && npm run build
+
+
+> qt-core-webview@0.0.0 build
+> vite build
+
+vite v6.4.2 building for production...
+transforming...
+✓ 3701 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html    0.36 kB │ gzip:   0.23 kB
+dist/index.css   250.28 kB │ gzip:  36.66 kB
+dist/index.js    496.28 kB │ gzip: 145.95 kB
+✓ built in 4.74s
+build complete
+ INFO  Files included in the VSIX:
+qt-core-1.15.0.vsix
+├─ [Content_Types].xml 
+├─ extension.vsixmanifest 
+└─ extension/
+   ├─ LICENSE.txt [8.04 KB]
+   ├─ ThirdPartyNotices.txt [215.8 KB]
+   ├─ changelog.md 
+   ├─ commit [0.04 KB]
+   ├─ package.json [11.01 KB]
+   ├─ package.nls.json [1.05 KB]
+   ├─ readme.md 
+   ├─ .reuse/
+   │  └─ dep5 [0.28 KB]
+   ├─ out/
+   │  └─ extension.js [1.67 MB]
+   ├─ res/
+   │  ├─ icons/ (17 files) [230.31 KB]
+   │  └─ lang/ (10 files) [25.45 KB]
+   └─ webview-ui/
+      ├─ ThirdPartyNotices.txt [78.28 KB]
+      └─ dist/ (3 files) [729.41 KB]
+
+=> Run vsce ls --tree to see all included files.
+
+ DONE  Packaged: out/qt-core-1.15.0.vsix (42 files, 887.89 KB)
+
+> qt-cpp@1.15.0 compile-test
+> node ./esbuild.mjs --test
+
+[tests] build complete
+
+> qt-cpp@1.15.0 run-tests
+> cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js
+
+[runTest] Wrote settings to: /home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/user-data/User/settings.json
+[90m[main 2026-05-17T13:55:01.550Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-05-17T13:55:01.615Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-05-17T13:55:01.615Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[90m[main 2026-05-17T13:55:01.646Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-05-17T13:55:01.647Z][0m update#setState disabled
+[90m[main 2026-05-17T13:55:01.647Z][0m update#ctor - updates are disabled by the environment
+Started local extension host with pid 35964.
+Loading development extension at /home/orkun/qt_work/vscodeext/qt-cpp
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[0m[0m
+[0m  extension[0m
+Settings Sync: Account status changed from uninitialized to unavailable
+[CMakeTools] 2026-05-17T13:55:03.806Z [info] [bookmarks] Loaded 0 bookmarks
+[CMakeTools] 2026-05-17T13:55:03.904Z [info] [proc] Executing command: cmake --version
+[CMakeTools] 2026-05-17T13:55:03.905Z [debug] [proc]   with environment: {"CHROME_DESKTOP":"code.desktop","COLOR":"0","COLORTERM":"truecolor","DBUS_SESSION_BUS_ADDRESS":"unix:path=/run/user/1000/bus","DEFAULTS_PATH":"/usr/share/gconf/ubuntu-xorg.default.path","DESKTOP_SESSION":"ubuntu-xorg","DISPLAY":":0","EDITOR":"vi","FC_FONTATIONS":"1","GDK_BACKEND":"x11","GDMSESSION":"ubuntu-xorg","GIO_LAUNCHED_DESKTOP_FILE":"/usr/share/applications/code.desktop","GIO_LAUNCHED_DESKTOP_FILE_PID":"17700","GIT_ASKPASS":"/usr/share/code/resources/app/extensions/git/dist/askpass.sh","GJS_DEBUG_OUTPUT":"stderr","GJS_DEBUG_TOPICS":"JS ERROR;JS LOG","GNOME_DESKTOP_SESSION_ID":"this-is-deprecated","GNOME_SHELL_SESSION_MODE":"ubuntu","GPG_AGENT_INFO":"/run/user/1000/gnupg/S.gpg-agent:0:1","GTK_IM_MODULE":"ibus","GTK_MODULES":"gail:atk-bridge","HOME":"/home/orkun","INIT_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp","INVOCATION_ID":"00537a1f7c6c4f09ab36e68f9177d511","JOURNAL_STREAM":"8:9200","LANG":"en_US.UTF-8","LC_ADDRESS":"de_DE.UTF-8","LC_IDENTIFICATION":"de_DE.UTF-8","LC_MEASUREMENT":"de_DE.UTF-8","LC_MONETARY":"de_DE.UTF-8","LC_NAME":"de_DE.UTF-8","LC_NUMERIC":"de_DE.UTF-8","LC_PAPER":"de_DE.UTF-8","LC_TELEPHONE":"de_DE.UTF-8","LC_TIME":"de_DE.UTF-8","LESSCLOSE":"/usr/bin/lesspipe %s %s","LESSOPEN":"| /usr/bin/lesspipe %s","LOGNAME":"orkun","LS_COLORS":"rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:","MANAGERPID":"1606","MANDATORY_PATH":"/usr/share/gconf/ubuntu-xorg.mandatory.path","NODE":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","NVM_BIN":"/home/orkun/.nvm/versions/node/v24.15.0/bin","NVM_DIR":"/home/orkun/.nvm","NVM_INC":"/home/orkun/.nvm/versions/node/v24.15.0/include/node","OLDPWD":"/home/orkun/qt_work/vscodeext/qt-cpp","PATH":"/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin","PWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","QT_ACCESSIBILITY":"1","QT_IM_MODULE":"ibus","QT_QPA_PLATFORM":"xcb","QT_TEST_QT_ROOT":"/home/orkun/Qt","SESSION_MANAGER":"local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866","SHELL":"/bin/bash","SHLVL":"2","SSH_AGENT_LAUNCHER":"gnome-keyring","SSH_AUTH_SOCK":"/run/user/1000/keyring/ssh","SYSTEMD_EXEC_PID":"1896","TERM":"xterm-256color","TERM_PROGRAM":"vscode","TERM_PROGRAM_VERSION":"1.120.0","USER":"orkun","USERNAME":"orkun","VSCODE_CRASH_REPORTER_PROCESS_TYPE":"extensionHost","VSCODE_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","VSCODE_ESM_ENTRYPOINT":"vs/workbench/api/node/extensionHostProcess","VSCODE_GIT_ASKPASS_MAIN":"/usr/share/code/resources/app/extensions/git/dist/askpass-main.js","VSCODE_GIT_ASKPASS_NODE":"/usr/share/code/code","VSCODE_GIT_IPC_HANDLE":"/run/user/1000/vscode-git-ff403d1d21.sock","VSCODE_HANDLES_UNCAUGHT_ERRORS":"true","VSCODE_INJECTION":"1","VSCODE_IPC_HOOK":"/run/user/1000/vscode-25ab7e01-1.12-main.sock","VSCODE_NLS_CONFIG":"{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}","VSCODE_NONCE":"2a9b1dc8-464a-4f07-beb2-e0483d104dbc","VSCODE_PID":"35617","VSCODE_STABLE":"1","WINDOWPATH":"2","XAUTHORITY":"/run/user/1000/gdm/Xauthority","XDG_CONFIG_DIRS":"/etc/xdg/xdg-ubuntu-xorg:/etc/xdg","XDG_CURRENT_DESKTOP":"ubuntu:GNOME","XDG_DATA_DIRS":"/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop","XDG_MENU_PREFIX":"gnome-","XDG_RUNTIME_DIR":"/run/user/1000","XDG_SESSION_CLASS":"user","XDG_SESSION_DESKTOP":"ubuntu-xorg","XDG_SESSION_TYPE":"x11","XMODIFIERS":"@im=ibus","_":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code","npm_command":"run","npm_config_cache":"/home/orkun/.npm","npm_config_global_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_globalconfig":"/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc","npm_config_init_module":"/home/orkun/.npm-init.js","npm_config_local_prefix":"/home/orkun/qt_work/vscodeext/qt-cpp","npm_config_node_gyp":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js","npm_config_npm_version":"11.12.1","npm_config_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_user_agent":"npm/11.12.1 node/v24.15.0 linux x64 workspaces/false","npm_config_userconfig":"/home/orkun/.npmrc","npm_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js","npm_lifecycle_event":"run-tests","npm_lifecycle_script":"cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js","npm_node_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","npm_package_engines_vscode":"^1.94.0","npm_package_json":"/home/orkun/qt_work/vscodeext/qt-cpp/package.json","npm_package_name":"qt-cpp","npm_package_version":"1.15.0","ELECTRON_RUN_AS_NODE":"1","VSCODE_L10N_BUNDLE_LOCATION":""}
+[CMakeTools] 2026-05-17T13:55:03.918Z [info] [proc] Executing command: cmake -E capabilities
+[CMakeTools] 2026-05-17T13:55:03.918Z [debug] [proc]   with environment: {"CHROME_DESKTOP":"code.desktop","COLOR":"0","COLORTERM":"truecolor","DBUS_SESSION_BUS_ADDRESS":"unix:path=/run/user/1000/bus","DEFAULTS_PATH":"/usr/share/gconf/ubuntu-xorg.default.path","DESKTOP_SESSION":"ubuntu-xorg","DISPLAY":":0","EDITOR":"vi","FC_FONTATIONS":"1","GDK_BACKEND":"x11","GDMSESSION":"ubuntu-xorg","GIO_LAUNCHED_DESKTOP_FILE":"/usr/share/applications/code.desktop","GIO_LAUNCHED_DESKTOP_FILE_PID":"17700","GIT_ASKPASS":"/usr/share/code/resources/app/extensions/git/dist/askpass.sh","GJS_DEBUG_OUTPUT":"stderr","GJS_DEBUG_TOPICS":"JS ERROR;JS LOG","GNOME_DESKTOP_SESSION_ID":"this-is-deprecated","GNOME_SHELL_SESSION_MODE":"ubuntu","GPG_AGENT_INFO":"/run/user/1000/gnupg/S.gpg-agent:0:1","GTK_IM_MODULE":"ibus","GTK_MODULES":"gail:atk-bridge","HOME":"/home/orkun","INIT_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp","INVOCATION_ID":"00537a1f7c6c4f09ab36e68f9177d511","JOURNAL_STREAM":"8:9200","LANG":"en_US.UTF-8","LC_ADDRESS":"de_DE.UTF-8","LC_IDENTIFICATION":"de_DE.UTF-8","LC_MEASUREMENT":"de_DE.UTF-8","LC_MONETARY":"de_DE.UTF-8","LC_NAME":"de_DE.UTF-8","LC_NUMERIC":"de_DE.UTF-8","LC_PAPER":"de_DE.UTF-8","LC_TELEPHONE":"de_DE.UTF-8","LC_TIME":"de_DE.UTF-8","LESSCLOSE":"/usr/bin/lesspipe %s %s","LESSOPEN":"| /usr/bin/lesspipe %s","LOGNAME":"orkun","LS_COLORS":"rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:","MANAGERPID":"1606","MANDATORY_PATH":"/usr/share/gconf/ubuntu-xorg.mandatory.path","NODE":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","NVM_BIN":"/home/orkun/.nvm/versions/node/v24.15.0/bin","NVM_DIR":"/home/orkun/.nvm","NVM_INC":"/home/orkun/.nvm/versions/node/v24.15.0/include/node","OLDPWD":"/home/orkun/qt_work/vscodeext/qt-cpp","PATH":"/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin","PWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","QT_ACCESSIBILITY":"1","QT_IM_MODULE":"ibus","QT_QPA_PLATFORM":"xcb","QT_TEST_QT_ROOT":"/home/orkun/Qt","SESSION_MANAGER":"local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866","SHELL":"/bin/bash","SHLVL":"2","SSH_AGENT_LAUNCHER":"gnome-keyring","SSH_AUTH_SOCK":"/run/user/1000/keyring/ssh","SYSTEMD_EXEC_PID":"1896","TERM":"xterm-256color","TERM_PROGRAM":"vscode","TERM_PROGRAM_VERSION":"1.120.0","USER":"orkun","USERNAME":"orkun","VSCODE_CRASH_REPORTER_PROCESS_TYPE":"extensionHost","VSCODE_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","VSCODE_ESM_ENTRYPOINT":"vs/workbench/api/node/extensionHostProcess","VSCODE_GIT_ASKPASS_MAIN":"/usr/share/code/resources/app/extensions/git/dist/askpass-main.js","VSCODE_GIT_ASKPASS_NODE":"/usr/share/code/code","VSCODE_GIT_IPC_HANDLE":"/run/user/1000/vscode-git-ff403d1d21.sock","VSCODE_HANDLES_UNCAUGHT_ERRORS":"true","VSCODE_INJECTION":"1","VSCODE_IPC_HOOK":"/run/user/1000/vscode-25ab7e01-1.12-main.sock","VSCODE_NLS_CONFIG":"{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}","VSCODE_NONCE":"2a9b1dc8-464a-4f07-beb2-e0483d104dbc","VSCODE_PID":"35617","VSCODE_STABLE":"1","WINDOWPATH":"2","XAUTHORITY":"/run/user/1000/gdm/Xauthority","XDG_CONFIG_DIRS":"/etc/xdg/xdg-ubuntu-xorg:/etc/xdg","XDG_CURRENT_DESKTOP":"ubuntu:GNOME","XDG_DATA_DIRS":"/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop","XDG_MENU_PREFIX":"gnome-","XDG_RUNTIME_DIR":"/run/user/1000","XDG_SESSION_CLASS":"user","XDG_SESSION_DESKTOP":"ubuntu-xorg","XDG_SESSION_TYPE":"x11","XMODIFIERS":"@im=ibus","_":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code","npm_command":"run","npm_config_cache":"/home/orkun/.npm","npm_config_global_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_globalconfig":"/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc","npm_config_init_module":"/home/orkun/.npm-init.js","npm_config_local_prefix":"/home/orkun/qt_work/vscodeext/qt-cpp","npm_config_node_gyp":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js","npm_config_npm_version":"11.12.1","npm_config_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_user_agent":"npm/11.12.1 node/v24.15.0 linux x64 workspaces/false","npm_config_userconfig":"/home/orkun/.npmrc","npm_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js","npm_lifecycle_event":"run-tests","npm_lifecycle_script":"cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js","npm_node_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","npm_package_engines_vscode":"^1.94.0","npm_package_json":"/home/orkun/qt_work/vscodeext/qt-cpp/package.json","npm_package_name":"qt-cpp","npm_package_version":"1.15.0","ELECTRON_RUN_AS_NODE":"1","VSCODE_L10N_BUNDLE_LOCATION":""}
+Starting test: extension - activates the qt-cpp extension
+  [32m  ✔[0m[90m activates the qt-cpp extension[0m
+Starting test: extension - activates all declared extension dependencies
+  [32m  ✔[0m[90m activates all declared extension dependencies[0m
+Starting test: extension - registers all contributed commands
+  [32m  ✔[0m[90m registers all contributed commands[0m
+[0m  command: scanForQtKits[0m
+Starting test: command: scanForQtKits - calls for cmake scan for kits command, on Windows
+  [36m  - calls for cmake scan for kits command, on Windows[0m
+Starting test: command: scanForQtKits - shows the number of Qt installation found
+  [32m  ✔[0m[90m shows the number of Qt installation found[0m
+[92m [0m[32m 4 passing[0m[90m (794ms)[0m
+[36m [0m[36m 1 pending[0m
+[90m[main 2026-05-17T13:55:04.143Z][0m Extension host with pid 35964 exited with code: 0, signal: unknown.
+Exit code:   0
+[runTest] Wrote settings to: /home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/user-data/User/settings.json
+[runTest] Using project dir: /home/orkun/qt_work/vscodeext/qt-cpp/test/projectFolder
+[runTest] Copied project to temp dir: /tmp/qt-cpp-ws-lvf61f/project
+[90m[main 2026-05-17T13:55:05.954Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-05-17T13:55:06.024Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-05-17T13:55:06.025Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[90m[main 2026-05-17T13:55:06.050Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-05-17T13:55:06.051Z][0m update#setState disabled
+[90m[main 2026-05-17T13:55:06.051Z][0m update#ctor - updates are disabled by the environment
+Started local extension host with pid 36649.
+Loading development extension at /home/orkun/qt_work/vscodeext/qt-cpp
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[CMakeTools] 2026-05-17T13:55:07.723Z [info] [bookmarks] Loaded 0 bookmarks
+Settings Sync: Account status changed from uninitialized to unavailable
+[CMakeTools] 2026-05-17T13:55:08.327Z [info] [proc] Executing command: /usr/bin/cmake --version
+[CMakeTools] 2026-05-17T13:55:08.328Z [debug] [proc]   with environment: {"CHROME_DESKTOP":"code.desktop","COLOR":"0","COLORTERM":"truecolor","DBUS_SESSION_BUS_ADDRESS":"unix:path=/run/user/1000/bus","DEFAULTS_PATH":"/usr/share/gconf/ubuntu-xorg.default.path","DESKTOP_SESSION":"ubuntu-xorg","DISPLAY":":0","EDITOR":"vi","FC_FONTATIONS":"1","GDK_BACKEND":"x11","GDMSESSION":"ubuntu-xorg","GIO_LAUNCHED_DESKTOP_FILE":"/usr/share/applications/code.desktop","GIO_LAUNCHED_DESKTOP_FILE_PID":"17700","GIT_ASKPASS":"/usr/share/code/resources/app/extensions/git/dist/askpass.sh","GJS_DEBUG_OUTPUT":"stderr","GJS_DEBUG_TOPICS":"JS ERROR;JS LOG","GNOME_DESKTOP_SESSION_ID":"this-is-deprecated","GNOME_SHELL_SESSION_MODE":"ubuntu","GPG_AGENT_INFO":"/run/user/1000/gnupg/S.gpg-agent:0:1","GTK_IM_MODULE":"ibus","GTK_MODULES":"gail:atk-bridge","HOME":"/home/orkun","INIT_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp","INVOCATION_ID":"00537a1f7c6c4f09ab36e68f9177d511","JOURNAL_STREAM":"8:9200","LANG":"en_US.UTF-8","LC_ADDRESS":"de_DE.UTF-8","LC_IDENTIFICATION":"de_DE.UTF-8","LC_MEASUREMENT":"de_DE.UTF-8","LC_MONETARY":"de_DE.UTF-8","LC_NAME":"de_DE.UTF-8","LC_NUMERIC":"de_DE.UTF-8","LC_PAPER":"de_DE.UTF-8","LC_TELEPHONE":"de_DE.UTF-8","LC_TIME":"de_DE.UTF-8","LESSCLOSE":"/usr/bin/lesspipe %s %s","LESSOPEN":"| /usr/bin/lesspipe %s","LOGNAME":"orkun","LS_COLORS":"rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:","MANAGERPID":"1606","MANDATORY_PATH":"/usr/share/gconf/ubuntu-xorg.mandatory.path","NODE":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","NVM_BIN":"/home/orkun/.nvm/versions/node/v24.15.0/bin","NVM_DIR":"/home/orkun/.nvm","NVM_INC":"/home/orkun/.nvm/versions/node/v24.15.0/include/node","OLDPWD":"/home/orkun/qt_work/vscodeext/qt-cpp","PATH":"/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin","PWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","QT_ACCESSIBILITY":"1","QT_IM_MODULE":"ibus","QT_QPA_PLATFORM":"xcb","QT_TEST_QT_ROOT":"/home/orkun/Qt","SESSION_MANAGER":"local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866","SHELL":"/bin/bash","SHLVL":"2","SSH_AGENT_LAUNCHER":"gnome-keyring","SSH_AUTH_SOCK":"/run/user/1000/keyring/ssh","SYSTEMD_EXEC_PID":"1896","TERM":"xterm-256color","TERM_PROGRAM":"vscode","TERM_PROGRAM_VERSION":"1.120.0","USER":"orkun","USERNAME":"orkun","VSCODE_CRASH_REPORTER_PROCESS_TYPE":"extensionHost","VSCODE_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","VSCODE_ESM_ENTRYPOINT":"vs/workbench/api/node/extensionHostProcess","VSCODE_GIT_ASKPASS_MAIN":"/usr/share/code/resources/app/extensions/git/dist/askpass-main.js","VSCODE_GIT_ASKPASS_NODE":"/usr/share/code/code","VSCODE_GIT_IPC_HANDLE":"/run/user/1000/vscode-git-ff403d1d21.sock","VSCODE_HANDLES_UNCAUGHT_ERRORS":"true","VSCODE_INJECTION":"1","VSCODE_IPC_HOOK":"/run/user/1000/vscode-25ab7e01-1.12-main.sock","VSCODE_NLS_CONFIG":"{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}","VSCODE_NONCE":"2a9b1dc8-464a-4f07-beb2-e0483d104dbc","VSCODE_PID":"36306","VSCODE_STABLE":"1","WINDOWPATH":"2","XAUTHORITY":"/run/user/1000/gdm/Xauthority","XDG_CONFIG_DIRS":"/etc/xdg/xdg-ubuntu-xorg:/etc/xdg","XDG_CURRENT_DESKTOP":"ubuntu:GNOME","XDG_DATA_DIRS":"/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop","XDG_MENU_PREFIX":"gnome-","XDG_RUNTIME_DIR":"/run/user/1000","XDG_SESSION_CLASS":"user","XDG_SESSION_DESKTOP":"ubuntu-xorg","XDG_SESSION_TYPE":"x11","XMODIFIERS":"@im=ibus","_":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code","npm_command":"run","npm_config_cache":"/home/orkun/.npm","npm_config_global_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_globalconfig":"/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc","npm_config_init_module":"/home/orkun/.npm-init.js","npm_config_local_prefix":"/home/orkun/qt_work/vscodeext/qt-cpp","npm_config_node_gyp":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js","npm_config_npm_version":"11.12.1","npm_config_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_user_agent":"npm/11.12.1 node/v24.15.0 linux x64 workspaces/false","npm_config_userconfig":"/home/orkun/.npmrc","npm_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js","npm_lifecycle_event":"run-tests","npm_lifecycle_script":"cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js","npm_node_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","npm_package_engines_vscode":"^1.94.0","npm_package_json":"/home/orkun/qt_work/vscodeext/qt-cpp/package.json","npm_package_name":"qt-cpp","npm_package_version":"1.15.0","ELECTRON_RUN_AS_NODE":"1","VSCODE_L10N_BUNDLE_LOCATION":""}
+[CMakeTools] 2026-05-17T13:55:08.338Z [info] [proc] Executing command: /usr/bin/cmake -E capabilities
+[CMakeTools] 2026-05-17T13:55:08.338Z [debug] [proc]   with environment: {"CHROME_DESKTOP":"code.desktop","COLOR":"0","COLORTERM":"truecolor","DBUS_SESSION_BUS_ADDRESS":"unix:path=/run/user/1000/bus","DEFAULTS_PATH":"/usr/share/gconf/ubuntu-xorg.default.path","DESKTOP_SESSION":"ubuntu-xorg","DISPLAY":":0","EDITOR":"vi","FC_FONTATIONS":"1","GDK_BACKEND":"x11","GDMSESSION":"ubuntu-xorg","GIO_LAUNCHED_DESKTOP_FILE":"/usr/share/applications/code.desktop","GIO_LAUNCHED_DESKTOP_FILE_PID":"17700","GIT_ASKPASS":"/usr/share/code/resources/app/extensions/git/dist/askpass.sh","GJS_DEBUG_OUTPUT":"stderr","GJS_DEBUG_TOPICS":"JS ERROR;JS LOG","GNOME_DESKTOP_SESSION_ID":"this-is-deprecated","GNOME_SHELL_SESSION_MODE":"ubuntu","GPG_AGENT_INFO":"/run/user/1000/gnupg/S.gpg-agent:0:1","GTK_IM_MODULE":"ibus","GTK_MODULES":"gail:atk-bridge","HOME":"/home/orkun","INIT_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp","INVOCATION_ID":"00537a1f7c6c4f09ab36e68f9177d511","JOURNAL_STREAM":"8:9200","LANG":"en_US.UTF-8","LC_ADDRESS":"de_DE.UTF-8","LC_IDENTIFICATION":"de_DE.UTF-8","LC_MEASUREMENT":"de_DE.UTF-8","LC_MONETARY":"de_DE.UTF-8","LC_NAME":"de_DE.UTF-8","LC_NUMERIC":"de_DE.UTF-8","LC_PAPER":"de_DE.UTF-8","LC_TELEPHONE":"de_DE.UTF-8","LC_TIME":"de_DE.UTF-8","LESSCLOSE":"/usr/bin/lesspipe %s %s","LESSOPEN":"| /usr/bin/lesspipe %s","LOGNAME":"orkun","LS_COLORS":"rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:","MANAGERPID":"1606","MANDATORY_PATH":"/usr/share/gconf/ubuntu-xorg.mandatory.path","NODE":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","NVM_BIN":"/home/orkun/.nvm/versions/node/v24.15.0/bin","NVM_DIR":"/home/orkun/.nvm","NVM_INC":"/home/orkun/.nvm/versions/node/v24.15.0/include/node","OLDPWD":"/home/orkun/qt_work/vscodeext/qt-cpp","PATH":"/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin","PWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","QT_ACCESSIBILITY":"1","QT_IM_MODULE":"ibus","QT_QPA_PLATFORM":"xcb","QT_TEST_QT_ROOT":"/home/orkun/Qt","SESSION_MANAGER":"local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866","SHELL":"/bin/bash","SHLVL":"2","SSH_AGENT_LAUNCHER":"gnome-keyring","SSH_AUTH_SOCK":"/run/user/1000/keyring/ssh","SYSTEMD_EXEC_PID":"1896","TERM":"xterm-256color","TERM_PROGRAM":"vscode","TERM_PROGRAM_VERSION":"1.120.0","USER":"orkun","USERNAME":"orkun","VSCODE_CRASH_REPORTER_PROCESS_TYPE":"extensionHost","VSCODE_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","VSCODE_ESM_ENTRYPOINT":"vs/workbench/api/node/extensionHostProcess","VSCODE_GIT_ASKPASS_MAIN":"/usr/share/code/resources/app/extensions/git/dist/askpass-main.js","VSCODE_GIT_ASKPASS_NODE":"/usr/share/code/code","VSCODE_GIT_IPC_HANDLE":"/run/user/1000/vscode-git-ff403d1d21.sock","VSCODE_HANDLES_UNCAUGHT_ERRORS":"true","VSCODE_INJECTION":"1","VSCODE_IPC_HOOK":"/run/user/1000/vscode-25ab7e01-1.12-main.sock","VSCODE_NLS_CONFIG":"{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}","VSCODE_NONCE":"2a9b1dc8-464a-4f07-beb2-e0483d104dbc","VSCODE_PID":"36306","VSCODE_STABLE":"1","WINDOWPATH":"2","XAUTHORITY":"/run/user/1000/gdm/Xauthority","XDG_CONFIG_DIRS":"/etc/xdg/xdg-ubuntu-xorg:/etc/xdg","XDG_CURRENT_DESKTOP":"ubuntu:GNOME","XDG_DATA_DIRS":"/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop","XDG_MENU_PREFIX":"gnome-","XDG_RUNTIME_DIR":"/run/user/1000","XDG_SESSION_CLASS":"user","XDG_SESSION_DESKTOP":"ubuntu-xorg","XDG_SESSION_TYPE":"x11","XMODIFIERS":"@im=ibus","_":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code","npm_command":"run","npm_config_cache":"/home/orkun/.npm","npm_config_global_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_globalconfig":"/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc","npm_config_init_module":"/home/orkun/.npm-init.js","npm_config_local_prefix":"/home/orkun/qt_work/vscodeext/qt-cpp","npm_config_node_gyp":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js","npm_config_npm_version":"11.12.1","npm_config_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_user_agent":"npm/11.12.1 node/v24.15.0 linux x64 workspaces/false","npm_config_userconfig":"/home/orkun/.npmrc","npm_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js","npm_lifecycle_event":"run-tests","npm_lifecycle_script":"cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js","npm_node_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","npm_package_engines_vscode":"^1.94.0","npm_package_json":"/home/orkun/qt_work/vscodeext/qt-cpp/package.json","npm_package_name":"qt-cpp","npm_package_version":"1.15.0","ELECTRON_RUN_AS_NODE":"1","VSCODE_L10N_BUNDLE_LOCATION":""}
+[CMakeTools] 2026-05-17T13:55:08.349Z [debug] [main] Safe constructing new CMakeProject instance
+[CMakeTools] 2026-05-17T13:55:08.350Z [debug] [variant] Constructing VariantManager
+[CMakeTools] 2026-05-17T13:55:08.350Z [debug] [main] Constructing new CMakeProject instance
+[CMakeTools] 2026-05-17T13:55:08.351Z [debug] [main] Starting CMake Tools second-phase init
+[CMakeTools] 2026-05-17T13:55:08.352Z [debug] [expand] expanded ${workspaceFolder}
+[CMakeTools] 2026-05-17T13:55:08.354Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:08.379Z [info] [kit] Successfully loaded 6 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:08.392Z [debug] [kit] Not reading non-existent kits file: /tmp/qt-cpp-ws-lvf61f/project/.vscode/cmake-kits.json
+[CMakeTools] 2026-05-17T13:55:08.407Z [info] [variant] Loaded new set of variants
+[CMakeTools] 2026-05-17T13:55:08.409Z [debug] [main] CMakeProject instance initialization complete.
+[CMakeTools] 2026-05-17T13:55:08.418Z [info] [kit] Detected kits definition version change from undefined to 2. Silently scanning for kits.
+[CMakeTools] 2026-05-17T13:55:08.419Z [debug] [kitsController] Rescanning for kits
+[CMakeTools] 2026-05-17T13:55:08.419Z [debug] [kit] Scanning for Kits on system
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Skipping scan of not existing path /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Skipping scan of not existing path /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Found 0 kits in directory /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Skipping scan of not existing path /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Found 0 kits in directory /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.421Z [debug] [kit] Skipping scan of not existing path /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Found 0 kits in directory /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /usr/local/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /usr/local/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /usr/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:08.422Z [debug] [kit] Scanning directory /usr/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Scanning directory /sbin for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Scanning directory /bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Scanning directory /usr/games for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Scanning directory /usr/local/games for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Scanning directory /snap/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Skipping scan of not existing path /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Found 0 kits in directory /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Scanning directory /usr/local/go/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.423Z [debug] [kit] Skipping scan of not existing path undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Found 0 kits in directory undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:08.424Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:08.425Z [debug] [kit] Found 0 kits in directory undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:08.425Z [debug] [kit] Skipping scan of not existing path undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:08.425Z [debug] [kit] Found 0 kits in directory undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:08.441Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.441Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin
+[CMakeTools] 2026-05-17T13:55:08.441Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand
+[CMakeTools] 2026-05-17T13:55:08.442Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.443Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli
+[CMakeTools] 2026-05-17T13:55:08.443Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/bin
+[CMakeTools] 2026-05-17T13:55:08.443Z [debug] [kit] Found 0 kits in directory /usr/local/bin
+[CMakeTools] 2026-05-17T13:55:08.443Z [debug] [kit] Found 0 kits in directory /usr/local/sbin
+[CMakeTools] 2026-05-17T13:55:08.455Z [debug] [kit] Found 0 kits in directory /usr/sbin
+[CMakeTools] 2026-05-17T13:55:08.455Z [debug] [kit] Found 0 kits in directory /usr/games
+[CMakeTools] 2026-05-17T13:55:08.455Z [debug] [kit] Found 0 kits in directory /usr/local/games
+[CMakeTools] 2026-05-17T13:55:08.456Z [debug] [kit] Found 0 kits in directory /snap/bin
+[CMakeTools] 2026-05-17T13:55:08.468Z [debug] [kit] Found 0 kits in directory /sbin
+[CMakeTools] 2026-05-17T13:55:08.468Z [debug] [kit] Found 0 kits in directory /usr/local/go/bin
+[CMakeTools] 2026-05-17T13:55:08.473Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.474Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.478Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.479Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.483Z [debug] [kit] Testing Clang binary: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:08.484Z [info] [proc] Executing command: /usr/bin/clang -v
+[CMakeTools] 2026-05-17T13:55:08.487Z [debug] [kit] Testing Clang binary: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.488Z [info] [proc] Executing command: /usr/bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:08.499Z [debug] [kit] Testing GCC binary: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.499Z [info] [proc] Executing command: /usr/bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:08.503Z [debug] [kit] Testing GCC binary: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.503Z [info] [proc] Executing command: /usr/bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.542Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.542Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.546Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.547Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.556Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.556Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.560Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.561Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.565Z [debug] [kit] Testing Clang binary: /bin/clang
+[CMakeTools] 2026-05-17T13:55:08.565Z [info] [proc] Executing command: /bin/clang -v
+[CMakeTools] 2026-05-17T13:55:08.568Z [debug] [kit] Testing Clang binary: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.569Z [info] [proc] Executing command: /bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:08.578Z [debug] [kit] Testing GCC binary: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.579Z [info] [proc] Executing command: /bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:08.583Z [debug] [kit] Testing GCC binary: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.584Z [info] [proc] Executing command: /bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.611Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.612Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.615Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.616Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.641Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.642Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.644Z [debug] [kit] Detected GCC compiler: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.645Z [debug] [kit] Detected GCC compiler: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.646Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.646Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.646Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:08.647Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:08.649Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.650Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.651Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.652Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.653Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.654Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.655Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.655Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.655Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:08.655Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:08.656Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.657Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.729Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.729Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.733Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.733Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.736Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.737Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.739Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.740Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.744Z [debug] [main] Not starting CMake driver: no kit selected
+[CMakeTools] 2026-05-17T13:55:08.752Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.754Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.755Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.756Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.758Z [debug] [kit] Found 8 kits in directory /usr/bin
+[CMakeTools] 2026-05-17T13:55:08.758Z [debug] [kit] Found 8 kits in directory /bin
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.759Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.760Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:08.761Z [debug] [kitsController] Saving kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:08.762Z [debug] [kitsController] Saving new kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:08.791Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:08.814Z [info] [kit] Successfully loaded 6 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:08.819Z [debug] [extension] [6178] cmake.scanForKits started
+[CMakeTools] 2026-05-17T13:55:08.821Z [debug] [kitsController] Rescanning for kits
+[CMakeTools] 2026-05-17T13:55:08.821Z [debug] [kit] Scanning for Kits on system
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Skipping scan of not existing path /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Skipping scan of not existing path /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Found 0 kits in directory /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Skipping scan of not existing path /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Found 0 kits in directory /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Skipping scan of not existing path /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Found 0 kits in directory /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.822Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /usr/local/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /usr/local/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /usr/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /usr/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /sbin for compilers
+[CMakeTools] 2026-05-17T13:55:08.823Z [debug] [kit] Scanning directory /bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Scanning directory /usr/games for compilers
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Scanning directory /usr/local/games for compilers
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Scanning directory /snap/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Skipping scan of not existing path /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Found 0 kits in directory /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Scanning directory /usr/local/go/bin for compilers
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Skipping scan of not existing path undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Found 0 kits in directory undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:08.824Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Found 0 kits in directory undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Skipping scan of not existing path undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:08.825Z [debug] [kit] Found 0 kits in directory undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:08.827Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.827Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin
+[CMakeTools] 2026-05-17T13:55:08.827Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand
+[CMakeTools] 2026-05-17T13:55:08.828Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:08.829Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/bin
+[CMakeTools] 2026-05-17T13:55:08.829Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli
+[CMakeTools] 2026-05-17T13:55:08.829Z [debug] [kit] Found 0 kits in directory /usr/local/sbin
+[CMakeTools] 2026-05-17T13:55:08.829Z [debug] [kit] Found 0 kits in directory /usr/local/bin
+[CMakeTools] 2026-05-17T13:55:08.837Z [debug] [kit] Found 0 kits in directory /usr/sbin
+[CMakeTools] 2026-05-17T13:55:08.844Z [debug] [kit] Found 0 kits in directory /sbin
+[CMakeTools] 2026-05-17T13:55:08.844Z [debug] [kit] Found 0 kits in directory /usr/games
+[CMakeTools] 2026-05-17T13:55:08.844Z [debug] [kit] Found 0 kits in directory /usr/local/games
+[CMakeTools] 2026-05-17T13:55:08.845Z [debug] [kit] Found 0 kits in directory /snap/bin
+[CMakeTools] 2026-05-17T13:55:08.845Z [debug] [kit] Found 0 kits in directory /usr/local/go/bin
+[CMakeTools] 2026-05-17T13:55:08.849Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.849Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.853Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.853Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.857Z [debug] [kit] Testing Clang binary: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:08.857Z [info] [proc] Executing command: /usr/bin/clang -v
+[CMakeTools] 2026-05-17T13:55:08.861Z [debug] [kit] Testing Clang binary: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.861Z [info] [proc] Executing command: /usr/bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:08.872Z [debug] [kit] Testing GCC binary: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.873Z [info] [proc] Executing command: /usr/bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:08.877Z [debug] [kit] Testing GCC binary: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.878Z [info] [proc] Executing command: /usr/bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.907Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.907Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.911Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.912Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.923Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:08.923Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.927Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:08.928Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.932Z [debug] [kit] Testing Clang binary: /bin/clang
+[CMakeTools] 2026-05-17T13:55:08.933Z [info] [proc] Executing command: /bin/clang -v
+[CMakeTools] 2026-05-17T13:55:08.936Z [debug] [kit] Testing Clang binary: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.936Z [info] [proc] Executing command: /bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:08.946Z [debug] [kit] Testing GCC binary: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.947Z [info] [proc] Executing command: /bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:08.950Z [debug] [kit] Testing GCC binary: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.951Z [info] [proc] Executing command: /bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.978Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.978Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:08.982Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.982Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:08.993Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:08.994Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:08.996Z [debug] [kit] Detected GCC compiler: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:08.997Z [debug] [kit] Detected GCC compiler: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:08.997Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.997Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:08.997Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:08.998Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:08.999Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.000Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.001Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.003Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.004Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.005Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.005Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.005Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.006Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.006Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.007Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.009Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.012Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.012Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.016Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.016Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.019Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.020Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.023Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.024Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.028Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.031Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.032Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.033Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.034Z [debug] [kit] Found 8 kits in directory /bin
+[CMakeTools] 2026-05-17T13:55:09.035Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.036Z [debug] [kit] Found 8 kits in directory /usr/bin
+[CMakeTools] 2026-05-17T13:55:09.036Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.036Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.036Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.036Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.036Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.037Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.038Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.038Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.038Z [debug] [kitsController] Saving kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.038Z [debug] [kitsController] Saving new kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.046Z [info] [kit] Successfully loaded 6 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.050Z [debug] [extension] [6178] cmake.scanForKits finished (returned undefined)
+[CMakeTools] 2026-05-17T13:55:09.052Z [debug] [extension] [4190] cmake.scanForKits started
+[CMakeTools] 2026-05-17T13:55:09.053Z [debug] [kitsController] Rescanning for kits
+[CMakeTools] 2026-05-17T13:55:09.053Z [debug] [kit] Scanning for Kits on system
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Skipping scan of not existing path /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Skipping scan of not existing path /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Found 0 kits in directory /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Skipping scan of not existing path /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Found 0 kits in directory /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.054Z [debug] [kit] Skipping scan of not existing path /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Found 0 kits in directory /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /usr/local/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /usr/local/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /usr/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /usr/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /sbin for compilers
+[CMakeTools] 2026-05-17T13:55:09.055Z [debug] [kit] Scanning directory /bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Scanning directory /usr/games for compilers
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Scanning directory /usr/local/games for compilers
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Scanning directory /snap/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Skipping scan of not existing path /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Found 0 kits in directory /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Scanning directory /usr/local/go/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Skipping scan of not existing path undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Found 0 kits in directory undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:09.056Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Found 0 kits in directory undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Skipping scan of not existing path undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:09.057Z [debug] [kit] Found 0 kits in directory undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:09.059Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.060Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.060Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand
+[CMakeTools] 2026-05-17T13:55:09.061Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin
+[CMakeTools] 2026-05-17T13:55:09.061Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli
+[CMakeTools] 2026-05-17T13:55:09.061Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/bin
+[CMakeTools] 2026-05-17T13:55:09.061Z [debug] [kit] Found 0 kits in directory /usr/local/sbin
+[CMakeTools] 2026-05-17T13:55:09.061Z [debug] [kit] Found 0 kits in directory /usr/local/bin
+[CMakeTools] 2026-05-17T13:55:09.071Z [debug] [kit] Found 0 kits in directory /usr/sbin
+[CMakeTools] 2026-05-17T13:55:09.072Z [debug] [kit] Found 0 kits in directory /usr/games
+[CMakeTools] 2026-05-17T13:55:09.072Z [debug] [kit] Found 0 kits in directory /usr/local/games
+[CMakeTools] 2026-05-17T13:55:09.072Z [debug] [kit] Found 0 kits in directory /snap/bin
+[CMakeTools] 2026-05-17T13:55:09.073Z [debug] [kit] Found 0 kits in directory /usr/local/go/bin
+[CMakeTools] 2026-05-17T13:55:09.083Z [debug] [kit] Found 0 kits in directory /sbin
+[CMakeTools] 2026-05-17T13:55:09.088Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.088Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.092Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.093Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.097Z [debug] [kit] Testing Clang binary: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.097Z [info] [proc] Executing command: /usr/bin/clang -v
+[CMakeTools] 2026-05-17T13:55:09.100Z [debug] [kit] Testing Clang binary: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.101Z [info] [proc] Executing command: /usr/bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:09.110Z [debug] [kit] Testing GCC binary: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.111Z [info] [proc] Executing command: /usr/bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:09.115Z [debug] [kit] Testing GCC binary: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.115Z [info] [proc] Executing command: /usr/bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.142Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.143Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.146Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.147Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.157Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.157Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.161Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.162Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.166Z [debug] [kit] Testing Clang binary: /bin/clang
+[CMakeTools] 2026-05-17T13:55:09.166Z [info] [proc] Executing command: /bin/clang -v
+[CMakeTools] 2026-05-17T13:55:09.169Z [debug] [kit] Testing Clang binary: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.170Z [info] [proc] Executing command: /bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:09.180Z [debug] [kit] Testing GCC binary: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.181Z [info] [proc] Executing command: /bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:09.185Z [debug] [kit] Testing GCC binary: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.185Z [info] [proc] Executing command: /bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.214Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.215Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.219Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.219Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.232Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.233Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.234Z [debug] [kit] Detected GCC compiler: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.236Z [debug] [kit] Detected GCC compiler: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.236Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.236Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.236Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:09.236Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:09.237Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.239Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.240Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.242Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.243Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.245Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.245Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.245Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.246Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.246Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.247Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.249Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.256Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.266Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.267Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.270Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.271Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.273Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.274Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.278Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.279Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.285Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.286Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.287Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.288Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.289Z [debug] [kit] Found 8 kits in directory /usr/bin
+[CMakeTools] 2026-05-17T13:55:09.289Z [debug] [kit] Found 8 kits in directory /bin
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.290Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.291Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.291Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.291Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.291Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.291Z [debug] [kitsController] Saving kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.291Z [debug] [kitsController] Saving new kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.306Z [info] [kit] Successfully loaded 5 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.311Z [debug] [extension] [4190] cmake.scanForKits finished (returned undefined)
+[CMakeTools] 2026-05-17T13:55:09.312Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.319Z [info] [kit] Successfully loaded 5 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.332Z [debug] [extension] [1669] cmake.buildKit started
+[CMakeTools] 2026-05-17T13:55:09.333Z [debug] [extension] [1669] cmake.buildKit finished (returned null)
+[CMakeTools] 2026-05-17T13:55:09.333Z [debug] [extension] [2250] cmake.buildKit started
+[CMakeTools] 2026-05-17T13:55:09.333Z [debug] [extension] [2250] cmake.buildKit finished (returned null)
+[CMakeTools] 2026-05-17T13:55:09.334Z [debug] [main] Not starting CMake driver: no kit selected
+[0m[0m
+[0m  build: minimal Qt project (index-build)[0m
+[CMakeTools] 2026-05-17T13:55:09.478Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+Using projectDir: /tmp/qt-cpp-ws-lvf61f/project
+[CMakeTools] 2026-05-17T13:55:09.480Z [debug] [extension] [5340] cmake.scanForKits started
+[CMakeTools] 2026-05-17T13:55:09.489Z [info] [kit] Successfully loaded 5 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.493Z [debug] [kitsController] Rescanning for kits
+[CMakeTools] 2026-05-17T13:55:09.494Z [debug] [kit] Scanning for Kits on system
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Skipping scan of not existing path /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Scanning directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Skipping scan of not existing path /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Found 0 kits in directory /home/orkun/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Skipping scan of not existing path /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Found 0 kits in directory /home/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.495Z [debug] [kit] Skipping scan of not existing path /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Found 0 kits in directory /node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /home/orkun/.nvm/versions/node/v24.15.0/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /usr/local/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /usr/local/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /usr/sbin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /usr/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /sbin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /usr/games for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /usr/local/games for compilers
+[CMakeTools] 2026-05-17T13:55:09.496Z [debug] [kit] Scanning directory /snap/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Skipping scan of not existing path /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Found 0 kits in directory /home/orkun/.local/bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Scanning directory /usr/local/go/bin for compilers
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Skipping scan of not existing path undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Found 0 kits in directory undefined\LLVM\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw32\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Skipping scan of not existing path undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Found 0 kits in directory undefined\msys64\mingw64\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang32\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:09.497Z [debug] [kit] Found 0 kits in directory undefined\msys64\clangarm64\bin
+[CMakeTools] 2026-05-17T13:55:09.498Z [debug] [kit] Skipping scan of not existing path undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:09.498Z [debug] [kit] Found 0 kits in directory undefined\msys64\clang64\bin
+[CMakeTools] 2026-05-17T13:55:09.498Z [debug] [kit] Skipping scan of not existing path undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:09.498Z [debug] [kit] Found 0 kits in directory undefined\msys64\ucrt64\bin
+[CMakeTools] 2026-05-17T13:55:09.498Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin
+[CMakeTools] 2026-05-17T13:55:09.498Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand
+[CMakeTools] 2026-05-17T13:55:09.499Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.499Z [debug] [kit] Found 0 kits in directory /home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli
+[CMakeTools] 2026-05-17T13:55:09.500Z [debug] [kit] Found 0 kits in directory /home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin
+[CMakeTools] 2026-05-17T13:55:09.500Z [debug] [kit] Found 0 kits in directory /home/orkun/.nvm/versions/node/v24.15.0/bin
+[CMakeTools] 2026-05-17T13:55:09.500Z [debug] [kit] Found 0 kits in directory /usr/local/sbin
+[CMakeTools] 2026-05-17T13:55:09.500Z [debug] [kit] Found 0 kits in directory /usr/local/bin
+[CMakeTools] 2026-05-17T13:55:09.509Z [debug] [kit] Found 0 kits in directory /sbin
+[CMakeTools] 2026-05-17T13:55:09.509Z [debug] [kit] Found 0 kits in directory /usr/games
+[CMakeTools] 2026-05-17T13:55:09.509Z [debug] [kit] Found 0 kits in directory /usr/local/games
+[CMakeTools] 2026-05-17T13:55:09.509Z [debug] [kit] Found 0 kits in directory /snap/bin
+[CMakeTools] 2026-05-17T13:55:09.509Z [debug] [kit] Found 0 kits in directory /usr/local/go/bin
+[CMakeTools] 2026-05-17T13:55:09.523Z [debug] [kit] Found 0 kits in directory /usr/sbin
+[CMakeTools] 2026-05-17T13:55:09.529Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.530Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.535Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.535Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.539Z [debug] [kit] Testing Clang binary: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.540Z [info] [proc] Executing command: /usr/bin/clang -v
+[CMakeTools] 2026-05-17T13:55:09.543Z [debug] [kit] Testing Clang binary: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.544Z [info] [proc] Executing command: /usr/bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:09.556Z [debug] [kit] Testing GCC binary: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.557Z [info] [proc] Executing command: /usr/bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:09.561Z [debug] [kit] Testing GCC binary: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.562Z [info] [proc] Executing command: /usr/bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.587Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.588Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.592Z [debug] [kit] Testing GCC binary: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.592Z [info] [proc] Executing command: /usr/bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.602Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.603Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.607Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.607Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.614Z [debug] [kit] Testing Clang binary: /bin/clang
+[CMakeTools] 2026-05-17T13:55:09.614Z [info] [proc] Executing command: /bin/clang -v
+[CMakeTools] 2026-05-17T13:55:09.618Z [debug] [kit] Testing Clang binary: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.618Z [info] [proc] Executing command: /bin/clang-14 -v
+[CMakeTools] 2026-05-17T13:55:09.627Z [debug] [kit] Testing GCC binary: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.628Z [info] [proc] Executing command: /bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:09.632Z [debug] [kit] Testing GCC binary: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.632Z [info] [proc] Executing command: /bin/gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.657Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.658Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.661Z [debug] [kit] Testing GCC binary: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.662Z [info] [proc] Executing command: /bin/x86_64-linux-gnu-gcc-11 -v
+[CMakeTools] 2026-05-17T13:55:09.673Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.674Z [debug] [kit] Detected GCC compiler: /bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.675Z [debug] [kit] Detected GCC compiler: /bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.676Z [debug] [kit] Detected GCC compiler: /bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.676Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.677Z [debug] [kit] Detected Clang compiler: /bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.677Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:09.677Z [debug] [kit] Detected Clang compiler: /bin/clang
+[CMakeTools] 2026-05-17T13:55:09.678Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.680Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.681Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc-11
+[CMakeTools] 2026-05-17T13:55:09.682Z [debug] [kit] Detected GCC compiler: /usr/bin/x86_64-linux-gnu-gcc
+[CMakeTools] 2026-05-17T13:55:09.683Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc-11
+[CMakeTools] 2026-05-17T13:55:09.684Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.685Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.685Z [debug] [kit] Detected Clang compiler: /usr/bin/clang-14
+[CMakeTools] 2026-05-17T13:55:09.685Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.685Z [debug] [kit] Detected Clang compiler: /usr/bin/clang
+[CMakeTools] 2026-05-17T13:55:09.686Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.687Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.690Z [debug] [kit] Testing GCC binary: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.691Z [info] [proc] Executing command: /bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.695Z [debug] [kit] Testing GCC binary: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.696Z [info] [proc] Executing command: /bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.699Z [debug] [kit] Testing GCC binary: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.700Z [info] [proc] Executing command: /usr/bin/c99-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.703Z [debug] [kit] Testing GCC binary: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.704Z [info] [proc] Executing command: /usr/bin/c89-gcc -v
+[CMakeTools] 2026-05-17T13:55:09.708Z [debug] [kit] Detected GCC compiler: /usr/bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.710Z [debug] [kit] Detected GCC compiler: /bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.711Z [debug] [kit] Detected GCC compiler: /bin/c99-gcc
+[CMakeTools] 2026-05-17T13:55:09.712Z [debug] [kit] Found 8 kits in directory /bin
+[CMakeTools] 2026-05-17T13:55:09.713Z [debug] [kit] Detected GCC compiler: /usr/bin/c89-gcc
+[CMakeTools] 2026-05-17T13:55:09.714Z [debug] [kit] Found 8 kits in directory /usr/bin
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.714Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [info] [kit] Found Kit (trusted): Clang 14.0.0 x86_64-pc-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [info] [kit] Found Kit (trusted): GCC 11.4.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.715Z [debug] [kitsController] Saving kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.715Z [debug] [kitsController] Saving new kits to /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.717Z [debug] [extension] [5340] cmake.scanForKits finished (returned undefined)
+[CMakeTools] 2026-05-17T13:55:09.718Z [debug] [extension] [8500] cmake.setKitByName started
+[CMakeTools] 2026-05-17T13:55:09.720Z [debug] [main] Injecting new Kit into CMake driver
+[CMakeTools] 2026-05-17T13:55:09.721Z [debug] [extension] [8500] cmake.setKitByName finished (returned undefined)
+[build.test] Selected Kit: GCC 11.3.0 x86_64-linux-gnu
+[qt-test] QT_TEST_QT_ROOT='/home/orkun/Qt'
+[qt-test] QT_VERSION_FOR_TEST='<unset>'
+[qt-test] (ignoring CMAKE_PREFIX_PATH entirely)
+[qt-test] Using Qt 6.9.0 (default-6.9.0)
+[qt-test] leaf='/home/orkun/Qt/6.9.0/gcc_64'
+[qt-test] Qt6_DIR='/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6'
+Running cmake.configure...
+[CMakeTools] 2026-05-17T13:55:09.724Z [debug] [extension] [5568] cmake.configure started
+[CMakeTools] 2026-05-17T13:55:09.726Z [debug] [kit] The environment for kit 'GCC 11.3.0 x86_64-linux-gnu': {
+  "CHROME_DESKTOP": "code.desktop",
+  "COLOR": "0",
+  "COLORTERM": "truecolor",
+  "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+  "DEFAULTS_PATH": "/usr/share/gconf/ubuntu-xorg.default.path",
+  "DESKTOP_SESSION": "ubuntu-xorg",
+  "DISPLAY": ":0",
+  "EDITOR": "vi",
+  "FC_FONTATIONS": "1",
+  "GDK_BACKEND": "x11",
+  "GDMSESSION": "ubuntu-xorg",
+  "GIO_LAUNCHED_DESKTOP_FILE": "/usr/share/applications/code.desktop",
+  "GIO_LAUNCHED_DESKTOP_FILE_PID": "17700",
+  "GIT_ASKPASS": "/usr/share/code/resources/app/extensions/git/dist/askpass.sh",
+  "GJS_DEBUG_OUTPUT": "stderr",
+  "GJS_DEBUG_TOPICS": "JS ERROR;JS LOG",
+  "GNOME_DESKTOP_SESSION_ID": "this-is-deprecated",
+  "GNOME_SHELL_SESSION_MODE": "ubuntu",
+  "GPG_AGENT_INFO": "/run/user/1000/gnupg/S.gpg-agent:0:1",
+  "GTK_IM_MODULE": "ibus",
+  "GTK_MODULES": "gail:atk-bridge",
+  "HOME": "/home/orkun",
+  "INIT_CWD": "/home/orkun/qt_work/vscodeext/qt-cpp",
+  "INVOCATION_ID": "00537a1f7c6c4f09ab36e68f9177d511",
+  "JOURNAL_STREAM": "8:9200",
+  "LANG": "en_US.UTF-8",
+  "LC_ADDRESS": "de_DE.UTF-8",
+  "LC_IDENTIFICATION": "de_DE.UTF-8",
+  "LC_MEASUREMENT": "de_DE.UTF-8",
+  "LC_MONETARY": "de_DE.UTF-8",
+  "LC_NAME": "de_DE.UTF-8",
+  "LC_NUMERIC": "de_DE.UTF-8",
+  "LC_PAPER": "de_DE.UTF-8",
+  "LC_TELEPHONE": "de_DE.UTF-8",
+  "LC_TIME": "de_DE.UTF-8",
+  "LESSCLOSE": "/usr/bin/lesspipe %s %s",
+  "LESSOPEN": "| /usr/bin/lesspipe %s",
+  "LOGNAME": "orkun",
+  "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
+  "MANAGERPID": "1606",
+  "MANDATORY_PATH": "/usr/share/gconf/ubuntu-xorg.mandatory.path",
+  "NODE": "/home/orkun/.nvm/versions/node/v24.15.0/bin/node",
+  "NVM_BIN": "/home/orkun/.nvm/versions/node/v24.15.0/bin",
+  "NVM_DIR": "/home/orkun/.nvm",
+  "NVM_INC": "/home/orkun/.nvm/versions/node/v24.15.0/include/node",
+  "OLDPWD": "/home/orkun/qt_work/vscodeext/qt-cpp",
+  "PATH": "/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin",
+  "PWD": "/home/orkun/qt_work/vscodeext/qt-cpp/out/test",
+  "QT_ACCESSIBILITY": "1",
+  "QT_IM_MODULE": "ibus",
+  "QT_QPA_PLATFORM": "xcb",
+  "QT_TEST_QT_ROOT": "/home/orkun/Qt",
+  "SESSION_MANAGER": "local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866",
+  "SHELL": "/bin/bash",
+  "SHLVL": "2",
+  "SSH_AGENT_LAUNCHER": "gnome-keyring",
+  "SSH_AUTH_SOCK": "/run/user/1000/keyring/ssh",
+  "SYSTEMD_EXEC_PID": "1896",
+  "TERM": "xterm-256color",
+  "TERM_PROGRAM": "vscode",
+  "TERM_PROGRAM_VERSION": "1.120.0",
+  "USER": "orkun",
+  "USERNAME": "orkun",
+  "VSCODE_CRASH_REPORTER_PROCESS_TYPE": "extensionHost",
+  "VSCODE_CWD": "/home/orkun/qt_work/vscodeext/qt-cpp/out/test",
+  "VSCODE_ESM_ENTRYPOINT": "vs/workbench/api/node/extensionHostProcess",
+  "VSCODE_GIT_ASKPASS_MAIN": "/usr/share/code/resources/app/extensions/git/dist/askpass-main.js",
+  "VSCODE_GIT_ASKPASS_NODE": "/usr/share/code/code",
+  "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-ff403d1d21.sock",
+  "VSCODE_HANDLES_UNCAUGHT_ERRORS": "true",
+  "VSCODE_INJECTION": "1",
+  "VSCODE_IPC_HOOK": "/run/user/1000/vscode-25ab7e01-1.12-main.sock",
+  "VSCODE_NLS_CONFIG": "{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}",
+  "VSCODE_NONCE": "2a9b1dc8-464a-4f07-beb2-e0483d104dbc",
+  "VSCODE_PID": "36306",
+  "VSCODE_STABLE": "1",
+  "WINDOWPATH": "2",
+  "XAUTHORITY": "/run/user/1000/gdm/Xauthority",
+  "XDG_CONFIG_DIRS": "/etc/xdg/xdg-ubuntu-xorg:/etc/xdg",
+  "XDG_CURRENT_DESKTOP": "ubuntu:GNOME",
+  "XDG_DATA_DIRS": "/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop",
+  "XDG_MENU_PREFIX": "gnome-",
+  "XDG_RUNTIME_DIR": "/run/user/1000",
+  "XDG_SESSION_CLASS": "user",
+  "XDG_SESSION_DESKTOP": "ubuntu-xorg",
+  "XDG_SESSION_TYPE": "x11",
+  "XMODIFIERS": "@im=ibus",
+  "_": "/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code",
+  "npm_command": "run",
+  "npm_config_cache": "/home/orkun/.npm",
+  "npm_config_global_prefix": "/home/orkun/.nvm/versions/node/v24.15.0",
+  "npm_config_globalconfig": "/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc",
+  "npm_config_init_module": "/home/orkun/.npm-init.js",
+  "npm_config_local_prefix": "/home/orkun/qt_work/vscodeext/qt-cpp",
+  "npm_config_node_gyp": "/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+  "npm_config_npm_version": "11.12.1",
+  "npm_config_prefix": "/home/orkun/.nvm/versions/node/v24.15.0",
+  "npm_config_user_agent": "npm/11.12.1 node/v24.15.0 linux x64 workspaces/false",
+  "npm_config_userconfig": "/home/orkun/.npmrc",
+  "npm_execpath": "/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js",
+  "npm_lifecycle_event": "run-tests",
+  "npm_lifecycle_script": "cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js",
+  "npm_node_execpath": "/home/orkun/.nvm/versions/node/v24.15.0/bin/node",
+  "npm_package_engines_vscode": "^1.94.0",
+  "npm_package_json": "/home/orkun/qt_work/vscodeext/qt-cpp/package.json",
+  "npm_package_name": "qt-cpp",
+  "npm_package_version": "1.15.0",
+  "ELECTRON_RUN_AS_NODE": "1",
+  "VSCODE_L10N_BUNDLE_LOCATION": "",
+  "Qt6_DIR": "/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6"
+}
+[CMakeTools] 2026-05-17T13:55:09.734Z [debug] [main] Starting new CMake driver
+[CMakeTools] 2026-05-17T13:55:09.734Z [debug] [main] Starting CMake driver
+[CMakeTools] 2026-05-17T13:55:09.735Z [debug] [main] Using generator from user configuration: Unix Makefiles
+[CMakeTools] 2026-05-17T13:55:09.735Z [debug] [cmakefileapi-driver] Creating instance of CMakeFileApiDriver
+[CMakeTools] 2026-05-17T13:55:09.736Z [debug] [driver] Initializing base driver using kit
+[CMakeTools] 2026-05-17T13:55:09.736Z [debug] [kit] Testing GCC binary: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.737Z [info] [proc] Executing command: /usr/bin/gcc -v
+[CMakeTools] 2026-05-17T13:55:09.743Z [debug] [kit] Detected GCC compiler: /usr/bin/gcc
+[CMakeTools] 2026-05-17T13:55:09.743Z [debug] [driver] CMakeDriver Kit set to GCC 11.3.0 x86_64-linux-gnu
+[CMakeTools] 2026-05-17T13:55:09.744Z [debug] [kit] The environment for kit 'GCC 11.3.0 x86_64-linux-gnu': {
+  "CHROME_DESKTOP": "code.desktop",
+  "COLOR": "0",
+  "COLORTERM": "truecolor",
+  "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+  "DEFAULTS_PATH": "/usr/share/gconf/ubuntu-xorg.default.path",
+  "DESKTOP_SESSION": "ubuntu-xorg",
+  "DISPLAY": ":0",
+  "EDITOR": "vi",
+  "FC_FONTATIONS": "1",
+  "GDK_BACKEND": "x11",
+  "GDMSESSION": "ubuntu-xorg",
+  "GIO_LAUNCHED_DESKTOP_FILE": "/usr/share/applications/code.desktop",
+  "GIO_LAUNCHED_DESKTOP_FILE_PID": "17700",
+  "GIT_ASKPASS": "/usr/share/code/resources/app/extensions/git/dist/askpass.sh",
+  "GJS_DEBUG_OUTPUT": "stderr",
+  "GJS_DEBUG_TOPICS": "JS ERROR;JS LOG",
+  "GNOME_DESKTOP_SESSION_ID": "this-is-deprecated",
+  "GNOME_SHELL_SESSION_MODE": "ubuntu",
+  "GPG_AGENT_INFO": "/run/user/1000/gnupg/S.gpg-agent:0:1",
+  "GTK_IM_MODULE": "ibus",
+  "GTK_MODULES": "gail:atk-bridge",
+  "HOME": "/home/orkun",
+  "INIT_CWD": "/home/orkun/qt_work/vscodeext/qt-cpp",
+  "INVOCATION_ID": "00537a1f7c6c4f09ab36e68f9177d511",
+  "JOURNAL_STREAM": "8:9200",
+  "LANG": "en_US.UTF-8",
+  "LC_ADDRESS": "de_DE.UTF-8",
+  "LC_IDENTIFICATION": "de_DE.UTF-8",
+  "LC_MEASUREMENT": "de_DE.UTF-8",
+  "LC_MONETARY": "de_DE.UTF-8",
+  "LC_NAME": "de_DE.UTF-8",
+  "LC_NUMERIC": "de_DE.UTF-8",
+  "LC_PAPER": "de_DE.UTF-8",
+  "LC_TELEPHONE": "de_DE.UTF-8",
+  "LC_TIME": "de_DE.UTF-8",
+  "LESSCLOSE": "/usr/bin/lesspipe %s %s",
+  "LESSOPEN": "| /usr/bin/lesspipe %s",
+  "LOGNAME": "orkun",
+  "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
+  "MANAGERPID": "1606",
+  "MANDATORY_PATH": "/usr/share/gconf/ubuntu-xorg.mandatory.path",
+  "NODE": "/home/orkun/.nvm/versions/node/v24.15.0/bin/node",
+  "NVM_BIN": "/home/orkun/.nvm/versions/node/v24.15.0/bin",
+  "NVM_DIR": "/home/orkun/.nvm",
+  "NVM_INC": "/home/orkun/.nvm/versions/node/v24.15.0/include/node",
+  "OLDPWD": "/home/orkun/qt_work/vscodeext/qt-cpp",
+  "PATH": "/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin",
+  "PWD": "/home/orkun/qt_work/vscodeext/qt-cpp/out/test",
+  "QT_ACCESSIBILITY": "1",
+  "QT_IM_MODULE": "ibus",
+  "QT_QPA_PLATFORM": "xcb",
+  "QT_TEST_QT_ROOT": "/home/orkun/Qt",
+  "SESSION_MANAGER": "local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866",
+  "SHELL": "/bin/bash",
+  "SHLVL": "2",
+  "SSH_AGENT_LAUNCHER": "gnome-keyring",
+  "SSH_AUTH_SOCK": "/run/user/1000/keyring/ssh",
+  "SYSTEMD_EXEC_PID": "1896",
+  "TERM": "xterm-256color",
+  "TERM_PROGRAM": "vscode",
+  "TERM_PROGRAM_VERSION": "1.120.0",
+  "USER": "orkun",
+  "USERNAME": "orkun",
+  "VSCODE_CRASH_REPORTER_PROCESS_TYPE": "extensionHost",
+  "VSCODE_CWD": "/home/orkun/qt_work/vscodeext/qt-cpp/out/test",
+  "VSCODE_ESM_ENTRYPOINT": "vs/workbench/api/node/extensionHostProcess",
+  "VSCODE_GIT_ASKPASS_MAIN": "/usr/share/code/resources/app/extensions/git/dist/askpass-main.js",
+  "VSCODE_GIT_ASKPASS_NODE": "/usr/share/code/code",
+  "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-ff403d1d21.sock",
+  "VSCODE_HANDLES_UNCAUGHT_ERRORS": "true",
+  "VSCODE_INJECTION": "1",
+  "VSCODE_IPC_HOOK": "/run/user/1000/vscode-25ab7e01-1.12-main.sock",
+  "VSCODE_NLS_CONFIG": "{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}",
+  "VSCODE_NONCE": "2a9b1dc8-464a-4f07-beb2-e0483d104dbc",
+  "VSCODE_PID": "36306",
+  "VSCODE_STABLE": "1",
+  "WINDOWPATH": "2",
+  "XAUTHORITY": "/run/user/1000/gdm/Xauthority",
+  "XDG_CONFIG_DIRS": "/etc/xdg/xdg-ubuntu-xorg:/etc/xdg",
+  "XDG_CURRENT_DESKTOP": "ubuntu:GNOME",
+  "XDG_DATA_DIRS": "/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop",
+  "XDG_MENU_PREFIX": "gnome-",
+  "XDG_RUNTIME_DIR": "/run/user/1000",
+  "XDG_SESSION_CLASS": "user",
+  "XDG_SESSION_DESKTOP": "ubuntu-xorg",
+  "XDG_SESSION_TYPE": "x11",
+  "XMODIFIERS": "@im=ibus",
+  "_": "/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code",
+  "npm_command": "run",
+  "npm_config_cache": "/home/orkun/.npm",
+  "npm_config_global_prefix": "/home/orkun/.nvm/versions/node/v24.15.0",
+  "npm_config_globalconfig": "/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc",
+  "npm_config_init_module": "/home/orkun/.npm-init.js",
+  "npm_config_local_prefix": "/home/orkun/qt_work/vscodeext/qt-cpp",
+  "npm_config_node_gyp": "/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+  "npm_config_npm_version": "11.12.1",
+  "npm_config_prefix": "/home/orkun/.nvm/versions/node/v24.15.0",
+  "npm_config_user_agent": "npm/11.12.1 node/v24.15.0 linux x64 workspaces/false",
+  "npm_config_userconfig": "/home/orkun/.npmrc",
+  "npm_execpath": "/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js",
+  "npm_lifecycle_event": "run-tests",
+  "npm_lifecycle_script": "cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js",
+  "npm_node_execpath": "/home/orkun/.nvm/versions/node/v24.15.0/bin/node",
+  "npm_package_engines_vscode": "^1.94.0",
+  "npm_package_json": "/home/orkun/qt_work/vscodeext/qt-cpp/package.json",
+  "npm_package_name": "qt-cpp",
+  "npm_package_version": "1.15.0",
+  "ELECTRON_RUN_AS_NODE": "1",
+  "VSCODE_L10N_BUNDLE_LOCATION": "",
+  "Qt6_DIR": "/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6"
+}
+[CMakeTools] 2026-05-17T13:55:09.748Z [debug] [expand] expanded ${workspaceFolder}/build
+[CMakeTools] 2026-05-17T13:55:09.749Z [debug] [driver] Setting new variant Debug
+[CMakeTools] 2026-05-17T13:55:09.751Z [debug] [expand] expanded ${workspaceFolder}/build
+[CMakeTools] 2026-05-17T13:55:09.751Z [info] [main] Configuring project: project 
+[CMakeTools] 2026-05-17T13:55:09.752Z [debug] [main] Saving open files before configure/build
+[CMakeTools] 2026-05-17T13:55:09.752Z [debug] [kit] Reading kits file /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.759Z [info] [kit] Successfully loaded 5 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[CMakeTools] 2026-05-17T13:55:09.805Z [debug] [expand] expanded ${workspaceFolder}/build
+[CMakeTools] 2026-05-17T13:55:09.805Z [debug] [driver] Start configure 
+[CMakeTools] 2026-05-17T13:55:09.805Z [debug] [driver] Running pre-configure checks and steps
+[CMakeTools] 2026-05-17T13:55:09.808Z [debug] [driver] Using compilers in GCC 11.3.0 x86_64-linux-gnu for configure
+[CMakeTools] 2026-05-17T13:55:09.812Z [debug] [expand] expanded ${workspaceFolder}/build
+[CMakeTools] 2026-05-17T13:55:09.814Z [debug] [cmakefileapi-driver] Configuring using kit
+[CMakeTools] 2026-05-17T13:55:09.814Z [debug] [cmakefileapi-driver] Invoking CMake /usr/bin/cmake with arguments ["-DCMAKE_BUILD_TYPE:STRING=Debug","-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE","-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc","-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++","--no-warn-unused-cli","-S","/tmp/qt-cpp-ws-lvf61f/project","-B","/tmp/qt-cpp-ws-lvf61f/project/build","-G","Unix Makefiles"]
+[CMakeTools] 2026-05-17T13:55:09.816Z [info] [proc] Executing command: /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ --no-warn-unused-cli -S /tmp/qt-cpp-ws-lvf61f/project -B /tmp/qt-cpp-ws-lvf61f/project/build -G "Unix Makefiles"
+[CMakeTools] 2026-05-17T13:55:09.816Z [debug] [proc]   with environment: {"CHROME_DESKTOP":"code.desktop","COLOR":"0","COLORTERM":"truecolor","DBUS_SESSION_BUS_ADDRESS":"unix:path=/run/user/1000/bus","DEFAULTS_PATH":"/usr/share/gconf/ubuntu-xorg.default.path","DESKTOP_SESSION":"ubuntu-xorg","DISPLAY":":0","EDITOR":"vi","FC_FONTATIONS":"1","GDK_BACKEND":"x11","GDMSESSION":"ubuntu-xorg","GIO_LAUNCHED_DESKTOP_FILE":"/usr/share/applications/code.desktop","GIO_LAUNCHED_DESKTOP_FILE_PID":"17700","GIT_ASKPASS":"/usr/share/code/resources/app/extensions/git/dist/askpass.sh","GJS_DEBUG_OUTPUT":"stderr","GJS_DEBUG_TOPICS":"JS ERROR;JS LOG","GNOME_DESKTOP_SESSION_ID":"this-is-deprecated","GNOME_SHELL_SESSION_MODE":"ubuntu","GPG_AGENT_INFO":"/run/user/1000/gnupg/S.gpg-agent:0:1","GTK_IM_MODULE":"ibus","GTK_MODULES":"gail:atk-bridge","HOME":"/home/orkun","INIT_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp","INVOCATION_ID":"00537a1f7c6c4f09ab36e68f9177d511","JOURNAL_STREAM":"8:9200","LANG":"en_US.UTF-8","LC_ADDRESS":"de_DE.UTF-8","LC_IDENTIFICATION":"de_DE.UTF-8","LC_MEASUREMENT":"de_DE.UTF-8","LC_MONETARY":"de_DE.UTF-8","LC_NAME":"de_DE.UTF-8","LC_NUMERIC":"de_DE.UTF-8","LC_PAPER":"de_DE.UTF-8","LC_TELEPHONE":"de_DE.UTF-8","LC_TIME":"de_DE.UTF-8","LESSCLOSE":"/usr/bin/lesspipe %s %s","LESSOPEN":"| /usr/bin/lesspipe %s","LOGNAME":"orkun","LS_COLORS":"rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:","MANAGERPID":"1606","MANDATORY_PATH":"/usr/share/gconf/ubuntu-xorg.mandatory.path","NODE":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","NVM_BIN":"/home/orkun/.nvm/versions/node/v24.15.0/bin","NVM_DIR":"/home/orkun/.nvm","NVM_INC":"/home/orkun/.nvm/versions/node/v24.15.0/include/node","OLDPWD":"/home/orkun/qt_work/vscodeext/qt-cpp","PATH":"/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin","PWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","QT_ACCESSIBILITY":"1","QT_IM_MODULE":"ibus","QT_QPA_PLATFORM":"xcb","QT_TEST_QT_ROOT":"/home/orkun/Qt","SESSION_MANAGER":"local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866","SHELL":"/bin/bash","SHLVL":"2","SSH_AGENT_LAUNCHER":"gnome-keyring","SSH_AUTH_SOCK":"/run/user/1000/keyring/ssh","SYSTEMD_EXEC_PID":"1896","TERM":"xterm-256color","TERM_PROGRAM":"vscode","TERM_PROGRAM_VERSION":"1.120.0","USER":"orkun","USERNAME":"orkun","VSCODE_CRASH_REPORTER_PROCESS_TYPE":"extensionHost","VSCODE_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","VSCODE_ESM_ENTRYPOINT":"vs/workbench/api/node/extensionHostProcess","VSCODE_GIT_ASKPASS_MAIN":"/usr/share/code/resources/app/extensions/git/dist/askpass-main.js","VSCODE_GIT_ASKPASS_NODE":"/usr/share/code/code","VSCODE_GIT_IPC_HANDLE":"/run/user/1000/vscode-git-ff403d1d21.sock","VSCODE_HANDLES_UNCAUGHT_ERRORS":"true","VSCODE_INJECTION":"1","VSCODE_IPC_HOOK":"/run/user/1000/vscode-25ab7e01-1.12-main.sock","VSCODE_NLS_CONFIG":"{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}","VSCODE_NONCE":"2a9b1dc8-464a-4f07-beb2-e0483d104dbc","VSCODE_PID":"36306","VSCODE_STABLE":"1","WINDOWPATH":"2","XAUTHORITY":"/run/user/1000/gdm/Xauthority","XDG_CONFIG_DIRS":"/etc/xdg/xdg-ubuntu-xorg:/etc/xdg","XDG_CURRENT_DESKTOP":"ubuntu:GNOME","XDG_DATA_DIRS":"/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop","XDG_MENU_PREFIX":"gnome-","XDG_RUNTIME_DIR":"/run/user/1000","XDG_SESSION_CLASS":"user","XDG_SESSION_DESKTOP":"ubuntu-xorg","XDG_SESSION_TYPE":"x11","XMODIFIERS":"@im=ibus","_":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code","npm_command":"run","npm_config_cache":"/home/orkun/.npm","npm_config_global_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_globalconfig":"/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc","npm_config_init_module":"/home/orkun/.npm-init.js","npm_config_local_prefix":"/home/orkun/qt_work/vscodeext/qt-cpp","npm_config_node_gyp":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js","npm_config_npm_version":"11.12.1","npm_config_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_user_agent":"npm/11.12.1 node/v24.15.0 linux x64 workspaces/false","npm_config_userconfig":"/home/orkun/.npmrc","npm_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js","npm_lifecycle_event":"run-tests","npm_lifecycle_script":"cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js","npm_node_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","npm_package_engines_vscode":"^1.94.0","npm_package_json":"/home/orkun/qt_work/vscodeext/qt-cpp/package.json","npm_package_name":"qt-cpp","npm_package_version":"1.15.0","ELECTRON_RUN_AS_NODE":"1","VSCODE_L10N_BUNDLE_LOCATION":"","Qt6_DIR":"/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6","VSCODE_CMAKE_TOOLS":"1"}
+[CMakeTools] 2026-05-17T13:55:09.825Z [info] [cmake] Not searching for unused variables given on the command line.
+[CMakeTools] 2026-05-17T13:55:09.864Z [debug] [cmake] -- The CXX compiler identification is GNU 11.4.0
+[CMakeTools] 2026-05-17T13:55:09.870Z [debug] [cmake] -- Detecting CXX compiler ABI info
+[CMakeTools] 2026-05-17T13:55:09.923Z [debug] [cmake] -- Detecting CXX compiler ABI info - done
+[CMakeTools] 2026-05-17T13:55:09.929Z [debug] [cmake] -- Check for working CXX compiler: /usr/bin/g++ - skipped
+[CMakeTools] 2026-05-17T13:55:09.929Z [debug] [cmake] -- Detecting CXX compile features
+[CMakeTools] 2026-05-17T13:55:09.929Z [debug] [cmake] -- Detecting CXX compile features - done
+[CMakeTools] 2026-05-17T13:55:09.941Z [info] [cmake] -- Looking for C++ include pthread.h
+[CMakeTools] 2026-05-17T13:55:09.998Z [info] [cmake] -- Looking for C++ include pthread.h - found
+[CMakeTools] 2026-05-17T13:55:09.998Z [info] [cmake] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[CMakeTools] 2026-05-17T13:55:10.058Z [info] [cmake] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[CMakeTools] 2026-05-17T13:55:10.059Z [info] [cmake] -- Found Threads: TRUE  
+[CMakeTools] 2026-05-17T13:55:10.060Z [info] [cmake] -- Performing Test HAVE_STDATOMIC
+[CMakeTools] 2026-05-17T13:55:10.141Z [info] [cmake] -- Performing Test HAVE_STDATOMIC - Success
+[CMakeTools] 2026-05-17T13:55:10.141Z [info] [cmake] -- Found WrapAtomic: TRUE  
+[CMakeTools] 2026-05-17T13:55:10.154Z [info] [cmake] -- Configuring done
+[CMakeTools] 2026-05-17T13:55:10.161Z [info] [cmake] -- Generating done
+[CMakeTools] 2026-05-17T13:55:10.164Z [info] [cmake] -- Build files have been written to: /tmp/qt-cpp-ws-lvf61f/project/build
+[CMakeTools] 2026-05-17T13:55:10.168Z [debug] [cmakefileapi-parser] Read reply folder: /tmp/qt-cpp-ws-lvf61f/project/build/.cmake/api/v1/reply
+[CMakeTools] 2026-05-17T13:55:10.168Z [debug] [cmakefileapi-parser] Found index files: ["cache-v2-409e7b8b9953dc654016.json","cmakeFiles-v1-ee490e624121fa2b48d1.json","codemodel-v2-6da569fdeee916efb510.json","directory-.-Debug-f5ebdc15457944623624.json","index-2026-05-17T13-55-10-0164.json","target-hello-Debug-ef31ef8b9c6afd9f527d.json","target-hello_autogen-Debug-e9571e5bc91d845cd360.json","toolchains-v1-a2904c2398fb9530b017.json"]
+[CMakeTools] 2026-05-17T13:55:10.319Z [debug] [cache] Reading CMake cache file /tmp/qt-cpp-ws-lvf61f/project/build/CMakeCache.txt
+[CMakeTools] 2026-05-17T13:55:10.328Z [debug] [cache] Parsing CMake cache string
+[CMakeTools] 2026-05-17T13:55:10.347Z [debug] [extension] [5568] cmake.configure finished (returned 0)
+[CMakeTools] 2026-05-17T13:55:10.347Z [debug] [extension] [8745] cmake.build started
+[CMakeTools] 2026-05-17T13:55:10.353Z [info] [main] Building folder: /tmp/qt-cpp-ws-lvf61f/project/build 
+[CMakeTools] 2026-05-17T13:55:10.355Z [debug] [main] Saving open files before configure/build
+[CMakeTools] 2026-05-17T13:55:10.362Z [info] [build] Starting build
+[CMakeTools] 2026-05-17T13:55:10.364Z [debug] [driver] Start build all
+[CMakeTools] 2026-05-17T13:55:10.368Z [info] [proc] Executing command: /usr/bin/cmake --build /tmp/qt-cpp-ws-lvf61f/project/build --config Debug --target all -j 8 --
+[CMakeTools] 2026-05-17T13:55:10.369Z [debug] [proc]   with environment: {"CHROME_DESKTOP":"code.desktop","COLOR":"0","COLORTERM":"truecolor","DBUS_SESSION_BUS_ADDRESS":"unix:path=/run/user/1000/bus","DEFAULTS_PATH":"/usr/share/gconf/ubuntu-xorg.default.path","DESKTOP_SESSION":"ubuntu-xorg","DISPLAY":":0","EDITOR":"vi","FC_FONTATIONS":"1","GDK_BACKEND":"x11","GDMSESSION":"ubuntu-xorg","GIO_LAUNCHED_DESKTOP_FILE":"/usr/share/applications/code.desktop","GIO_LAUNCHED_DESKTOP_FILE_PID":"17700","GIT_ASKPASS":"/usr/share/code/resources/app/extensions/git/dist/askpass.sh","GJS_DEBUG_OUTPUT":"stderr","GJS_DEBUG_TOPICS":"JS ERROR;JS LOG","GNOME_DESKTOP_SESSION_ID":"this-is-deprecated","GNOME_SHELL_SESSION_MODE":"ubuntu","GPG_AGENT_INFO":"/run/user/1000/gnupg/S.gpg-agent:0:1","GTK_IM_MODULE":"ibus","GTK_MODULES":"gail:atk-bridge","HOME":"/home/orkun","INIT_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp","INVOCATION_ID":"00537a1f7c6c4f09ab36e68f9177d511","JOURNAL_STREAM":"8:9200","LANG":"en_US.UTF-8","LC_ADDRESS":"de_DE.UTF-8","LC_IDENTIFICATION":"de_DE.UTF-8","LC_MEASUREMENT":"de_DE.UTF-8","LC_MONETARY":"de_DE.UTF-8","LC_NAME":"de_DE.UTF-8","LC_NUMERIC":"de_DE.UTF-8","LC_PAPER":"de_DE.UTF-8","LC_TELEPHONE":"de_DE.UTF-8","LC_TIME":"de_DE.UTF-8","LESSCLOSE":"/usr/bin/lesspipe %s %s","LESSOPEN":"| /usr/bin/lesspipe %s","LOGNAME":"orkun","LS_COLORS":"rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:","MANAGERPID":"1606","MANDATORY_PATH":"/usr/share/gconf/ubuntu-xorg.mandatory.path","NODE":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","NVM_BIN":"/home/orkun/.nvm/versions/node/v24.15.0/bin","NVM_DIR":"/home/orkun/.nvm","NVM_INC":"/home/orkun/.nvm/versions/node/v24.15.0/include/node","OLDPWD":"/home/orkun/qt_work/vscodeext/qt-cpp","PATH":"/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/qt-cpp/node_modules/.bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/qt_work/vscodeext/node_modules/.bin:/home/orkun/qt_work/node_modules/.bin:/home/orkun/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/orkun/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/orkun/.nvm/versions/node/v24.15.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin:/home/orkun/.local/bin:/usr/local/go/bin","PWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","QT_ACCESSIBILITY":"1","QT_IM_MODULE":"ibus","QT_QPA_PLATFORM":"xcb","QT_TEST_QT_ROOT":"/home/orkun/Qt","SESSION_MANAGER":"local/qt:@/tmp/.ICE-unix/1866,unix/qt:/tmp/.ICE-unix/1866","SHELL":"/bin/bash","SHLVL":"2","SSH_AGENT_LAUNCHER":"gnome-keyring","SSH_AUTH_SOCK":"/run/user/1000/keyring/ssh","SYSTEMD_EXEC_PID":"1896","TERM":"xterm-256color","TERM_PROGRAM":"vscode","TERM_PROGRAM_VERSION":"1.120.0","USER":"orkun","USERNAME":"orkun","VSCODE_CRASH_REPORTER_PROCESS_TYPE":"extensionHost","VSCODE_CWD":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test","VSCODE_ESM_ENTRYPOINT":"vs/workbench/api/node/extensionHostProcess","VSCODE_GIT_ASKPASS_MAIN":"/usr/share/code/resources/app/extensions/git/dist/askpass-main.js","VSCODE_GIT_ASKPASS_NODE":"/usr/share/code/code","VSCODE_GIT_IPC_HANDLE":"/run/user/1000/vscode-git-ff403d1d21.sock","VSCODE_HANDLES_UNCAUGHT_ERRORS":"true","VSCODE_INJECTION":"1","VSCODE_IPC_HOOK":"/run/user/1000/vscode-25ab7e01-1.12-main.sock","VSCODE_NLS_CONFIG":"{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}","VSCODE_NONCE":"2a9b1dc8-464a-4f07-beb2-e0483d104dbc","VSCODE_PID":"36306","VSCODE_STABLE":"1","WINDOWPATH":"2","XAUTHORITY":"/run/user/1000/gdm/Xauthority","XDG_CONFIG_DIRS":"/etc/xdg/xdg-ubuntu-xorg:/etc/xdg","XDG_CURRENT_DESKTOP":"ubuntu:GNOME","XDG_DATA_DIRS":"/usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop","XDG_MENU_PREFIX":"gnome-","XDG_RUNTIME_DIR":"/run/user/1000","XDG_SESSION_CLASS":"user","XDG_SESSION_DESKTOP":"ubuntu-xorg","XDG_SESSION_TYPE":"x11","XMODIFIERS":"@im=ibus","_":"/home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/vscode-linux-x64-1.120.0/code","npm_command":"run","npm_config_cache":"/home/orkun/.npm","npm_config_global_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_globalconfig":"/home/orkun/.nvm/versions/node/v24.15.0/etc/npmrc","npm_config_init_module":"/home/orkun/.npm-init.js","npm_config_local_prefix":"/home/orkun/qt_work/vscodeext/qt-cpp","npm_config_node_gyp":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js","npm_config_npm_version":"11.12.1","npm_config_prefix":"/home/orkun/.nvm/versions/node/v24.15.0","npm_config_user_agent":"npm/11.12.1 node/v24.15.0 linux x64 workspaces/false","npm_config_userconfig":"/home/orkun/.npmrc","npm_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/lib/node_modules/npm/bin/npm-cli.js","npm_lifecycle_event":"run-tests","npm_lifecycle_script":"cd ./out/test/ && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.build.js && QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.natvis.js","npm_node_execpath":"/home/orkun/.nvm/versions/node/v24.15.0/bin/node","npm_package_engines_vscode":"^1.94.0","npm_package_json":"/home/orkun/qt_work/vscodeext/qt-cpp/package.json","npm_package_name":"qt-cpp","npm_package_version":"1.15.0","ELECTRON_RUN_AS_NODE":"1","VSCODE_L10N_BUNDLE_LOCATION":"","Qt6_DIR":"/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6","VSCODE_CMAKE_TOOLS":"1","NINJA_STATUS":"[%s/%t %p :: %e] "}
+[CMakeTools] 2026-05-17T13:55:10.404Z [info] [build] [ 25%] Automatic MOC for target hello
+[CMakeTools] 2026-05-17T13:55:10.421Z [info] [build] [ 25%] Built target hello_autogen
+[CMakeTools] 2026-05-17T13:55:10.433Z [info] [build] [ 75%] Building CXX object CMakeFiles/hello.dir/hello_autogen/mocs_compilation.cpp.o
+[CMakeTools] 2026-05-17T13:55:10.433Z [info] [build] [ 75%] Building CXX object CMakeFiles/hello.dir/main.cpp.o
+[CMakeTools] 2026-05-17T13:55:10.571Z [debug] [cache] Reading CMake cache file /tmp/qt-cpp-ws-lvf61f/project/build/CMakeCache.txt
+[CMakeTools] 2026-05-17T13:55:10.576Z [debug] [cache] Parsing CMake cache string
+[CMakeTools] 2026-05-17T13:55:11.430Z [info] [build] [100%] Linking CXX executable hello
+[CMakeTools] 2026-05-17T13:55:11.549Z [info] [build] [100%] Built target hello
+[CMakeTools] 2026-05-17T13:55:11.558Z [info] [driver] Build completed: 00:00:01.194
+[CMakeTools] 2026-05-17T13:55:11.558Z [debug] [cmakefileapi-parser] Read reply folder: /tmp/qt-cpp-ws-lvf61f/project/build/.cmake/api/v1/reply
+[CMakeTools] 2026-05-17T13:55:11.559Z [debug] [cmakefileapi-parser] Found index files: ["cache-v2-409e7b8b9953dc654016.json","cmakeFiles-v1-ee490e624121fa2b48d1.json","codemodel-v2-6da569fdeee916efb510.json","directory-.-Debug-f5ebdc15457944623624.json","index-2026-05-17T13-55-10-0164.json","target-hello-Debug-ef31ef8b9c6afd9f527d.json","target-hello_autogen-Debug-e9571e5bc91d845cd360.json","toolchains-v1-a2904c2398fb9530b017.json"]
+[CMakeTools] 2026-05-17T13:55:11.563Z [debug] [expand] expanded ${workspaceFolder}/build
+[CMakeTools] 2026-05-17T13:55:11.565Z [info] [build] Build finished with exit code 0
+[CMakeTools] 2026-05-17T13:55:11.568Z [debug] [cache] Reading CMake cache file /tmp/qt-cpp-ws-lvf61f/project/build/CMakeCache.txt
+[CMakeTools] 2026-05-17T13:55:11.569Z [debug] [cache] Parsing CMake cache string
+[CMakeTools] 2026-05-17T13:55:11.583Z [debug] [cache] Reading CMake cache file /tmp/qt-cpp-ws-lvf61f/project/build/CMakeCache.txt
+[CMakeTools] 2026-05-17T13:55:11.584Z [debug] [cache] Parsing CMake cache string
+[CMakeTools] 2026-05-17T13:55:11.604Z [debug] [extension] [8745] cmake.build finished (returned 0)
+Checking for binary at /tmp/qt-cpp-ws-lvf61f/project/build/hello
+  [32m  ✔[0m[90m configures and builds a tiny Qt app[0m[31m (2526ms)[0m
+[92m [0m[32m 1 passing[0m[90m (3s)[0m
+[90m[main 2026-05-17T13:55:12.042Z][0m Extension host with pid 36649 exited with code: 0, signal: unknown.
+Exit code:   0
+[runTest] Wrote settings to: /home/orkun/qt_work/vscodeext/qt-cpp/out/test/.vscode-test/user-data/User/settings.json
+[runTest] Using project dir: /home/orkun/qt_work/vscodeext/qt-cpp/test/projectFolderNatvis
+[runTest] Copied project to temp dir: /tmp/qt-cpp-ws-O9RQJK/project
+[90m[main 2026-05-17T13:55:14.356Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-05-17T13:55:14.425Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-05-17T13:55:14.425Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[90m[main 2026-05-17T13:55:14.490Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-05-17T13:55:14.491Z][0m update#setState disabled
+[90m[main 2026-05-17T13:55:14.491Z][0m update#ctor - updates are disabled by the environment
+Started local extension host with pid 37709.
+Loading development extension at /home/orkun/qt_work/vscodeext/qt-cpp
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Settings Sync: Account status changed from uninitialized to unavailable
+[0m[0m
+[natvis.test] platform: linux | arch: x64 | DEBUGINFOD_URLS: <unset>
+[0m  Debugging using Qt debug snippets (Qt: Debug with …)[0m
+[qt-kits] checking files: [ '/home/orkun/.local/share/CMakeTools/cmake-tools-kits.json' ]
+[qt-kits] checking files: [ '/home/orkun/.local/share/CMakeTools/cmake-tools-kits.json' ]
+[qt-kits] loaded 5 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[qt-kits] total kits loaded: 5
+[qt-kits-helper] Selected Qt Kit: Qt-6.9.0-gcc_64-x86_64
+[qt-test] QT_TEST_QT_ROOT='/home/orkun/Qt'
+[qt-test] QT_VERSION_FOR_TEST='<unset>'
+[qt-test] (ignoring CMAKE_PREFIX_PATH entirely)
+[qt-test] Using Qt 6.9.0 (default-6.9.0)
+[qt-test] leaf='/home/orkun/Qt/6.9.0/gcc_64'
+[qt-test] Qt6_DIR='/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6'
+[snippet-test] Running cmake.configure...
+[snippet-test] cmake.configure finished in 1.1s (rc=0)
+[snippet-test] Running cmake.build...
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[snippet-test] cmake.build finished in 5.7s (rc=0)
+Redundant folding ranges request received for: file:///tmp/qt-cpp-ws-O9RQJK/project/main.cpp
+[snippet-test] launching debug: cppdbg | MIMode: gdb | program: /tmp/qt-cpp-ws-O9RQJK/project/build/hello
+[startDebugAndWaitForStop] starting (timeout=60000ms)
+[startDebugAndWaitForStop] +2.9s STOPPED reason=breakpoint threadId=38680
+[startDebugAndWaitForStop] +3.1s breakpoint hit #1 at /tmp/qt-cpp-ws-O9RQJK/project/main.cpp:22
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qMultiHashStringInt (hash mode)
+[natvis.test] Fetched 6 children for containerTypes.qMultiHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 6 children for containerTypes.qMultiHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 6 children for containerTypes.qMultiHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qVariantHash (hash mode)
+  [32m  ✔[0m[90m launches via Qt debug snippet and shows Locals formatted by our NatVis rules (lightweight sanity test)[0m[31m (45615ms)[0m
+[0m  natvis: minimal Qt project debug (index-natvis)[0m
+[qt-kits] checking files: [ '/home/orkun/.local/share/CMakeTools/cmake-tools-kits.json' ]
+[qt-kits] checking files: [ '/home/orkun/.local/share/CMakeTools/cmake-tools-kits.json' ]
+[qt-kits] loaded 5 kits from /home/orkun/.local/share/CMakeTools/cmake-tools-kits.json
+[qt-kits] total kits loaded: 5
+[qt-kits-helper] Selected Qt Kit: Qt-6.9.0-gcc_64-x86_64
+[qt-test] QT_TEST_QT_ROOT='/home/orkun/Qt'
+[qt-test] QT_VERSION_FOR_TEST='<unset>'
+[qt-test] (ignoring CMAKE_PREFIX_PATH entirely)
+[qt-test] Using Qt 6.9.0 (default-6.9.0)
+[qt-test] leaf='/home/orkun/Qt/6.9.0/gcc_64'
+[qt-test] Qt6_DIR='/home/orkun/Qt/6.9.0/gcc_64/lib/cmake/Qt6'
+[natvis.test] Running cmake.configure...
+[natvis.test] cmake.configure finished in 0.6s (rc=0)
+[natvis.test] Running cmake.build...
+[natvis.test] cmake.build finished in 5.2s (rc=0)
+[makeCppDebugConfig] platform: linux | type: cppdbg | MIMode: gdb | miDebuggerPath: gdb | program: /tmp/qt-cpp-ws-O9RQJK/project/build/hello
+[startDebugAndWaitForStop] starting (timeout=60000ms)
+[startDebugAndWaitForStop] +1.5s STOPPED reason=step threadId=39047
+[startDebugAndWaitForStop] +1.5s auto-continuing past 'step' stop
+[startDebugAndWaitForStop] +1.6s STOPPED reason=breakpoint threadId=39047
+[startDebugAndWaitForStop] +1.6s breakpoint hit #1 at /tmp/qt-cpp-ws-O9RQJK/project/main.cpp:22
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qMultiHashStringInt (hash mode)
+[natvis.test] Fetched 6 children for containerTypes.qMultiHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 6 children for containerTypes.qMultiHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 6 children for containerTypes.qMultiHashStringInt.[Raw View] (hash mode)
+[natvis.test] Fetched 3 children for containerTypes.qVariantHash (hash mode)
+  [32m  ✔[0m[90m reaches the breakpoint after configure+build and shows Locals formatted by our NatVis rules[0m[31m (43328ms)[0m
+[92m [0m[32m 2 passing[0m[90m (1m)[0m
+[90m[main 2026-05-17T13:56:48.382Z][0m Extension host with pid 37709 exited with code: 0, signal: unknown.
+Exit code:   0
+
+✓ qt-cpp tests passed
+
