@@ -37,6 +37,11 @@ import {
   type QtAccountAuthenticationProvider
 } from '@/auth-provider';
 import { showLicenseAgreementPanel } from '@/license-panel';
+import {
+  getInstalledPackages,
+  isVersionInstalledOnDisk,
+  markPackageInstalled
+} from '@/installed-packages-store';
 
 const logger = createLogger('commands');
 
@@ -183,9 +188,37 @@ export async function searchPackages(): Promise<void> {
       return;
     }
 
+    // Build installed set from service + local store
+    const installedKeys = new Set<string>();
+    const installedList = await packages.listInstalledPackages(
+      undefined,
+      undefined,
+      {
+        onMessage: (info) => {
+          logger.info(`searchPackages.listInstalled: ${info.message}`);
+        },
+        onPrompt: handleUserPrompt
+      }
+    );
+    for (const pkg of installedList) {
+      installedKeys.add(`${pkg.id}@${pkg.version}`);
+    }
+    for (const pkg of results) {
+      if (pkg.installState === InstallState.Installed) {
+        installedKeys.add(`${pkg.id}@${pkg.version}`);
+      }
+    }
+    for (const entry of getInstalledPackages()) {
+      installedKeys.add(`${entry.id}@${entry.version}`);
+    }
+
+    const isInstalled = (pkg: PackageData) =>
+      installedKeys.has(`${pkg.id}@${pkg.version}`) ||
+      isVersionInstalledOnDisk(pkg.version);
+
     const items = results.map((pkg: PackageData) => ({
       label: pkg.name || pkg.id,
-      description: `${pkg.version} — ${installStateLabel(pkg.installState)}`,
+      description: `${pkg.version} — ${isInstalled(pkg) ? '$(check) Installed' : installStateLabel(pkg.installState)}`,
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
       pkg
     }));
@@ -197,6 +230,7 @@ export async function searchPackages(): Promise<void> {
     });
 
     if (selected) {
+      const installed = isInstalled(selected.pkg);
       const info = [
         `**${selected.pkg.name || selected.pkg.id}** v${selected.pkg.version}`,
         '',
@@ -208,7 +242,7 @@ export async function searchPackages(): Promise<void> {
         `- **Product ID:** ${selected.pkg.productId}`,
         `- **Product Version:** ${selected.pkg.productVersion}`,
         `- **Size:** ${formatSize(selected.pkg.uncompressedSize)}`,
-        `- **Status:** ${installStateLabel(selected.pkg.installState)}`
+        `- **Status:** ${installed ? 'Installed' : installStateLabel(selected.pkg.installState)}`
       ].join('\n');
 
       logger.info(`Package details:\n${info.replace(/\n/g, '\n> ')}`);
@@ -216,9 +250,7 @@ export async function searchPackages(): Promise<void> {
       const action = await vscode.window.showInformationMessage(
         info,
         { modal: true },
-        ...(selected.pkg.installState === InstallState.Uninstalled
-          ? ['Install']
-          : [])
+        ...(!installed ? ['Install'] : [])
       );
 
       if (action === 'Install') {
@@ -264,6 +296,31 @@ export async function listInstalledPackages(): Promise<void> {
   });
 }
 
+export async function syncInstalledPackages(): Promise<void> {
+  try {
+    const session = await ensureConnected();
+    const packages = new Packages(session);
+    const results = await packages.listInstalledPackages(undefined, undefined, {
+      onMessage: (info) => {
+        logger.info(`syncInstalledPackages: ${info.message}`);
+      },
+      onPrompt: handleUserPrompt
+    });
+    if (results.length > 0) {
+      // Merge service results with existing local state (don't discard local entries)
+      for (const pkg of results) {
+        await markPackageInstalled(pkg.id, pkg.version);
+      }
+    }
+    logger.info(
+      `Synced ${String(results.length)} installed package(s) to local store`
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Failed to sync installed packages: ${msg}`);
+  }
+}
+
 async function requireLogin(): Promise<boolean> {
   const sessions = await authProviderInstance?.getSessions();
   if (sessions && sessions.length > 0) {
@@ -304,9 +361,37 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
         )
     );
 
-    let candidates = results.filter(
-      (pkg: PackageData) => pkg.installState === InstallState.Uninstalled
+    let candidates = [...results];
+
+    // Query installed packages from the service and update local store
+    const installedList = await packages.listInstalledPackages(
+      undefined,
+      undefined,
+      {
+        onMessage: (info) => {
+          logger.info(`installPackage.listInstalled: ${info.message}`);
+        },
+        onPrompt: handleUserPrompt
+      }
     );
+
+    // Build a set of installed package keys for fast lookup
+    const installedKeys = new Set<string>();
+    for (const pkg of installedList) {
+      installedKeys.add(`${pkg.id}@${pkg.version}`);
+      await markPackageInstalled(pkg.id, pkg.version);
+    }
+    // Also mark packages the backend reports as installed
+    for (const pkg of candidates) {
+      if (pkg.installState === InstallState.Installed) {
+        installedKeys.add(`${pkg.id}@${pkg.version}`);
+        await markPackageInstalled(pkg.id, pkg.version);
+      }
+    }
+    // Also include anything already in globalState
+    for (const entry of getInstalledPackages()) {
+      installedKeys.add(`${entry.id}@${entry.version}`);
+    }
 
     if (args?.regex) {
       const re = new RegExp(args.regex, 'i');
@@ -322,8 +407,14 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       return;
     }
 
+    const uninstalledCandidates = candidates.filter(
+      (pkg: PackageData) =>
+        !installedKeys.has(`${pkg.id}@${pkg.version}`) &&
+        !isVersionInstalledOnDisk(pkg.version)
+    );
+
     if (args?.version === 'latest') {
-      const sorted = [...candidates].sort((a, b) =>
+      const sorted = [...uninstalledCandidates].sort((a, b) =>
         b.version.localeCompare(a.version, undefined, {
           numeric: true,
           sensitivity: 'base'
@@ -337,7 +428,7 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     }
 
     if (args?.version && args.version !== 'latest') {
-      const match = candidates.find(
+      const match = uninstalledCandidates.find(
         (pkg: PackageData) => pkg.version === args.version
       );
       if (match) {
@@ -350,7 +441,14 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       return;
     }
 
-    const items = candidates.map((pkg: PackageData) => ({
+    if (uninstalledCandidates.length === 0) {
+      void vscode.window.showInformationMessage(
+        'No packages available for installation.'
+      );
+      return;
+    }
+
+    const items = uninstalledCandidates.map((pkg: PackageData) => ({
       label: pkg.name || pkg.id,
       description: pkg.version,
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
@@ -661,6 +759,7 @@ async function installPackageById(
     .then(() => {
       endDownloadPhase?.();
       endInstallPhase?.();
+      void markPackageInstalled(pkg.id, pkg.version);
       void vscode.window.showInformationMessage(
         `Successfully installed ${pkg.name || pkg.id}`
       );
