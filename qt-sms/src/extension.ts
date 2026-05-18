@@ -20,11 +20,16 @@ import {
   login,
   logout,
   setExtensionContext,
-  setAuthProvider
+  setAuthProvider,
+  syncInstalledPackages
 } from '@/commands';
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
 import { AccountViewProvider } from '@/account-view';
+import {
+  initInstalledPackagesStore,
+  scanInstallationPath
+} from '@/installed-packages-store';
 
 const logger = createLogger('extension');
 
@@ -36,6 +41,8 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
 
   setExtensionContext(context);
+  initInstalledPackagesStore(context);
+  scanInstallationPath();
 
   coreAPI = await getCoreApi();
   if (!coreAPI) {
@@ -70,6 +77,7 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.info(`Already logged in as ${sessions[0].account.label}`);
     setLoggedIn(true);
     accountViewProvider.setSession(sessions[0]);
+    void syncInstalledPackages();
   } else {
     logger.info('No active session, attempting to renew stored credentials');
     const renewed = await authProvider.tryRenewSession();
@@ -78,6 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
       setLoggedIn(true);
       const renewedSessions = await authProvider.getSessions();
       accountViewProvider.setSession(renewedSessions[0]);
+      void syncInstalledPackages();
     } else {
       logger.info('No stored credentials found, user is not logged in');
       setLoggedIn(false);
@@ -92,6 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
         setLoggedIn(true);
         const currentSessions = await authProvider.getSessions();
         accountViewProvider.setSession(currentSessions[0]);
+        void syncInstalledPackages();
       } else if (e.removed && e.removed.length > 0) {
         setLoggedIn(false);
         accountViewProvider.setSession(undefined);
