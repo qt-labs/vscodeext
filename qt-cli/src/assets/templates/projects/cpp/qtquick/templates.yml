@@ -13,6 +13,12 @@ files:
   - in: Main.qml
   - in: main.cpp
 
+  - in: '{{ .importdir }}/README.md'
+    out: '{{ .importdir }}/README.md'
+
   - in: '@/common/git.ignore'
     out: .gitignore
     bypass: true
+
+fields:
+  - importdir: importedcontent

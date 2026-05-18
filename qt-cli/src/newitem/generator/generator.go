@@ -189,9 +189,9 @@ func (g *Generator) runNames() (ResultData, error) {
 			continue
 		}
 
-		inputRel := g.createInputFileRel(file)
-		outputRel, err := g.createOutputFileRel(file)
-		if err != nil {
+		inputRel, errIn := g.createInputFileRel(file)
+		outputRel, errOut := g.createOutputFileRel(file)
+		if errIn != nil || errOut != nil {
 			return ResultData{}, err
 		}
 
@@ -267,12 +267,26 @@ func (g *Generator) runContents(result ResultItem) error {
 	return nil
 }
 
-func (g *Generator) createInputFileRel(file preset.TemplateItem) string {
+func (g *Generator) createInputFileRel(file preset.TemplateItem) (string, error) {
+	var in string
+
 	if strings.HasPrefix(file.In, "@/") {
-		return file.In[2:]
+		in = file.In[2:]
+	} else {
+		in = path.Join(g.preset.GetTemplateDir(), file.In)
 	}
 
-	return path.Join(g.preset.GetTemplateDir(), file.In)
+	expanded, err := utils.NewTemplateExpander().
+		Name(file.In).
+		Data(g.context.data).
+		Funcs(g.context.funcs).
+		RunString(in)
+
+	if err != nil {
+		return expanded, err
+	}
+
+	return expanded, nil
 }
 
 func (g *Generator) createOutputFileRel(
