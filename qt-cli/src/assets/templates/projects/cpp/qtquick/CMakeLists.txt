@@ -12,6 +12,12 @@ find_package(Qt6 {{ .minimumQtVersion }} REQUIRED COMPONENTS Quick)
 {{ if ge $mininumQtVersionFloat 6.5 }}
 qt_standard_project_setup(REQUIRES {{ .minimumQtVersion }})
 {{ end }}
+
+# Content of downloaded design from Figma to Qt or similar
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/{{ .importdir }}/CMakeLists.txt")
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/{{ .importdir }})
+endif()
+
 qt_add_executable({{ $target }}
     main.cpp
 )
