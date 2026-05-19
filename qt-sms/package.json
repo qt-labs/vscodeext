@@ -165,7 +165,7 @@
         },
         "qt-sms.installationPath": {
           "type": "string",
-          "default": "~/Qt_sm_alpha",
+          "default": "~/QtAlpha",
           "description": "Default installation path for Qt packages",
           "scope": "machine"
         },
