@@ -4,6 +4,7 @@
 export interface Preset {
   id: string;
   name: string;
+  template: string;
   meta: PresetMeta;
   prompt?: PresetPrompt;
 }
@@ -49,6 +50,9 @@ export class PresetWrapper {
   }
   get name() {
     return this._raw?.name ?? '';
+  }
+  get template() {
+    return this._raw?.template ?? '';
   }
   get title() {
     return this._raw?.meta.title;
@@ -96,6 +100,7 @@ export function isPreset(x: unknown): x is Preset {
   if (
     typeof obj.id !== 'string' ||
     typeof obj.name !== 'string' ||
+    typeof obj.template !== 'string' ||
     typeof obj.meta !== 'object' ||
     obj.meta === null
   ) {
