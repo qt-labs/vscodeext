@@ -294,10 +294,12 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
           name: input.states.name,
           workingDir: input.states.workingDir,
           presetId: data.selected.preset?.id,
+          template: data.selected.preset?.template,
           options: $state.snapshot(ui.unsavedOptionChanges),
           saveProjectDir: input.states.saveProjectDir,
           openIn: input.states.openIn
         });
+
       } catch (e) {
         reportUiError('Cannot create item', e);
       }

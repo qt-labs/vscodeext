@@ -14,18 +14,20 @@ import (
 
 // presets
 type PresetsResponseItem struct {
-	Id   string              `json:"id"`
-	Name string              `json:"name"`
-	Meta preset.TemplateMeta `json:"meta"`
+	Id          string              `json:"id"`
+	Name        string              `json:"name"`
+	TemplateDir string              `json:"template"`
+	Meta        preset.TemplateMeta `json:"meta"`
 }
 
 type PresetsResponse []PresetsResponseItem
 
 type PresetDetailResponse struct {
-	Id     string                     `json:"id"`
-	Name   string                     `json:"name"`
-	Meta   preset.TemplateMeta        `json:"meta"`
-	Prompt *preset.PromptFileContents `json:"prompt,omitempty"`
+	Id          string                     `json:"id"`
+	Name        string                     `json:"name"`
+	TemplateDir string                     `json:"template"`
+	Meta        preset.TemplateMeta        `json:"meta"`
+	Prompt      *preset.PromptFileContents `json:"prompt,omitempty"`
 }
 
 func GetPresetsByNameOrType(c *gin.Context) {
@@ -61,9 +63,10 @@ func GetPresetsByNameOrType(c *gin.Context) {
 		}
 
 		res = append(res, PresetsResponseItem{
-			Id:   p.GetUniqueId(),
-			Name: p.GetName(),
-			Meta: template.GetMeta(),
+			Id:          p.GetUniqueId(),
+			Name:        p.GetName(),
+			TemplateDir: p.GetTemplateDir(),
+			Meta:        template.GetMeta(),
 		})
 	}
 
@@ -103,10 +106,11 @@ func getPresetBy(c *gin.Context, value, by string) {
 	}
 
 	rest.ReplyGet(c, PresetDetailResponse{
-		Id:     p.GetUniqueId(),
-		Name:   p.GetName(),
-		Meta:   template.GetMeta(),
-		Prompt: prompt,
+		Id:          p.GetUniqueId(),
+		Name:        p.GetName(),
+		TemplateDir: p.GetTemplateDir(),
+		Meta:        template.GetMeta(),
+		Prompt:      prompt,
 	})
 }
 

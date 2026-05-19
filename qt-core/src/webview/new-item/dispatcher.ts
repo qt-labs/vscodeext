@@ -5,7 +5,7 @@ import _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
+import { createLogger, telemetry } from 'qt-lib';
 import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
@@ -114,6 +114,11 @@ export class NewItemDispatcher {
         const globalState = new GlobalStateManager(this._context);
         await globalState.setNewProjectOpenIn(openIn);
       }
+
+      telemetry.sendEvent('Wizard:createItem', {
+        type,
+        template: String(_.get(cmd.payload, 'template', '')).trim()
+      });
 
       this._panel?.close();
     } catch (e) {
