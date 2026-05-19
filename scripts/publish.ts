@@ -23,24 +23,6 @@ function extractAndPlaceQtCli(qtcorePath: string, zipPath: string) {
     // https://github.com/ZJONSSON/node-unzipper/issues/216
     console.log(`Extracting "${zipPath}" to "${outputDir}"`);
     execSync(`unzip -o ${zipPath} -d ${outputDir}`, { stdio: 'inherit' });
-    // Move contents of 'extracted' folder up one level if it exists
-    const extractedDir = path.join(outputDir, 'extracted');
-    if (fs.existsSync(extractedDir)) {
-      console.log(`Moving contents of "${extractedDir}" to "${outputDir}"`);
-      const entries = fs.readdirSync(extractedDir, { withFileTypes: true });
-      for (const entry of entries) {
-        const src = path.join(extractedDir, entry.name);
-        const dest = path.join(outputDir, entry.name);
-        fs.renameSync(src, dest);
-      }
-      fs.rmSync(extractedDir, { recursive: true });
-    }
-    // print the contents of outputDir for verification
-    console.log(`Contents of "${outputDir}":`);
-    const finalEntries = fs.readdirSync(outputDir, { withFileTypes: true });
-    for (const entry of finalEntries) {
-      console.log(`- ${path.join(outputDir, entry.name)}`);
-    }
     // chmod 755 to all files in the outputDir
     console.log(`Setting permissions for files in "${outputDir}"`);
     const setPermissions = (dir: string) => {
