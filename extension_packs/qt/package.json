@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
   },
-  "version": "1.3.0",
+  "version": "1.4.0",
   "engines": {
     "vscode": "^1.94.0"
   },

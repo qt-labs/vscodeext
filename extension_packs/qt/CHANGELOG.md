@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.4.0
+
+- Update logo
+
 ## 1.3.0
 
 - Fix the version problem and override the `1.2.0` version.

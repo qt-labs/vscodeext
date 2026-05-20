@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.0
+
+- Update logo
+
 ## 1.0.2
 
 - Removed the `twxs.cmake` extension from the extension pack.
