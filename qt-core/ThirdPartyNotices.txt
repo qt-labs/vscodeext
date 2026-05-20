@@ -1154,7 +1154,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-ts-utils 0.15.0 - MIT
+ts-utils 0.12.5 - MIT
 https://github.com/nevware21/ts-utils#readme
 
 MIT License
@@ -2338,7 +2338,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-form-data 4.0.6 - MIT
+form-data 4.0.5 - MIT
 https://github.com/form-data/form-data#readme
 
 Copyright (c) 2012 Felix Geisendörfer (felix@debuggable.com) and contributors
@@ -2567,7 +2567,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-hasown 2.0.4 - MIT
+hasown 2.0.2 - MIT
 https://github.com/inspect-js/hasOwn#readme
 
 MIT License

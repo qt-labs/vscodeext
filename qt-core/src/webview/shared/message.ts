@@ -54,6 +54,10 @@ export enum CommandId {
   WelcomeHandleConfig,
   WelcomeRunAction,
 
+  // UI file
+  UiFileOpenInDesigner,
+  UiFileOpenInTextEditor,
+
   // common
   CommonOpenFolder,
   CommonVscodeThemeChanged

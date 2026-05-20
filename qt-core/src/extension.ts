@@ -9,6 +9,7 @@ import {
   CoreKey,
   initLogger,
   telemetry,
+  getLogOutputChannel,
   createColorProvider
 } from 'qt-lib';
 import { CoreAPIImpl } from '@/api';
@@ -21,7 +22,7 @@ import {
   registerRegisterQtByPathCommand,
   registerRegisterQtCommand
 } from '@/installation-root';
-import { EXTENSION_ID } from '@/constants';
+import * as consts from '@/constants';
 import { createCoreProject, CoreProjectManager } from '@/project';
 import {
   registerOpenSettingsCommand,
@@ -39,8 +40,10 @@ import {
 } from '@/webview/welcome/controller';
 import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
+import { registerUiFileEditorProvider } from '@/webview/ui-file/editor-provider';
 import { registerQmlTraceProvider } from '@/webview/qml-trace/editor-provider';
 import { registerOpenInLinguistCommand } from '@/translation';
+import { registerUiDesignerCommands } from './ui-designer/commands';
 
 const logger = createLogger('extension');
 
@@ -48,7 +51,7 @@ export let coreAPI: CoreAPIImpl | undefined;
 export let projectManager: CoreProjectManager;
 
 export async function activate(context: vscode.ExtensionContext) {
-  initLogger(EXTENSION_ID);
+  initLogger(consts.EXTENSION_ID);
   telemetry.activate(context);
   logger.info(`Activating ${context.extension.id}`);
   projectManager = new CoreProjectManager(context);
@@ -77,11 +80,18 @@ export async function activate(context: vscode.ExtensionContext) {
     registerWelcomePageSerializer(context),
     registerCreateNewItemPanelCommand(context),
     vscode.languages.registerColorProvider('qss', createColorProvider()),
-    reportIssueCommand()
+    reportIssueCommand(),
+    vscode.commands.registerCommand(
+      `${consts.EXTENSION_ID}.${consts.COMMAND_SHOW_LOG}`,
+      onShowLog
+    )
   );
 
   registerQrcEditorProvider(context);
   registerQmlTraceProvider(context);
+  registerUiFileEditorProvider(context);
+  registerUiDesignerCommands(context);
+
   await enableQtTsFileSupport(context);
 
   telemetry.sendEvent(`activated`);
@@ -98,7 +108,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  logger.info(`Deactivating ${EXTENSION_ID}`);
+  logger.info(`Deactivating ${consts.EXTENSION_ID}`);
   telemetry.dispose();
   projectManager.dispose();
 }
@@ -125,6 +135,7 @@ export function initCoreValues() {
 
   for (const project of projectManager.getProjects()) {
     project.initConfigValues();
+    project.getUiDesignerSession().init();
   }
 }
 
@@ -161,4 +172,8 @@ async function enableQtTsFileSupport(context: vscode.ExtensionContext) {
     vscode.workspace.onDidOpenTextDocument(checker),
     vscode.workspace.onDidSaveTextDocument(checker)
   );
+}
+
+function onShowLog() {
+  getLogOutputChannel()?.show();
 }

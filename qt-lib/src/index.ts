@@ -1,4 +1,5 @@
 export * from './logger';
+export * from './logger-wrapper';
 export * from './project';
 export * from './util';
 export * from './core-api';

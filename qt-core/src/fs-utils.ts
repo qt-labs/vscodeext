@@ -181,6 +181,10 @@ class FileWrapper {
     return vscode.env.openExternal(this.toUri());
   }
 
+  public revealInFileManager() {
+    return vscode.commands.executeCommand('revealFileInOS', this.toUri());
+  }
+
   public openInSimpleBrowser(viewColumn?: vscode.ViewColumn) {
     return vscode.commands.executeCommand(
       'simpleBrowser.api.open',

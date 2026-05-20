@@ -331,3 +331,11 @@ export const welcome = {
   checkShowOnActivation: 'Show welcome page on activation',
   emptyData: 'No data available'
 }
+
+
+export const uiFile = {
+  buttons: {
+    openDesigner: 'Open with Qt Widgets Designer',
+    openAsText: 'Open as text'
+  },
+}

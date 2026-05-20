@@ -26,19 +26,21 @@
     "Qml",
     "Qrc",
     "Qss",
-    "Qdoc"
+    "Qdoc",
+    "ui"
   ],
   "qna": "marketplace",
   "pricing": "Free",
   "activationEvents": [
-    "workspaceContains:**/*.qrc",
-    "onWebviewPanel:ViewTypeWelcomePage"
+    "onWebviewPanel:ViewTypeWelcomePage",
+    "workspaceContains:**/*.ui",
+    "workspaceContains:**/*.qrc"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "configurationDefaults": {
       "workbench.editorAssociations": {
-        "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc": "default"
+        "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.{qrc,ui}": "default"
       }
     },
     "commands": [
@@ -111,6 +113,11 @@
         "command": "qt-core.openWelcomePage",
         "title": "%qt-core.command.openWelcomePage.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.openInWidgetsDesigner",
+        "title": "%qt-core.command.openInWidgetsDesigner.title%",
+        "category": "Qt"
       }
     ],
     "customEditors": [
@@ -131,6 +138,16 @@
         "selector": [
           {
             "filenamePattern": "*.{qtd,qzt}"
+          }
+        ]
+      },
+      {
+        "viewType": "qt-core.uiFile",
+        "displayName": "Qt UI",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.ui"
           }
         ]
       }
@@ -225,6 +242,20 @@
           "light": "res/icons/qzt-light.svg",
           "dark": "res/icons/qzt-dark.svg"
         }
+      },
+      {
+        "id": "ui",
+        "configuration": "./res/lang/ui/language-configuration.json",
+        "extensions": [
+          ".ui"
+        ],
+        "aliases": [
+          "ui"
+        ],
+        "icon": {
+          "light": "res/icons/ui-light.svg",
+          "dark": "res/icons/ui-dark.svg"
+        }
       }
     ],
     "grammars": [
@@ -252,6 +283,11 @@
         "language": "qtd",
         "scopeName": "source.qtd",
         "path": "./res/lang/qtd/qtd.tmLanguage.json"
+      },
+      {
+        "language": "ui",
+        "scopeName": "source.ui",
+        "path": "./res/lang/ui/ui.tmLanguage.json"
       }
     ],
     "configuration": {
@@ -311,6 +347,12 @@
           "default": true,
           "description": "Show welcome page when the extension gets activated",
           "scope": "machine-overridable"
+        },
+        "qt-core.customWidgetsDesignerExePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the custom Qt Widgets Designer executable path",
+          "scope": "machine-overridable"
         }
       }
     },
@@ -320,6 +362,21 @@
           "command": "qt-core.openInLinguist",
           "when": "editorLangId == qt-ts",
           "group": "navigation"
+        },
+        {
+          "command": "qt-core.openInWidgetsDesigner",
+          "when": "editorLangId == ui",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "qt-core.openInLinguist",
+          "when": "editorLangId == qt-ts"
+        },
+        {
+          "command": "qt-core.openInWidgetsDesigner",
+          "when": "editorLangId == ui"
         }
       ]
     }
