@@ -33,13 +33,13 @@
     \endlist
 
     If the build directory is outside the workspace, select
-    \uicontrol {Qt: Open Qt Extension settings} > \uicontrol {Qt Qml Configuration}
+    \uicontrol {Qt: Open Qt Extension settings} > \uicontrol {Qt QML Configuration}
     to set it in \uicontrol {Preview: Additional Build Dirs}. This tells \QVSC
     where to look for QRC files during QML preview.
 
     To pass command-line arguments to the application when you start it from the
     command palette, set them in \uicontrol {Qt: Open Qt Extension settings} >
-    \uicontrol {Qt Qml Configuration} > \uicontrol {Preview: Args}.
+    \uicontrol {Qt QML Configuration} > \uicontrol {Preview: Args}.
 
     \section1 Preview a single file
 

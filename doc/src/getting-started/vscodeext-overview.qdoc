@@ -32,7 +32,7 @@
 
     \section1 Qt Quick development
 
-    With the Qt Qml extension, you can:
+    With the Qt QML extension, you can:
 
     \list
         \li Get QML syntax highlighting and code completion with
