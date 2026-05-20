@@ -1,4 +1,4 @@
-# Qt Qml Extension for VS Code
+# Qt QML Extension for VS Code
 
 This extension provides you with QML syntax highlighting and code completion when
 you develop Qt Quick applications with Visual Studio Code.

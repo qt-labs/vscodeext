@@ -21,7 +21,7 @@
     \list 1
         \li Go to \uicontrol {Command Palette}, and select
             \uicontrol {Qt: Open Qt Extension settings}.
-        \li Go to \uicontrol {Qt Qml Configuration}, and select
+        \li Go to \uicontrol {Qt QML Configuration}, and select
             \uicontrol {Run \QMLLS when activating an extension}.
             \image {vscodeext-qt-settings-qml.webp} {Qt QML Configuration}
     \endlist
@@ -39,18 +39,18 @@
     \uicontrol {Qt: Download the most recent \QMLLS language server}.
 
     To turn off the notification about downloading \QMLLS, go to
-    \uicontrol {Qt Qml Configuration} and select
+    \uicontrol {Qt QML Configuration} and select
     \uicontrol {Do Not Ask for Qmlls Download}.
 
     \section1 Set \QMLLS location
 
     To use \QMLLS when you develop with an older Qt version than Qt 6.8.0, go to
-    \uicontrol {Qt Qml Configuration} and set the path to \QMLLS from Qt 6.8.0
+    \uicontrol {Qt QML Configuration} and set the path to \QMLLS from Qt 6.8.0
     or later in \uicontrol {Custom Exe Path}.
 
     \section1 Configure \QMLLS output
 
-    To collect trace output from \QMLLS, go to \uicontrol {Qt Qml Configuration}
+    To collect trace output from \QMLLS, go to \uicontrol {Qt QML Configuration}
     and select an option in \uicontrol {Handle LSP trace}.
 
     To show verbose output from \QMLLS, select \uicontrol {Verbose Output}.
@@ -59,7 +59,7 @@
 
     To look for QML modules in the specified folders and use the \c {-I}
     option to add import statements for them when you start \QMLLS, go to
-    \uicontrol {Qt Qml Configuration} and select \uicontrol {Add Item} in
+    \uicontrol {Qt QML Configuration} and select \uicontrol {Add Item} in
     \uicontrol {Additional Import Paths}.
 
     To use the \c {QML_IMPORT_PATH} and \c {-E} options to look for QML modules

@@ -1,7 +1,7 @@
 {
   "name": "qt-qml",
-  "displayName": "Qt Qml",
-  "description": "Qt Qml Support",
+  "displayName": "Qt QML",
+  "description": "Qt QML Support",
   "version": "1.17.0",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
@@ -222,7 +222,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "Qt Qml Configuration",
+      "title": "Qt QML Configuration",
       "properties": {
         "qt-qml.qmlls.enabled": {
           "type": "boolean",
