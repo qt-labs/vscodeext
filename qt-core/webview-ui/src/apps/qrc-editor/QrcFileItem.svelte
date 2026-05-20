@@ -4,12 +4,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { TriangleAlert } from '@lucide/svelte';
+  import { TriangleAlert, Ellipsis } from '@lucide/svelte';
 
   import * as texts from '@/apps/texts';
   import { data, ui } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
   import { FileNodeWrapper } from './types.svelte';
+  import QrcFileItemMenu from './QrcFileItemMenu.svelte';
   import QrcFileItemThumbnail from './QrcFileItemThumbnail.svelte';
 
   let {
@@ -23,13 +24,18 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   let exists = $derived.by(() => loaded?.exists ?? false);
   let okay = $derived.by(() => (exists || (!exists && file.empty)));
   let current = $derived.by(() => ui.cursor.currentPos.equals(file.pos));
+
+  let menuOpened = $state(false);
 </script>
 
-<button
+<div
   {id}
-  class={`w-full qt-item${current ? '-selected' : ''} !p-0 relative`}
+  role='button'
+  tabindex={0}
+  class={`w-full qt-item${current ? '-selected' : ''} !p-0 relative group`}
   onclick={() => ui.cursor.moveToPos(file.pos)}
   ondblclick={() => viewlogic.runVscodeUiAction('openFile')}
+  onkeydown={() => {}}
 >
   {#if file.highlighted}
     <div class="absolute w-full h-full top-0 left-0
@@ -74,5 +80,23 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         </div>
       {/if}
     {/if}
+
+    <div class='grow'></div>
+    <div class='mr-2 hidden group-hover:block'>
+      <Ellipsis
+        class='qt-button-contentOnly'
+        onclick={() => {
+          menuOpened = true;
+        }}
+      />
+      {#if menuOpened}
+        <QrcFileItemMenu
+          open={true}
+          onClosed={() => {
+            menuOpened = false;
+          }}
+        />
+      {/if}
+    </div>
   </div>
-</button>
+</div>

@@ -72,6 +72,12 @@ export const qrc = {
     openInTextEditor: 'Open in a text editor'
   },
 
+  menu: {
+    copyUrl: 'Copy resource URL',
+    copyPath: 'Copy resource path',
+    delete: 'Delete'
+  },
+
   stats: (groups: number, files: number) => {
     return [
       'Total',

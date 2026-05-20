@@ -16,7 +16,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   import * as texts from '@/apps/texts';
   import IconButton from '@/comps/IconButton.svelte';
-  import { data, ui } from './states.svelte';
+  import { data } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
 
   let empty = $derived(data.groups.length === 0);

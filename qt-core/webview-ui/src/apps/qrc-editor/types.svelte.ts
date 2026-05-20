@@ -12,7 +12,7 @@ import {
 import * as texts from '@/apps/texts';
 
 export type QrcPropName =  'alias' | 'prefix' | 'lang';
-export type QrcClipboardAction = 'copy' | 'cut' | 'paste';
+export type QrcClipboardAction = 'copy' | 'cut' | 'paste' | 'copy-resource-url' | 'copy-resource-path';
 export type QrcVscodeUiAction =
   | 'openFile'
   | 'openQrcInTextEditor'
