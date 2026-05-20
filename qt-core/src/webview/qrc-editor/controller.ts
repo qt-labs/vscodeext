@@ -251,7 +251,18 @@ export class QrcEditorController {
         if (r) {
           await this._applyAndPostData(cmd, { action: 'paste', ...r });
         }
-        return;
+        break;
+      }
+
+      case 'copy-resource-url':
+      case 'copy-resource-path': {
+        const type = action.endsWith('-url') ? 'url' : 'path';
+        const text = node.formatResourceString(type).trim();
+        if (text.length !== 0) {
+          void vscode.env.clipboard.writeText(text);
+          this._comm.postDataReply(cmd, { status: 'done' });
+        }
+        break;
       }
     }
   };

@@ -137,6 +137,17 @@ export class QrcNode {
     return this._insertClipData(data);
   }
 
+  public formatResourceString(type: 'path' | 'url') {
+    const prefix = this.group?.attributes.prefix;
+    const name = this.file?.attributes.alias ?? this.file?.text;
+    if (!prefix || !name) {
+      return '';
+    }
+
+    const p = path.join(prefix, name);
+    return `${type === 'url' ? 'qrc' : ''}:${p.replace(/\\/g, '/')}`;
+  }
+
   // private methods
   private _findGroupIndex(): number {
     if (this.pos.groupKey.length === 0) {
