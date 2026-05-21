@@ -139,7 +139,7 @@ function extractUserId(jwt: string): string {
  */
 function legacyStoragePath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'local');
     return path.join(appData, 'Qt', 'qtaccount.ini');
   }
   // Linux/macOS: ~/.local/share/Qt/qtaccount.ini
@@ -153,11 +153,11 @@ function legacyStoragePath(): string {
  * Per the spec shared by the service developer:
  *   Linux:   $HOME/.local/share/QtCompany/QtCompany.ini
  *   macOS:   $HOME/Library/Application Support/QtCompany/QtCompany.ini
- *   Windows: %APPDATA%/QtCompany/QtCompany.ini
+ *   Windows: %LOCALAPPDATA%/QtCompany/QtCompany.ini
  */
 function qtCompanySettingsPath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
     return path.join(appData, QTCOMPANY_ORG, QTCOMPANY_FILE);
   }
   if (process.platform === 'darwin') {
