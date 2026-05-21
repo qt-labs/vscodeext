@@ -104,6 +104,9 @@ function fail(msg: string): never {
 }
 
 function defaultSocketPath(): string {
+  if (process.platform === 'win32') {
+    return '\\\\.\\pipe\\qtclient_socket';
+  }
   return path.join(os.tmpdir(), 'qtclient_socket');
 }
 
