@@ -292,8 +292,18 @@ export enum SettingsPersistence {
 import * as os from 'os';
 import * as path from 'path';
 
+/**
+ * Default IPC socket/pipe path.
+ * Qt's QLocalServer uses named pipes on Windows (`\\.\pipe\<name>`)
+ * and Unix domain sockets in the temp directory on Linux/macOS.
+ */
+const defaultSocketPath =
+  process.platform === 'win32'
+    ? '\\\\.\\pipe\\qtclient_socket'
+    : path.join(os.tmpdir(), 'qtclient_socket');
+
 export const IPC = {
-  defaultSocket: path.join(os.tmpdir(), 'qtclient_socket'),
+  defaultSocket: defaultSocketPath,
 
   methods: {
     install: 'packages/install',
