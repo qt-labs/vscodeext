@@ -387,9 +387,11 @@ export class ServiceLauncher extends EventEmitter {
     const stderrChunks: string[] = [];
 
     try {
+      const isWin = process.platform === 'win32';
       this._serviceProcess = spawn(binPath, ['--no-console-log'], {
         stdio: ['ignore', 'pipe', 'pipe'],
-        detached: true
+        detached: !isWin,
+        windowsHide: true
       });
       this._serviceProcess.unref();
     } catch {
