@@ -16,6 +16,7 @@ import {
   type PromptHandler,
   type MessageHandler
 } from './jsonrpc';
+import { QtAccountStorage } from './qt-account';
 import {
   type SmsError,
   type PackageReference,
@@ -354,6 +355,11 @@ export class ServiceLauncher extends EventEmitter {
   // ── Internals ──────────────────────────────────────────────────────────
 
   private resolveServiceBin(): string | undefined {
+    const candidateName =
+      process.platform === 'win32'
+        ? 'QtSoftwareManagementService.exe'
+        : 'QtSoftwareManagementService';
+
     // 1. Explicit path
     if (this._serviceBin && fs.existsSync(this._serviceBin)) {
       return this._serviceBin;
@@ -361,13 +367,25 @@ export class ServiceLauncher extends EventEmitter {
 
     // 2. Next to current process executable
     const exeDir = path.dirname(process.execPath);
-    const candidateName =
-      process.platform === 'win32'
-        ? 'QtSoftwareManagementService.exe'
-        : 'QtSoftwareManagementService';
     const candidate = path.join(exeDir, candidateName);
     if (fs.existsSync(candidate)) {
       return candidate;
+    }
+
+    // 3. Read serviceInstallPath from QtCompany.ini (set by bootstrap)
+    const iniPath = QtAccountStorage.defaultQtCompanyPath();
+    try {
+      const content = fs.readFileSync(iniPath, 'utf-8');
+      const match = /^serviceInstallPath\s*=\s*(.+)$/m.exec(content);
+      if (match?.[1]) {
+        const serviceDir = match[1].trim();
+        const iniCandidate = path.join(serviceDir, candidateName);
+        if (fs.existsSync(iniCandidate)) {
+          return iniCandidate;
+        }
+      }
+    } catch {
+      // QtCompany.ini doesn't exist or isn't readable — continue
     }
 
     return this._serviceBin; // may be undefined

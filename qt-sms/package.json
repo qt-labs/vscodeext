@@ -157,12 +157,6 @@
       "type": "object",
       "title": "Qt Software Management Service Configuration",
       "properties": {
-        "qt-sms.serviceExecutablePath": {
-          "type": "string",
-          "default": "",
-          "description": "Specify the path to the QtSoftwareManagementService executable",
-          "scope": "machine"
-        },
         "qt-sms.installationPath": {
           "type": "string",
           "default": "~/QtAlpha",
