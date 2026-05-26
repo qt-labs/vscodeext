@@ -8,7 +8,6 @@ import { Session, ServiceLauncher, Settings } from 'sms-api';
 import { createLogger, resolveConfiguration } from 'qt-lib';
 import {
   EXTENSION_ID,
-  CONF_SERVICE_EXECUTABLE_PATH,
   CONF_INSTALLATION_PATH,
   CONF_USER_AGENT
 } from '@/constants';
@@ -18,12 +17,6 @@ const logger = createLogger('service-connection');
 let launcher: ServiceLauncher | undefined;
 let session: Session | undefined;
 
-function getServiceExecutablePath(): string | undefined {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const exePath = config.get<string>(CONF_SERVICE_EXECUTABLE_PATH);
-  return exePath && exePath.length > 0 ? exePath : undefined;
-}
-
 export async function ensureConnected(): Promise<Session> {
   if (session?.isConnected) {
     logger.info('Already connected to service');
@@ -31,10 +24,8 @@ export async function ensureConnected(): Promise<Session> {
   }
 
   if (!launcher) {
-    const serviceBin = getServiceExecutablePath();
     const serviceLogger = createLogger('service');
     launcher = new ServiceLauncher({
-      ...(serviceBin ? { serviceBin } : {}),
       onStdout: (line) => {
         serviceLogger.info(line);
       },
@@ -56,8 +47,7 @@ export async function ensureConnected(): Promise<Session> {
   if (!started) {
     const err = launcher.lastError;
     throw new Error(
-      `Failed to start service: ${err?.message ?? 'Unknown error'}. ` +
-        `Check the "qt-sms.serviceExecutablePath" setting.`
+      `Failed to start service: ${err?.message ?? 'Unknown error'}.`
     );
   }
 

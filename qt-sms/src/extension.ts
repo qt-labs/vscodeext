@@ -30,6 +30,7 @@ import {
   initInstalledPackagesStore,
   scanInstallationPath
 } from '@/installed-packages-store';
+import { installBootstrap } from '@/bootstrap';
 
 const logger = createLogger('extension');
 
@@ -43,6 +44,8 @@ export async function activate(context: vscode.ExtensionContext) {
   setExtensionContext(context);
   initInstalledPackagesStore(context);
   scanInstallationPath();
+
+  void installBootstrap();
 
   coreAPI = await getCoreApi();
   if (!coreAPI) {
