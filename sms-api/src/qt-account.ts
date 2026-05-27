@@ -8,7 +8,7 @@
  * from tqtc-qtpif-software-management-service/src/libs/auth/.
  *
  * Provides:
- *   - QtAccountStorage: read/write QtCompany.ini credentials file
+ *   - QtAccountStorage: read/write qtaccount.ini credentials file
  *   - QtAccount: HTTPS login to qls.qt.io, JWT token management
  */
 
@@ -33,11 +33,6 @@ const INI_GROUP = 'QtAccount';
 const INI_KEY_EMAIL = 'email';
 const INI_KEY_JWT = 'jwt';
 const INI_KEY_USER_ID = 'u';
-
-// New unified settings path per the QtCompany spec
-const QTCOMPANY_ORG = 'QtCompany';
-const QTCOMPANY_FILE = 'QtCompany.ini';
-const AUTH_GROUP = 'auth/qtaccount';
 
 // ── INI parser/writer (minimal, QSettings-compatible) ────────────────────────
 
@@ -134,12 +129,12 @@ function extractUserId(jwt: string): string {
 // ── Platform paths ───────────────────────────────────────────────────────────
 
 /**
- * Returns the path to the legacy qtaccount.ini file.
+ * Returns the path to qtaccount.ini.
  * Mirrors C++ `QtAccountStorage::defaultStoragePath()`.
  */
-function legacyStoragePath(): string {
+function defaultStoragePath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'local');
+    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
     return path.join(appData, 'Qt', 'qtaccount.ini');
   }
   // Linux/macOS: ~/.local/share/Qt/qtaccount.ini
@@ -149,30 +144,29 @@ function legacyStoragePath(): string {
 }
 
 /**
- * Returns the path to the new unified QtCompany.ini file.
- * Per the spec shared by the service developer:
+ * Returns the path to the QtCompany.ini file (used for service settings).
  *   Linux:   $HOME/.local/share/QtCompany/QtCompany.ini
  *   macOS:   $HOME/Library/Application Support/QtCompany/QtCompany.ini
- *   Windows: %LOCALAPPDATA%/QtCompany/QtCompany.ini
+ *   Windows: %APPDATA%/QtCompany/QtCompany.ini
  */
 function qtCompanySettingsPath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
-    return path.join(appData, QTCOMPANY_ORG, QTCOMPANY_FILE);
+    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    return path.join(appData, 'QtCompany', 'QtCompany.ini');
   }
   if (process.platform === 'darwin') {
     return path.join(
       os.homedir(),
       'Library',
       'Application Support',
-      QTCOMPANY_ORG,
-      QTCOMPANY_FILE
+      'QtCompany',
+      'QtCompany.ini'
     );
   }
   // Linux
   const dataDir =
     process.env.XDG_DATA_HOME ?? path.join(os.homedir(), '.local', 'share');
-  return path.join(dataDir, QTCOMPANY_ORG, QTCOMPANY_FILE);
+  return path.join(dataDir, 'QtCompany', 'QtCompany.ini');
 }
 
 // ── QtAccountStorage ─────────────────────────────────────────────────────────
@@ -202,11 +196,11 @@ export class QtAccountStorage {
   }
 
   /**
-   * Load credentials from the legacy qtaccount.ini.
+   * Load credentials from the default qtaccount.ini.
    */
   load(): boolean {
-    const p = legacyStoragePath();
-    this.log('info', `Loading legacy credentials from ${p}`);
+    const p = defaultStoragePath();
+    this.log('info', `Loading credentials from ${p}`);
     return this.loadFromPath(p);
   }
 
@@ -235,45 +229,15 @@ export class QtAccountStorage {
   }
 
   /**
-   * Load credentials from the new QtCompany.ini under auth/qtaccount.
-   */
-  loadFromQtCompany(): boolean {
-    const p = qtCompanySettingsPath();
-    this.log('info', `Loading QtCompany credentials from "${p}"`);
-    return this.loadQtCompanyFromPath(p);
-  }
-
-  loadQtCompanyFromPath(filePath: string): boolean {
-    this._filePath = filePath;
-    try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const ini = parseIni(content);
-      const group = ini[AUTH_GROUP];
-      if (!group) {
-        this.log('warn', `No [${AUTH_GROUP}] group in "${filePath}"`);
-        return false;
-      }
-      this._email = group[INI_KEY_EMAIL] ?? '';
-      this._jwt = group[INI_KEY_JWT] ?? '';
-      this._userId = group[INI_KEY_USER_ID] ?? '';
-      this.log('info', `Loaded credentials for "${this._email}" from "${filePath}"`);
-      return true;
-    } catch {
-      this.log('warn', `Failed to read "${filePath}"`);
-      return false;
-    }
-  }
-
-  /**
-   * Save credentials to the legacy qtaccount.ini path.
+   * Save credentials to the default qtaccount.ini path.
    */
   save(): boolean {
-    const filePath = this._filePath || legacyStoragePath();
+    const filePath = this._filePath || defaultStoragePath();
     return this.saveToPath(filePath);
   }
 
   /**
-   * Save credentials to a specific file using legacy format.
+   * Save credentials to a specific file.
    */
   saveToPath(filePath: string): boolean {
     this.log('info', `Saving credentials to ${filePath}`);
@@ -306,44 +270,6 @@ export class QtAccountStorage {
     }
   }
 
-  /**
-   * Save credentials to the new QtCompany.ini under auth/qtaccount.
-   */
-  saveToQtCompany(): boolean {
-    return this.saveToQtCompanyPath(qtCompanySettingsPath());
-  }
-
-  saveToQtCompanyPath(filePath: string): boolean {
-    this.log('info', `Saving QtCompany credentials to ${filePath}`);
-    try {
-      const dir = path.dirname(filePath);
-      fs.mkdirSync(dir, { recursive: true });
-
-      let existing: string | undefined;
-      try {
-        existing = fs.readFileSync(filePath, 'utf-8');
-      } catch {
-        // File doesn't exist yet
-      }
-
-      const content = writeIni(
-        {
-          [AUTH_GROUP]: {
-            [INI_KEY_EMAIL]: this._email,
-            [INI_KEY_JWT]: this._jwt,
-            [INI_KEY_USER_ID]: this._userId
-          }
-        },
-        existing
-      );
-      fs.writeFileSync(filePath, content, { mode: 0o600 });
-      return true;
-    } catch {
-      this.log('error', `Failed to save QtCompany credentials to "${filePath}"`);
-      return false;
-    }
-  }
-
   setCredentials(email: string, jwt: string, userId: string): void {
     this._email = email;
     this._jwt = jwt;
@@ -368,8 +294,8 @@ export class QtAccountStorage {
     };
   }
 
-  static defaultLegacyPath(): string {
-    return legacyStoragePath();
+  static defaultPath(): string {
+    return defaultStoragePath();
   }
 
   static defaultQtCompanyPath(): string {
@@ -388,7 +314,7 @@ export interface QtAccountEvents {
 /**
  * Qt Account login — mirrors C++ `QtAccount`.
  * Performs HTTPS login to qls.qt.io and stores credentials
- * in both legacy qtaccount.ini and new QtCompany.ini.
+ * in qtaccount.ini (compatible with the C++ service).
  */
 export class QtAccount {
   private _state: AuthState = AuthState.LoggedOut;
@@ -418,10 +344,7 @@ export class QtAccount {
     if (options?.storagePath) {
       this._storage.loadFromPath(options.storagePath);
     } else {
-      // Try QtCompany.ini first, fall back to legacy
-      if (!this._storage.loadFromQtCompany()) {
-        this._storage.load();
-      }
+      this._storage.load();
     }
     this.log('info', `Has stored credentials: ${String(this._storage.hasCredentials())}`);
   }
@@ -513,7 +436,6 @@ export class QtAccount {
     this.log('info', 'Logging out');
     this._storage.clear();
     this._storage.save();
-    this._storage.saveToQtCompany();
     this.setState(AuthState.LoggedOut);
     this.log('info', 'Logged out, credentials cleared');
   }
@@ -627,9 +549,7 @@ export class QtAccount {
     const userId = extractUserId(jwt);
     this._storage.setCredentials(email, jwt, userId);
 
-    // Save to both legacy and new locations
     this._storage.save();
-    this._storage.saveToQtCompany();
 
     this._lastError = LoginError.None;
     this._lastErrorMessage = '';

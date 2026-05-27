@@ -57,7 +57,7 @@ export class QtAccountAuthenticationProvider
     logger.info('Initializing QtAccountAuthenticationProvider');
     const storage = new QtAccountStorage();
     storage.onLog = logCallback('QtAccountStorage');
-    const loaded = storage.loadFromQtCompany() || storage.load();
+    const loaded = storage.load();
     logger.info(
       `Storage load result: ${String(loaded)}, hasCredentials: ${String(storage.hasCredentials())}`
     );
