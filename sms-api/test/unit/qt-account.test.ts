@@ -116,76 +116,6 @@ describe('QtAccountStorage (legacy INI)', () => {
   });
 });
 
-// ── QtAccountStorage: QtCompany format ───────────────────────────────────────
-
-describe('QtAccountStorage (QtCompany INI)', () => {
-  let dir: string;
-
-  afterEach(() => {
-    if (dir) {
-      cleanup(dir);
-    }
-  });
-
-  it('saves and loads from QtCompany.ini under auth/qtaccount', () => {
-    dir = tmpDir();
-    const filePath = path.join(dir, 'QtCompany.ini');
-
-    const storage = new QtAccountStorage();
-    storage.setCredentials('user@qt.io', 'jwt-token', 'uid-7');
-    const saved = storage.saveToQtCompanyPath(filePath);
-    assert.equal(saved, true);
-
-    const content = fs.readFileSync(filePath, 'utf-8');
-    assert.ok(content.includes('[auth/qtaccount]'));
-
-    const storage2 = new QtAccountStorage();
-    const loaded = storage2.loadQtCompanyFromPath(filePath);
-    assert.equal(loaded, true);
-    assert.equal(storage2.email, 'user@qt.io');
-    assert.equal(storage2.jwt, 'jwt-token');
-    assert.equal(storage2.userId, 'uid-7');
-  });
-
-  it('preserves other INI groups when saving', () => {
-    dir = tmpDir();
-    const filePath = path.join(dir, 'QtCompany.ini');
-
-    // Pre-populate with another group
-    fs.writeFileSync(
-      filePath,
-      '[auth]\nactive_flow=qtaccount\n\n[other]\nkey=value\n'
-    );
-
-    const storage = new QtAccountStorage();
-    storage.setCredentials('a@b.c', 'tok', 'u1');
-    storage.saveToQtCompanyPath(filePath);
-
-    const content = fs.readFileSync(filePath, 'utf-8');
-    assert.ok(content.includes('[auth]'));
-    assert.ok(content.includes('active_flow=qtaccount'));
-    assert.ok(content.includes('[other]'));
-    assert.ok(content.includes('key=value'));
-    assert.ok(content.includes('[auth/qtaccount]'));
-  });
-
-  it('file has restrictive permissions', () => {
-    if (process.platform === 'win32') {
-      return; // Skip on Windows
-    }
-    dir = tmpDir();
-    const filePath = path.join(dir, 'QtCompany.ini');
-
-    const storage = new QtAccountStorage();
-    storage.setCredentials('a@b.c', 'tok', 'u1');
-    storage.saveToQtCompanyPath(filePath);
-
-    const stat = fs.statSync(filePath);
-    // 0o600 = owner read/write only
-    assert.equal(stat.mode & 0o777, 0o600);
-  });
-});
-
 // ── QtAccount ────────────────────────────────────────────────────────────────
 
 describe('QtAccount', () => {
@@ -279,8 +209,8 @@ describe('QtAccount', () => {
 // ── Static path helpers ──────────────────────────────────────────────────────
 
 describe('QtAccountStorage paths', () => {
-  it('defaultLegacyPath returns a path ending with qtaccount.ini', () => {
-    const p = QtAccountStorage.defaultLegacyPath();
+  it('defaultPath returns a path ending with qtaccount.ini', () => {
+    const p = QtAccountStorage.defaultPath();
     assert.ok(p.endsWith('qtaccount.ini'), `Expected qtaccount.ini, got: ${p}`);
     assert.ok(p.includes('Qt'), `Expected Qt in path, got: ${p}`);
   });

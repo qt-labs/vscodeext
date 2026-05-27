@@ -7,8 +7,7 @@
  * Integration tests for QtAccountStorage and QtAccount.
  *
  * Storage tests run without network access and exercise:
- *   - Read/write round-trips to real files (legacy + QtCompany.ini)
- *   - Cross-format compatibility (write legacy, read QtCompany and vice versa)
+ *   - Read/write round-trips to real files (qtaccount.ini)
  *   - File permissions and directory creation
  *   - Concurrent save/load safety
  *
@@ -174,83 +173,36 @@ async function testLegacyRoundTrip(): Promise<void> {
   }
 }
 
-async function testQtCompanyRoundTrip(): Promise<void> {
-  const dir = tmpDir('qtcompany');
-  try {
-    const filePath = path.join(dir, 'QtCompany', 'QtCompany.ini');
-
-    const writer = new QtAccountStorage();
-    writer.setCredentials('bob@qt.io', 'jwt-xyz', 'uid-bob');
-    const saved = writer.saveToQtCompanyPath(filePath);
-    if (!saved) {
-      throw new Error('saveToQtCompanyPath() returned false');
-    }
-
-    const reader = new QtAccountStorage();
-    const loaded = reader.loadQtCompanyFromPath(filePath);
-    if (!loaded) {
-      throw new Error('loadQtCompanyFromPath() returned false');
-    }
-    if (reader.email !== 'bob@qt.io') {
-      throw new Error(`email mismatch: got '${reader.email}'`);
-    }
-    if (reader.jwt !== 'jwt-xyz') {
-      throw new Error(`jwt mismatch: got '${reader.jwt}'`);
-    }
-    if (reader.userId !== 'uid-bob') {
-      throw new Error(`userId mismatch: got '${reader.userId}'`);
-    }
-
-    // Verify INI structure
-    const content = fs.readFileSync(filePath, 'utf-8');
-    if (!content.includes('[auth/qtaccount]')) {
-      throw new Error(
-        `Expected [auth/qtaccount] group in INI file, got:\n${content}`
-      );
-    }
-    log(`  -> QtCompany round-trip OK`);
-  } finally {
-    cleanup(dir);
-  }
-}
-
 async function testIniPreservesOtherSections(): Promise<void> {
   const dir = tmpDir('preserve');
   try {
-    const filePath = path.join(dir, 'QtCompany.ini');
+    const filePath = path.join(dir, 'qtaccount.ini');
 
     // Pre-populate with other sections
     fs.writeFileSync(
       filePath,
       [
-        '[auth]',
-        'active_flow=qtaccount',
+        '[OtherSection]',
+        'some_key=some_value',
         '',
-        '[auth/oidc_pkce]',
-        'access_token=old-token',
-        'refresh_token=old-refresh',
-        ''
       ].join('\n')
     );
 
     // Save credentials into the same file
     const storage = new QtAccountStorage();
     storage.setCredentials('carol@qt.io', 'jwt-carol', 'uid-carol');
-    storage.saveToQtCompanyPath(filePath);
+    storage.saveToPath(filePath);
 
     // Verify other sections are preserved
     const content = fs.readFileSync(filePath, 'utf-8');
-    if (!content.includes('active_flow=qtaccount')) {
-      throw new Error('Lost [auth] active_flow entry');
+    if (!content.includes('some_key=some_value')) {
+      throw new Error('Lost [OtherSection] entry');
     }
-    if (!content.includes('access_token=old-token')) {
-      throw new Error('Lost [auth/oidc_pkce] access_token entry');
-    }
-    if (!content.includes('[auth/qtaccount]')) {
-      throw new Error('Missing [auth/qtaccount] section');
+    if (!content.includes('[QtAccount]')) {
+      throw new Error('Missing [QtAccount] section');
     }
     if (!content.includes('email=carol@qt.io')) {
-      throw new Error('Missing email in [auth/qtaccount]');
+      throw new Error('Missing email in [QtAccount]');
     }
 
     log(`  -> Other INI sections preserved OK`);
@@ -267,10 +219,10 @@ async function testFilePermissions(): Promise<void> {
 
   const dir = tmpDir('perms');
   try {
-    const filePath = path.join(dir, 'QtCompany.ini');
+    const filePath = path.join(dir, 'qtaccount.ini');
     const storage = new QtAccountStorage();
     storage.setCredentials('x@y.z', 'tok', 'uid');
-    storage.saveToQtCompanyPath(filePath);
+    storage.saveToPath(filePath);
 
     const stat = fs.statSync(filePath);
     const mode = stat.mode & 0o777;
@@ -280,61 +232,6 @@ async function testFilePermissions(): Promise<void> {
       );
     }
     log(`  -> File permissions 0o600 OK`);
-
-    // Also check legacy path
-    const legacyPath = path.join(dir, 'qtaccount.ini');
-    storage.saveToPath(legacyPath);
-    const legacyStat = fs.statSync(legacyPath);
-    const legacyMode = legacyStat.mode & 0o777;
-    if (legacyMode !== 0o600) {
-      throw new Error(
-        `Expected legacy file mode 0o600, got 0o${legacyMode.toString(8)}`
-      );
-    }
-    log(`  -> Legacy file permissions 0o600 OK`);
-  } finally {
-    cleanup(dir);
-  }
-}
-
-async function testDualFormatSave(): Promise<void> {
-  const dir = tmpDir('dual');
-  try {
-    const legacyPath = path.join(dir, 'Qt', 'qtaccount.ini');
-    const qtCompanyPath = path.join(dir, 'QtCompany', 'QtCompany.ini');
-
-    // QtAccount saves to both formats simultaneously
-    const account = new QtAccount({ storagePath: legacyPath });
-    // Manually set credentials and save
-    account.storage.setCredentials('dual@qt.io', 'jwt-dual', 'uid-dual');
-    const legacySaved = account.storage.saveToPath(legacyPath);
-    const qtCompanySaved = account.storage.saveToQtCompanyPath(qtCompanyPath);
-
-    if (!legacySaved) {
-      throw new Error('Failed to save legacy format');
-    }
-    if (!qtCompanySaved) {
-      throw new Error('Failed to save QtCompany format');
-    }
-
-    // Read each back with separate instances
-    const legacyReader = new QtAccountStorage();
-    legacyReader.loadFromPath(legacyPath);
-
-    const qtCompanyReader = new QtAccountStorage();
-    qtCompanyReader.loadQtCompanyFromPath(qtCompanyPath);
-
-    if (legacyReader.email !== 'dual@qt.io') {
-      throw new Error(`Legacy email mismatch: ${legacyReader.email}`);
-    }
-    if (qtCompanyReader.email !== 'dual@qt.io') {
-      throw new Error(`QtCompany email mismatch: ${qtCompanyReader.email}`);
-    }
-    if (legacyReader.jwt !== qtCompanyReader.jwt) {
-      throw new Error('JWT mismatch between legacy and QtCompany formats');
-    }
-
-    log(`  -> Dual-format save/load OK`);
   } finally {
     cleanup(dir);
   }
@@ -438,14 +335,14 @@ async function testSpecialCharactersInCredentials(): Promise<void> {
 }
 
 async function testDefaultPathsExist(): Promise<void> {
-  const legacyPath = QtAccountStorage.defaultLegacyPath();
+  const defaultPath = QtAccountStorage.defaultPath();
   const qtCompanyPath = QtAccountStorage.defaultQtCompanyPath();
 
-  if (!legacyPath.endsWith('qtaccount.ini')) {
-    throw new Error(`Legacy path should end with qtaccount.ini: ${legacyPath}`);
+  if (!defaultPath.endsWith('qtaccount.ini')) {
+    throw new Error(`Default path should end with qtaccount.ini: ${defaultPath}`);
   }
-  if (!legacyPath.includes('Qt')) {
-    throw new Error(`Legacy path should contain 'Qt': ${legacyPath}`);
+  if (!defaultPath.includes('Qt')) {
+    throw new Error(`Default path should contain 'Qt': ${defaultPath}`);
   }
   if (!qtCompanyPath.endsWith('QtCompany.ini')) {
     throw new Error(
@@ -458,7 +355,7 @@ async function testDefaultPathsExist(): Promise<void> {
     );
   }
 
-  log(`  -> Legacy path:     ${legacyPath}`);
+  log(`  -> Default path:    ${defaultPath}`);
   log(`  -> QtCompany path:  ${qtCompanyPath}`);
   log(`  -> Default paths OK`);
 }
@@ -731,17 +628,12 @@ async function main(): Promise<void> {
   }
 
   // ── Storage tests (no network needed) ──
-  await runTest('Storage: legacy INI round-trip', testLegacyRoundTrip);
-  await runTest('Storage: QtCompany INI round-trip', testQtCompanyRoundTrip);
+  await runTest('Storage: INI round-trip', testLegacyRoundTrip);
   await runTest(
     'Storage: preserve other INI sections',
     testIniPreservesOtherSections
   );
   await runTest('Storage: file permissions (0o600)', testFilePermissions);
-  await runTest(
-    'Storage: dual-format save (legacy + QtCompany)',
-    testDualFormatSave
-  );
   await runTest(
     'Storage: overwrite existing credentials',
     testOverwriteExistingCredentials
