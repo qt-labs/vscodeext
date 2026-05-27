@@ -151,7 +151,7 @@ function defaultStoragePath(): string {
  */
 function qtCompanySettingsPath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
     return path.join(appData, 'QtCompany', 'QtCompany.ini');
   }
   if (process.platform === 'darwin') {
