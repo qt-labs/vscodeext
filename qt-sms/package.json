@@ -76,11 +76,6 @@
         "category": "Qt"
       },
       {
-        "command": "qt-sms.listInstalledPackages",
-        "title": "%qt-sms.command.listInstalledPackages.title%",
-        "category": "Qt"
-      },
-      {
         "command": "qt-sms.installPackage",
         "title": "%qt-sms.command.installPackage.title%",
         "category": "Qt"

@@ -252,41 +252,41 @@ export async function searchPackages(): Promise<void> {
   });
 }
 
-export async function listInstalledPackages(): Promise<void> {
-  await withService(async (packages) => {
-    const results = await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Listing installed packages...',
-        cancellable: false
-      },
-      async () =>
-        packages.listInstalledPackages(undefined, undefined, {
-          onMessage: (info) => {
-            logger.info(`listInstalledPackages: ${info.message}`);
-          },
-          onPrompt: handleUserPrompt
-        })
-    );
+// export async function listInstalledPackages(): Promise<void> {
+//   await withService(async (packages) => {
+//     const results = await vscode.window.withProgress(
+//       {
+//         location: vscode.ProgressLocation.Notification,
+//         title: 'Listing installed packages...',
+//         cancellable: false
+//       },
+//       async () =>
+//         packages.listInstalledPackages(undefined, undefined, {
+//           onMessage: (info) => {
+//             logger.info(`listInstalledPackages: ${info.message}`);
+//           },
+//           onPrompt: handleUserPrompt
+//         })
+//     );
 
-    if (results.length === 0) {
-      void vscode.window.showInformationMessage('No installed packages found.');
-      return;
-    }
+//     if (results.length === 0) {
+//       void vscode.window.showInformationMessage('No installed packages found.');
+//       return;
+//     }
 
-    const items = results.map((pkg: PackageData) => ({
-      label: pkg.name || pkg.id,
-      description: pkg.version,
-      detail: pkg.description
-    }));
+//     const items = results.map((pkg: PackageData) => ({
+//       label: pkg.name || pkg.id,
+//       description: pkg.version,
+//       detail: pkg.description
+//     }));
 
-    await vscode.window.showQuickPick(items, {
-      placeHolder: 'Installed packages',
-      matchOnDescription: true,
-      matchOnDetail: true
-    });
-  });
-}
+//     await vscode.window.showQuickPick(items, {
+//       placeHolder: 'Installed packages',
+//       matchOnDescription: true,
+//       matchOnDetail: true
+//     });
+//   });
+// }
 
 export async function syncInstalledPackages(): Promise<void> {
   try {
