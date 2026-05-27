@@ -459,9 +459,7 @@ function platformArch(): string {
       return 'gcc-x86_64';
     case 'win32':
       // TODO: Add Windows support with appropriate architecture labels
-      throw new Error(
-        'Windows is not supported in this version of the extension'
-      );
+      return 'msvc2022-x86_64';
     default:
       return 'unknown';
   }
