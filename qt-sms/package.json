@@ -1,7 +1,7 @@
 {
   "name": "qt-sms",
-  "displayName": "Qt Software Management Service",
-  "description": "Qt Software Management Service",
+  "displayName": "Qt Software Management",
+  "description": "Qt Software Management",
   "version": "1.15.0",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
@@ -148,6 +148,19 @@
             },
             "completionEvents": [
               "onContext:qt-sms.packageInstalled"
+            ]
+          },
+          {
+            "id": "qt-sms.buildFirstApp",
+            "title": "%qt-sms.walkthrough.buildFirstApp.title%",
+            "description": "%qt-sms.walkthrough.buildFirstApp.description%",
+            "media": {
+              "image": "res/walkthrough/install-qt.svg",
+              "altText": "Build your first Qt Application"
+            },
+            "completionEvents": [
+              "onCommand:qt-core.createNewItem",
+              "onCommand:qt-core.openExamplesBrowser"
             ]
           }
         ]
