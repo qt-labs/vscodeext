@@ -5,7 +5,6 @@
   "qt-sms.view.account.welcomeLoggedOut": "Sign in to your Qt Account to manage packages.\n[Sign In](command:qt-sms.login)",
   "qt-sms.view.account.welcomeLoggedIn": "Signed in to your Qt Account.\n[Sign Out](command:qt-sms.logout)",
   "qt-sms.command.searchPackages.title": "SMS: Search available packages",
-  "qt-sms.command.listInstalledPackages.title": "SMS: List installed packages",
   "qt-sms.command.installPackage.title": "SMS: Install package",
   "qt-sms.command.setInstallationPath.title": "SMS: Set installation path",
   "qt-sms.command.openWalkthrough.title": "SMS: Open Walkthrough",
