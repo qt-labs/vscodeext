@@ -16,5 +16,7 @@
   "qt-sms.walkthrough.signIn.title": "Sign in to Qt Account",
   "qt-sms.walkthrough.signIn.description": "You need to sign in to Qt Account to be able to install the Qt Framework.\n\n[Sign In](command:qt-sms.login)",
   "qt-sms.walkthrough.installQtFramework.title": "Finish installation",
-  "qt-sms.walkthrough.installQtFramework.description": "To get started, you need to install Qt Framework.\n\nSelect from available versions.\n\n[Get latest Qt Framework](command:qt-sms.installPackage?%7B%22version%22%3A%22latest%22%7D)\n\n[Select version...](command:qt-sms.installPackage)"
+  "qt-sms.walkthrough.installQtFramework.description": "To be able to get your first application running, you need to download Qt Framework.\n\nSelect from available versions.\n\n[Get latest Qt Framework](command:qt-sms.installPackage?%7B%22version%22%3A%22latest%22%7D)\n\n[Select version...](command:qt-sms.installPackage)",
+  "qt-sms.walkthrough.buildFirstApp.title": "Build your first Qt Application",
+  "qt-sms.walkthrough.buildFirstApp.description": "Create a new project or try out an example.\n\n[Create a new project](command:qt-core.createNewItem)\n\n[Try out an example](command:qt-core.openExamplesBrowser)"
 }
