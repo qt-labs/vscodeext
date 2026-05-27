@@ -13,7 +13,6 @@ import {
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import {
   searchPackages,
-  listInstalledPackages,
   installPackage,
   setInstallationPath,
   onInstallationPathChanged,
@@ -114,10 +113,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.searchPackages`,
       searchPackages
-    ),
-    vscode.commands.registerCommand(
-      `${EXTENSION_ID}.listInstalledPackages`,
-      listInstalledPackages
     ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.installPackage`,
