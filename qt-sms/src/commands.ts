@@ -37,11 +37,7 @@ import {
   type QtAccountAuthenticationProvider
 } from '@/auth-provider';
 import { showLicenseAgreementPanel } from '@/license-panel';
-import {
-  getInstalledPackages,
-  isVersionInstalledOnDisk,
-  markPackageInstalled
-} from '@/installed-packages-store';
+import { isVersionInstalledOnDisk } from '@/installed-packages-store';
 
 const logger = createLogger('commands');
 
@@ -208,10 +204,6 @@ export async function searchPackages(): Promise<void> {
         installedKeys.add(`${pkg.id}@${pkg.version}`);
       }
     }
-    for (const entry of getInstalledPackages()) {
-      installedKeys.add(`${entry.id}@${entry.version}`);
-    }
-
     const isInstalled = (pkg: PackageData) =>
       installedKeys.has(`${pkg.id}@${pkg.version}`) ||
       isVersionInstalledOnDisk(pkg.version);
@@ -308,9 +300,6 @@ export async function syncInstalledPackages(): Promise<void> {
     });
     if (results.length > 0) {
       // Merge service results with existing local state (don't discard local entries)
-      for (const pkg of results) {
-        await markPackageInstalled(pkg.id, pkg.version);
-      }
     }
     logger.info(
       `Synced ${String(results.length)} installed package(s) to local store`
@@ -379,18 +368,12 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     const installedKeys = new Set<string>();
     for (const pkg of installedList) {
       installedKeys.add(`${pkg.id}@${pkg.version}`);
-      await markPackageInstalled(pkg.id, pkg.version);
     }
-    // Also mark packages the backend reports as installed
+    // Also include packages the backend reports as installed
     for (const pkg of candidates) {
       if (pkg.installState === InstallState.Installed) {
         installedKeys.add(`${pkg.id}@${pkg.version}`);
-        await markPackageInstalled(pkg.id, pkg.version);
       }
-    }
-    // Also include anything already in globalState
-    for (const entry of getInstalledPackages()) {
-      installedKeys.add(`${entry.id}@${entry.version}`);
     }
 
     if (args?.regex) {
@@ -759,7 +742,6 @@ async function installPackageById(
     .then(() => {
       endDownloadPhase?.();
       endInstallPhase?.();
-      void markPackageInstalled(pkg.id, pkg.version);
       void vscode.window.showInformationMessage(
         `Successfully installed ${pkg.name || pkg.id}`
       );

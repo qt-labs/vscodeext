@@ -26,10 +26,7 @@ import {
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
 import { AccountViewProvider } from '@/account-view';
-import {
-  initInstalledPackagesStore,
-  scanInstallationPath
-} from '@/installed-packages-store';
+
 import { installBootstrap } from '@/bootstrap';
 
 const logger = createLogger('extension');
@@ -42,8 +39,6 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
 
   setExtensionContext(context);
-  initInstalledPackagesStore(context);
-  scanInstallationPath();
 
   void installBootstrap();
 
