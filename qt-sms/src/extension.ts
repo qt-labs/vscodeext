@@ -30,6 +30,46 @@ import { installBootstrap } from '@/bootstrap';
 
 const logger = createLogger('extension');
 
+const VERSIONED_EXTENSIONS = ['theqtcompany.qt-core', 'theqtcompany.qt-cpp'];
+const REQUIRED_EXTENSIONS = ['ms-vscode.cmake-tools'];
+
+async function ensureDependencies(
+  context: vscode.ExtensionContext
+): Promise<void> {
+  const requiredVersion = String(
+    (context.extension.packageJSON as Record<string, unknown>).version
+  );
+
+  for (const extId of VERSIONED_EXTENSIONS) {
+    const ext = vscode.extensions.getExtension(extId);
+    const installedVersion = ext
+      ? String((ext.packageJSON as Record<string, unknown>).version)
+      : undefined;
+    if (installedVersion === requiredVersion) {
+      continue;
+    }
+    logger.info(
+      `${extId} version ${installedVersion ?? 'N/A'} does not match ` +
+        `required ${requiredVersion}, installing correct version`
+    );
+    await vscode.commands.executeCommand(
+      'workbench.extensions.installExtension',
+      `${extId}@${requiredVersion}`
+    );
+  }
+
+  for (const extId of REQUIRED_EXTENSIONS) {
+    if (vscode.extensions.getExtension(extId)) {
+      continue;
+    }
+    logger.info(`${extId} is not installed, installing`);
+    await vscode.commands.executeCommand(
+      'workbench.extensions.installExtension',
+      extId
+    );
+  }
+}
+
 export let coreAPI: CoreAPI | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -38,6 +78,8 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
 
   setExtensionContext(context);
+
+  await ensureDependencies(context);
 
   void installBootstrap();
 
