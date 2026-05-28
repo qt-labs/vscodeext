@@ -171,7 +171,7 @@ async function unzipFile(zipPath: string, destDir: string): Promise<void> {
  */
 async function runBootstrap(extractDir: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (process.platform === 'darwin') {
+    if (IsMacOS) {
       // Find the .app inside the extracted dir
       const entries = fs.readdirSync(extractDir);
       const dmgFile = entries.find((e) => e.endsWith('.dmg'));
@@ -256,7 +256,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
           );
         }
       );
-    } else if (process.platform === 'linux') {
+    } else if (IsLinux) {
       const entries = fs.readdirSync(extractDir);
       const runFile = entries.find((e) => e.endsWith('.run'));
       if (!runFile) {
@@ -273,7 +273,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
           resolve();
         }
       });
-    } else if (process.platform === 'win32') {
+    } else if (IsWindows) {
       const entries = fs.readdirSync(extractDir);
       const exeFile = entries.find((e) => e.endsWith('.exe'));
       if (!exeFile) {
