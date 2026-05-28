@@ -25,6 +25,11 @@
     "SMS",
     "Package Manager"
   ],
+  "extensionDependencies": [
+    "theqtcompany.qt-core",
+    "theqtcompany.qt-cpp",
+    "ms-vscode.cmake-tools"
+  ],
   "qna": "marketplace",
   "pricing": "Free",
   "activationEvents": [
