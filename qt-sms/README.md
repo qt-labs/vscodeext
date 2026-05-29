@@ -23,6 +23,35 @@ For more information about using Qt extensions, go to
 For pre-release versions, go to
 [Qt Extension for VS Code Pre-release Documentation](https://doc-snapshots.qt.io/vscodeext-dev/).
 
+## Known Issues (Alpha)
+
+### Bootstrap not triggered after previous installation remnants
+
+If `QtCompany.ini` exists from a previous test or installation but the
+service binary is missing (e.g. after running `remove-installation` or
+manually deleting `~/.local/bin/QtSoftwareManagementService`), the
+extension will skip the bootstrap download because it considers the
+service already installed.
+
+**Workaround:** Remove the stale configuration and restart VS Code:
+
+```bash
+# macOS
+rm "$HOME/Library/Application Support/QtCompany/QtCompany.ini"
+pkill -SIGTERM QtSoftwareManagementService
+
+# Linux
+rm "$HOME/.local/share/QtCompany/QtCompany.ini"
+pkill -SIGTERM QtSoftwareManagementService
+
+# Windows (PowerShell)
+Remove-Item "$env:LOCALAPPDATA\QtCompany\QtCompany.ini"
+Stop-Process -Name QtSoftwareManagementService -ErrorAction SilentlyContinue
+```
+
+After restarting VS Code, the extension will re-download and install the
+bootstrap automatically.
+
 ## Issues
 
 If you encounter any issues with the extension, please [report the
