@@ -14,7 +14,8 @@ import {
   IsMacOS,
   IsWindows,
   IsArm64,
-  Isx64
+  Isx64,
+  OSExeSuffix
 } from 'qt-lib';
 import { QtAccountStorage, ServiceLauncher } from 'sms-api';
 
@@ -47,12 +48,40 @@ function getBootstrapUrl(): string | undefined {
 }
 
 /**
- * Check whether the bootstrap has already been installed by looking for the
- * QtCompany.ini file that it creates on successful completion.
+ * Check whether the bootstrap has already been installed by verifying that
+ * QtCompany.ini exists AND that the service binary it references is present
+ * on disk. A stale ini (e.g. from a previous test or after remove-installation)
+ * without a working service binary will return false so the bootstrap is
+ * re-downloaded.
  */
 function isBootstrapInstalled(): boolean {
   const iniPath = QtAccountStorage.defaultQtCompanyPath();
-  return fs.existsSync(iniPath);
+  if (!fs.existsSync(iniPath)) {
+    return false;
+  }
+
+  try {
+    const content = fs.readFileSync(iniPath, 'utf-8');
+    const match = /^serviceInstallPath\s*=\s*(.+)$/m.exec(content);
+    if (!match?.[1]) {
+      logger.info('QtCompany.ini exists but serviceInstallPath is not set');
+      return false;
+    }
+    const serviceDir = match[1].trim();
+    const binaryName = `QtSoftwareManagementService${OSExeSuffix}`;
+    const serviceBin = path.join(serviceDir, binaryName);
+    if (!fs.existsSync(serviceBin)) {
+      logger.info(
+        `QtCompany.ini exists but service binary not found at ${serviceBin}`
+      );
+      return false;
+    }
+  } catch {
+    logger.warn(`Failed to read ${iniPath}, treating as not installed`);
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -312,6 +341,15 @@ export async function installBootstrap(): Promise<void> {
     logger.info(
       `Bootstrap already installed ("${QtAccountStorage.defaultQtCompanyPath()}" exists)`
     );
+    // Service binary exists but is not running — try to start it
+    const started = await launcher.startService();
+    if (started) {
+      logger.info('Service started from existing installation');
+    } else {
+      logger.warn(
+        `Service binary exists but could not be started: ${launcher.lastError?.message ?? 'unknown'}`
+      );
+    }
     return;
   }
 
