@@ -23,7 +23,10 @@ import {
   resolveConfiguration,
   findQtPathsInInstallationPath,
   CORE_EXTENSION_ID,
-  AdditionalQtPathsName
+  AdditionalQtPathsName,
+  QtWorkspaceConfigMessage,
+  CoreKey,
+  type QtAdditionalPath
 } from 'qt-lib';
 import {
   EXTENSION_ID,
@@ -32,6 +35,7 @@ import {
   DEFAULT_BACKEND_URL
 } from '@/constants';
 import { ensureConnected } from '@/service-connection';
+import { coreAPI } from '@/extension';
 import {
   AUTH_PROVIDER_ID,
   type QtAccountAuthenticationProvider
@@ -515,6 +519,20 @@ function registerInstalledQtPaths(version: string): void {
     vscode.ConfigurationTarget.Global
   );
   logger.info(`Registered Qt installation: ${qtpathsExe}`);
+
+  // Notify qt-cpp (via coreAPI) so it picks up the new kit immediately
+  const allPaths: QtAdditionalPath[] = updated.map((p) =>
+    typeof p === 'string' ? { path: p } : (p as QtAdditionalPath)
+  );
+  const message = new QtWorkspaceConfigMessage(CoreKey.GLOBAL_WORKSPACE);
+  coreAPI?.setValue(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.ADDITIONAL_QT_PATHS,
+    allPaths
+  );
+  message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
+  logger.info(`Notifying coreAPI with message: ${message.toString()}`);
+  coreAPI?.notify(message);
 }
 
 // Known license agreement IDs from the backend (alpha testing).
