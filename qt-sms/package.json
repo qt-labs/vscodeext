@@ -26,9 +26,7 @@
     "Package Manager"
   ],
   "extensionDependencies": [
-    "theqtcompany.qt-core",
-    "theqtcompany.qt-cpp",
-    "ms-vscode.cmake-tools"
+    "theqtcompany.qt-core"
   ],
   "qna": "marketplace",
   "pricing": "Free",
@@ -96,6 +94,11 @@
         "category": "Qt"
       },
       {
+        "command": "qt-sms.installRequiredExtensions",
+        "title": "%qt-sms.command.installRequiredExtensions.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-sms.login",
         "title": "%qt-sms.command.login.title%",
         "category": "Qt",
@@ -136,6 +139,18 @@
             },
             "completionEvents": [
               "onContext:qt-sms.isLoggedIn"
+            ]
+          },
+          {
+            "id": "qt-sms.installExtensions",
+            "title": "%qt-sms.walkthrough.installExtensions.title%",
+            "description": "%qt-sms.walkthrough.installExtensions.description%",
+            "media": {
+              "image": "res/walkthrough/install-qt.svg",
+              "altText": "Install required extensions"
+            },
+            "completionEvents": [
+              "onContext:qt-sms.requiredExtensionsInstalled"
             ]
           },
           {

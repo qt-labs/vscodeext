@@ -31,42 +31,84 @@ import { installBootstrap } from '@/bootstrap';
 
 const logger = createLogger('extension');
 
-const VERSIONED_EXTENSIONS = ['theqtcompany.qt-core', 'theqtcompany.qt-cpp'];
-const REQUIRED_EXTENSIONS = ['ms-vscode.cmake-tools'];
+const VERSIONED_EXTENSIONS = ['theqtcompany.qt-cpp'];
+const REQUIRED_EXTENSIONS = ['theqtcompany.qt-cpp', 'ms-vscode.cmake-tools'];
 
-async function ensureDependencies(
+async function ensureCoreVersion(
   context: vscode.ExtensionContext
 ): Promise<void> {
   const requiredVersion = String(
     (context.extension.packageJSON as Record<string, unknown>).version
   );
 
-  for (const extId of VERSIONED_EXTENSIONS) {
-    const ext = vscode.extensions.getExtension(extId);
-    const installedVersion = ext
-      ? String((ext.packageJSON as Record<string, unknown>).version)
-      : undefined;
-    if (installedVersion === requiredVersion) {
-      continue;
-    }
-    logger.info(
-      `${extId} version ${installedVersion ?? 'N/A'} does not match ` +
-        `required ${requiredVersion}, installing correct version`
-    );
-    await vscode.commands.executeCommand(
-      'workbench.extensions.installExtension',
-      `${extId}@${requiredVersion}`
-    );
+  const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
+  const installedVersion = ext
+    ? String((ext.packageJSON as Record<string, unknown>).version)
+    : undefined;
+  if (installedVersion === requiredVersion) {
+    return;
   }
+  logger.info(
+    `theqtcompany.qt-core version ${installedVersion ?? 'N/A'} does not match ` +
+      `required ${requiredVersion}, installing correct version`
+  );
+  await vscode.commands.executeCommand(
+    'workbench.extensions.installExtension',
+    `theqtcompany.qt-core@${requiredVersion}`
+  );
+}
+
+function areRequiredExtensionsInstalled(requiredVersion: string): boolean {
+  return REQUIRED_EXTENSIONS.every((extId) => {
+    const ext = vscode.extensions.getExtension(extId);
+    if (!ext) {
+      return false;
+    }
+    if (VERSIONED_EXTENSIONS.includes(extId)) {
+      const installedVersion = String(
+        (ext.packageJSON as Record<string, unknown>).version
+      );
+      return installedVersion === requiredVersion;
+    }
+    return true;
+  });
+}
+
+async function updateRequiredExtensionsContext(
+  requiredVersion: string
+): Promise<void> {
+  await vscode.commands.executeCommand(
+    'setContext',
+    `${EXTENSION_ID}.requiredExtensionsInstalled`,
+    areRequiredExtensionsInstalled(requiredVersion)
+  );
+}
+
+async function installRequiredExtensions(
+  context: vscode.ExtensionContext
+): Promise<void> {
+  const requiredVersion = String(
+    (context.extension.packageJSON as Record<string, unknown>).version
+  );
 
   for (const extId of REQUIRED_EXTENSIONS) {
-    if (vscode.extensions.getExtension(extId)) {
+    const ext = vscode.extensions.getExtension(extId);
+    if (ext) {
       continue;
     }
-    logger.info(`${extId} is not installed, installing`);
+    const installId = VERSIONED_EXTENSIONS.includes(extId)
+      ? `${extId}@${requiredVersion}`
+      : extId;
+    logger.info(`Installing required extension: ${installId}`);
     await vscode.commands.executeCommand(
       'workbench.extensions.installExtension',
-      extId
+      installId
+    );
+  }
+  await updateRequiredExtensionsContext(requiredVersion);
+  if (areRequiredExtensionsInstalled(requiredVersion)) {
+    void vscode.window.showInformationMessage(
+      'Required extensions installed successfully.'
     );
   }
 }
@@ -80,7 +122,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
   setExtensionContext(context);
 
-  await ensureDependencies(context);
+  await ensureCoreVersion(context);
+
+  const requiredVersion = String(
+    (context.extension.packageJSON as Record<string, unknown>).version
+  );
+  await updateRequiredExtensionsContext(requiredVersion);
+
+  // Re-check when extensions are installed/uninstalled
+  context.subscriptions.push(
+    vscode.extensions.onDidChange(
+      () => void updateRequiredExtensionsContext(requiredVersion)
+    )
+  );
 
   void installBootstrap();
 
@@ -170,6 +224,10 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () =>
       logout(authProvider)
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.installRequiredExtensions`,
+      async () => installRequiredExtensions(context)
     ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.openWalkthrough`,
