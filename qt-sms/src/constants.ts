@@ -9,3 +9,12 @@ export const CONF_RESET_LICENSE_AFTER_INSTALL = 'resetLicenseBeforeInstall';
 export const DEFAULT_BACKEND_URL = 'https://api.install.qt.io';
 export const ALPHA_ALLOWLIST_URL =
   'https://ordp.qt.io/install/public/vscode/60acc3e9e59df98a139e6346f00e02a25fcba5ce7ad91d67a073243f5695c4e3.txt';
+
+// Survey popup constants
+export const SURVEY_URL = 'https://www.surveymonkey.com/r/BMQH2W3';
+export const SURVEY_DELAY_MS = 30 * 60 * 1000; // 30 minutes
+
+// State keys for survey
+export const STATE_SURVEY_COMPLETED = 'surveyCompleted';
+export const STATE_SURVEY_DISMISSED = 'surveyDismissed';
+export const STATE_SURVEY_LAST_PROMPT = 'surveyLastPrompt';

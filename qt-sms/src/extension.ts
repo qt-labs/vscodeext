@@ -25,6 +25,7 @@ import {
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
 import { AccountViewProvider } from '@/account-view';
+import { initSurvey, disposeSurvey } from '@/survey';
 
 import { installBootstrap } from '@/bootstrap';
 
@@ -186,6 +187,9 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  // Initialize survey popup (shows after 30 minutes)
+  initSurvey(context);
+
   telemetry.sendEvent('activated');
 
   return {};
@@ -193,6 +197,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   logger.info(`Deactivating ${EXTENSION_ID}`);
+  disposeSurvey();
   disconnect();
   telemetry.dispose();
 }
