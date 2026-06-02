@@ -11,6 +11,7 @@
   "qt-sms.command.installRequiredExtensions.title": "SMS: Install Required Extensions",
   "qt-sms.command.login.title": "SMS: Login to Qt Account",
   "qt-sms.command.logout.title": "SMS: Logout from Qt Account",
+  "qt-sms.command.resetTestState.title": "SMS: Reset Test State (testing only)",
   "qt-sms.walkthrough.getStarted.title": "Get started with Qt",
   "qt-sms.walkthrough.getStarted.description": "Take your first steps in setting up a Qt project and unlock the full power of Qt's features with all the essential tools at your fingertips.",
   "qt-sms.walkthrough.signIn.title": "Sign in to Qt Account",
