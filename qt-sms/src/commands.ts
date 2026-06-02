@@ -4,11 +4,14 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as https from 'https';
+import * as os from 'os';
 import * as path from 'path';
 
 import {
   Packages,
   Settings,
+  QtAccountStorage,
+  IPC,
   type PackageData,
   type LicenseAnswer,
   type UserPrompt,
@@ -34,7 +37,7 @@ import {
   CONF_RESET_LICENSE_AFTER_INSTALL,
   DEFAULT_BACKEND_URL
 } from '@/constants';
-import { ensureConnected } from '@/service-connection';
+import { ensureConnected, disconnect } from '@/service-connection';
 import { coreAPI } from '@/extension';
 import {
   AUTH_PROVIDER_ID,
@@ -906,5 +909,120 @@ export async function logout(
   const sessions = await authProvider.getSessions();
   for (const s of sessions) {
     await authProvider.removeSession(s.id);
+  }
+}
+
+/**
+ * Reset all qt-sms local state. **For testing purposes only.**
+ *
+ * This removes:
+ *   - The Qt installation directory (e.g. ~/QtAlpha)
+ *   - QtCompany.ini (service settings)
+ *   - qtaccount.ini (Qt account credentials)
+ *   - The QtSoftwareManagementService lock file
+ *   - The IPC socket / named pipe
+ *
+ * It also kills any running QtSoftwareManagementService process and
+ * disconnects the current IPC session.
+ */
+export async function resetTestState(): Promise<void> {
+  const confirm = await vscode.window.showWarningMessage(
+    'This will remove all qt-sms data (installed packages, credentials, ' +
+      'service state). This action is for testing purposes only and cannot ' +
+      'be undone. Continue?',
+    { modal: true },
+    'Reset'
+  );
+  if (confirm !== 'Reset') {
+    return;
+  }
+
+  disconnect();
+
+  // Kill the service process
+  await killServiceProcess();
+
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawInstallPath =
+    config.get<string>(CONF_INSTALLATION_PATH) ?? '~/QtAlpha';
+  const installPath = resolveConfiguration(rawInstallPath);
+
+  const pathsToRemove = [
+    installPath,
+    QtAccountStorage.defaultQtCompanyPath(),
+    QtAccountStorage.defaultPath(),
+    getServiceLockFilePath(),
+    IPC.defaultSocket
+  ];
+
+  const removed: string[] = [];
+  for (const p of pathsToRemove) {
+    if (tryRemove(p)) {
+      removed.push(p);
+    }
+  }
+
+  if (removed.length > 0) {
+    logger.info(`Reset test state. Removed: ${removed.join(', ')}`);
+    void vscode.window.showInformationMessage(
+      `qt-sms test state has been reset. Removed ${String(removed.length)} item(s).`
+    );
+  } else {
+    logger.info('Reset test state: nothing to remove');
+    void vscode.window.showInformationMessage(
+      'qt-sms test state: nothing to remove.'
+    );
+  }
+}
+
+function getServiceLockFilePath(): string {
+  if (process.platform === 'win32') {
+    return path.join(os.tmpdir(), 'QtSoftwareManagementService.lock');
+  }
+  return path.join(os.tmpdir(), 'QtSoftwareManagementService.lock');
+}
+
+function tryRemove(targetPath: string): boolean {
+  try {
+    if (!fs.existsSync(targetPath)) {
+      return false;
+    }
+    const stat = fs.statSync(targetPath);
+    if (stat.isDirectory()) {
+      fs.rmSync(targetPath, { recursive: true, force: true });
+    } else {
+      fs.unlinkSync(targetPath);
+    }
+    logger.info(`Removed: ${targetPath}`);
+    return true;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Failed to remove ${targetPath}: ${msg}`);
+    return false;
+  }
+}
+
+async function killServiceProcess(): Promise<void> {
+  const processName = 'QtSoftwareManagementService';
+  try {
+    const { exec } = await import('child_process');
+    await new Promise<void>((resolve) => {
+      const cmd =
+        process.platform === 'win32'
+          ? `taskkill /F /IM ${processName}.exe`
+          : `pkill -f ${processName}`;
+      exec(cmd, (err) => {
+        if (err) {
+          logger.info(
+            `No running ${processName} process found (or kill failed)`
+          );
+        } else {
+          logger.info(`Killed ${processName} process`);
+        }
+        resolve();
+      });
+    });
+  } catch {
+    logger.warn('Failed to kill service process');
   }
 }
