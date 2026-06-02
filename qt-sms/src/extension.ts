@@ -34,12 +34,8 @@ const logger = createLogger('extension');
 const VERSIONED_EXTENSIONS = ['theqtcompany.qt-cpp'];
 const REQUIRED_EXTENSIONS = ['theqtcompany.qt-cpp', 'ms-vscode.cmake-tools'];
 
-async function ensureCoreVersion(
-  context: vscode.ExtensionContext
-): Promise<void> {
-  const requiredVersion = String(
-    (context.extension.packageJSON as Record<string, unknown>).version
-  );
+async function ensureCoreVersion(): Promise<void> {
+  const requiredVersion = '1.15.0';
 
   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
   const installedVersion = ext
@@ -122,11 +118,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   setExtensionContext(context);
 
-  await ensureCoreVersion(context);
+  await ensureCoreVersion();
 
-  const requiredVersion = String(
-    (context.extension.packageJSON as Record<string, unknown>).version
-  );
+  const requiredVersion = '1.15.0';
   await updateRequiredExtensionsContext(requiredVersion);
 
   // Re-check when extensions are installed/uninstalled
@@ -191,6 +185,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Keep context key and account view in sync when sessions change
   context.subscriptions.push(
     authProvider.onDidChangeSessions(async (e) => {
+      logger.info('Authentication sessions changed');
       if (e.added && e.added.length > 0) {
         setLoggedIn(true);
         const currentSessions = await authProvider.getSessions();
