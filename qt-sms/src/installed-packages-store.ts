@@ -22,3 +22,27 @@ export function isVersionInstalledOnDisk(version: string): boolean {
   const versionDir = path.join(installPath, 'QtFramework', version);
   return fs.existsSync(versionDir) && fs.statSync(versionDir).isDirectory();
 }
+
+/**
+ * Check whether any Qt version is installed on disk.
+ * Returns true if <installationPath>/QtFramework/ contains at least one
+ * subdirectory.
+ */
+export function isAnyVersionInstalledOnDisk(): boolean {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawPath) {
+    return false;
+  }
+  const installPath = resolveConfiguration(rawPath);
+  const frameworkDir = path.join(installPath, 'QtFramework');
+  if (!fs.existsSync(frameworkDir)) {
+    return false;
+  }
+  try {
+    const entries = fs.readdirSync(frameworkDir, { withFileTypes: true });
+    return entries.some((e) => e.isDirectory());
+  } catch {
+    return false;
+  }
+}
