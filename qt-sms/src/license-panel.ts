@@ -34,7 +34,7 @@ export async function showLicenseAgreementPanel(
       vscode.ViewColumn.Active,
       {
         enableScripts: true,
-        retainContextWhenHidden: false,
+        retainContextWhenHidden: true,
         localResourceRoots: [
           vscode.Uri.joinPath(context.extensionUri, 'webview-ui', 'dist')
         ]
