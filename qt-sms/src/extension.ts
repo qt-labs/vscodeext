@@ -18,6 +18,7 @@ import {
   onInstallationPathChanged,
   login,
   logout,
+  resetTestState,
   setExtensionContext,
   setAuthProvider,
   syncInstalledPackages
@@ -165,7 +166,7 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.info(`Already logged in as ${sessions[0].account.label}`);
     setLoggedIn(true);
     accountViewProvider.setSession(sessions[0]);
-    void syncInstalledPackages();
+    syncInstalledPackages();
   } else {
     logger.info('No active session, attempting to renew stored credentials');
     const renewed = await authProvider.tryRenewSession();
@@ -174,7 +175,7 @@ export async function activate(context: vscode.ExtensionContext) {
       setLoggedIn(true);
       const renewedSessions = await authProvider.getSessions();
       accountViewProvider.setSession(renewedSessions[0]);
-      void syncInstalledPackages();
+      syncInstalledPackages();
     } else {
       logger.info('No stored credentials found, user is not logged in');
       setLoggedIn(false);
@@ -190,7 +191,7 @@ export async function activate(context: vscode.ExtensionContext) {
         setLoggedIn(true);
         const currentSessions = await authProvider.getSessions();
         accountViewProvider.setSession(currentSessions[0]);
-        void syncInstalledPackages();
+        syncInstalledPackages();
       } else if (e.removed && e.removed.length > 0) {
         setLoggedIn(false);
         accountViewProvider.setSession(undefined);
@@ -232,6 +233,10 @@ export async function activate(context: vscode.ExtensionContext) {
           `theqtcompany.${EXTENSION_ID}#${EXTENSION_ID}.getStarted`,
           false
         )
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.resetTestState`,
+      resetTestState
     ),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {
