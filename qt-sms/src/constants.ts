@@ -12,7 +12,8 @@ export const ALPHA_ALLOWLIST_URL =
 
 // Survey popup constants
 export const SURVEY_URL = 'https://www.surveymonkey.com/r/BMQH2W3';
-export const SURVEY_DELAY_MS = 30 * 60 * 1000; // 30 minutes
+// TODO: Make this 30 minutes before the alpha release
+export const SURVEY_DELAY_MS = 1 * 60 * 1000; // 1 minute
 
 // State keys for survey
 export const STATE_SURVEY_COMPLETED = 'surveyCompleted';
