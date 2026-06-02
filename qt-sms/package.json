@@ -109,6 +109,11 @@
         "title": "%qt-sms.command.logout.title%",
         "category": "Qt",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "qt-sms.resetTestState",
+        "title": "%qt-sms.command.resetTestState.title%",
+        "category": "Qt"
       }
     ],
     "menus": {
