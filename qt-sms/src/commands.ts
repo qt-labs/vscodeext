@@ -41,7 +41,10 @@ import {
   type QtAccountAuthenticationProvider
 } from '@/auth-provider';
 import { showLicenseAgreementPanel } from '@/license-panel';
-import { isVersionInstalledOnDisk } from '@/installed-packages-store';
+import {
+  isVersionInstalledOnDisk,
+  isAnyVersionInstalledOnDisk
+} from '@/installed-packages-store';
 
 const logger = createLogger('commands');
 
@@ -292,25 +295,15 @@ export async function searchPackages(): Promise<void> {
 //   });
 // }
 
-export async function syncInstalledPackages(): Promise<void> {
-  try {
-    const session = await ensureConnected();
-    const packages = new Packages(session);
-    const results = await packages.listInstalledPackages(undefined, undefined, {
-      onMessage: (info) => {
-        logger.info(`syncInstalledPackages: ${info.message}`);
-      },
-      onPrompt: handleUserPrompt
-    });
-    if (results.length > 0) {
-      // Merge service results with existing local state (don't discard local entries)
-    }
-    logger.info(
-      `Synced ${String(results.length)} installed package(s) to local store`
+export function syncInstalledPackages() {
+  const hasInstalled = isAnyVersionInstalledOnDisk();
+  if (hasInstalled) {
+    logger.info('Found installed Qt version(s) on disk');
+    void vscode.commands.executeCommand(
+      'setContext',
+      `${EXTENSION_ID}.packageInstalled`,
+      true
     );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    logger.warn(`Failed to sync installed packages: ${msg}`);
   }
 }
 
@@ -331,6 +324,7 @@ async function requireLogin(): Promise<boolean> {
 export interface InstallPackageArgs {
   regex?: string;
   version?: string;
+  product?: string;
 }
 
 export async function installPackage(args?: InstallPackageArgs): Promise<void> {
@@ -378,6 +372,12 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       if (pkg.installState === InstallState.Installed) {
         installedKeys.add(`${pkg.id}@${pkg.version}`);
       }
+    }
+
+    if (args?.product) {
+      candidates = candidates.filter(
+        (pkg: PackageData) => pkg.product === args.product
+      );
     }
 
     if (args?.regex) {
@@ -760,6 +760,11 @@ async function installPackageById(
       endInstallPhase?.();
       void vscode.window.showInformationMessage(
         `Successfully installed ${pkg.name || pkg.id}`
+      );
+      void vscode.commands.executeCommand(
+        'setContext',
+        `${EXTENSION_ID}.packageInstalled`,
+        true
       );
       registerInstalledQtPaths(pkg.version);
     })
