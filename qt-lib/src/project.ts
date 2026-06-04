@@ -89,12 +89,19 @@ export class ProjectManager<ProjectType extends Project> {
       }
     });
   }
+
   public findProjectContainingFile(uri: vscode.Uri) {
+    const folder = vscode.workspace.getWorkspaceFolder(uri);
+    const folderUri = folder?.uri.toString();
+    if (!folderUri) {
+      return undefined;
+    }
+
     return Array.from(this.projects).find((project) => {
-      const ret = uri.toString().startsWith(project.folder.uri.toString());
-      return ret;
+      return project.folder.uri.toString() === folderUri;
     });
   }
+
   dispose() {
     for (const project of this.projects) {
       project.dispose();
