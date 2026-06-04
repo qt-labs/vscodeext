@@ -316,6 +316,73 @@ describe('Packages', () => {
     }
   });
 
+  // ── cancel ─────────────────────────────────────────────────────────────────
+
+  describe('cancel', () => {
+    it('sends packages/cancel and resolves on success', async () => {
+      // Start an install so there is an in-flight operation
+      const installMsgPromise = server.nextMessage();
+      const installPromise = packages.install([{ id: 'qt6-base', version: '6.10' }]);
+
+      const { payload: installPayload, conn } = await installMsgPromise;
+      const installReqId = installPayload.id as string;
+
+      // Now cancel
+      const cancelMsgPromise = server.nextMessage();
+      const cancelPromise = packages.cancel();
+
+      const { payload: cancelPayload } = await cancelMsgPromise;
+      assert.equal(cancelPayload.method, 'packages/cancel');
+      assert.ok(typeof cancelPayload.id === 'string' && cancelPayload.id.length > 0);
+
+      const cancelReqId = cancelPayload.id as string;
+
+      // Service confirms cancel
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: cancelReqId,
+        result: {}
+      });
+
+      await cancelPromise;
+
+      // Complete the original install with error (service aborted it)
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: installReqId,
+        error: { code: ErrorCode.UserCancelled, message: 'Operation canceled' }
+      });
+
+      const err = await installPromise.then(
+        () => null,
+        (e: unknown) => e
+      );
+      assert.ok(err instanceof Error);
+      assert.ok(err.message.toLowerCase().includes('cancel'));
+    });
+
+    it('cancel rejects when service responds with error', async () => {
+      const cancelMsgPromise = server.nextMessage();
+      const cancelPromise = packages.cancel();
+
+      const { payload, conn } = await cancelMsgPromise;
+      assert.equal(payload.method, 'packages/cancel');
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        error: { code: 5000, message: 'Nothing to cancel' }
+      });
+
+      const err = await cancelPromise.then(
+        () => null,
+        (e: unknown) => e
+      );
+      assert.ok(err instanceof Error);
+      assert.equal(err.message, 'Nothing to cancel');
+    });
+  });
+
   // ── Params format ──────────────────────────────────────────────────────────
 
   describe('request params format', () => {
