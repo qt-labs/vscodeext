@@ -32,26 +32,19 @@ import { installBootstrap } from '@/bootstrap';
 
 const logger = createLogger('extension');
 
-const VERSIONED_EXTENSIONS = ['theqtcompany.qt-cpp'];
-const REQUIRED_EXTENSIONS = ['theqtcompany.qt-cpp', 'ms-vscode.cmake-tools'];
+const VERSIONED_EXTENSIONS: string[] = [];
+const REQUIRED_EXTENSIONS = ['theqtcompany.qt-cpp-pack'];
 
 async function ensureCoreVersion(): Promise<void> {
-  const requiredVersion = '1.15.0';
-
   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-  const installedVersion = ext
-    ? String((ext.packageJSON as Record<string, unknown>).version)
-    : undefined;
-  if (installedVersion === requiredVersion) {
+  if (ext) {
     return;
   }
-  logger.info(
-    `theqtcompany.qt-core version ${installedVersion ?? 'N/A'} does not match ` +
-      `required ${requiredVersion}, installing correct version`
-  );
+  logger.info('theqtcompany.qt-core not found, installing prerelease version');
   await vscode.commands.executeCommand(
     'workbench.extensions.installExtension',
-    `theqtcompany.qt-core@${requiredVersion}`
+    'theqtcompany.qt-core',
+    { installPreReleaseVersion: true }
   );
 }
 
@@ -93,15 +86,18 @@ async function installRequiredExtensions(
     if (ext) {
       continue;
     }
-    const installId = VERSIONED_EXTENSIONS.includes(extId)
-      ? `${extId}@${requiredVersion}`
-      : extId;
-    logger.info(`Installing required extension: ${installId}`);
+    logger.info(`Installing required extension: ${extId}`);
     await vscode.commands.executeCommand(
       'workbench.extensions.installExtension',
-      installId
+      extId
     );
   }
+  logger.info('Installing prerelease theqtcompany.qt-core');
+  await vscode.commands.executeCommand(
+    'workbench.extensions.installExtension',
+    'theqtcompany.qt-core',
+    { installPreReleaseVersion: true }
+  );
   await updateRequiredExtensionsContext(requiredVersion);
   if (areRequiredExtensionsInstalled(requiredVersion)) {
     void vscode.window.showInformationMessage(
