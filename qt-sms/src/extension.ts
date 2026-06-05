@@ -37,15 +37,22 @@ const REQUIRED_EXTENSIONS = ['theqtcompany.qt-cpp-pack'];
 
 async function ensureCoreVersion(): Promise<void> {
   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-  if (ext) {
+  const isPreRelease = ext
+    ? Boolean((ext.packageJSON as Record<string, unknown>).preRelease)
+    : false;
+
+  if (ext && isPreRelease) {
+    logger.info('Pre-release Qt Core extension is already installed');
     return;
   }
-  logger.info('theqtcompany.qt-core not found, installing prerelease version');
+
+  logger.info('Installing pre-release Qt Core extension');
   await vscode.commands.executeCommand(
     'workbench.extensions.installExtension',
     'theqtcompany.qt-core',
     { installPreReleaseVersion: true }
   );
+  await vscode.commands.executeCommand('workbench.action.reloadWindow');
 }
 
 function areRequiredExtensionsInstalled(requiredVersion: string): boolean {
