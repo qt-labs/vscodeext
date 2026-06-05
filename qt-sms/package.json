@@ -2,7 +2,7 @@
   "name": "qt-sms",
   "displayName": "Qt Software Management",
   "description": "Qt Software Management",
-  "version": "1.17.0",
+  "version": "0.1.0",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
