@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.15.0 (Apr 8, 2026)
+## 0.1.0 (Jun 5, 2026)
 
 🎉 **Added**
 
@@ -8,4 +8,4 @@
 - Search available Qt packages
 - List installed Qt packages
 - Install Qt packages
-- Configurable service executable path
+- Walkthrough
