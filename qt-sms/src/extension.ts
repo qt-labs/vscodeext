@@ -33,7 +33,21 @@ import { installBootstrap } from '@/bootstrap';
 const logger = createLogger('extension');
 
 const VERSIONED_EXTENSIONS: string[] = [];
-const REQUIRED_EXTENSIONS = ['theqtcompany.qt-cpp-pack'];
+const QT_PRERELEASE_EXTENSIONS = [
+  'theqtcompany.qt-core',
+  'theqtcompany.qt-cpp',
+  'theqtcompany.qt-qml',
+  'theqtcompany.qt-ui'
+];
+const OTHER_REQUIRED_EXTENSIONS = [
+  'theqtcompany.qt-cpp-pack',
+  'ms-vscode.cmake-tools',
+  'ms-vscode.cpptools'
+];
+const REQUIRED_EXTENSIONS = [
+  ...QT_PRERELEASE_EXTENSIONS,
+  ...OTHER_REQUIRED_EXTENSIONS
+];
 
 async function ensureCoreVersion(): Promise<void> {
   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
@@ -88,7 +102,15 @@ async function installRequiredExtensions(
     (context.extension.packageJSON as Record<string, unknown>).version
   );
 
-  for (const extId of REQUIRED_EXTENSIONS) {
+  for (const extId of QT_PRERELEASE_EXTENSIONS) {
+    logger.info(`Installing pre-release extension: ${extId}`);
+    await vscode.commands.executeCommand(
+      'workbench.extensions.installExtension',
+      extId,
+      { installPreReleaseVersion: true }
+    );
+  }
+  for (const extId of OTHER_REQUIRED_EXTENSIONS) {
     const ext = vscode.extensions.getExtension(extId);
     if (ext) {
       continue;
@@ -99,12 +121,6 @@ async function installRequiredExtensions(
       extId
     );
   }
-  logger.info('Installing prerelease theqtcompany.qt-core');
-  await vscode.commands.executeCommand(
-    'workbench.extensions.installExtension',
-    'theqtcompany.qt-core',
-    { installPreReleaseVersion: true }
-  );
   await updateRequiredExtensionsContext(requiredVersion);
   if (areRequiredExtensionsInstalled(requiredVersion)) {
     void vscode.window.showInformationMessage(
