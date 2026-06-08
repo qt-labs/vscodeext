@@ -38,6 +38,8 @@
         \li Get QML syntax highlighting and code completion with
             \l {\QMLLS}
         \li Verify the syntax of QML code with \l{qmllint Reference}{qmllint}
+        \li Find causes for typical performance problems in Qt Quick applications
+            with QML Profiler
     \endlist
 
     \section1 Web development
