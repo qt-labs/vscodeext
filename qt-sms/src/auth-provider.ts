@@ -111,6 +111,23 @@ export class QtAccountAuthenticationProvider
       throw new Error('Login cancelled');
     }
 
+    const password = await vscode.window.showInputBox({
+      title: 'Qt Account Login',
+      prompt: 'Enter your Qt Account password',
+      password: true,
+      ignoreFocusOut: true,
+      validateInput: (value) => {
+        if (!value) {
+          return 'Password is required';
+        }
+        return undefined;
+      }
+    });
+
+    if (!password) {
+      throw new Error('Login cancelled');
+    }
+
     // Check alpha access allowlist before attempting login
     let allowlist: string[];
     try {
@@ -134,23 +151,6 @@ export class QtAccountAuthenticationProvider
       const errMsg = `Qt Account "${email}" is not in the alpha access list.`;
       logger.error(errMsg);
       throw new Error(errMsg);
-    }
-
-    const password = await vscode.window.showInputBox({
-      title: 'Qt Account Login',
-      prompt: 'Enter your Qt Account password',
-      password: true,
-      ignoreFocusOut: true,
-      validateInput: (value) => {
-        if (!value) {
-          return 'Password is required';
-        }
-        return undefined;
-      }
-    });
-
-    if (!password) {
-      throw new Error('Login cancelled');
     }
 
     logger.info(`Attempting login for ${email}`);
