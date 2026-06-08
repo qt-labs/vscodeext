@@ -10,146 +10,62 @@
 
     \title Profile QML code
 
-    With the QML Profiler integrated in \QC, you can find causes for typical
-    performance problems in Qt Quick applications, such as slowness and
-    unresponsive, stuttering user interfaces. You can open profiling data in
-    \QVSC and view it as a flame graph.
+    With QML Profiler, you can find causes for typical performance problems
+    in Qt Quick applications, such as slowness and unresponsive, stuttering user
+    interfaces.
 
-    \section1 Collect profiling data in \QC
+    You can launch QML Profiler from \QVSC to profile a running QML application
+    and to analyze profiling data.
 
-    Use \QC to profile the application and save QML trace files in the \c {.qzt}
-    or \c {.qdt} format in the project directory.
+    \section1 Install QML profiler
 
-    For more information, see \l {\QC: Profile QML applications}.
+    To profile QML applications, you need to install QML Profile. Go to
+    \uicontrol {Command Palette} and select
+    \uicontrol {Qt: Install the most recent QML trace viewer}.
 
-    \section1 View profiling data
+    If you do not install QML Profiler, \QVSC offers to install it the first time
+    you start profiling a application.
 
-    To view profiling data in VS Code, open a \c {.qzt} or \c {.qdt} file in the
-    \uicontrol Explorer.
+    \section1 Collect profiling data
 
-    A flame graph shows a concise statistical overview of QML and JavaScript
-    execution and the total impact of the various QML and JavaScript events.
-    However, it does not show the time spans when no QML or JavaScript is
-    running at all, so you cannot use it to analyze per frame execution times.
-
-    Generally, events in the flame graph indicate how long QML or JavaScript
-    execution took. Move the mouse over them to see details. For most events,
-    they include location in source code, duration and some relevant parts of
-    the source code itself.
-
-    Select an event to move the cursor in the code editor to the part
-    of the code the event is associated with.
-
-    \section2 View total time
-
-    In \uicontrol {Total time}, the horizontal bars show the amount of
-    time all invocations of a certain function took together, relative to the
-    total runtime of all JavaScript and QML events. The nesting shows which
-    functions were called by which other ones.
-
-    \image {vscodeext-qml-profiler-total-time.webp} {Total time view}
-
-    \section2 View total memory allocation
-
-    To view the total amount of memory allocated by the functions, select
-    \uicontrol {Memory}.
-
-    \section2 View memory allocation by function
-
-    To view the number of memory allocations performed by the functions,
-    select \uicontrol {Allocations}.
-
-    \section2 Zoom the data
-
-    To zoom to fit, select \inlineimage {zoom-in.png} {Zoom to fit}
-    (\uicontrol {Zoom to fit}) or double-click an event.
-
-    To zoom out to the parent event, select
-    \inlineimage {zoom-out.png} {Zoom out to parent}
-    (\uicontrol {Zoom out to parent}).
-
-    To zoom out to the full view, select
-    \inlineimage {fittoview.png} {Zoom out to full view}
-    (\uicontrol {Zoom out to full view}).
-
-    \section1 Filter events
-
-    To filter events:
+    To collect profiling data about the currently open application:
 
     \list 1
-        \li Select \inlineimage {filter.png} {Show/hide filter dialog}
-            (\uicontrol {Show/hide filter dialog}).
-        \li Select event categories in the list to show and hide events.
+        \li Go to \uicontrol {Command Palette} and select
+            \uicontrol {Qt: Profile QML application} or
+            \inlineimage {profiler-start.png} {Profile QML application}
+            (\uicontrol {Profile QML application}) on the toolbar.
+        \li Use the application to collect profiling data.
+        \li Close the application or select
+            \inlineimage {profiler-stop.png} {Profile QML application}
+            (\uicontrol {Stop QML profiler}) on the toolbar.
     \endlist
 
-    Select \uicontrol {Select all} to show all events and \uicontrol {Clear} to
-    hide all events.
+    Use the QML Profiler to collect data and analyze the results.
 
-    \section2 Events
+    \image {qml-profiler.webp} {QML Profiler}
 
-    The following table describes the events.
+    For more information, see \l {\QC: Profiling QML applications}
+    {Profiling QML applications} in the \QC documentation.
 
-    \table
-    \header
-        \li Event
-        \li Description
-    \row
-        \li \uicontrol JavaScript
-        \li Displays the time spent executing the actual JavaScript behind
-            bindings and signal handlers. Lists all the JavaScript functions
-            you may be using to evaluate bindings or handle signals.
-    \row
-        \li \uicontrol Compiling
-        \li Displays the time spent compiling the QML files.
-    \row
-        \li \uicontrol Creating
-        \li Displays the time spent creating the elements in the scene.
-            The creation of elements takes place in two stages. The first
-            stage is for the creation of the data structures, including child
-            elements. The second stage represents the completion callbacks. Not
-            all elements trigger completion callbacks, though. The stages are
-            shown as separate events in the timeline.
-    \row
-        \li \uicontrol Binding
-        \li Displays the time when a binding is evaluated and the length of time
-            the evaluation takes.
-    \row
-        \li \uicontrol {Signal handling}
-        \li Displays the time when a signal is handled and the length of time the
-            handling takes.
-    \endtable
+    \section1 Attach QML Profiler to running applications
 
-    \section1 Open as JSONC
-
-    Select \uicontrol {{}} (\uicontrol {Open flame graph as a JSONC document})
-    to open profiling data in JSONC format.
-
-    \section1 Open in text editor
-
-    Select \inlineimage {text-editor.png} {Open in text editor}
-    (\uicontrol {Open in text editor}) to open \c {.qtd} files
-    in XML format.
-
-    \section1 Set project source and build folders
-
-    To open QML source files when selecting events:
+    To attach the QML Profiler to a running application for collecting profiling
+    data:
 
     \list 1
-        \li Select \inlineimage {settings.png} {Settings}
-            (\uicontrol {Open configuration settings}) to open the
-            \uicontrol {Configuration} view.
-            \image {vscodeext-qml-profiler-settings.webp} {QML Profiler settings}
-        \li Select \inlineimage {folder.png} {Browse for a directory}
-            (\uicontrol {Browse for a directory}), and then select source
-            and build folders.
-        \li Select \inlineimage {package.png} {Add workspace folders}
-            (\uicontrol {Add workspace folders}) to add the currently open
-            workspace folder.
-        \li Select \uicontrol {Save}.
+        \li In the \uicontrol Terminal, start the application with the following
+            arguments:
+            \badcode
+            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:QmlProfiler,CanvasFrameRate
+            \endcode
+            Where \e IP_address is the IP address of the host where the
+            application is running, \e port_number is the debugging port,
+            and block prevents the application from running until the debug
+            client connects to the server. This enables profiling from the start.
+        \li When the application is running, go to \uicontrol {Command Palette},
+            and select \uicontrol {Qt: Attach to running QML application for profiling}.
+        \li Enter the IP address of the host, and then select \key Enter.
+        \li Enter the port number, and then select \key Enter.
     \endlist
-
-    To remove the folders from \uicontrol {Configuration}, select
-    \inlineimage {clear.png} {Clear all entries} (\uicontrol {Clear all entries}).
-
-    \sa {\QC: Profiling QML applications}
 */
