@@ -937,6 +937,11 @@ export async function resetTestState(): Promise<void> {
     return;
   }
 
+  // Sign out before tearing down
+  if (authProviderInstance) {
+    await logout(authProviderInstance);
+  }
+
   disconnect();
 
   // Kill the service process
@@ -971,6 +976,27 @@ export async function resetTestState(): Promise<void> {
     logger.info('Reset test state: nothing to remove');
     void vscode.window.showInformationMessage(
       'qt-sms test state: nothing to remove.'
+    );
+  }
+
+  // Remove registered Qt paths that are inside the install directory
+  const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
+  const existing = coreConfig.inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  const filtered = currentPaths.filter((p) => {
+    const pPath = typeof p === 'string' ? p : (p as { path: string }).path;
+    return !pPath.startsWith(installPath);
+  });
+  if (filtered.length !== currentPaths.length) {
+    await coreConfig.update(
+      AdditionalQtPathsName,
+      filtered.length > 0 ? filtered : undefined,
+      vscode.ConfigurationTarget.Global
+    );
+    logger.info(
+      `Removed ${String(currentPaths.length - filtered.length)} Qt path(s) under ${installPath}`
     );
   }
 }
