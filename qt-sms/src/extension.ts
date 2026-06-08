@@ -8,7 +8,8 @@ import {
   getCoreApi,
   createLogger,
   initLogger,
-  telemetry
+  telemetry,
+  compareVersions
 } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import {
@@ -44,6 +45,8 @@ const OTHER_REQUIRED_EXTENSIONS = [
   'ms-vscode.cmake-tools',
   'ms-vscode.cpptools'
 ];
+
+const MIN_CMAKE_TOOLS_VERSION = '1.22.16';
 const REQUIRED_EXTENSIONS = [
   ...QT_PRERELEASE_EXTENSIONS,
   ...OTHER_REQUIRED_EXTENSIONS
@@ -113,6 +116,20 @@ async function installRequiredExtensions(
   for (const extId of OTHER_REQUIRED_EXTENSIONS) {
     const ext = vscode.extensions.getExtension(extId);
     if (ext) {
+      if (extId === 'ms-vscode.cmake-tools') {
+        const version = String(
+          (ext.packageJSON as Record<string, unknown>).version
+        );
+        if (compareVersions(version, MIN_CMAKE_TOOLS_VERSION) < 0) {
+          logger.info(
+            `Updating ${extId} from ${version} to >= ${MIN_CMAKE_TOOLS_VERSION}`
+          );
+          await vscode.commands.executeCommand(
+            'workbench.extensions.installExtension',
+            extId
+          );
+        }
+      }
       continue;
     }
     logger.info(`Installing required extension: ${extId}`);
