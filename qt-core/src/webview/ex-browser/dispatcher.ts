@@ -117,13 +117,13 @@ export class ExBrowserDispatcher {
     this._comm.postDataReply(cmd, r);
   };
 
-  private readonly _onSelectPackage = (cmd: Command) => {
+  private readonly _onSelectPackage = async (cmd: Command) => {
     const p = _.get(cmd.payload, 'package', {});
     if (!isExPackage(p)) {
       throw Error('Parameter is invalid');
     }
 
-    this._data.selectPackage(p);
+    await this._data.selectPackage(p);
     this._comm.postDataReply(cmd, {
       info: p,
       categories: this._data.categories,
@@ -183,7 +183,12 @@ export class ExBrowserDispatcher {
           const rel = example.projectPath;
           const originalName = path.basename(path.dirname(rel));
 
-          helpers.createNewProject(args, abs, originalName);
+          helpers.createNewProject(
+            args,
+            abs,
+            originalName,
+            this._data.qtInstallation
+          );
           await helpers.saveNewProjectArgs(args, this._context);
         }
       }
