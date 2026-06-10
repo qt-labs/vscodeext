@@ -17,12 +17,15 @@ import * as catHelpers from './helpers-category';
 import * as searchHelpers from './helpers-search';
 import { ExPathsResolver } from './resolvers';
 import { parseManifestFile, ManifestType } from './manifest-parser';
+import { resolveQtInstallation, type QtInstallationInfo } from './helpers';
 
 const logger = createLogger('examples-data-manager');
 
 export class ExDataManager {
   private _packages: ExPackage[] = [];
   private _categories: ExCategory[] = [];
+  private _selectedPackage: ExPackage | undefined;
+  private _qtInstallation: QtInstallationInfo | undefined;
 
   private _examples: ExEntry[] = [];
   private _resolvedPaths: Record<string, ExResolvedPaths> = {};
@@ -34,6 +37,8 @@ export class ExDataManager {
   public dispose() {
     this._packages = [];
     this._categories = [];
+    this._selectedPackage = undefined;
+    this._qtInstallation = undefined;
     this._examples = [];
     this._resolvedPaths = {};
   }
@@ -54,9 +59,19 @@ export class ExDataManager {
     return this._resolvedPaths;
   }
 
-  public selectPackage(p: ExPackage) {
+  get selectedPackage() {
+    return this._selectedPackage;
+  }
+
+  get qtInstallation() {
+    return this._qtInstallation;
+  }
+
+  public async selectPackage(p: ExPackage) {
     logger.info(`Selecting examples: ${p.poolDir.fsPath}, ${p.subDir}`);
 
+    this._selectedPackage = p;
+    this._qtInstallation = await resolveQtInstallation(p.poolDir, p.subDir);
     this._examples = [];
     this._resolvedPaths = {};
 
