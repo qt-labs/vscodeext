@@ -19,7 +19,7 @@ export function registerSourceDirectoryCommand() {
         logger.warn(
           'No active C++ project found. Cannot determine source directory.'
         );
-        return undefined;
+        return 'undefined';
       }
       const sourceDir = await project.getSourceDirectory();
       if (!sourceDir) {
@@ -45,7 +45,7 @@ export function registerSourceDirectoryCommand() {
               }
             });
         }
-        return undefined;
+        return 'undefined';
       }
       logger.info(`Source directory: ${sourceDir}`);
       return sourceDir;
