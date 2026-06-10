@@ -569,6 +569,14 @@ export class CppProject implements Project {
     }
     return undefined;
   }
+  async getSourceDirectory(): Promise<string | undefined> {
+    const installationPath = await this.getInstallationPath();
+    if (!installationPath) {
+      return undefined;
+    }
+    const versionDir = path.dirname(installationPath);
+    return path.join(versionDir, 'Src');
+  }
   async getQtPathsExeFromKit() {
     const folder = this.folder;
     const kit = await getSelectedKit(folder, true);
