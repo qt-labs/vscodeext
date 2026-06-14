@@ -10,6 +10,7 @@ import * as texts from '@/texts';
 import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
 import { getNewProjectBaseDir, setDefaultProjectDir } from '@/qtcli/commands';
+import { generateProjectConfigs } from '@/project-config-generator';
 import { WebviewChannel } from '@/webview/channel';
 import { Command, CommandId, IsCommand } from '@/webview/shared/message';
 import { GlobalStateManager } from '@/state';
@@ -257,6 +258,7 @@ function openItemsFromQtcliResponseData(
   }
 
   if (type === 'project') {
+    generateProjectConfigs(path.normalize(filesDir));
     const uri = vscode.Uri.file(path.normalize(filesDir));
     if (openIn === 'newWindow') {
       void vscode.commands.executeCommand('vscode.openFolder', uri, true);
