@@ -29,6 +29,8 @@
   "qna": "marketplace",
   "pricing": "Free",
   "activationEvents": [
+    "workspaceContains:**/*.qml",
+    "workspaceContains:**/*.qmlproject",
     "workspaceContains:**/*.qtd",
     "workspaceContains:**/*.qzt"
   ],
