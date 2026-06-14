@@ -28,6 +28,7 @@ import {
   ExBrowserViewConfig
 } from '@/webview/shared/ex-browser';
 import { fsDir } from '@/fs-utils';
+import { generateProjectConfigs } from '@/project-config-generator';
 
 type Context = vscode.ExtensionContext;
 
@@ -85,6 +86,7 @@ export function createNewProject(
   const targetDir = fsDir(args.workingDir, name);
 
   sourceDir.copyAll(targetDir.toString());
+  generateProjectConfigs(targetDir.toString());
 
   generateCMakePresets(targetDir.toString(), qtInstallation);
 
