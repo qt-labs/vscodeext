@@ -9,6 +9,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@lucide/svelte": "^1.18.0",
     "svelte": "^5.19.6"
   },
   "devDependencies": {

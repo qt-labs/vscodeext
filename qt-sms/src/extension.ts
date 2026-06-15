@@ -28,8 +28,15 @@ import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
 import { AccountViewProvider } from '@/account-view';
 import { initSurvey, disposeSurvey } from '@/survey';
+import {
+  showWalkthroughPanel,
+  getStepCompletion,
+  registerWalkthroughSerializer,
+  refreshWalkthrough
+} from '@/walkthrough-panel';
 
 import { installBootstrap } from '@/bootstrap';
+import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
 
 const logger = createLogger('extension');
 
@@ -54,13 +61,17 @@ const REQUIRED_EXTENSIONS = [
 
 async function ensureCoreVersion(): Promise<void> {
   const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-  const isPreRelease = ext
-    ? Boolean((ext.packageJSON as Record<string, unknown>).preRelease)
-    : false;
+  if (ext) {
+    const packageJSON = ext.packageJSON as Record<string, unknown>;
+    const installedVersion = String(packageJSON.version);
 
-  if (ext && isPreRelease) {
-    logger.info('Pre-release Qt Core extension is already installed');
-    return;
+    if (compareVersions(installedVersion, requiredVersion) > 0) {
+      logger.info(
+        `Installed Qt Core extension ${installedVersion} is newer than ` +
+          `${requiredVersion}, keeping it`
+      );
+      return;
+    }
   }
 
   logger.info('Installing pre-release Qt Core extension');
@@ -96,6 +107,10 @@ async function updateRequiredExtensionsContext(
     `${EXTENSION_ID}.requiredExtensionsInstalled`,
     areRequiredExtensionsInstalled(requiredVersion)
   );
+}
+
+export function getRequiredExtensionsContext() {
+  return areRequiredExtensionsInstalled(requiredVersion);
 }
 
 async function installRequiredExtensions(
@@ -147,6 +162,21 @@ async function installRequiredExtensions(
 }
 
 export let coreAPI: CoreAPI | undefined;
+const requiredVersion = '1.15.1';
+
+let loggedIn = false;
+function setLoggedIn(value: boolean) {
+  loggedIn = value;
+  void vscode.commands.executeCommand(
+    'setContext',
+    `${EXTENSION_ID}.isLoggedIn`,
+    value
+  );
+}
+
+export function getLoggedIn() {
+  return loggedIn;
+}
 
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
@@ -157,15 +187,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await ensureCoreVersion();
 
-  const requiredVersion = '1.15.0';
   await updateRequiredExtensionsContext(requiredVersion);
 
   // Re-check when extensions are installed/uninstalled
   context.subscriptions.push(
-    vscode.extensions.onDidChange(
-      () => void updateRequiredExtensionsContext(requiredVersion)
-    )
+    vscode.extensions.onDidChange(() => {
+      void updateRequiredExtensionsContext(requiredVersion);
+      // Re-sync both directions: required extensions may have been installed
+      // or uninstalled, so the step can go forward or backward.
+      refreshWalkthrough();
+    })
   );
+
+  // Re-sync the walkthrough when Qt versions appear/disappear in the
+  // installation root on disk (installs/uninstalls outside the extension).
+  watchInstalledPackagesOnDisk(context, refreshWalkthrough);
 
   void installBootstrap();
 
@@ -187,14 +223,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   accountViewProvider.setTreeView(accountTreeView);
   context.subscriptions.push(accountTreeView);
-
-  // Track login state via VS Code context key
-  const setLoggedIn = (value: boolean) =>
-    void vscode.commands.executeCommand(
-      'setContext',
-      `${EXTENSION_ID}.isLoggedIn`,
-      value
-    );
 
   // Check login status at startup
   const sessions = await authProvider.getSessions();
@@ -225,12 +253,17 @@ export async function activate(context: vscode.ExtensionContext) {
       logger.info('Authentication sessions changed');
       if (e.added && e.added.length > 0) {
         setLoggedIn(true);
+        // Re-render so the sign-in step's button is recomputed as disabled.
+        refreshWalkthrough();
         const currentSessions = await authProvider.getSessions();
         accountViewProvider.setSession(currentSessions[0]);
         syncInstalledPackages();
       } else if (e.removed && e.removed.length > 0) {
         setLoggedIn(false);
         accountViewProvider.setSession(undefined);
+        // Signed out: the sign-in step (and everything gated behind it)
+        // reverts, so re-render the walkthrough.
+        refreshWalkthrough();
       } else if (e.changed && e.changed.length > 0) {
         const currentSessions = await authProvider.getSessions();
         accountViewProvider.setSession(currentSessions[0]);
@@ -261,15 +294,18 @@ export async function activate(context: vscode.ExtensionContext) {
       `${EXTENSION_ID}.installRequiredExtensions`,
       async () => installRequiredExtensions(context)
     ),
-    vscode.commands.registerCommand(
-      `${EXTENSION_ID}.openWalkthrough`,
-      () =>
-        void vscode.commands.executeCommand(
-          'workbench.action.openWalkthrough',
-          `theqtcompany.${EXTENSION_ID}#${EXTENSION_ID}.getStarted`,
-          false
-        )
-    ),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.openWalkthrough`, () => {
+      const completion = getStepCompletion(
+        context,
+        loggedIn,
+        areRequiredExtensionsInstalled(requiredVersion)
+      );
+      // print completion state for testing purposes
+      logger.info(
+        `Walkthrough completion state: ${JSON.stringify(completion)}`
+      );
+      showWalkthroughPanel(context, completion);
+    }),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.resetTestState`,
       resetTestState
@@ -277,8 +313,13 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {
         void onInstallationPathChanged();
+        // The new root may contain a different set of installed Qt versions,
+        // so the framework step can go forward or backward.
+        refreshWalkthrough();
       }
-    })
+    }),
+    // Restore the walkthrough tab after a window reload.
+    registerWalkthroughSerializer(context)
   );
 
   // Initialize survey popup (shows after 30 minutes)
