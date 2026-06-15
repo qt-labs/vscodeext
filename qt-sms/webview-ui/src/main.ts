@@ -3,8 +3,12 @@
 
 import { mount } from 'svelte';
 import LicenseApp from './LicenseApp.svelte';
+import WalkthroughApp from './walkthrough/WalkthroughApp.svelte';
 
-const app = mount(LicenseApp, {
+const appType = document.body.dataset.app;
+const appComp = appType === 'walkthrough' ? WalkthroughApp : LicenseApp;
+
+const app = mount(appComp, {
   target: document.getElementById('app')!
 });
 
