@@ -48,6 +48,8 @@ import {
   isVersionInstalledOnDisk,
   isAnyVersionInstalledOnDisk
 } from '@/installed-packages-store';
+import { refreshWalkthrough } from '@/walkthrough-panel';
+import { isInstalling, setInstalling } from '@/install-state';
 
 const logger = createLogger('commands');
 
@@ -626,6 +628,26 @@ async function installPackageById(
   if (!(await requireLogin())) {
     return;
   }
+
+  // Restrict to a single installation at a time.
+  if (isInstalling()) {
+    void vscode.window.showWarningMessage(
+      'An installation is already in progress. Please wait for it to finish.'
+    );
+    return;
+  }
+  setInstalling(true);
+  try {
+    await installPackageByIdImpl(packages, pkg);
+  } finally {
+    setInstalling(false);
+  }
+}
+
+async function installPackageByIdImpl(
+  packages: Packages,
+  pkg: PackageData
+): Promise<void> {
   await resetLicenseConsents();
 
   const pkgRef = { id: pkg.id, version: pkg.version };
@@ -769,6 +791,9 @@ async function installPackageById(
         `${EXTENSION_ID}.packageInstalled`,
         true
       );
+      // Re-render so the framework step's install button is recomputed as
+      // disabled now that a version is installed.
+      refreshWalkthrough();
       registerInstalledQtPaths(pkg.version);
     })
     .catch((err: unknown) => {
