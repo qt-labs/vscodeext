@@ -19,3 +19,6 @@ export const SURVEY_DELAY_MS = 30 * 60 * 1000; // 30 minutes
 export const STATE_SURVEY_COMPLETED = 'surveyCompleted';
 export const STATE_SURVEY_DISMISSED = 'surveyDismissed';
 export const STATE_SURVEY_LAST_PROMPT = 'surveyLastPrompt';
+
+// State keys for the walkthrough
+export const STATE_WALKTHROUGH_FIRST_APP_DONE = 'walkthroughFirstAppDone';

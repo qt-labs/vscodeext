@@ -128,64 +128,6 @@
         }
       ]
     },
-    "walkthroughs": [
-      {
-        "id": "qt-sms.getStarted",
-        "title": "%qt-sms.walkthrough.getStarted.title%",
-        "description": "%qt-sms.walkthrough.getStarted.description%",
-        "steps": [
-          {
-            "id": "qt-sms.signIn",
-            "title": "%qt-sms.walkthrough.signIn.title%",
-            "description": "%qt-sms.walkthrough.signIn.description%",
-            "media": {
-              "image": "res/walkthrough/install-qt.svg",
-              "altText": "Sign in to Qt Account"
-            },
-            "completionEvents": [
-              "onContext:qt-sms.isLoggedIn"
-            ]
-          },
-          {
-            "id": "qt-sms.installExtensions",
-            "title": "%qt-sms.walkthrough.installExtensions.title%",
-            "description": "%qt-sms.walkthrough.installExtensions.description%",
-            "media": {
-              "image": "res/walkthrough/install-qt.svg",
-              "altText": "Install required extensions"
-            },
-            "completionEvents": [
-              "onContext:qt-sms.requiredExtensionsInstalled"
-            ]
-          },
-          {
-            "id": "qt-sms.installQtFramework",
-            "title": "%qt-sms.walkthrough.installQtFramework.title%",
-            "description": "%qt-sms.walkthrough.installQtFramework.description%",
-            "media": {
-              "image": "res/walkthrough/install-qt.svg",
-              "altText": "Install Qt Framework"
-            },
-            "completionEvents": [
-              "onContext:qt-sms.packageInstalled"
-            ]
-          },
-          {
-            "id": "qt-sms.buildFirstApp",
-            "title": "%qt-sms.walkthrough.buildFirstApp.title%",
-            "description": "%qt-sms.walkthrough.buildFirstApp.description%",
-            "media": {
-              "image": "res/walkthrough/install-qt.svg",
-              "altText": "Build your first Qt Application"
-            },
-            "completionEvents": [
-              "onCommand:qt-core.createNewItem",
-              "onCommand:qt-core.openExamplesBrowser"
-            ]
-          }
-        ]
-      }
-    ],
     "configuration": {
       "type": "object",
       "title": "Qt Software Management Configuration",
