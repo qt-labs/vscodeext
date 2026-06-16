@@ -11,6 +11,7 @@ import {
   findQtKits,
   findQtPathsInInstallationPath,
   generateDefaultQtPathsName,
+  getMsvcInfo,
   IsWindows,
   QtInfo
 } from 'qt-lib';
@@ -251,46 +252,6 @@ export async function resolveQtInstallation(
   }
 
   return undefined;
-}
-
-const MsvcArchRegexp = /msvc\d{4}_(.+)/;
-const MsvcYearRegexp = /msvc(\d{4})/;
-const MsvcArchMap: Record<string, string> = {
-  '64': 'x64',
-  '32': 'x86',
-  arm64: 'ARM64'
-};
-const MsvcYearToVsVersion: Record<string, string> = {
-  '2015': '14',
-  '2017': '15',
-  '2019': '16',
-  '2022': '17'
-};
-
-interface MsvcInfo {
-  arch: string;
-  vsGenerator: string;
-}
-
-function getMsvcInfo(prefixPath: string): MsvcInfo | undefined {
-  const toolchain = path.basename(prefixPath);
-  if (!toolchain.startsWith('msvc')) {
-    return undefined;
-  }
-  const archMatch = toolchain.match(MsvcArchRegexp);
-  const archStr = archMatch?.[1] ?? '64';
-  const arch = MsvcArchMap[archStr] ?? 'x64';
-
-  const yearMatch = toolchain.match(MsvcYearRegexp);
-  const year = yearMatch?.[1] ?? '2022';
-  const vsVersion = MsvcYearToVsVersion[year];
-  if (!vsVersion) {
-    return undefined;
-  }
-  return {
-    arch,
-    vsGenerator: `Visual Studio ${vsVersion} ${year}`
-  };
 }
 
 function generateCMakePresets(
