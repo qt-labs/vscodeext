@@ -22,7 +22,13 @@ import {
   getVCPKGRoot,
   telemetry,
   TelemetryEventProperties,
-  fileWriter
+  fileWriter,
+  MsvcPlatformToQtArch,
+  MsvcToolchainRegexp,
+  MsvcToolchainNoArchRegexp,
+  MsvcYearInNameRegexp,
+  VsMajorVersionRegexp,
+  VsMajorVersionToYear
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject, CppProjectType } from '@/project';
@@ -131,30 +137,6 @@ export class KitManager {
   projects = new Set<CppProject>();
   workspaceFile: vscode.Uri | undefined;
   globalStateManager: GlobalStateManager;
-  static readonly MapMsvcPlatformToQt: Record<string, string> = {
-    x64: '64',
-    amd64_x86: '32',
-    x86_amd64: '64',
-    amd64: '64',
-    win32: '32',
-    x86: '32',
-    x86_64: '64',
-    i386: '32',
-    arm64: '64'
-  };
-  static readonly MsvcInfoRegexp = /msvc(\d\d\d\d)_(.+)/; // msvcYEAR_ARCH
-  static readonly MsvcInfoNoArchRegexp = /msvc(\d\d\d\d)/; // msvcYEAR
-  static readonly MsvcYearRegex = / (\d\d\d\d) /;
-  static readonly MsvcMajorVersionNumberRegex = /VisualStudio\.(\d\d)\.\d /;
-  static readonly MapMsvcMajorVersionToItsYear: Record<string, string> = {
-    11: '2008',
-    12: '2010',
-    13: '2012',
-    14: '2015',
-    15: '2017',
-    16: '2019',
-    17: '2022'
-  };
 
   constructor(readonly context: vscode.ExtensionContext) {
     this.globalStateManager = new GlobalStateManager(context);
@@ -437,7 +419,7 @@ export class KitManager {
         yield undefined;
         return;
       }
-      const arch = KitManager.MapMsvcPlatformToQt[qtInfo.get('ARCH') ?? ''];
+      const arch = MsvcPlatformToQtArch[qtInfo.get('ARCH') ?? ''];
       if (!arch) {
         logger.warn(`arch: ${arch ?? ''}`);
         yield undefined;
@@ -583,8 +565,8 @@ export class KitManager {
         ) as Kit[];
         logger.info(`MSVC kits clone: ${JSON.stringify(msvcKitsClone)}`);
         const msvcInfoMatch =
-          toolchain.match(KitManager.MsvcInfoRegexp) ??
-          toolchain.match(KitManager.MsvcInfoNoArchRegexp);
+          toolchain.match(MsvcToolchainRegexp) ??
+          toolchain.match(MsvcToolchainNoArchRegexp);
         const vsYear = msvcInfoMatch?.at(1) ?? '';
         const architecture = msvcInfoMatch?.at(2) ?? '32';
         yield* KitManager.generateMsvcKits(
@@ -803,9 +785,8 @@ export class KitManager {
       const msvcTargetArch = kit.visualStudioArchitecture?.toLowerCase() ?? '';
       const msvcTargetPlatformArch = kit.preferredGenerator?.platform ?? '';
       logger.info('msvcTargetArch: ' + msvcTargetArch);
-      const targetArchitecture = KitManager.MapMsvcPlatformToQt[msvcTargetArch];
-      const targetPlatformArch =
-        KitManager.MapMsvcPlatformToQt[msvcTargetPlatformArch];
+      const targetArchitecture = MsvcPlatformToQtArch[msvcTargetArch];
+      const targetPlatformArch = MsvcPlatformToQtArch[msvcTargetPlatformArch];
       const isArchMatch =
         targetArchitecture == architecture &&
         targetPlatformArch == architecture;
@@ -847,15 +828,13 @@ export class KitManager {
   }
 
   private static getMsvcYear(kit: Kit) {
-    const year = kit.name.match(KitManager.MsvcYearRegex)?.at(1) ?? '';
+    const year = kit.name.match(MsvcYearInNameRegexp)?.at(1) ?? '';
     if (year) {
       return year;
     }
-    const majorMsvcVersion = kit.name
-      .match(KitManager.MsvcMajorVersionNumberRegex)
-      ?.at(1);
+    const majorMsvcVersion = kit.name.match(VsMajorVersionRegexp)?.at(1);
     if (majorMsvcVersion) {
-      return KitManager.MapMsvcMajorVersionToItsYear[majorMsvcVersion] ?? '';
+      return VsMajorVersionToYear[majorMsvcVersion] ?? '';
     }
     return '';
   }
