@@ -78,7 +78,14 @@
         \li Close the preview window.
         \li Select \inlineimage {stop-circle.png} {Stop QML preview} on the
             editor toolbar.
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Stop QML Preview}.
     \endlist
+
+    \section1 Reload the preview window
+
+    To reload the preview window, go to \uicontrol {Command Palette}, and select
+    \uicontrol {Qt: Reload QML Preview}.
 
     \sa {Qt settings}
 */
