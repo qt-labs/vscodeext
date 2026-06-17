@@ -18,6 +18,9 @@
 
     \QVSC reads and uses all the fields that the CMake extension supports.
 
+    \QVSC shows a warning if the installed CMake Tools extension is too old to
+    support presets. To turn off the warning, go to \uicontrol {Qt settings}.
+
     \section1 Configure presets
 
     The following configure presets tell CMake to do a \e Debug build with the Qt
@@ -103,5 +106,5 @@
             }
     \endcode
 
-    \sa {Register Qt installations}
+    \sa {Register Qt installations}, {Qt settings}
 */
