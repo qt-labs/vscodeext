@@ -48,6 +48,11 @@
         \li Setting
         \li Description
     \row
+        \li \uicontrol {Disable Auto Kit Generation On Open}
+        \li Turns off the automatic scanning and updating of \c cmake-kits.json
+            when VS Code starts. This is useful if you manage kits manually or
+            keep \c cmake-kits.json under version control.
+    \row
         \li \uicontrol {Do Not Ask for CMake Path}
         \li Lets CMake Tools search the PATH environment variable and make some
             educated guesses on where to find CMake.
@@ -56,6 +61,10 @@
         \li Hides a warning about not being able to detect the source directory
             from a kit. This might happen if you installed Qt with vcpkg, for
             example. For more information, see \l{Debug Qt Applications}.
+    \row
+        \li \uicontrol {Do Not Warn Outdated CMake Tools}
+        \li Hide the warning about your CMake Tools extension version being too
+            old to support presets.
     \endtable
 
     \section1 Qt Core settings
@@ -70,7 +79,7 @@
         \li Description
     \row
         \li \uicontrol {Additional Qt Paths}
-        \li Adds paths to the qtpaths or qmake executable to find Qt
+        \li Adds paths to the \c qtpaths or \c qmake executable to find Qt
             installations. For more information, see \l {Other installations}.
     \row
         \li \uicontrol {Default Project Directory}
@@ -85,6 +94,10 @@
         \li Hides the prompt about creating a CMake kit for \c vcpkg. For more
             information, see \l {Automatic registration}.
     \row
+        \li \uicontrol {Enable QRC Editor}
+        \li Whether to use the QRC editor or default text editor to edit QRC
+            files. For more information, see \l {Edit QRC files}.
+    \row
         \li \uicontrol {Open Online Documentation in External Browser}
         \li Opens Qt documentation in the default browser. For more information,
             see \l {Read Qt documentation}.
@@ -92,6 +105,10 @@
         \li \uicontrol {Qt Installation Root}
         \li Path to the folder where you installed Qt. For more information, see
             \l {Automatic registration}.
+    \row
+        \li \uicontrol {Show Welcome Page On Activation}
+        \li Whether to show the \QVSC \uicontrol Welcome page when the extension
+            starts. For more information, see \l {Getting started}.
     \endtable
 
     \section1 QML settings
@@ -118,6 +135,25 @@
         \li \uicontrol {Args}
         \li Default command-line arguments to pass to the application when you
             start it from the command palette.
+    \endtable
+
+    \section2 QML Profiler settings
+
+    \image {vscodeext-qt-settings-qml-profiler.webp} {Qt QML Configuration}
+
+    Settings for QML Profiler. For more information, see \l {Profile QML code}.
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li \uicontrol {Args}
+        \li Additional command-line arguments to pass to the application when you
+            start QML Profiler.
+    \row
+        \li \uicontrol {Custom Trace Viewer Exe Path}
+        \li Path to the folder where you installed QML Profiler.
     \endtable
 
     \section2 \QMLLS settings

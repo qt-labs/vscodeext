@@ -26,6 +26,9 @@
     If you do not install QML Profiler, \QVSC offers to install it the first time
     you start profiling a application.
 
+    To use a particular QML Profiler executable, set the path to it in the
+    \l {QML Profiler settings}.
+
     \section1 Collect profiling data
 
     To collect profiling data about the currently open application:
@@ -48,6 +51,9 @@
     For more information, see \l {\QC: Profiling QML applications}
     {Profiling QML applications} in the \QC documentation.
 
+    You can set arguments to pass to the application when you start QML Profiler
+    in the QML Profiler settings.
+
     \section1 Attach QML Profiler to running applications
 
     To attach the QML Profiler to a running application for collecting profiling
@@ -68,4 +74,6 @@
         \li Enter the IP address of the host, and then select \key Enter.
         \li Enter the port number, and then select \key Enter.
     \endlist
+
+    \sa {Qt settings}
 */
