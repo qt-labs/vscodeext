@@ -33,6 +33,10 @@
     \c {QML_IMPORT_PATH} environment variables in the \e launch.json file to
     configure the Qt installation.
 
+    \QVSC scans and updates kits when VS Code starts. If you manage kits manually
+    or keep the \c cmake-kits.json kit configuration file under version control,
+    you can turn off this feature in the Qt settings.
+
     If you did not install Qt at the default path, or the \c vcpkg installation
     is not detected automatically, register your Qt versions as described in the
     following sections.
