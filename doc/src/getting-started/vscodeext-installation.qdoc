@@ -18,7 +18,8 @@
     \endlist
 
     You can also install individual extensions with or without extension packs.
-    \e {Qt Extension Pack} contains all Qt extensions.
+    \e {Qt Extension Pack} contains all Qt extensions. The extensions are
+    activated when you need them in a project.
 
     \section1 Install extension packs
 
@@ -34,6 +35,20 @@
 
     The \l {CMake For VisualStudio Code} and \l {CMake Tools} extensions are
     installed automatically.
+
+    \section1 View extension status
+
+    You can turn on automatic updates for \QVSC and switch between the latest
+    release and a pre-release. However, you should keep the releases in sync.
+    Specifically, you must use the same release of the Qt C++ and Qt Core
+    extension.
+
+    To see the version and activation status of each installed extension, select
+    the version list in \uicontrol {Welcome}.
+
+    \image {vscodeext-extension-status.webp} {Details of installed extensions.}
+
+    Select \uicontrol {Refresh} to update the information about extension status.
 
     \sa {Register Qt installations}
 */
