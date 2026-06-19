@@ -449,7 +449,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-ts-utils 0.12.5 - MIT
+ts-utils 0.15.0 - MIT
 https://github.com/nevware21/ts-utils#readme
 
 MIT License
