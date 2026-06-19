@@ -29,7 +29,7 @@ export async function showLicenseAgreementPanel(
     let resolved = false;
 
     const panel = vscode.window.createWebviewPanel(
-      'qt-sms.licenseAgreement',
+      'qt-sm.licenseAgreement',
       'License Agreement',
       vscode.ViewColumn.Active,
       {

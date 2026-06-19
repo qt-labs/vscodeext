@@ -60,7 +60,7 @@
     },
     {
       "type": "shell",
-      "label": "npm qt-sms watch",
+      "label": "npm qt-sm watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",
       "isBackground": true,
@@ -72,7 +72,7 @@
         "isDefault": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/qt-sms"
+        "cwd": "${workspaceFolder}/qt-sm"
       }
     },
     {

@@ -1,5 +1,5 @@
 {
-  "name": "qt-sms",
+  "name": "qt-sm",
   "displayName": "Qt Software Management",
   "description": "Qt Software Management",
   "version": "0.1.1",
@@ -38,93 +38,93 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "qt-sms",
+          "id": "qt-sm",
           "title": "Qt Package Manager",
           "icon": "res/icons/qt-activitybar.svg"
         }
       ]
     },
     "views": {
-      "qt-sms": [
+      "qt-sm": [
         {
-          "id": "qt-sms.getStartedView",
-          "name": "%qt-sms.view.getStarted.name%"
+          "id": "qt-sm.getStartedView",
+          "name": "%qt-sm.view.getStarted.name%"
         },
         {
-          "id": "qt-sms.accountView",
-          "name": "%qt-sms.view.account.name%"
+          "id": "qt-sm.accountView",
+          "name": "%qt-sm.view.account.name%"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "qt-sms.getStartedView",
-        "contents": "%qt-sms.view.getStarted.welcome%"
+        "view": "qt-sm.getStartedView",
+        "contents": "%qt-sm.view.getStarted.welcome%"
       },
       {
-        "view": "qt-sms.accountView",
-        "contents": "%qt-sms.view.account.welcomeLoggedOut%",
-        "when": "!qt-sms.isLoggedIn"
+        "view": "qt-sm.accountView",
+        "contents": "%qt-sm.view.account.welcomeLoggedOut%",
+        "when": "!qt-sm.isLoggedIn"
       },
       {
-        "view": "qt-sms.accountView",
-        "contents": "%qt-sms.view.account.welcomeLoggedIn%",
-        "when": "qt-sms.isLoggedIn"
+        "view": "qt-sm.accountView",
+        "contents": "%qt-sm.view.account.welcomeLoggedIn%",
+        "when": "qt-sm.isLoggedIn"
       }
     ],
     "commands": [
       {
-        "command": "qt-sms.searchPackages",
-        "title": "%qt-sms.command.searchPackages.title%",
+        "command": "qt-sm.searchPackages",
+        "title": "%qt-sm.command.searchPackages.title%",
         "category": "Qt"
       },
       {
-        "command": "qt-sms.installPackage",
-        "title": "%qt-sms.command.installPackage.title%",
+        "command": "qt-sm.installPackage",
+        "title": "%qt-sm.command.installPackage.title%",
         "category": "Qt"
       },
       {
-        "command": "qt-sms.setInstallationPath",
-        "title": "%qt-sms.command.setInstallationPath.title%",
+        "command": "qt-sm.setInstallationPath",
+        "title": "%qt-sm.command.setInstallationPath.title%",
         "category": "Qt"
       },
       {
-        "command": "qt-sms.openWalkthrough",
-        "title": "%qt-sms.command.openWalkthrough.title%",
+        "command": "qt-sm.openWalkthrough",
+        "title": "%qt-sm.command.openWalkthrough.title%",
         "category": "Qt"
       },
       {
-        "command": "qt-sms.installRequiredExtensions",
-        "title": "%qt-sms.command.installRequiredExtensions.title%",
+        "command": "qt-sm.installRequiredExtensions",
+        "title": "%qt-sm.command.installRequiredExtensions.title%",
         "category": "Qt"
       },
       {
-        "command": "qt-sms.login",
-        "title": "%qt-sms.command.login.title%",
+        "command": "qt-sm.login",
+        "title": "%qt-sm.command.login.title%",
         "category": "Qt",
         "icon": "$(sign-in)"
       },
       {
-        "command": "qt-sms.logout",
-        "title": "%qt-sms.command.logout.title%",
+        "command": "qt-sm.logout",
+        "title": "%qt-sm.command.logout.title%",
         "category": "Qt",
         "icon": "$(sign-out)"
       },
       {
-        "command": "qt-sms.resetTestState",
-        "title": "%qt-sms.command.resetTestState.title%",
+        "command": "qt-sm.resetTestState",
+        "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "qt-sms.login",
-          "when": "!qt-sms.isLoggedIn"
+          "command": "qt-sm.login",
+          "when": "!qt-sm.isLoggedIn"
         },
         {
-          "command": "qt-sms.logout",
-          "when": "qt-sms.isLoggedIn"
+          "command": "qt-sm.logout",
+          "when": "qt-sm.isLoggedIn"
         }
       ]
     },
@@ -132,13 +132,13 @@
       "type": "object",
       "title": "Qt Software Management Configuration",
       "properties": {
-        "qt-sms.installationPath": {
+        "qt-sm.installationPath": {
           "type": "string",
           "default": "~/QtAlpha",
           "description": "Default installation path for Qt packages",
           "scope": "machine"
         },
-        "qt-sms.resetLicenseBeforeInstall": {
+        "qt-sm.resetLicenseBeforeInstall": {
           "type": "boolean",
           "default": false,
           "description": "Reset license agreement consents after each install so the license review is always shown (alpha testing)",
