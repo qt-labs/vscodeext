@@ -477,7 +477,7 @@ export class QtAccount {
       host_os: `${os.type()} ${os.release()}`,
       hw_id: hardwareId(),
       hw_name: os.hostname(),
-      src: 'vscode-qt-sms',
+      src: 'vscode-qt-sm',
       src_version: '1.0.0',
       email,
       password

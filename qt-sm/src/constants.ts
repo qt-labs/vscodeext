@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 export * from 'qt-lib/src/constants';
-export const EXTENSION_ID = 'qt-sms';
+export const EXTENSION_ID = 'qt-sm';
 export const CONF_INSTALLATION_PATH = 'installationPath';
 export const CONF_USER_AGENT = 'qt-visual-studio-code-gui';
 export const CONF_RESET_LICENSE_AFTER_INSTALL = 'resetLicenseBeforeInstall';

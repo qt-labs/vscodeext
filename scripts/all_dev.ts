@@ -21,7 +21,7 @@ function main() {
       buildLib(lib, extensionRoot);
     }
   }
-  if (targetExtension === 'qt-sms') {
+  if (targetExtension === 'qt-sm') {
     buildLib('sms-api', extensionRoot);
   }
   execSync(`npm run ci:${targetExtension}`, {
@@ -49,7 +49,7 @@ function main() {
   }
   const script = path.join(extensionRoot, 'scripts', 'install-ext.ts');
   if (targetExtension === 'all') {
-    const extensions = ['qt-core', 'qt-cpp', 'qt-qml', 'qt-python', 'qt-sms'];
+    const extensions = ['qt-core', 'qt-cpp', 'qt-qml', 'qt-python', 'qt-sm'];
     for (const ext of extensions) {
       const targetRoot = path.join(extensionRoot, ext);
       execSync(
