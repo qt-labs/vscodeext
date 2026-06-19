@@ -347,7 +347,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-ts-utils 0.12.5 - MIT
+ts-utils 0.15.0 - MIT
 https://github.com/nevware21/ts-utils#readme
 
 MIT License
@@ -648,7 +648,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-brace-expansion 5.0.5 - MIT
+brace-expansion 5.0.6 - MIT
 https://github.com/juliangruber/brace-expansion#readme
 
 MIT License
