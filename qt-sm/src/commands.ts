@@ -551,7 +551,7 @@ const KNOWN_LICENSE_AGREEMENT_IDS = [
 /**
  * Reset license agreement consents via the backend API so that the user is
  * prompted again on the next install. Only active when the
- * `qt-sms.resetLicenseBeforeInstall` setting is enabled.
+ * `qt-sm.resetLicenseBeforeInstall` setting is enabled.
  */
 async function resetLicenseConsents(): Promise<void> {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
@@ -938,7 +938,7 @@ export async function logout(
 }
 
 /**
- * Reset all qt-sms local state. **For testing purposes only.**
+ * Reset all qt-sm local state. **For testing purposes only.**
  *
  * This removes:
  *   - The Qt installation directory (e.g. ~/QtAlpha)
@@ -952,7 +952,7 @@ export async function logout(
  */
 export async function resetTestState(): Promise<void> {
   const confirm = await vscode.window.showWarningMessage(
-    'This will remove all qt-sms data (installed packages, credentials, ' +
+    'This will remove all qt-sm data (installed packages, credentials, ' +
       'service state). This action is for testing purposes only and cannot ' +
       'be undone. Continue?',
     { modal: true },
@@ -995,12 +995,12 @@ export async function resetTestState(): Promise<void> {
   if (removed.length > 0) {
     logger.info(`Reset test state. Removed: ${removed.join(', ')}`);
     void vscode.window.showInformationMessage(
-      `qt-sms test state has been reset. Removed ${String(removed.length)} item(s).`
+      `qt-sm test state has been reset. Removed ${String(removed.length)} item(s).`
     );
   } else {
     logger.info('Reset test state: nothing to remove');
     void vscode.window.showInformationMessage(
-      'qt-sms test state: nothing to remove.'
+      'qt-sm test state: nothing to remove.'
     );
   }
 

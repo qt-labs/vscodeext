@@ -21,7 +21,7 @@ function main() {
       buildLib(lib, extensionRoot);
     }
   }
-  if (targetExtension === 'qt-sms') {
+  if (targetExtension === 'qt-sm') {
     buildLib('sms-api', extensionRoot);
   }
   execSync(`npm run ci:${targetExtension}`, {
@@ -55,7 +55,7 @@ function main() {
       'qt-qml',
       'qt-ui',
       'qt-python',
-      'qt-sms'
+      'qt-sm'
     ];
     for (const ext of extensions) {
       const targetRoot = path.join(extensionRoot, ext);

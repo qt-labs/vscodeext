@@ -70,7 +70,7 @@ describe('JsonRpcDispatcher', () => {
 
   it('call() stamps userAgent on outbound requests when provided', async () => {
     // Create a dispatcher with a user-agent
-    const uaDispatcher = new JsonRpcDispatcher(clientSocket, 'qt-sms');
+    const uaDispatcher = new JsonRpcDispatcher(clientSocket, 'qt-sm');
     const msgPromise = server.nextMessage();
     uaDispatcher.call(
       'packages/install',
@@ -79,7 +79,7 @@ describe('JsonRpcDispatcher', () => {
       () => {}
     );
     const { payload } = await msgPromise;
-    assert.equal(payload.userAgent, 'qt-sms');
+    assert.equal(payload.userAgent, 'qt-sm');
     uaDispatcher.dispose();
   });
 
