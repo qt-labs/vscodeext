@@ -4,8 +4,8 @@
 import * as vscode from 'vscode';
 
 import { coreAPI, projectManager } from '@/extension';
-import { EXTENSION_ID } from '@/constants';
-import { telemetry } from 'qt-lib';
+import { EXTENSION_ID, COMMAND_SHOW_LOG } from '@/constants';
+import { getLogOutputChannel, telemetry } from 'qt-lib';
 
 export function resetCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.reset`, () => {
@@ -37,4 +37,13 @@ export function reportIssueCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.reportIssue`, () => {
     void vscode.env.openExternal(vscode.Uri.parse(issueReportLink));
   });
+}
+
+export function registerShowLogCommand() {
+  return vscode.commands.registerCommand(
+    `${EXTENSION_ID}.${COMMAND_SHOW_LOG}`,
+    () => {
+      getLogOutputChannel()?.show();
+    }
+  );
 }

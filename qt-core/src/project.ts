@@ -24,6 +24,7 @@ import {
   onAdditionalQtPathsUpdated
 } from '@/installation-root';
 import { coreAPI } from '@/extension';
+import { UiDesignerSession } from '@/ui-designer/session';
 
 const logger = createLogger('project');
 
@@ -40,11 +41,16 @@ export class CoreProject implements Project {
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _stateManager: WorkspaceStateManager;
   private _qtInstallationRoot: string | undefined;
+  private readonly _uiDesignerSession: UiDesignerSession;
+
   constructor(
     private readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
   ) {
     this._stateManager = new WorkspaceStateManager(_context, _folder);
+    this._uiDesignerSession = new UiDesignerSession(this);
+
+    this._disposables.push(this._uiDesignerSession);
     this.watchWorkspaceFolderConfig(_folder);
   }
   set qtInstallationRoot(value: string) {
@@ -58,6 +64,10 @@ export class CoreProject implements Project {
   }
   get folder() {
     return this._folder;
+  }
+
+  public getUiDesignerSession() {
+    return this._uiDesignerSession;
   }
 
   public async reset() {
@@ -115,6 +125,7 @@ export class CoreProject implements Project {
 
   dispose() {
     logger.info('Disposing project:', this._folder.uri.fsPath);
+
     for (const d of this._disposables) {
       d.dispose();
     }

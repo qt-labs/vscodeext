@@ -87,11 +87,11 @@ export function createWebviewOptions(config: WebviewAppConfig) {
   };
 }
 
-export function createWebviewPanelIcons(c: vscode.ExtensionContext) {
+export function createWebviewPanelIcons(c: Context, iconName = 'qt-webview') {
   const sub = 'res/icons/';
   return {
-    dark: vscode.Uri.joinPath(c.extensionUri, sub, 'qt-webview-dark.svg'),
-    light: vscode.Uri.joinPath(c.extensionUri, sub, 'qt-webview-light.svg')
+    dark: vscode.Uri.joinPath(c.extensionUri, sub, iconName + '-dark.svg'),
+    light: vscode.Uri.joinPath(c.extensionUri, sub, iconName + '-light.svg')
   };
 }
 

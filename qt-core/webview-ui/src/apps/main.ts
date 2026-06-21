@@ -9,6 +9,7 @@ import NewItem from './new-item/NewItemApp.svelte';
 import QmlTrace from './qml-trace/QmlTraceApp.svelte';
 import QrcEditor from './qrc-editor/QrcEditorApp.svelte';
 import ExBrowser from './ex-browser/ExBrowserApp.svelte';
+import UiDesigner from './ui-designer/UiDesignerApp.svelte';
 
 const appType = document.body.dataset.app;
 const appComp = (() => {
@@ -18,6 +19,7 @@ const appComp = (() => {
     case 'qrc-editor': return QrcEditor;
     case 'qml-trace': return QmlTrace;
     case 'ex-browser': return ExBrowser;
+    case 'ui-designer': return UiDesigner;
     default:
       return NewItem;
   }

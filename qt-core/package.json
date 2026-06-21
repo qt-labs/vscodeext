@@ -31,6 +31,7 @@
   "qna": "marketplace",
   "pricing": "Free",
   "activationEvents": [
+    "workspaceContains:**/*.ui",
     "workspaceContains:**/*.qrc",
     "onWebviewPanel:ViewTypeWelcomePage"
   ],
@@ -111,6 +112,11 @@
         "command": "qt-core.openWelcomePage",
         "title": "%qt-core.command.openWelcomePage.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.openInWidgetsDesigner",
+        "title": "%qt-core.command.openInWidgetsDesigner.title%",
+        "category": "Qt"
       }
     ],
     "customEditors": [
@@ -131,6 +137,16 @@
         "selector": [
           {
             "filenamePattern": "*.{qtd,qzt}"
+          }
+        ]
+      },
+      {
+        "viewType": "qt-core.uiFile",
+        "displayName": "Qt Widgets Designer launcher",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.ui"
           }
         ]
       }
@@ -198,6 +214,21 @@
         }
       },
       {
+        "id": "qt-ui",
+        "configuration": "./res/lang/qt-ui/language-configuration.json",
+        "extensions": [
+          ".ui"
+        ],
+        "aliases": [
+          "Qt UI",
+          "ui"
+        ],
+        "icon": {
+          "light": "res/icons/qt-ui-light.svg",
+          "dark": "res/icons/qt-ui-dark.svg"
+        }
+      },
+      {
         "id": "qtd",
         "configuration": "./res/lang/qtd/language-configuration.json",
         "extensions": [
@@ -255,6 +286,11 @@
         "language": "qt-ts",
         "scopeName": "source.qt-ts",
         "path": "./res/lang/qt-ts/qt-ts.tmLanguage.json"
+      },
+      {
+        "language": "qt-ui",
+        "scopeName": "source.qt-ui",
+        "path": "./res/lang/qt-ui/qt-ui.tmLanguage.json"
       },
       {
         "language": "qtd",
@@ -319,6 +355,12 @@
           "default": true,
           "description": "Show welcome page when the extension gets activated",
           "scope": "machine-overridable"
+        },
+        "qt-core.customWidgetsDesignerExePath": {
+          "type": "string",
+          "default": "",
+          "description": "Specify the custom Qt Widgets Designer executable path",
+          "scope": "machine-overridable"
         }
       }
     },
@@ -328,6 +370,17 @@
           "command": "qt-core.openInLinguist",
           "when": "editorLangId == qt-ts",
           "group": "navigation"
+        },
+        {
+          "command": "qt-core.openInWidgetsDesigner",
+          "when": "editorLangId == qt-ui",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "qt-core.openInWidgetsDesigner",
+          "when": "editorLangId == qt-ui"
         }
       ]
     }
