@@ -26,7 +26,8 @@ import { createCoreProject, CoreProjectManager } from '@/project';
 import {
   registerOpenSettingsCommand,
   reportIssueCommand,
-  resetCommand
+  resetCommand,
+  registerShowLogCommand
 } from '@/small-commands';
 import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
@@ -40,6 +41,8 @@ import {
 import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
 import { registerQmlTraceProvider } from '@/webview/qml-trace/editor-provider';
+import { registerUiDesignerCommands } from '@/ui-designer/commands';
+import { registerUiFileEditorProvider } from '@/ui-designer/editor-provider';
 import { registerOpenInLinguistCommand } from '@/translation';
 
 const logger = createLogger('extension');
@@ -77,11 +80,15 @@ export async function activate(context: vscode.ExtensionContext) {
     registerWelcomePageSerializer(context),
     registerCreateNewItemPanelCommand(context),
     vscode.languages.registerColorProvider('qss', createColorProvider()),
-    reportIssueCommand()
+    reportIssueCommand(),
+    registerShowLogCommand()
   );
 
   registerQrcEditorProvider(context);
   registerQmlTraceProvider(context);
+  registerUiDesignerCommands(context);
+  registerUiFileEditorProvider(context);
+
   await enableQtTsFileSupport(context);
 
   telemetry.sendEvent(`activated`);
