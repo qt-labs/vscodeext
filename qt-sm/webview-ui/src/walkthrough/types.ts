@@ -25,6 +25,8 @@ export interface WalkthroughConfig {
   steps: WalkthroughStepData[];
   successTitle?: string;
   successMessage?: string;
+  /** Whether the user has marked the whole walkthrough as done. */
+  getStartedDone: boolean;
 }
 
 /** Messages sent from the extension host to the webview. */
@@ -37,4 +39,5 @@ export type MessageToWebview =
 export type MessageToExtension =
   | { type: 'action'; stepId: string; command: string; commandArgs?: unknown }
   | { type: 'review'; stepId: string }
-  | { type: 'resetAll' };
+  | { type: 'resetAll' }
+  | { type: 'markDone' };
