@@ -37,10 +37,7 @@ import {
 
 import { installBootstrap } from '@/bootstrap';
 import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
-import {
-  publishQtToolsPaths,
-  watchQtToolsOnDisk
-} from '@/qt-tools-store';
+import { publishQtToolsPaths, watchQtToolsOnDisk } from '@/qt-tools-store';
 
 const logger = createLogger('extension');
 
