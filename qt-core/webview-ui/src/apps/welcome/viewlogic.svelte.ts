@@ -62,6 +62,10 @@ async function loadData() {
     data.videos = videos.slice(0, MaxItems);
   }
 
+  data.walkthroughAvailable = Boolean(
+    _.get(r, 'walkthroughAvailable', data.walkthroughAvailable)
+  );
+
   data.timestamps.blog = _.get(r, 'timestamps.blog', data.timestamps.blog);
   data.timestamps.video = _.get(r, 'timestamps.video', data.timestamps.video);
 }

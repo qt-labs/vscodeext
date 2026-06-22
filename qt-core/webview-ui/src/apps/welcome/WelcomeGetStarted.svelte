@@ -9,6 +9,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     Bug,
     Book,
     Blocks,
+    Compass,
     PlusSquare
   } from '@lucide/svelte';
 
@@ -17,6 +18,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { welcome } from '@/apps/texts';
 
   import * as viewlogic from './viewlogic.svelte';
+  import { data } from './states.svelte';
 
   interface Item {
     id?: string,
@@ -32,7 +34,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   }
 
   const texts = welcome.getStarted;
-  const items: Item[] = [
+  const walkthroughItem: Item = {
+    ...texts.walkthrough,
+    icon: Compass,
+    onclick: () => {
+      viewlogic.openWebview('walkthrough');
+    },
+  };
+
+  const items: Item[] = $derived([
     {
       ...texts.newProject,
       icon: PlusSquare,
@@ -55,6 +65,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       },
       id: 'doc',
     },
+    ...(data.walkthroughAvailable ? [walkthroughItem] : []),
     {
       ...texts.bugreport,
       icon: Bug,
@@ -62,7 +73,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         viewlogic.openWebsite('bug-report');
       },
     },
-  ];
+  ]);
 
   const docShortcuts: LinkItem[] = [
     {

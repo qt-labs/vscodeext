@@ -11,6 +11,7 @@ export const data = $state({
   ext: [] as ExtInfo[],
   blogs: [] as BlogArticle[],
   videos: [] as VideoEntry[],
+  walkthroughAvailable: false,
   timestamps: {
     blog: 0,
     video: 0
