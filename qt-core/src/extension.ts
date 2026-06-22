@@ -92,7 +92,7 @@ export async function activate(context: vscode.ExtensionContext) {
   checkVcpkg();
   checkQtpathsInEnvPath();
   initCoreValues();
-  tryOpenWelcomePage(context);
+  void tryOpenWelcomePage(context);
 
   return coreAPI;
 }
