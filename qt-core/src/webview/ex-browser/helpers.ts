@@ -13,7 +13,9 @@ import {
   generateDefaultQtPathsName,
   getMsvcInfo,
   IsWindows,
-  QtInfo
+  QtInfo,
+  QtToolsPaths,
+  CoreKey
 } from 'qt-lib';
 import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
@@ -33,6 +35,15 @@ import { generateProjectConfigs } from '@/project-config-generator';
 type Context = vscode.ExtensionContext;
 
 const logger = createLogger('ex-browser-helpers');
+
+// Build-tool paths (CMake, Ninja) bundled with the Qt installation and shared
+// by qt-sm via CoreAPI.
+function getSharedQtToolsPaths(): QtToolsPaths | undefined {
+  return coreAPI?.getValue<QtToolsPaths>(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.QT_TOOLS_PATHS
+  );
+}
 
 export function createViewConfig(context: Context): ExBrowserViewConfig {
   return {
@@ -347,6 +358,14 @@ function generateCMakePresets(
   } else {
     if (commandExists.sync('ninja')) {
       commonFields.generator = 'Ninja';
+    } else {
+      // Ninja is not on PATH; fall back to the one shared by qt-sm via CoreAPI
+      // and point CMake at it explicitly.
+      const sharedNinjaPath = getSharedQtToolsPaths()?.ninja;
+      if (sharedNinjaPath) {
+        commonFields.generator = 'Ninja';
+        commonCacheVariables.CMAKE_MAKE_PROGRAM = sharedNinjaPath;
+      }
     }
 
     // Single-config generators: separate configure presets per build type

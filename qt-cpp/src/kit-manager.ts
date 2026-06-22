@@ -17,6 +17,7 @@ import {
   isError,
   QtInfo,
   QtAdditionalPath,
+  QtToolsPaths,
   generateDefaultQtPathsName,
   IsWindows,
   getVCPKGRoot,
@@ -532,8 +533,11 @@ export class KitManager {
     let qtPathEnv = KitManager.generateEnvPathForQtInstallation(installation);
     let locatedNinjaExePath = '';
     if (!commandExists.sync('ninja')) {
-      const promiseNinjaExecutable = qtPath.locateNinjaExecutable(qtInsRoot);
-      locatedNinjaExePath = await promiseNinjaExecutable;
+      // Prefer the Ninja shared by qt-sm via CoreAPI, falling back to the one
+      // bundled under the Qt installation root.
+      locatedNinjaExePath =
+        getSharedQtToolsPaths()?.ninja ??
+        (await qtPath.locateNinjaExecutable(qtInsRoot));
     }
     if (locatedNinjaExePath) {
       if (qtPathEnv) {
@@ -878,12 +882,16 @@ function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
     ) ?? []
   );
 }
+// Build-tool paths (CMake, Ninja) bundled with the Qt installation and shared
+// by qt-sm via CoreAPI.
+function getSharedQtToolsPaths(): QtToolsPaths | undefined {
+  return coreAPI?.getValue<QtToolsPaths>(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.QT_TOOLS_PATHS
+  );
+}
 
 export async function tryToUseCMakeFromQtTools() {
-  if (getDoNotAskForCMakePath()) {
-    logger.info('doNotAskForCMakePath is set');
-    return;
-  }
   // check if cmake.cmakePath is set
   const cmakePathConfig = 'cmakePath';
   const cmakeConfig = vscode.workspace.getConfiguration('cmake');
@@ -891,6 +899,24 @@ export async function tryToUseCMakeFromQtTools() {
   const IsCustomCmakePath =
     cmakeConfig.get<string>(cmakePathConfig) !== 'cmake';
   if (IsCustomCmakePath || commandExists.sync('cmake')) {
+    return;
+  }
+
+  // If qt-sm shared a CMake via CoreAPI, set it globally without prompting:
+  // the cmake command is missing and cmake.cmakePath is still the default.
+  const sharedCMakePath = getSharedQtToolsPaths()?.cmake;
+  if (sharedCMakePath) {
+    logger.info(`Setting cmakePath to shared CMake "${sharedCMakePath}"`);
+    void cmakeConfig.update(
+      cmakePathConfig,
+      sharedCMakePath,
+      vscode.ConfigurationTarget.Global
+    );
+    return;
+  }
+
+  if (getDoNotAskForCMakePath()) {
+    logger.info('doNotAskForCMakePath is set');
     return;
   }
 
