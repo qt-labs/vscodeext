@@ -4,6 +4,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
+  import { CheckCheck } from '@lucide/svelte';
+
   import type { WalkthroughStepData } from './types';
   import ProgressBar from './ProgressBar.svelte';
   import WalkthroughStep from './WalkthroughStep.svelte';
@@ -19,6 +21,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     onaction?: (stepId: string, command: string, commandArgs?: unknown) => void;
     onreview?: (stepId: string) => void;
     onreset?: () => void;
+    onmarkdone?: () => void;
   }
 
   let {
@@ -30,7 +33,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     reviewingStepId = null,
     onaction,
     onreview,
-    onreset
+    onreset,
+    onmarkdone
   }: Props = $props();
 
   const completedCount = $derived(
@@ -55,6 +59,17 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     activeIdx === -1 ? [] : steps.slice(activeIdx + 1)
   );
 </script>
+
+{#snippet markDoneControl()}
+  <button
+    class="mark-done-btn"
+    onclick={() => onmarkdone?.()}
+    aria-label="Mark walkthrough as done"
+  >
+    <CheckCheck size={16} />
+    Mark Done
+  </button>
+{/snippet}
 
 <div class="walkthrough" role="region" aria-label={title}>
   <!-- Header is always shown, including when the walkthrough is complete -->
@@ -145,6 +160,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       {#if activeStep}
         <span class="next-label">Next: {activeStep.title}</span>
       {/if}
+      {@render markDoneControl()}
     </div>
   {/if}
 </div>
@@ -265,13 +281,33 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     outline-offset: 2px;
   }
 
-  .completed-label {
+  .completed-label,
+  .next-label {
     color: var(--vscode-descriptionForeground);
     font-size: 0.95em;
   }
 
-  .next-label {
-    color: var(--vscode-descriptionForeground);
+  /* Link-style "Mark Done", matching the default VS Code walkthrough. */
+  .mark-done-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--vscode-textLink-foreground);
     font-size: 0.95em;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .mark-done-btn:hover {
+    text-decoration: underline;
+  }
+
+  .mark-done-btn:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
   }
 </style>

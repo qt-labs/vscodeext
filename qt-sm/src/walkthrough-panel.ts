@@ -3,7 +3,11 @@
 
 import * as vscode from 'vscode';
 
-import { EXTENSION_ID, STATE_WALKTHROUGH_FIRST_APP_DONE } from '@/constants';
+import {
+  CONF_GET_STARTED_DONE,
+  EXTENSION_ID,
+  STATE_WALKTHROUGH_FIRST_APP_DONE
+} from '@/constants';
 import { isAnyVersionInstalledOnDisk } from '@/installed-packages-store';
 import { getLoggedIn, getRequiredExtensionsContext } from './extension';
 import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
@@ -27,6 +31,23 @@ class WalkthroughStateManager extends BaseStateManager {
   set firstAppDone(value: boolean) {
     void this._update(STATE_WALKTHROUGH_FIRST_APP_DONE, value);
   }
+}
+
+/**
+ * Read the global "get started done" flag. Stored as a VS Code setting (not
+ * extension globalState) so that other extensions, e.g. qt-core, can read it
+ * via workspace.getConfiguration('qt-sm').get('getStartedDone').
+ */
+export function isGetStartedDone(): boolean {
+  return vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .get<boolean>(CONF_GET_STARTED_DONE, false);
+}
+
+function setGetStartedDone(value: boolean): Thenable<void> {
+  return vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .update(CONF_GET_STARTED_DONE, value, vscode.ConfigurationTarget.Global);
 }
 
 let walkthroughState: WalkthroughStateManager | undefined;
@@ -60,6 +81,7 @@ interface WalkthroughConfig {
   steps: WalkthroughStepData[];
   successTitle?: string;
   successMessage?: string;
+  getStartedDone: boolean;
 }
 
 interface MessageToWebview {
@@ -69,7 +91,7 @@ interface MessageToWebview {
 }
 
 interface MessageToExtension {
-  type: 'action' | 'review' | 'resetAll';
+  type: 'action' | 'review' | 'resetAll' | 'markDone';
   stepId?: string;
   command?: string;
   commandArgs?: unknown;
@@ -100,7 +122,10 @@ function computeStatus(
   return 'locked';
 }
 
-function getDefaultConfig(completion: StepCompletion): WalkthroughConfig {
+function getDefaultConfig(
+  completion: StepCompletion,
+  getStartedDone: boolean
+): WalkthroughConfig {
   const s = completion;
   return {
     title: 'Get started with Qt',
@@ -109,6 +134,7 @@ function getDefaultConfig(completion: StepCompletion): WalkthroughConfig {
     successTitle: "You're all set!",
     successMessage:
       'Qt is installed and your first project is ready. Open the Qt extension to keep building.',
+    getStartedDone,
     steps: [
       {
         id: 'signin',
@@ -224,6 +250,34 @@ function computeLiveCompletion(
   };
 }
 
+/** True when every walkthrough step is complete. */
+function allStepsComplete(c: StepCompletion): boolean {
+  return c.signin && c.extensions && c.framework && c.firstApp;
+}
+
+/**
+ * Post the full walkthrough config to the live panel, keeping the persisted
+ * `getStartedDone` flag in sync. Completing the walkthrough naturally (all
+ * steps done) marks it done; `explicitDone` overrides for the Mark-as-done
+ * button and reset. The flag is only ever cleared explicitly, never by a step
+ * regressing (e.g. the user signing out). No-op if no panel is open.
+ */
+function postConfig(completion: StepCompletion, explicitDone?: boolean): void {
+  if (!currentPanel) {
+    return;
+  }
+  const done =
+    explicitDone ?? (isGetStartedDone() || allStepsComplete(completion));
+  if (done !== isGetStartedDone()) {
+    void setGetStartedDone(done);
+  }
+  const msg: MessageToWebview = {
+    type: 'init',
+    payload: getDefaultConfig(completion, done)
+  };
+  void currentPanel.webview.postMessage(msg);
+}
+
 /**
  * Wire up a walkthrough panel: render its HTML, post the initial config, and
  * register its message handler. Works for both freshly created panels and
@@ -249,11 +303,7 @@ function wirePanel(
   // Send config after a short delay to ensure the Svelte app has mounted
   // and its message listener is registered (same pattern as license-panel).
   setTimeout(() => {
-    const msg: MessageToWebview = {
-      type: 'init',
-      payload: getDefaultConfig(completion)
-    };
-    void panel.webview.postMessage(msg);
+    postConfig(completion);
   }, 100);
 
   panel.webview.onDidReceiveMessage(
@@ -271,6 +321,11 @@ function wirePanel(
             if (msg.stepId === 'first-app') {
               getWalkthroughState(context).firstAppDone = true;
               notifyStepCompleted('first-app');
+              // first-app is the last step, so completing it finishes the
+              // walkthrough naturally — persist the global flag.
+              if (allStepsComplete(computeLiveCompletion(context))) {
+                void setGetStartedDone(true);
+              }
             }
           }
           break;
@@ -278,22 +333,27 @@ function wirePanel(
         case 'review': {
           break;
         }
+        case 'markDone': {
+          logger.info('Walkthrough marked done by webview');
+          void setGetStartedDone(true);
+          // Close the walkthrough once the user explicitly marks it done.
+          panel.dispose();
+          break;
+        }
         case 'resetAll': {
           // Re-send init with fresh (all-false) completion so the
-          // walkthrough restarts from step 1.
+          // walkthrough restarts from step 1, and clear the done flag.
           logger.info('Walkthrough reset requested by webview');
           getWalkthroughState(context).firstAppDone = false;
-          const fresh = getDefaultConfig({
-            signin: getLoggedIn(),
-            extensions: getRequiredExtensionsContext(),
-            framework: isAnyVersionInstalledOnDisk(),
-            firstApp: false
-          });
-          const initMsg: MessageToWebview = {
-            type: 'init',
-            payload: fresh
-          };
-          void panel.webview.postMessage(initMsg);
+          postConfig(
+            {
+              signin: getLoggedIn(),
+              extensions: getRequiredExtensionsContext(),
+              framework: isAnyVersionInstalledOnDisk(),
+              firstApp: false
+            },
+            false
+          );
           break;
         }
       }
@@ -368,11 +428,7 @@ export function refreshWalkthrough(): void {
   if (!currentPanel || !panelContext) {
     return;
   }
-  const msg: MessageToWebview = {
-    type: 'init',
-    payload: getDefaultConfig(computeLiveCompletion(panelContext))
-  };
-  void currentPanel.webview.postMessage(msg);
+  postConfig(computeLiveCompletion(panelContext));
 }
 
 /**
