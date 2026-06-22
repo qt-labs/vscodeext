@@ -37,6 +37,10 @@ import {
 
 import { installBootstrap } from '@/bootstrap';
 import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
+import {
+  publishQtToolsPaths,
+  watchQtToolsOnDisk
+} from '@/qt-tools-store';
 
 const logger = createLogger('extension');
 
@@ -212,6 +216,13 @@ export async function activate(context: vscode.ExtensionContext) {
     throw new Error(msg);
   }
 
+  // Detect the bundled build tools (CMake, Ninja) and inform qt-core/qt-cpp via
+  // CoreAPI. Done at activation because the installation root may have changed
+  // (e.g. via QtCreator) while qt-sm was not running. Also keep watching the
+  // Tools/ directory so external installs/uninstalls propagate live.
+  publishQtToolsPaths();
+  watchQtToolsOnDisk(context, publishQtToolsPaths);
+
   const authProvider = registerAuthenticationProvider(context);
   setAuthProvider(authProvider);
 
@@ -316,6 +327,9 @@ export async function activate(context: vscode.ExtensionContext) {
         // The new root may contain a different set of installed Qt versions,
         // so the framework step can go forward or backward.
         refreshWalkthrough();
+        // The new root may also bundle different build tools; re-detect and
+        // re-publish them to qt-core/qt-cpp.
+        publishQtToolsPaths();
       }
     }),
     // Restore the walkthrough tab after a window reload.

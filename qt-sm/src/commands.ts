@@ -50,6 +50,7 @@ import {
 } from '@/installed-packages-store';
 import { refreshWalkthrough } from '@/walkthrough-panel';
 import { isInstalling, setInstalling } from '@/install-state';
+import { publishQtToolsPaths } from '@/qt-tools-store';
 
 const logger = createLogger('commands');
 
@@ -795,6 +796,9 @@ async function installPackageByIdImpl(
       // disabled now that a version is installed.
       refreshWalkthrough();
       registerInstalledQtPaths(pkg.version);
+      // The install may have added CMake/Ninja under Tools/; re-detect and
+      // inform qt-core/qt-cpp via CoreAPI.
+      publishQtToolsPaths();
     })
     .catch((err: unknown) => {
       endDownloadPhase?.();
