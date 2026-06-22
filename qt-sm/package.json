@@ -143,6 +143,12 @@
           "default": false,
           "description": "Reset license agreement consents after each install so the license review is always shown (alpha testing)",
           "scope": "machine"
+        },
+        "qt-sm.getStartedDone": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user has completed or dismissed the \"Get Started with Qt\" walkthrough. Set automatically; other Qt extensions read this to avoid re-prompting onboarding.",
+          "scope": "application"
         }
       }
     }
