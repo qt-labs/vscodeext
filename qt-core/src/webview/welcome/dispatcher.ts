@@ -74,7 +74,8 @@ export class WelcomePageDispatcher {
       extInfo: this._data.extInfo,
       blogArticles: this._data.blogArticles,
       videoEntries: this._data.videoEntries,
-      timestamps: this._data.timestamps
+      timestamps: this._data.timestamps,
+      walkthroughAvailable: isWalkthroughAvailable()
     });
   };
 
@@ -132,7 +133,8 @@ export class WelcomePageDispatcher {
         const commands: Record<string, string> = {
           'new-project': 'qt-core.createNewItem',
           examples: 'qt-core.openExamplesBrowser',
-          courses: 'qt-core.openCoursesBrowser'
+          courses: 'qt-core.openCoursesBrowser',
+          walkthrough: consts.QT_SM_WALKTHROUGH_COMMAND
         };
 
         const c = commands[webview];
@@ -169,4 +171,10 @@ export class WelcomePageDispatcher {
 // helpers
 async function openExt(url: string) {
   await vscode.env.openExternal(vscode.Uri.parse(url));
+}
+
+function isWalkthroughAvailable() {
+  return (
+    vscode.extensions.getExtension(consts.QT_SM_EXTENSION_ID) !== undefined
+  );
 }

@@ -110,4 +110,4 @@ export type WebsiteId =
   | 'bug-report'
   | 'documentation';
 
-export type WebviewId = 'new-project' | 'examples' | 'courses';
+export type WebviewId = 'new-project' | 'examples' | 'courses' | 'walkthrough';
