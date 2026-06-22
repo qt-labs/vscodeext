@@ -32,11 +32,23 @@ export function compareQtAdditionalPath(
   return a.name.localeCompare(b.name);
 }
 
+/**
+ * Absolute paths to the build tools (CMake, Ninja) bundled with a Qt
+ * installation, as detected under the installation root's `Tools/` directory.
+ * Published by qt-sm via CoreAPI so qt-core/qt-cpp can pick them up. A field is
+ * omitted when that tool is not present on disk.
+ */
+export interface QtToolsPaths {
+  cmake?: string;
+  ninja?: string;
+}
+
 export type ConfigType =
   | string
   | QtAdditionalPath[]
   | QtWorkspaceFeatures
   | PySideEnvData
+  | QtToolsPaths
   | undefined;
 
 export type QtWorkspaceConfig = Map<string, ConfigType>;
