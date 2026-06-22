@@ -278,6 +278,11 @@ export const welcome = {
   getStarted: {
     title: 'Get started',
 
+    walkthrough: {
+      title: 'Set up Qt',
+      description: 'Follow the guided walkthrough to get Qt ready'
+    },
+
     newProject: {
       title: 'New project',
       description: 'Start from a template'
