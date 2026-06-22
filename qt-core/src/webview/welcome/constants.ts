@@ -23,7 +23,7 @@ export const BUG_REPORT_URL =
 export const FALLBACK_IMAGE_FILE_IN_RES = 'qt-blog.jpg';
 
 export const WEBVIEW_PANEL_COLUMN = vscode.ViewColumn.One;
-export const WEBVIEW_PANEL_VIEW_TYPE = 'ViewTypeCoursesBrowser';
+export const WEBVIEW_PANEL_VIEW_TYPE = 'ViewTypeWelcomePage';
 
 export const CONFIG_KEY_SHOW_ON_ACTIVATION = 'showWelcomePageOnActivation';
 

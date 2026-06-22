@@ -34,7 +34,8 @@ import { registerOpenExBrowserCommand } from '@/webview/ex-browser/controller';
 import { registerOpenCoursesBrowserCommand } from '@/webview/courses/controller';
 import {
   tryOpenWelcomePage,
-  registerOpenWelcomePageCommand
+  registerOpenWelcomePageCommand,
+  registerWelcomePageSerializer
 } from '@/webview/welcome/controller';
 import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
@@ -73,6 +74,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerOpenExBrowserCommand(context),
     registerOpenCoursesBrowserCommand(context),
     registerOpenWelcomePageCommand(context),
+    registerWelcomePageSerializer(context),
     registerCreateNewItemPanelCommand(context),
     vscode.languages.registerColorProvider('qss', createColorProvider()),
     reportIssueCommand()

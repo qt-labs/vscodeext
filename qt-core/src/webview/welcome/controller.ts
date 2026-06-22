@@ -38,6 +38,18 @@ export function tryOpenWelcomePage(context: Context) {
   }
 }
 
+export function registerWelcomePageSerializer(context: Context) {
+  return vscode.window.registerWebviewPanelSerializer(
+    consts.WEBVIEW_PANEL_VIEW_TYPE,
+    {
+      async deserializeWebviewPanel(panel: Panel) {
+        WelcomePageController.restore(context, panel);
+        return Promise.resolve();
+      }
+    }
+  );
+}
+
 export class WelcomePageController {
   public static instance: WelcomePageController | undefined;
 
@@ -90,5 +102,14 @@ export class WelcomePageController {
     }
 
     WelcomePageController.instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+  }
+
+  public static restore(context: Context, panel: Panel) {
+    if (WelcomePageController.instance) {
+      panel.dispose();
+      return;
+    }
+
+    WelcomePageController.instance = new WelcomePageController(context, panel);
   }
 }
