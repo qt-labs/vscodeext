@@ -63,6 +63,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     post({ type: 'resetAll' });
   }
 
+  function handleMarkDone() {
+    // The extension sets the global flag and closes the walkthrough panel.
+    post({ type: 'markDone' });
+  }
+
   // Register listener immediately at module evaluation time — NOT in $effect.
   // This guarantees it's ready before the extension's setTimeout fires.
   function handleMessage(event: MessageEvent) {
@@ -101,6 +106,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       onaction={handleAction}
       onreview={handleReview}
       onreset={handleReset}
+      onmarkdone={handleMarkDone}
     />
   {:else}
     <div class="loading">Loading…</div>
