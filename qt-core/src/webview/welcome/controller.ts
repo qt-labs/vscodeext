@@ -14,10 +14,18 @@ import {
 import * as texts from '@/texts';
 import { WelcomePageDispatcher as WelcomeScreenDispatcher } from './dispatcher';
 import { WelcomePageDataManager } from './data-manager';
+import {
+  isWalkthroughAvailable,
+  isGetStartedDone,
+  openWalkthrough
+} from './walkthrough';
 import * as consts from './constants';
+import { createLogger } from 'qt-lib';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
+
+const logger = createLogger('welcome-controller');
 
 export function registerOpenWelcomePageCommand(context: Context) {
   const name = 'openWelcomePage';
@@ -29,7 +37,15 @@ export function registerOpenWelcomePageCommand(context: Context) {
   });
 }
 
-export function tryOpenWelcomePage(context: Context) {
+export async function tryOpenWelcomePage(context: Context) {
+  // While the qt-sm "Get Started" walkthrough is available but not yet
+  // completed, guide the user through it instead of the welcome page.
+  if (isWalkthroughAvailable() && !isGetStartedDone()) {
+    logger.info('Opening the qt-sm walkthrough; get started not done yet');
+    await openWalkthrough();
+    return;
+  }
+
   const key = consts.CONFIG_KEY_SHOW_ON_ACTIVATION;
   const config = vscode.workspace.getConfiguration(consts.EXTENSION_ID);
 
