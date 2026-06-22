@@ -12,5 +12,6 @@ export const CoreKey = {
   WORKSPACE_FEATURES: 'workspaceFeatures',
   SELECTED_QT_PATHS: 'selectedQtPaths',
   BUILD_DIR: 'buildDir',
+  QT_TOOLS_PATHS: 'qtToolsPaths',
   GLOBAL_WORKSPACE: 'global'
 };
