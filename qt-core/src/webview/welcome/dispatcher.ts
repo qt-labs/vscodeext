@@ -14,6 +14,7 @@ import {
   IsCommand
 } from '@/webview/shared/message';
 import { WelcomePageDataManager } from './data-manager';
+import { isWalkthroughAvailable } from './walkthrough';
 import * as consts from './constants';
 
 const logger = createLogger('tutorial-dispatcher');
@@ -171,10 +172,4 @@ export class WelcomePageDispatcher {
 // helpers
 async function openExt(url: string) {
   await vscode.env.openExternal(vscode.Uri.parse(url));
-}
-
-function isWalkthroughAvailable() {
-  return (
-    vscode.extensions.getExtension(consts.QT_SM_EXTENSION_ID) !== undefined
-  );
 }
