@@ -147,6 +147,13 @@ async function processMessage(message: QtWorkspaceConfigMessage) {
       await kitManager.onQtPathsChanged(additionalQtPaths, project?.folder);
       continue;
     }
+
+    if (key === CoreKey.QT_TOOLS_PATHS) {
+      // Shared CMake/Ninja paths arrived (or changed); pick up the bundled
+      // CMake if the cmake command is still missing.
+      void tryToUseCMakeFromQtTools();
+      continue;
+    }
   }
 }
 
