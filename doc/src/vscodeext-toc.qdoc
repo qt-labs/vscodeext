@@ -17,6 +17,7 @@
             \list
                 \li \l{Overview}
                 \li \l{Installation}
+                \li \l{Set up Python development environment}
             \endlist
         \li \l{Tutorials}
             \generatelist vscodeext-tutorials

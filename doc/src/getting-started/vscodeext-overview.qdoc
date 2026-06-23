@@ -21,6 +21,7 @@
     With the Qt C++ extension pack, you can:
 
     \list
+        \li Create Qt applications with Qt Widgets based UIs
         \li Use Qt in your CMake project by selecting a generated Qt kit
         \li Get syntax highlighting and code completion for Qt-specific
             file formats
@@ -35,6 +36,7 @@
     With the Qt QML extension, you can:
 
     \list
+        \li Create Qt Quick applications
         \li Get QML syntax highlighting and code completion with
             \l {\QMLLS}
         \li Verify the syntax of QML code with \l{qmllint Reference}{qmllint}
@@ -57,15 +59,20 @@
 
     \section1 Python development
 
+    //! [python-extension-overview]
+
     With the Qt Python extension pack, you can develop \l {Qt for Python}
-    projects with VS Code and Python:
+    applications with VS Code and Python:
 
     \list
         \li Install PySide6 packages
-        \li Build, run, and clean PySide6 projects
-        \li Debug PySide6 applications with \c debugpy and QML debugger
+        \li Create Qt for Python applications with Qt Quick or Qt Widgets based UIs
+        \li Build, run, and clean the applications
+        \li Debug the applications with \c debugpy and QML debugger
         \li Read Qt for Python documentation
     \endlist
+
+    //! [python-extension-overview]
 
     \section1 Usage data collection
 
@@ -98,5 +105,5 @@
         \li Build output
     \endlist
 
-    \sa {Installation}
+    \sa {Installation}, {Set up Python development environment}
 */

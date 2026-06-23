@@ -21,7 +21,9 @@
         \li In \uicontrol {Create in}, enter the path for the project files.
             For example, \c {C:\Qt\examples}.
         \li In \uicontrol {Options}, set options depending on the project type.
-        \li Select \uicontrol {Create} to create the project files.
+        \li Select \uicontrol {Open in new window} to create the project files
+            and open them in a new VS Code window. To add the new project to the
+            workspace, select \uicontrol {Add to workspace}.
         \li Select a CMake kit for the project.
     \endlist
 
