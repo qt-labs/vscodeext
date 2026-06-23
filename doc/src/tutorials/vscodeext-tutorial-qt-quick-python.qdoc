@@ -1,0 +1,193 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-tutorials-qt-quick-python.html
+    \previouspage vscodeext-tutorials.html
+    \nextpage vscodeext-how-tos.html
+
+    \ingroup vscodeext-tutorials
+
+    \title Tutorial: Qt Quick and Qt for Python
+
+    \brief Create a Qt for Python project using a project wizard and design a UI
+    using Qt Quick Controls.
+
+    This tutorial illustrates how to use \QVSC to create a \l [QtQuick] {Qt Quick}
+    application with \l {Qt for Python}. You'll create a project using a project
+    wizard and design a UI using \l {Qt Quick Controls}.
+
+    You can download the completed project from \l{Code: HelloWorld}.
+
+    \image {vscodeext-tutorial-quick-python.webp} {Qt Quick Python application}
+
+    For more examples of creating Qt for Python applications, see
+    \l{Qt for Python: Tutorials}.
+
+    \section1 Before you start
+
+    Before you start, you have to:
+
+    \list
+        \li \l {Installation}{Install \QVSC}
+        \li \l {Register Qt installations}
+    \endlist
+
+    \section1 Create a Qt Quick Python application project
+
+    To create a Qt Quick application with Python code in Visual Studio Code:
+
+    \list 1
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
+        \li In \uicontrol {Project}, select
+            \uicontrol {Qt Quick application (Qt for Python)}.
+            \image {vscodeext-create-new-project-quick-python.webp} {A Qt Quick Python application in the New item view}
+        \li In \uicontrol {Name}, enter the project name.
+        \li In \uicontrol {Create in}, enter the path for the project files.
+        \li Select \uicontrol {Open in new window} to create the project files
+            and open them in a new VS Code window.
+    \endlist
+
+    You now have a small working Qt Quick application with Qt for Python code.
+    Select \inlineimage {preview-app.png} {Preview changes to QML code live in your application}
+    on the editor toolbar to preview it. For now, the result is an empty window.
+
+    The wizard creates the following files:
+
+    \list
+        \li \c {pyproject.toml}, which lists the files in the Python
+            project and other configurations.
+        \li \c {main.py}, which has some boilerplate code.
+        \li \c {Main.qml}, which imports Qt Quick controls.
+        \li \c {qmldir}, declaring a QML module.
+        \li \c {requirements.txt}, which stores the PySide version of the
+            generated code. You can use this file to install the required
+            PySide version using pip.
+    \endlist
+
+    \section1 Install PySide6 for the project
+
+    The recommended way to run PySide6 projects from VS Code is to install
+    PySide6 for each project. \QVSC prompts you to do so the first time you open
+    \c {main.py}.
+
+    \section1 Add Qt Quick imports
+
+    The wizard adds the following imports to the \c {main.py} source file for
+    access to QGuiApplication and QQmlApplicationEngine:
+
+    \code [python]
+    import sys
+    from pathlib import Path
+
+    from PySide6.QtGui import QGuiApplication
+    from PySide6.QtQml import QQmlApplicationEngine
+    \endcode
+
+    \section1 Add a main function
+
+    The wizard also adds a main function, where it creates a QGuiApplication
+    instance and passes system arguments to the QGuiApplication object:
+
+    \code [python]
+    if __name__ == "__main__":
+        app = QGuiApplication(sys.argv)
+        ...
+    \endcode
+
+    \section1 Load the QML file
+
+    The following lines in the main class create a QQmlApplicationEngine
+    instance and load the generated QML module to the engine object:
+
+    \code [python]
+        ...
+        engine = QQmlApplicationEngine()
+        qml_file = Path(__file__).resolve().parent / "main.qml"
+        engine.load(qml_file)
+        ...
+    \endcode
+
+    Finally, the wizard adds code that checks whether the file was successfully
+    loaded. If loading the file fails, the application exits with an error code.
+    If loading succeeds, the wizard calls the \c app.exec() method to enter the
+    Qt main loop and start executing the Qt code:
+
+    \code [python]
+    ...
+    if not engine.rootObjects():
+        sys.exit(-1)
+
+    sys.exit(app.exec())
+    ...
+    \endcode
+
+    \section1 Design the UI
+
+    Open the \c {Main.qml} file in the \uicontrol Edit mode to design a
+    Qt Quick UI.
+
+    \section2 Add imports
+
+    Add imports for Qt Quick Controls and Layouts:
+
+    \code [text]
+    import QtQuick
+    import QtQuick.Controls
+    import QtQuick.Layouts
+    \endcode
+
+    \section2 Add properties and functions
+
+    The wizard adds a main window:
+
+    \code [text]
+    ApplicationWindow {
+        width: 640
+        height: 480
+        visible: true
+        title: qsTr("Hello World")
+    }
+    \endcode
+
+    Add a property and function to randomly select the language of the displayed
+    text:
+
+    \code [text]
+        ...
+        readonly property list<string> texts: ["Hallo Welt", "Hei maailma",
+                                               "Hola Mundo", "Привет мир"]
+
+    function setText() {
+        var i = Math.round(Math.random() * 3)
+        text.text = texts[i]
+    }
+    \endcode
+
+    \section2 Add Qt Quick Controls
+
+    Add \l {Text} and \l {Button} QML types within a \l {ColumnLayout} type to
+    design the UI:
+
+    \code [text]
+        ColumnLayout {
+        anchors.fill:  parent
+
+        Text {
+            id: text
+            text: "Hello World"
+            Layout.alignment: Qt.AlignHCenter
+        }
+        Button {
+            text: "Click me"
+            Layout.alignment: Qt.AlignHCenter
+            onClicked:  setText()
+        }
+    }
+    \endcode
+
+    The application is now ready and you can preview it to test that it works as
+    expected.
+
+    \sa {Set up Python development environment}
+*/
