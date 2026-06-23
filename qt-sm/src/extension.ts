@@ -66,9 +66,9 @@ async function ensureCoreVersion(): Promise<void> {
     const packageJSON = ext.packageJSON as Record<string, unknown>;
     const installedVersion = String(packageJSON.version);
 
-    if (compareVersions(installedVersion, requiredVersion) > 0) {
+    if (compareVersions(installedVersion, requiredVersion) >= 0) {
       logger.info(
-        `Installed Qt Core extension ${installedVersion} is newer than ` +
+        `Installed Qt Core extension ${installedVersion} is at least ` +
           `${requiredVersion}, keeping it`
       );
       return;
