@@ -48,7 +48,7 @@ export function isAnyVersionInstalledOnDisk(): boolean {
   }
 }
 
-let diskWatcher: vscode.FileSystemWatcher | undefined;
+let diskWatchers: vscode.FileSystemWatcher[] = [];
 
 /**
  * Watch the Qt framework installation directory on disk and invoke `onChange`
@@ -61,25 +61,18 @@ export function watchInstalledPackagesOnDisk(
   onChange: () => void
 ): void {
   const retarget = () => {
-    diskWatcher?.dispose();
-    diskWatcher = undefined;
+    diskWatchers.forEach((w) => {
+      w.dispose();
+    });
+    diskWatchers = [];
 
     const config = vscode.workspace.getConfiguration(EXTENSION_ID);
     const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
     if (!rawPath) {
       return;
     }
-    const frameworkDir = path.join(
-      resolveConfiguration(rawPath),
-      'QtFramework'
-    );
-    // Non-recursive watch of the immediate children (the version folders),
-    // which is exactly what isAnyVersionInstalledOnDisk() looks at.
-    const pattern = new vscode.RelativePattern(
-      vscode.Uri.file(frameworkDir),
-      '*'
-    );
-    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+    const installRoot = resolveConfiguration(rawPath);
+
     // Ignore disk churn while an install is writing into the folder — the
     // intermediate states are noise. The install flow refreshes the
     // walkthrough itself once it completes.
@@ -89,9 +82,29 @@ export function watchInstalledPackagesOnDisk(
       }
       onChange();
     };
-    watcher.onDidCreate(handle);
-    watcher.onDidDelete(handle);
-    diskWatcher = watcher;
+
+    const addWatcher = (base: string, glob: string) => {
+      const watcher = vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(vscode.Uri.file(base), glob)
+      );
+      watcher.onDidCreate(handle);
+      watcher.onDidDelete(handle);
+      diskWatchers.push(watcher);
+    };
+
+    // Non-recursive watch of the immediate children (the version folders),
+    // which is exactly what isAnyVersionInstalledOnDisk() looks at.
+    addWatcher(path.join(installRoot, 'QtFramework'), '*');
+
+    // The watcher above is anchored inside the installation root, so it cannot
+    // observe the root itself being removed. Deleting the installation root
+    // wipes QtFramework along with it, which must also refresh the walkthrough.
+    // Watch the root entry from its parent so its deletion (and re-creation) is
+    // reported. Skip when the root has no parent (e.g. a filesystem root).
+    const installRootParent = path.dirname(installRoot);
+    if (installRootParent && installRootParent !== installRoot) {
+      addWatcher(installRootParent, path.basename(installRoot));
+    }
   };
 
   retarget();
@@ -104,7 +117,10 @@ export function watchInstalledPackagesOnDisk(
     }),
     {
       dispose: () => {
-        diskWatcher?.dispose();
+        diskWatchers.forEach((w) => {
+          w.dispose();
+        });
+        diskWatchers = [];
       }
     }
   );
