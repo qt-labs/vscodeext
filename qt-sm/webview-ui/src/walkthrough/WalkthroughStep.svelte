@@ -301,10 +301,20 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   .locked-title {
     color: var(--vscode-descriptionForeground);
+    opacity: 0.6;
   }
 
+  /* The row is lifted above the timeline rail so its opaque circle fill masks
+     the line. We deliberately do NOT dim the row with `opacity` here: that
+     would make the circle fill translucent and let the rail show through the
+     icon. Dimming is applied to the glyph and title individually instead. */
   .locked-row {
-    opacity: 0.5;
+    position: relative;
+    z-index: 1;
+  }
+
+  .lock-circle :global(svg) {
+    opacity: 0.6;
   }
 
   .review-btn {
