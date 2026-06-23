@@ -9,6 +9,11 @@
 */
 
 /*!
+\externalpage https://github.com/qt-labs/vscodeext/tree/dev/doc/tutorials/HelloWorld
+\title Code: HelloWorld
+*/
+
+/*!
 \externalpage https://github.com/qt-labs/vscodeext/tree/dev/doc/tutorials/QuickAddressBook
 \title Code: QuickAddressBook
 */
@@ -59,6 +64,11 @@
 */
 
 /*!
+\externalpage https://doc.qt.io/qtforpython-6/tutorials/index.html
+\title Qt for Python: Tutorials
+*/
+
+/*!
 \externalpage https://doc.qt.io/qtforpython-6/tools/pyside-project.html
 \title Qt for Python: pyside6-project
 */
@@ -86,4 +96,9 @@
 /*!
 \externalpage https://qt-project.atlassian.net/secure/CreateIssue.jspa
 \title Qt project bug tracker
+*/
+
+/*!
+\externalpage https://docs.astral.sh/uv/
+\title uv
 */

@@ -1,4 +1,4 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
@@ -50,5 +50,48 @@
 
     Select \uicontrol {Refresh} to update the information about extension status.
 
-    \sa {Register Qt installations}
+    \sa {Register Qt installations}, {Set up Python development environment}
+*/
+
+/*!
+    \page vscodeext-how-to-set-up-pyside6.html
+    \previouspage vscodeext-getting-started.html
+    \nextpage vscodeext-how-tos.html
+
+    \title Set up Python development environment
+
+    \include {vscodeext-overview.qdoc} {python-extension-overview}
+
+    \section1 Install PySide6 for the project
+
+    The recommended way to run PySide6 projects from VS Code is to install
+    PySide6 for each project. \QVSC prompts you to do so the first time you open
+    a \c {.py} file for a project.
+
+    To install PySide6 for the project later:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Install PySide6}.
+        \li Select \uicontrol {Create environment} to create a new virtual
+            environment for the project. To use an existing environment, select
+            \uicontrol {Select environment}.
+    \endlist
+
+    \section1 Create virtual environment with uv
+
+    If you have installed the \l {uv} Python package manager and set it in PATH,
+    you can use it to create the virtual environment:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Create virtual environment with uv}.
+        \li Select \uicontrol {Create environment} to create a new virtual
+            environment for the project. To use an existing environment, select
+            \uicontrol {Select environment}.
+    \endlist
+
+    \sa {Installation}, {Tutorial: Qt Quick and Qt for Python},
+    {Create Qt projects}, {Debug Qt for Python applications},
+    {Read Qt documentation}
 */
