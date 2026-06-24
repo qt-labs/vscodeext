@@ -42,7 +42,7 @@
         \li In \uicontrol {Name}, enter a name for the project.
         \li Select \uicontrol {Open in new window}.
             \image {vscodeext-qt-examples-open-in-new-window.webp} {Opening the example project in a new window}
-        \li Select a kit for for building and running the project.
+        \li Select a kit for building and running the project.
         \li Select
             \inlineimage {run_project.png} {Launch the selected target in the terminal window}
             on the status bar.
