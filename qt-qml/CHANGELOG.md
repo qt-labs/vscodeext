@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.15.1 (Jun 24, 2026)
+
+🎉 **Added**
+
+- Activate the extension for `.qml` and `.qmlproject` files
+
 ## 1.15.0 (May 20, 2026)
 
 🎉 **Added**

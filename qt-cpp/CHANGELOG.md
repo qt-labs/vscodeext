@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.15.1 (Jun 24, 2026)
+
+🐞 **Fixed**
+
+- Fix debugging failing silently when CMakePresets is used with qtpaths
+
 ## 1.15.0 (May 20, 2026)
 
 The same as `1.14.0`
