@@ -7,6 +7,10 @@
 - Deprecate the extension because its features are now part of the `Qt Core` extension
 - The extension will not get new features or fixes
 
+## 1.15.1 (Jun 24, 2026)
+
+The same as `1.15.0`
+
 ## 1.15.0 (May 20, 2026)
 
 The same as `1.14.0`

@@ -27,6 +27,18 @@
 - Make the Qt Quick project template more interactive and visual
 - Drop Qt 6.2 support from the C++ template; supported versions are 6.5, 6.8, and 6.10
 
+## 1.15.1 (Jun 24, 2026)
+
+🎉 **Added**
+
+- Add a "Set up Qt" walkthrough entry to the Welcome page and open it on activation when the Qt Software Management extension is installed
+- Generate `.vscode/settings.json` and `launch.json` for new projects and examples
+- Generate `CMakePresets.json` for example projects
+
+🐞 **Fixed**
+
+- Restore the Welcome page webview on window reload
+
 ## 1.15.0 (May 20, 2026)
 
 🎉 **Added**
