@@ -56,7 +56,8 @@
         \li In \uicontrol {Name}, enter \c AddressBook.
         \li In \uicontrol {Create in}, enter the path for the project files.
             For example, \c {C:\Qt\Examples}.
-        \li Select \uicontrol {Create} to create the project files.
+        \li Select \uicontrol {Open in new window} to create the project files
+            and open them in a new VS Code window.
         \li Select a CMake kit for the project.
     \endlist
 

@@ -39,9 +39,13 @@
         \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
         \li In \uicontrol {Project}, select \uicontrol {Qt Quick application}.
             \image {vscodeext-create-new-project-quick.webp} {A Qt Quick application in the New item view}
+        \li In \uicontrol {Minimum Qt version}, select the Qt version to develop
+            with. The Qt version determines the Qt Quick imports to use in the
+            QML files.
         \li In \uicontrol {Name}, enter \c QuickAddressBook.
         \li In \uicontrol {Create in}, enter the path for the project files.
-        \li Select \uicontrol {Create} to create the project files.
+        \li Select \uicontrol {Open in new window} to create the project files
+            and open them in a new VS Code window.
         \li Select a CMake kit for the project.
     \endlist
 
@@ -63,7 +67,7 @@
 
     Add import statements for the modules that you plan to use in the root type:
 
-    \code
+    \code [text]
     import QtQuick
     import QtQuick.Controls
     import QtQuick.Layouts
@@ -72,7 +76,7 @@
     Set the value of the \c title property to the title of the application main
     window:
 
-    \code
+    \code [text]
     ApplicationWindow {
         id: mainWindow
         visible: true
@@ -88,7 +92,7 @@
     property to \c {Add...} and the value of the \c font.pointSize property to
     \c 24:
 
-    \code
+    \code [text]
         Button {
             id: addButton
             text: "Add..."
@@ -119,7 +123,7 @@
     connect the \c onClicked signal handler of the button to the \c open()
     method of the popup:
 
-    \code
+    \code [text]
             onClicked: newAddressPopup.open()
     \endcode
 
@@ -133,7 +137,7 @@
     with the \c id \c addressList for storing the contact data. A list model
     defines a free-form list data source:
 
-    \code
+    \code [text]
     ListModel {
         id: addressList
     }
@@ -146,7 +150,7 @@
     Use the \c onAddressAdded signal handler to append address
     book entries to the \c addressList model:
 
-    \code
+    \code [text]
     NewAddressPopup {
         id: newAddressPopup
         onAddressAdded: function(newName, newAddr) {
@@ -161,7 +165,7 @@
     Declare an object of \l ColumnLayout type to position the \l Button object
     and an instance of the \l Repeater type:
 
-    \code
+    \code [text]
     ColumnLayout {
         id: mainWindowLayout
         Layout.fillWidth: true
@@ -191,7 +195,7 @@
 
     Specify \c addressList as the \c model to use for the repeater:
 
-    \code
+    \code [text]
         Repeater {
             id: addressListViewer
             model: addressList
@@ -203,7 +207,7 @@
     Declare an object of the custom \c AddressBookItem type that the
     repeater will use to instantiate address book entries:
 
-    \code
+    \code [text]
             AddressBookItem {
                 id: addressBookItem
     \endcode
@@ -216,7 +220,7 @@
     Use the \c onRemoved signal handler to remove an address book entry from the
     list when the user clicks its \uicontrol Remove button.
 
-    \code
+    \code [text]
                 onRemoved: addressList.remove(index)
     \endcode
 
@@ -249,7 +253,7 @@
     Add \c NewAddressPopup.qml to the \c QML_FILES section of the CMakeLists.txt
     file:
 
-    \badcode
+    \code [cmake]
     qt_add_qml_module(appQuickAddressBook
         URI QuickAddressBook
         VERSION 1.0
@@ -268,7 +272,7 @@
     \l RowLayout to position the \uicontrol Name and \uicontrol {E-Mail Address}
     fields.
 
-    \code
+    \code [text]
     import QtQuick
     import QtQuick.Controls
     import QtQuick.Layouts
@@ -280,7 +284,7 @@
     Set the \c modal property to \c true to specify that the popup is modal. Set
     the \c focus property to \c true to specify that the popup requests focus:
 
-    \code
+    \code [text]
         modal: true
         focus: true
     \endcode
@@ -288,7 +292,7 @@
     Specify values for the \c width, \c x, and \c y properties to set the
     position and size of the popup on top of the main window:
 
-    \code
+    \code [text]
         width: parent.width * 0.9
         x: (parent.width - width) / 2
         y: 35
@@ -301,7 +305,7 @@
     should be cleared. You use the \c onOpened signal handler to reset the
     values of the fields and give focus to the \uicontrol Name field:
 
-    \code
+    \code [text]
         onOpened: {
             nameField.text = "";
             addrField.text = "";
@@ -315,7 +319,7 @@
     objects that specify the \uicontrol Name and \uicontrol {E-Mail Address}
     fields of the popup:
 
-    \code
+    \code [text]
     ColumnLayout {
         anchors.fill: parent
         TextField {
@@ -339,7 +343,7 @@
     Use an instance of a \l RowLayout type to position two \l Button objects
     that specify the \uicontrol Add and \uicontrol Cancel buttons:
 
-    \code
+    \code [text]
         RowLayout {
             Layout.fillWidth: true
             Button {
@@ -366,7 +370,7 @@
     Connect the \c onClicked signal handler of the \uicontrol Add button to
     the \c addressAdded() signal and to the popup's \c close() method:
 
-    \code
+    \code [text]
                 onClicked: {
                     newAddressPopup.addressAdded(nameField.text, addrField.text)
                     newAddressPopup.close()
@@ -378,7 +382,7 @@
     the to the popup's \c close() method to close the popup without saving the
     data:
 
-    \code
+    \code [text]
             Button {
                 text: "Cancel"
                 font.pointSize: 24
@@ -402,7 +406,7 @@
     basic building blocks you can use to create an application in QML. Give it
     an \c id to be able to refer to it later.
 
-    \code
+    \code [text]
     import QtQuick
     import QtQuick.Controls
     import QtQuick.Layouts
@@ -413,7 +417,7 @@
 
     Set the properties that you will use in the \c Rectangle and \c Text types:
 
-    \code
+    \code [text]
     required property int index
     required property string name
     required property string addr
@@ -421,7 +425,7 @@
 
     To use alternating colors for rows, set the value of the \c color property:
 
-    \code
+    \code [text]
         color: (index % 2) == 0 ? "dimgray" : "lightgray"
     \endcode
 
@@ -429,7 +433,7 @@
     the application scalable on different screen sizes. Bind the rectangle
     \c height property to the height of the text items it will contain:
 
-    \code
+    \code [text]
         anchors.left: parent.left
         anchors.right: parent.right
         height: itemText.height + 12
@@ -441,7 +445,7 @@
     signal handler of the remove button. This removes an address book entry
     from the main window when users click the button:
 
-    \code
+    \code [text]
     signal removed()
     \endcode
 
@@ -450,7 +454,7 @@
     Use instances of the \l RoundButton and \l Text types within an instance of
     a \l RowLayout type to define an address book entry:
 
-    \code
+    \code [text]
     RowLayout {
         spacing: 12
         Layout.fillWidth: true
@@ -469,7 +473,7 @@
     and \c addr fields from the popup and to use bold and italic formatting for
     the values:
 
-    \code
+    \code [text]
         Text {
             id: itemText
             font.pointSize: 24
