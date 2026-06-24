@@ -6,6 +6,10 @@
 
 - Disable the extension in untrusted workspaces
 
+## 1.15.1 (Jun 24, 2026)
+
+The same as `1.15.0`
+
 ## 1.15.0 (May 20, 2026)
 
 🎉 **Added**
