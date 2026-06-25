@@ -48,7 +48,10 @@ import {
   isVersionInstalledOnDisk,
   isAnyVersionInstalledOnDisk
 } from '@/installed-packages-store';
-import { refreshWalkthrough } from '@/walkthrough-panel';
+import {
+  refreshWalkthrough,
+  refreshLatestFrameworkState
+} from '@/walkthrough-panel';
 import { isInstalling, setInstalling } from '@/install-state';
 import { publishQtToolsPaths } from '@/qt-tools-store';
 
@@ -795,6 +798,9 @@ async function installPackageByIdImpl(
       // Re-render so the framework step's install button is recomputed as
       // disabled now that a version is installed.
       refreshWalkthrough();
+      // The just-installed version may be the newest available, which would
+      // disable "Get latest"; re-resolve that asynchronously.
+      void refreshLatestFrameworkState();
       registerInstalledQtPaths(pkg.version);
       // The install may have added CMake/Ninja under Tools/; re-detect and
       // inform qt-core/qt-cpp via CoreAPI.
