@@ -2,7 +2,7 @@
   "name": "qt-sm",
   "displayName": "Qt Software Management (Alpha)",
   "description": "Qt Software Management",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
