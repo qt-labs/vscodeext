@@ -9,6 +9,7 @@ import {
   STATE_WALKTHROUGH_FIRST_APP_DONE
 } from '@/constants';
 import { isAnyVersionInstalledOnDisk } from '@/installed-packages-store';
+import { isLatestFrameworkInstalled } from '@/latest-framework';
 import { getLoggedIn, getRequiredExtensionsContext } from './extension';
 import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 
@@ -189,7 +190,11 @@ function getDefaultConfig(
           {
             label: 'Get latest Qt Framework',
             primary: true,
-            disabled: s.framework,
+            // Disabled only when the newest available version is already
+            // installed — not merely when *some* (older) version is present, so
+            // users with an outdated Qt can still grab the latest. Defaults to
+            // enabled until the async check resolves (see latestFrameworkInstalled).
+            disabled: latestFrameworkInstalled,
             command: `${EXTENSION_ID}.installPackage`,
             commandArgs: { version: 'latest', product: 'qtframework' }
           },
@@ -230,6 +235,12 @@ let currentPanel: vscode.WebviewPanel | undefined;
 // Stored so refreshWalkthrough() can recompute persisted state without the
 // caller having to thread the context through every live-signal event.
 let panelContext: vscode.ExtensionContext | undefined;
+// Whether the newest available Qt Framework is installed, gating the "Get
+// latest Qt Framework" button. Determining "latest" needs a network call, so
+// it's resolved asynchronously (refreshLatestFrameworkState) and cached here.
+// Defaults to false → the button stays enabled until we positively learn the
+// latest is installed, which is the safe direction (never wrongly disabled).
+let latestFrameworkInstalled = false;
 
 /**
  * Compute current completion state by checking live signals.
@@ -321,6 +332,10 @@ function wirePanel(
   setTimeout(() => {
     postConfig(completion);
   }, 100);
+
+  // Resolve (async) whether the newest framework is already installed so the
+  // "Get latest" button reflects it; re-renders only if the cached value changes.
+  void refreshLatestFrameworkState();
 
   panel.webview.onDidReceiveMessage(
     (msg: MessageToExtension) => {
@@ -445,6 +460,24 @@ export function refreshWalkthrough(): void {
     return;
   }
   postConfig(computeLiveCompletion(panelContext));
+}
+
+/**
+ * Asynchronously refresh whether the latest Qt Framework is installed and
+ * re-render if it changed. Safe to fire-and-forget; a no-op when no panel is
+ * open or the state is unchanged. Call this when the panel opens and after an
+ * install completes (when the newest version may have just become installed).
+ */
+export async function refreshLatestFrameworkState(): Promise<void> {
+  if (!currentPanel) {
+    return;
+  }
+  const installed = (await isLatestFrameworkInstalled()) === true;
+  if (installed === latestFrameworkInstalled) {
+    return;
+  }
+  latestFrameworkInstalled = installed;
+  refreshWalkthrough();
 }
 
 /**
