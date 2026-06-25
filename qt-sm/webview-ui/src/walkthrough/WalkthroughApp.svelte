@@ -116,7 +116,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <style>
   .walkthrough-app {
     width: 100%;
-    min-height: 100vh;
+    /* Pin to the viewport height (not min-height) so that when the
+       walkthrough is taller than the screen, overflow-y has something to
+       clip and shows an internal scrollbar instead of growing unbounded. */
+    height: 100vh;
     background: var(--vscode-editor-background);
     color: var(--vscode-foreground);
     overflow-y: auto;
