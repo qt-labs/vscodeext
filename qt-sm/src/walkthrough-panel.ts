@@ -14,6 +14,19 @@ import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 
 const logger = createLogger('walkthrough-panel');
 
+/** Themed Qt tab icon for the walkthrough panel, matching the Qt Welcome page. */
+function createWebviewPanelIcons(context: vscode.ExtensionContext) {
+  const sub = 'res/icons/';
+  return {
+    dark: vscode.Uri.joinPath(context.extensionUri, sub, 'qt-webview-dark.svg'),
+    light: vscode.Uri.joinPath(
+      context.extensionUri,
+      sub,
+      'qt-webview-light.svg'
+    )
+  };
+}
+
 /**
  * Persisted walkthrough state. Only the "Build your first Qt application" step
  * needs persisting — the other steps are derived from live signals (login,
@@ -290,6 +303,9 @@ function wirePanel(
 ): void {
   currentPanel = panel;
   panelContext = context;
+
+  // Give the tab the themed Qt icon, matching the Qt Welcome page.
+  panel.iconPath = createWebviewPanelIcons(context);
 
   panel.webview.options = {
     enableScripts: true,
