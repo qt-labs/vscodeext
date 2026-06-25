@@ -788,7 +788,7 @@ async function installPackageByIdImpl(
       endDownloadPhase?.();
       endInstallPhase?.();
       void vscode.window.showInformationMessage(
-        `Successfully installed ${pkg.name || pkg.id}`
+        `Successfully installed ${pkg.name || pkg.id} ${pkg.version}`
       );
       void vscode.commands.executeCommand(
         'setContext',
