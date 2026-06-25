@@ -32,7 +32,8 @@ import {
   showWalkthroughPanel,
   getStepCompletion,
   registerWalkthroughSerializer,
-  refreshWalkthrough
+  refreshWalkthrough,
+  refreshLatestFrameworkState
 } from '@/walkthrough-panel';
 
 import { installBootstrap } from '@/bootstrap';
@@ -202,7 +203,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Re-sync the walkthrough when Qt versions appear/disappear in the
   // installation root on disk (installs/uninstalls outside the extension).
-  watchInstalledPackagesOnDisk(context, refreshWalkthrough);
+  // Recompute both the step status and the cached "latest installed" gate, so
+  // removing the newest (or only) version re-enables "Get latest Qt Framework".
+  watchInstalledPackagesOnDisk(context, () => {
+    refreshWalkthrough();
+    void refreshLatestFrameworkState();
+  });
 
   void installBootstrap();
 
