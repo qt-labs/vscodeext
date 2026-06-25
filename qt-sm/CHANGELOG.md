@@ -1,5 +1,21 @@
 # Change Log
 
+## 0.1.3 (Jun 25, 2026)
+
+🎉 **Added**
+
+- Show the themed Qt icon on the Get Started walkthrough tab
+
+⚠️ **Changed**
+
+- Restrict alpha access to `@qt.io` Qt Account emails
+- Include the installed version in the install success message
+
+🐞 **Fixed**
+
+- Fix the walkthrough growing unbounded instead of scrolling
+- Enable "Get latest Qt Framework" when the latest version is not installed
+
 ## 0.1.2 (Jun 24, 2026)
 
 🎉 **Added**
