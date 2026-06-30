@@ -223,8 +223,13 @@ async function onSearchManually() {
   }
 }
 
-function onSearchForCurrentWord() {
-  const edit = getCurrentEdit();
+function onSearchForCurrentWord(...args: unknown[]) {
+  const given = typeof args[0] === 'string' ? args[0].trim() : undefined;
+  const current = getCurrentEdit();
+  const edit = given
+    ? { word: given, filePath: current?.filePath ?? '' }
+    : current;
+
   if (!edit || edit.word.length === 0) {
     void vscode.window.showInformationMessage('No word found at the cursor.');
     return;
@@ -233,20 +238,20 @@ function onSearchForCurrentWord() {
   openOrSearchAndPick(edit);
 }
 
-export function registerDocumentationCommands() {
+export function registerQtDocsCommands(context: vscode.ExtensionContext) {
   function register(cmd: string, callback: (...args: unknown[]) => unknown) {
-    return vscode.commands.registerCommand(
-      `${EXTENSION_ID}.${cmd}`,
-      async () => {
-        telemetry.sendAction(cmd);
-        await callback();
-      }
+    const fullCmd = `${EXTENSION_ID}.${cmd}`;
+    const handler = async (...args: unknown[]) => {
+      telemetry.sendAction(cmd);
+      await callback(...args);
+    };
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(fullCmd, handler)
     );
   }
 
-  return [
-    register('documentationHomepage', onOpenHomePage),
-    register('documentationSearchManually', onSearchManually),
-    register('documentationSearchForCurrentWord', onSearchForCurrentWord)
-  ];
+  register('documentationHomepage', onOpenHomePage);
+  register('documentationSearchManually', onSearchManually);
+  register('documentationSearchForCurrentWord', onSearchForCurrentWord);
 }
