@@ -12,7 +12,8 @@ import {
   createColorProvider
 } from 'qt-lib';
 import { CoreAPIImpl } from '@/api';
-import { registerDocumentationCommands } from '@/online-docs';
+import { registerQtDocsHoverProvider } from '@/docs/hover-provider';
+import { registerQtDocsCommands } from '@/docs/online-docs';
 import { registerSetRecommendedSettingsCommand } from '@/recommended-settings';
 import {
   checkDefaultQtInsRootPath,
@@ -63,7 +64,6 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   context.subscriptions.push(
-    ...registerDocumentationCommands(),
     registerSetRecommendedSettingsCommand(),
     resetCommand(),
     registerQtByQtpaths(),
@@ -80,6 +80,8 @@ export async function activate(context: vscode.ExtensionContext) {
     reportIssueCommand()
   );
 
+  registerQtDocsCommands(context);
+  registerQtDocsHoverProvider(context);
   registerQrcEditorProvider(context);
   registerQmlTraceProvider(context);
   await enableQtTsFileSupport(context);
