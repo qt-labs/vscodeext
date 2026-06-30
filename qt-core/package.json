@@ -227,6 +227,14 @@
         }
       }
     ],
+    "keybindings": [
+      {
+        "key": "ctrl+f1",
+        "mac": "cmd+f1",
+        "when": "editorTextFocus && (editorLangId == cpp || editorLangId == qml || editorLangId == qt-ui || editorLangId == python)",
+        "command": "qt-core.documentationSearchForCurrentWord"
+      }
+    ],
     "grammars": [
       {
         "language": "qdoc",
