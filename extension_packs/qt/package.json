@@ -37,8 +37,7 @@
     "theqtcompany.qt-core",
     "theqtcompany.qt-cpp",
     "theqtcompany.qt-qml",
-    "theqtcompany.qt-python",
-    "theqtcompany.qt-ui"
+    "theqtcompany.qt-python"
   ],
   "scripts": {
     "vscode:prepublish": "git rev-parse HEAD > commit",

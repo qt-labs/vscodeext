@@ -267,7 +267,7 @@ describe('command: openSettings', () => {
   it('leads to vscode workbench action openSettings', async () => {
     const commandArgs = [
       'workbench.action.openSettings',
-      '@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-ui @ext:theqtcompany.qt-python @ext:theqtcompany.qt-core'
+      '@ext:theqtcompany.qt-cpp @ext:theqtcompany.qt-qml @ext:theqtcompany.qt-python @ext:theqtcompany.qt-core'
     ] as [string, ...unknown[]];
     const openSettingsSpy = stubExecuteCommandWithSpy(sb, commandArgs);
     await runOpenSettingsCommand();
@@ -644,16 +644,14 @@ describe('command: reset', () => {
   it('resets all qt extension', async () => {
     const resetSpy = stubExecuteCommandWithSpy(sb, [
       ['qt-cpp.reset'],
-      ['qt-qml.reset'],
-      ['qt-ui.reset']
+      ['qt-qml.reset']
     ]);
 
     await runResetCommand();
 
-    expect(resetSpy.calledThrice).to.be.true;
+    expect(resetSpy.calledTwice).to.be.true;
     expect(resetSpy.calledWith('qt-cpp.reset')).to.be.true;
     expect(resetSpy.calledWith('qt-qml.reset')).to.be.true;
-    expect(resetSpy.calledWith('qt-ui.reset')).to.be.true;
   });
 });
 
