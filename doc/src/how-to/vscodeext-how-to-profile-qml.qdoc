@@ -19,7 +19,7 @@
 
     \section1 Install QML profiler
 
-    To profile QML applications, you need to install QML Profile. Go to
+    To profile QML applications, you need to install QML Profiler. Go to
     \uicontrol {Command Palette} and select
     \uicontrol {Qt: Install the most recent QML trace viewer}.
 
