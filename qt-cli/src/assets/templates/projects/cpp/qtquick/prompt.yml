@@ -4,8 +4,8 @@ steps:
   - id: minimumQtVersion
     type: picker
     question: "Minimum Qt version:"
-    default: "6.8"
+    default: "6.10"
     items:
+      - text: "6.10"
       - text: "6.8"
       - text: "6.5"
-      - text: "6.2"
