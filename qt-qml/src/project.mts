@@ -31,11 +31,15 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
   constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createQMLProject);
     this.onProjectAdded((project) => {
-      logger.info('Adding project:', project.folder.uri.fsPath);
-      project.getConfigValues();
-      project.updateQmllsParams();
-      void this.startQmllsForProject(project);
+      void this.initializeProject(project);
     });
+  }
+
+  async initializeProject(project: QMLProject) {
+    logger.info('Initializing project:', project.folder.uri.fsPath);
+    project.getConfigValues();
+    project.updateQmllsParams();
+    await this.startQmllsForProject(project);
   }
 
   /**
@@ -155,6 +159,12 @@ export class QMLProject implements Project {
       this.folder,
       CoreKey.WORKSPACE_FEATURES
     );
+    logger.info(
+      `Project config for ${this.folder.uri.fsPath}: `
+        + `qtpathsExe=${this.qtpathsExe ?? '<none>'}; `
+        + `buildDir=${this._buildDir ?? '<none>'}; `
+        + `pyside=${String(features?.projectTypes.pyside === true)}`
+    );
     if (features?.projectTypes.pyside === true && !this._pySideProject) {
       void this.initPySideProject();
     }
@@ -172,6 +182,10 @@ export class QMLProject implements Project {
       if (!qmlImportPath) {
         throw new Error('Cannot find QT_INSTALL_QML');
       }
+      logger.info(
+        `Adding Qt import root from selected Qt path for ${this.folder.uri.fsPath}: `
+          + qmlImportPath
+      );
       this.qmlls.addImportPath(qmlImportPath);
       const docsPath = info.get('QT_INSTALL_DOCS');
       if (docsPath) {
