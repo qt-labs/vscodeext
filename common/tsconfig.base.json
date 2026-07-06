@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "ES2020",
+    "types": ["node"],
+    "lib": ["ES2020"],
+    "sourceMap": true,
+    "strict": true /* enable all strict type-checking options */,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "allowUnusedLabels": false,
+    "incremental": true,
+    "allowUnreachableCode": false,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}
