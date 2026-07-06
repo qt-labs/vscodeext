@@ -8,7 +8,8 @@ import {
   TelemetryReporter
 } from '@vscode/extension-telemetry';
 
-export { TelemetryEventProperties, TelemetryReporter };
+export type { TelemetryEventProperties };
+export { TelemetryReporter };
 
 const globalConnectionString =
   'InstrumentationKey=09d5f9a1-0532-4146-b158-a653220b28b6;IngestionEndpoint=https://germanywestcentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://germanywestcentral.livediagnostics.monitor.azure.com/;ApplicationId=8758b8d8-22d0-459d-b1b4-1689a3a350d5';
