@@ -2,26 +2,20 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import { expect } from 'chai';
-//import * as sinon from 'sinon';
+import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
 import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
-  activateQtQml
-  // Add more helpers here as needed, for example:
-  //stubExecuteCommandWithSpy,
-  // stubShowOpenDialogWithSpy,
-  // stubWarningMessage,
-  // expectCalledOnce,
-  // getMockConfiguration,
+  activateQtQml,
+  createFetchStub
 } from '../helper.mts';
 
 describe('command: downloadQmlls', () => {
-  //let sb: sinon.SinonSandbox;
+  let sb: sinon.SinonSandbox;
   setupSandboxLifecycleHooks(
-    //(_sb) => (sb = _sb),
-    (_sb) => void _sb,
+    (_sb) => (sb = _sb),
     async () => activateQtQml()
   );
 
@@ -30,13 +24,23 @@ describe('command: downloadQmlls', () => {
     await waitForVSCodeIdle();
   }
 
-  it('given the qml extension is active when downloadQmlls is executed then it performs the expected download behavior', async () => {
+  it('given the qml extension is active when downloadQmlls is executed then it fetches release info and completes without hanging', async () => {
+    // The command fetches qmlls release info over the network. Mocha does not
+    // wait for global fetch, so it must be stubbed; otherwise the real request
+    // runs and the test times out. Returning a release without a matching asset
+    // drives the graceful "nothing to download" path (no real download).
+    const fetchStub = createFetchStub(sb, { tag_name: 'v0.0.0', assets: [] });
+    const showErrorMessage = sb.spy(vscode.window, 'showErrorMessage');
+
     await runDownloadQmllsCommand();
 
-    // TODO:
-    // - stub download flow
-    // - assert expected progress / command / side effect
-    expect(true).to.be.true;
+    // The command reached the network layer and handled the missing asset
+    // gracefully instead of attempting a download.
+    expect(fetchStub.called, 'fetch should be called').to.be.true;
+    expect(
+      showErrorMessage.called,
+      'a graceful error should be surfaced when no asset is available'
+    ).to.be.true;
   });
 });
 

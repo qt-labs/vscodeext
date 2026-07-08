@@ -65,6 +65,26 @@ export function setupSandboxLifecycleHooks(
 export type CommandArgs = [string, ...unknown[]];
 export type CommandInput = CommandArgs | CommandArgs[];
 
+/**
+ * Stub `globalThis.fetch` to resolve with a mocked JSON `Response`.
+ *
+ * Mocha does not wait for global `fetch`, so any command that fetches over the
+ * network (e.g. qmlls release info) must have it stubbed, otherwise the real
+ * request runs and the test times out.
+ */
+export function createFetchStub(
+  sandbox: sinon.SinonSandbox,
+  responseBody: unknown,
+  status = 200
+): sinon.SinonStub {
+  return sandbox.stub(globalThis, 'fetch').resolves(
+    new Response(JSON.stringify(responseBody), {
+      status, // Any non-2xx status makes response.ok === false
+      headers: { 'Content-Type': 'application/json' }
+    })
+  );
+}
+
 export function stubExecuteCommandWithSpy(
   sb: sinon.SinonSandbox,
   input: CommandInput
