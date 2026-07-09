@@ -6,6 +6,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as cp from 'child_process';
 import { delay } from 'qt-lib';
 
 import { selectAndApplyQtKit } from './qt-kits-helper.mts';
@@ -202,6 +203,51 @@ export function materializeSnippetConfigForCurrentPlatform(
  *
  * @throws Error on CI if no Qt kit is available, or if configure/build fails.
  */
+/**
+ * Re-run the CMake build directly and print its full output.
+ *
+ * `vscode.commands.executeCommand('cmake.build')` only resolves to an exit
+ * code; the compiler/linker diagnostics are written to the CMake Tools output
+ * channel, which is not forwarded to stdout in the test runner. When a build
+ * fails on CI we therefore see only `rc=1` with no explanation.
+ *
+ * This helper invokes `cmake --build <buildDir>` synchronously against the
+ * already-configured build directory and echoes stdout/stderr, so the real
+ * error (e.g. a header that does not compile against the toolchain) lands in
+ * the CI log right before the assertion fails. Best-effort only: any problem
+ * spawning cmake is logged and swallowed so it never masks the original rc.
+ */
+function dumpBuildOutput(logPrefix: string, buildDir: string): void {
+  console.log(
+    `${logPrefix} ===== cmake.build failed; re-running build to capture output =====`
+  );
+  try {
+    const res = cp.spawnSync('cmake', ['--build', buildDir], {
+      encoding: 'utf-8',
+      shell: process.platform === 'win32'
+    });
+    if (res.error) {
+      console.log(
+        `${logPrefix} could not spawn cmake --build: ${res.error.message}`
+      );
+    }
+    if (res.stdout) {
+      console.log(res.stdout);
+    }
+    if (res.stderr) {
+      console.log(res.stderr);
+    }
+    console.log(
+      `${logPrefix} cmake --build exit code: ${res.status ?? '<none>'}`
+    );
+  } catch (err) {
+    console.log(
+      `${logPrefix} failed to capture build output: ${(err as Error).message}`
+    );
+  }
+  console.log(`${logPrefix} ===== end of captured build output =====`);
+}
+
 export async function configureAndBuildMinimalQtProject(
   ctx: { skip(): void },
   logPrefix: string,
@@ -253,6 +299,12 @@ export async function configureAndBuildMinimalQtProject(
 
   const rcBuild = await vscode.commands.executeCommand<number>('cmake.build');
   await waitForVSCodeIdle();
+  if (rcBuild !== 0) {
+    // `cmake.build` only returns an exit code; the actual compiler output goes
+    // to the CMake Tools output channel and never reaches the CI log. Re-run
+    // the build directly so the real error (compile/link failure) is visible.
+    dumpBuildOutput(logPrefix, buildDir);
+  }
   expect(rcBuild, `${logPrefix} cmake.build failed (rc=${rcBuild})`).to.equal(
     0
   );
