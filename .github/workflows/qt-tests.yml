@@ -33,7 +33,7 @@ on:
 jobs:
   tests:
     # Job name will show up in GitHub UI as "tests (ubuntu-latest)" etc.
-    name: tests (${{ matrix.os }}, Qt ${{ github.event_name == 'workflow_dispatch' && inputs.qt_version_for_test || '6.9.0' }}, suite ${{ github.event_name == 'workflow_dispatch' && inputs.test_suite || 'all' }})
+    name: tests (${{ matrix.os }}, Qt ${{ github.event_name == 'workflow_dispatch' && inputs.qt_version_for_test || '6.9.2' }}, suite ${{ github.event_name == 'workflow_dispatch' && inputs.test_suite || 'all' }})
     # Run this job on Linux, macOS, and Windows
     runs-on: ${{ matrix.os }}
     # Default shell for all `run:` commands in this job
@@ -50,7 +50,7 @@ jobs:
         # macOS  : lldb (cppdbg)
         # Windows: cppvsdbg
     env:
-      QT_VERSION_FOR_TEST: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.qt_version_for_test || '6.9.0' }}
+      QT_VERSION_FOR_TEST: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.qt_version_for_test || '6.9.2' }}
       VSCODE_LOG_LEVEL: error # trace, debug, info, warn, error, off
       QT_TEST_DEBUG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug || '' }}
       NATVIS_SHOW_SUMMARY: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.natvis_show_summary || '' }}
