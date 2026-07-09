@@ -169,10 +169,15 @@ export class CoreAPIImpl implements CoreAPI {
       qtAdditionalPath.name,
       qtAdditionalPath.isVCPKG
     );
+    // Querying qtpaths/qmake spawns a process that dynamically links Qt; on a
+    // cold or loaded machine (e.g. CI) the first invocation can take several
+    // seconds. A 1s budget was too tight and intermittently failed kit
+    // registration, so allow a generous timeout.
+    const queryTimeoutMs = 30000;
     let output: string;
     const retFristTry = spawnSync(qtAdditionalPath.path, ['-query'], {
       encoding: 'utf8',
-      timeout: 1000
+      timeout: queryTimeoutMs
     });
     if (retFristTry.status === 1) {
       const retOldQtPaths = spawnSync(
@@ -180,7 +185,7 @@ export class CoreAPIImpl implements CoreAPI {
         ['--binaries-dir'],
         {
           encoding: 'utf8',
-          timeout: 1000
+          timeout: queryTimeoutMs
         }
       );
       if (retOldQtPaths.error) {
@@ -197,7 +202,7 @@ export class CoreAPIImpl implements CoreAPI {
       const qmakePath = path.join(outputOldQtPaths.trim(), 'qmake');
       const retQmake = spawnSync(qmakePath, ['-query'], {
         encoding: 'utf8',
-        timeout: 1000
+        timeout: queryTimeoutMs
       });
       if (retQmake.error) {
         return { err: retQmake.error };
