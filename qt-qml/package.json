@@ -57,13 +57,13 @@
         "command": "qt-qml.startQmlPreview",
         "title": "%qt-qml.command.startQmlPreview.title%",
         "category": "Qt",
-        "icon": "$(run-all)"
+        "icon": "res/icons/play-green.svg"
       },
       {
         "command": "qt-qml.startQmlPreviewForCurrentFile",
         "title": "%qt-qml.command.startQmlPreviewForCurrentFile.title%",
         "category": "Qt",
-        "icon": "$(play)"
+        "icon": "res/icons/play-file-green.svg"
       },
       {
         "command": "qt-qml.attachQmlPreview",
@@ -74,7 +74,10 @@
         "command": "qt-qml.stopQmlPreview",
         "title": "%qt-qml.command.stopQmlPreview.title%",
         "category": "Qt",
-        "icon": "$(stop-circle)"
+        "icon": {
+          "light": "res/icons/stop-light.svg",
+          "dark": "res/icons/stop-dark.svg"
+        }
       },
       {
         "command": "qt-qml.reloadQmlPreview",
@@ -90,7 +93,7 @@
         "command": "qt-qml.startQmlProfiler",
         "title": "%qt-qml.command.startQmlProfiler.title%",
         "category": "Qt",
-        "icon": "$(record)"
+        "icon": "res/icons/record-red.svg"
       },
       {
         "command": "qt-qml.attachQmlProfiler",
@@ -101,7 +104,10 @@
         "command": "qt-qml.stopQmlProfiler",
         "title": "%qt-qml.command.stopQmlProfiler.title%",
         "category": "Qt",
-        "icon": "$(debug-stop)"
+        "icon": {
+          "light": "res/icons/stop-light.svg",
+          "dark": "res/icons/stop-dark.svg"
+        }
       },
       {
         "command": "qt-qml.downloadQmlTraceViewer",
