@@ -40,7 +40,13 @@ async function main() {
     // Install core required extensions (CMake Tools + qt-core) via helper
     const extensions = [
       { idOrVsix: 'ms-vscode.cmake-tools' },
-      { idOrVsix: 'ms-vscode.cpptools' },
+      // Pre-release cpptools carries the debuginfod fix (>= 1.33.0,
+      // MIEngine#1561). Stable cpptools makes gdb hang downloading separate
+      // debug info from debuginfod on launch, so the debugger never reaches
+      // the breakpoint. Workarounds (empty DEBUGINFOD_URLS, "set debuginfod
+      // enabled off") were reported insufficient before this fix.
+      // See https://github.com/microsoft/vscode-cpptools/issues/14458
+      { idOrVsix: 'ms-vscode.cpptools', preRelease: true },
       { idOrVsix: localQtCoreVsix }
     ];
     installRequiredExtensions(cli, args, extensions);
