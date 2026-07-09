@@ -259,6 +259,13 @@ export async function configureAndBuildMinimalQtProject(
 
   const buildDir = await cleanBuildDir(projectDir);
 
+  // Diagnostic: qt-cpp registers Qt kits by running `qtpaths -query` and, on
+  // failure, calls showWarningMessage("qtPaths info not found for '...'
+  // Error: ...") — which never reaches stdout. Capture it so that, if no Qt
+  // kit ends up registered, the CI log shows *why* (query failed vs no
+  // qtpaths discovered) instead of a bare "No Qt kit available".
+  const warnSpy = sandbox.spy(vscode.window, 'showWarningMessage');
+
   // Ensure Qt kit is available and applied
   await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
   await waitForVSCodeIdle();
@@ -267,6 +274,18 @@ export async function configureAndBuildMinimalQtProject(
   const kit = await selectAndApplyQtKit(wsFolder, requiredQtMajor);
 
   if (!kit) {
+    const warnings = warnSpy
+      .getCalls()
+      .map((c) => String(c.args[0]))
+      .filter((m) => /qtPaths|qtpaths|Qt/i.test(m));
+    console.log(
+      `${logPrefix} No Qt kit registered. Captured ${warnings.length.toString()} ` +
+        `qt-cpp warning(s) during scan:`
+    );
+    for (const w of warnings) {
+      console.log(`${logPrefix}   - ${w}`);
+    }
+
     const message = `${logPrefix} No Qt kit available on this machine. `;
     if (process.env.CI) {
       // On CI: fail hard so we notice misconfiguration
