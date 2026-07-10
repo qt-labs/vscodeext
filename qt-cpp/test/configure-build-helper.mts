@@ -15,7 +15,6 @@ import {
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
   readCMakeCacheVar,
-  cmakeConfigForWorkspace,
   dlog
 } from './helper.mts';
 
@@ -254,15 +253,21 @@ function dumpBuildOutput(logPrefix: string, buildDir: string): void {
  *
  * Applying a Qt kit (`cmake.setKitByName`) makes CMake Tools kick off a
  * background reconfigure. When the test then invokes `cmake.configure` while
- * that is still in flight, the command is deduplicated/cancelled and resolves
+ * that is still settling, the command can be deduplicated/cancelled and resolve
  * to a *negative* exit code (typically -1) instead of the real configure
  * result. That is a readiness race, not a configuration error: a genuine CMake
  * failure returns a positive code (e.g. 1) with diagnostics.
  *
- * We therefore treat a negative (or non-numeric) rc as "not ready yet", let the
- * in-flight reconfigure settle, and try again a few times before giving up. A
+ * We therefore treat a negative (or non-numeric) rc as "not ready yet", let
+ * CMake Tools settle, and try again a few times before giving up. A
  * non-negative rc is returned immediately so a real failure (rc>0) still
  * surfaces to the caller's assertion.
+ *
+ * NOTE: we deliberately do NOT disable `configureOnOpen`/`automaticReconfigure`
+ * to avoid the race — on Linux CI that leaves CMake Tools without a bootstrapped
+ * driver and `cmake.configure` then returns -1 on *every* attempt, so the retry
+ * loop spins until the mocha timeout. Leaving auto-reconfigure enabled lets the
+ * driver initialize; the retry only needs to ride past the transient -1.
  *
  * @returns The exit code of the configure that actually ran (0 on success).
  */
@@ -280,8 +285,8 @@ async function configureWithRetry(logPrefix: string): Promise<number> {
       return rc;
     }
     console.log(
-      `${logPrefix} cmake.configure did not run (rc=${String(rc)}); a background ` +
-        `reconfigure is likely still in flight. Retrying...`
+      `${logPrefix} cmake.configure did not run (rc=${String(rc)}); ` +
+        `CMake Tools is likely still settling. Retrying...`
     );
     await delay(settleDelayMs);
     await waitForVSCodeIdle();
@@ -306,15 +311,6 @@ export async function configureAndBuildMinimalQtProject(
   // kit ends up registered, the CI log shows *why* (query failed vs no
   // qtpaths discovered) instead of a bare "No Qt kit available".
   const warnSpy = sandbox.spy(vscode.window, 'showWarningMessage');
-
-  // Applying a kit below (`cmake.setKitByName`) otherwise makes CMake Tools
-  // launch a background reconfigure that races with our explicit
-  // `cmake.configure`, causing the latter to be deduped and return -1. Disable
-  // automatic (re)configuration so we drive configure ourselves. The project is
-  // a throwaway temp copy, so these workspace settings don't need resetting.
-  const cmakeConfigurator = cmakeConfigForWorkspace(wsFolder);
-  await cmakeConfigurator.set('configureOnOpen', false);
-  await cmakeConfigurator.set('automaticReconfigure', false);
 
   // Ensure Qt kit is available and applied
   await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
