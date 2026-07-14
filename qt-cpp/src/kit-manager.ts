@@ -324,8 +324,12 @@ export class KitManager {
         if (qtInfo?.err) {
           warningMessage += ` Error: "${qtInfo.err.message}"`;
         }
-        void vscode.window.showWarningMessage(warningMessage);
         logger.info(warningMessage);
+        // qt-core already shows an actionable warning when the binary is
+        // missing; only popup when it exists but qtpaths failed.
+        if (fsSync.existsSync(p.path)) {
+          void vscode.window.showWarningMessage(warningMessage);
+        }
         continue;
       }
       const kit = KitManager.generateKitFromQtInfo(
