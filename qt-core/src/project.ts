@@ -1,6 +1,7 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { isEmpty, isEqual } from 'lodash';
 
@@ -24,6 +25,7 @@ import {
   onAdditionalQtPathsUpdated
 } from '@/installation-root';
 import { coreAPI } from '@/extension';
+import { warnAboutMissingQtPath } from '@/qtpaths';
 import { UiDesignerSession } from '@/ui-designer/session';
 
 const logger = createLogger('project');
@@ -120,6 +122,11 @@ export class CoreProject implements Project {
     logger.info('Config values initialized for:', folder.uri.fsPath);
     if (!isEmpty(additionalQtPaths)) {
       telemetry.sendEvent('additionalQtPathsUsedWorkspace');
+    }
+    for (const p of additionalQtPaths) {
+      if (!fs.existsSync(p.path)) {
+        warnAboutMissingQtPath(p, folder);
+      }
     }
   }
 

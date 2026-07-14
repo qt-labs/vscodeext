@@ -1,6 +1,7 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { isEmpty } from 'lodash';
 
@@ -30,7 +31,11 @@ import {
   resetCommand,
   registerShowLogCommand
 } from '@/small-commands';
-import { checkQtpathsInEnvPath, registerQtByQtpaths } from '@/qtpaths';
+import {
+  checkQtpathsInEnvPath,
+  registerQtByQtpaths,
+  warnAboutMissingQtPath
+} from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
 import { registerOpenExBrowserCommand } from '@/webview/ex-browser/controller';
 import { registerOpenCoursesBrowserCommand } from '@/webview/courses/controller';
@@ -130,6 +135,11 @@ export function initCoreValues() {
   );
   if (!isEmpty(currentAdditionalQtPaths)) {
     telemetry.sendEvent('additionalQtPathsUsedGlobal');
+  }
+  for (const p of currentAdditionalQtPaths) {
+    if (!fs.existsSync(p.path)) {
+      warnAboutMissingQtPath(p);
+    }
   }
 
   for (const project of projectManager.getProjects()) {
