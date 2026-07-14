@@ -10,6 +10,7 @@ import {
   generateDefaultQtPathsName,
   CoreKey,
   QtAdditionalPath,
+  resolveConfiguration,
   telemetry
 } from 'qt-lib';
 import { convertAdditionalQtPaths, getConfiguration } from '@/util';
@@ -116,4 +117,62 @@ export function addQtPathToSettings(qtPath: QtAdditionalPath) {
   );
   const convertedValue = convertAdditionalQtPaths(valueToSet);
   onAdditionalQtPathsUpdated(convertedValue, CoreKey.GLOBAL_WORKSPACE);
+}
+
+export const RemoveFromSettingsButton = 'Remove from settings';
+
+export function removeQtPathFromSettings(
+  targetPath: string,
+  folder?: vscode.WorkspaceFolder
+) {
+  const config = getConfiguration(folder);
+  const inspected = config.inspect<(string | object)[]>(AdditionalQtPathsName);
+  const currentValue = folder
+    ? inspected?.workspaceFolderValue
+    : inspected?.globalValue;
+  if (!currentValue) {
+    logger.warn(`${AdditionalQtPathsName} not found in the settings`);
+    return;
+  }
+  const matchesTarget = (entry: string | object) => {
+    const rawPath =
+      typeof entry === 'string' ? entry : (entry as QtAdditionalPath).path;
+    return resolveConfiguration(rawPath) === targetPath;
+  };
+  const filtered = currentValue.filter((entry) => !matchesTarget(entry));
+  if (filtered.length === currentValue.length) {
+    const msg = `"${targetPath}" was not found in ${AdditionalQtPathsName}`;
+    logger.warn(msg);
+    void vscode.window.showInformationMessage(msg);
+    return;
+  }
+  logger.info(`Removing ${targetPath} from the settings`);
+  config
+    .update(
+      AdditionalQtPathsName,
+      filtered,
+      folder
+        ? vscode.ConfigurationTarget.WorkspaceFolder
+        : vscode.ConfigurationTarget.Global
+    )
+    .then(undefined, (err) => {
+      logger.error(`Failed to update ${AdditionalQtPathsName}: ${String(err)}`);
+    });
+}
+
+export function warnAboutMissingQtPath(
+  p: QtAdditionalPath,
+  folder?: vscode.WorkspaceFolder | string
+) {
+  // A string folder means the global workspace (CoreKey.GLOBAL_WORKSPACE).
+  const workspaceFolder = typeof folder === 'string' ? undefined : folder;
+  const msg = `The specified additional Qt installation '${p.path}' does not exist.`;
+  logger.warn(msg);
+  void vscode.window
+    .showWarningMessage(msg, RemoveFromSettingsButton)
+    .then((response) => {
+      if (response === RemoveFromSettingsButton) {
+        removeQtPathFromSettings(p.path, workspaceFolder);
+      }
+    });
 }

@@ -23,6 +23,7 @@ import {
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
 import { convertAdditionalQtPaths } from '@/util';
+import { warnAboutMissingQtPath } from '@/qtpaths';
 
 const logger = createLogger('installation-root');
 
@@ -243,9 +244,7 @@ export function onAdditionalQtPathsUpdated(
 ) {
   for (const p of newPaths) {
     if (!fs.existsSync(p.path)) {
-      const msg = `The specified additional Qt installation '${p.path}' does not exist.`;
-      logger.warn(msg);
-      void vscode.window.showWarningMessage(msg);
+      warnAboutMissingQtPath(p, folder);
     } else if (!isPathToQtPathsOrQMake(p.path)) {
       const msg = `The specified additional Qt installation '${p.path}' does not point to qtpaths nor qmake.`;
       logger.error(msg);
