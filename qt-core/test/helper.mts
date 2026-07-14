@@ -721,11 +721,11 @@ export function stubWarningMessage(
   sb: sinon.SinonSandbox,
   message?: string
 ): sinon.SinonStub {
-  let stub: sinon.SinonStub;
+  // Resolve like the real API (user dismissed the popup) so production code
+  // may chain `.then()` on the returned value.
+  const stub = sb.stub(vscode.window, 'showWarningMessage').resolves(undefined);
   if (message) {
-    stub = sb.stub(vscode.window, 'showWarningMessage').withArgs(message);
-  } else {
-    stub = sb.stub(vscode.window, 'showWarningMessage');
+    return stub.withArgs(message);
   }
   return stub;
 }
