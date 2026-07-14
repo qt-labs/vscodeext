@@ -14,7 +14,10 @@ import {
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { addQtPathToSettings } from '../../src/qtpaths.ts';
+import {
+  addQtPathToSettings,
+  RemoveFromSettingsButton
+} from '../../src/qtpaths.ts';
 import * as texts from '../../src/texts.ts';
 import { getDefaultQtRootCandidates } from '../../src/installation-root.ts';
 
@@ -606,8 +609,10 @@ describe('command: registerQtByQtpaths', () => {
       showWarningMessageStub.calledTwice,
       'Expected 2 warnings to be shown'
     ).to.be.true;
-    expect(showWarningMessageStub.calledWith(msg1)).to.be.true;
-    expect(showWarningMessageStub.calledWith(msg2)).to.be.true;
+    expect(showWarningMessageStub.calledWith(msg1, RemoveFromSettingsButton)).to
+      .be.true;
+    expect(showWarningMessageStub.calledWith(msg2, RemoveFromSettingsButton)).to
+      .be.true;
   });
 
   // To do in specific test file to:
