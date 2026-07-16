@@ -4,6 +4,9 @@
 import * as vscode from 'vscode';
 
 import { CoreKey } from './constants';
+import { createLogger } from './logger';
+
+const logger = createLogger('state');
 
 export class BaseStateManager {
   constructor(
@@ -25,5 +28,24 @@ export class BaseStateManager {
     const prefix =
       typeof this.folder === 'string' ? this.folder : this.folder.uri.fsPath;
     return state.update(prefix + key, value);
+  }
+}
+
+export class BaseWorkspaceStateManager extends BaseStateManager {
+  constructor(
+    context: vscode.ExtensionContext,
+    folder: vscode.WorkspaceFolder
+  ) {
+    if (folder.uri.fsPath === '') {
+      logger.error('folder is empty');
+      throw new Error('folder is empty');
+    }
+    super(context, folder);
+  }
+}
+
+export class BaseGlobalStateManager extends BaseStateManager {
+  constructor(context: vscode.ExtensionContext) {
+    super(context, CoreKey.GLOBAL_WORKSPACE);
   }
 }

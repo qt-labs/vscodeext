@@ -1,26 +1,12 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as vscode from 'vscode';
-
-import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
+import { BaseWorkspaceStateManager, BaseGlobalStateManager } from 'qt-lib';
 import { Kit } from '@/kit-manager';
-
-const logger = createLogger('state');
 
 type QtModules = Record<string, string[]>;
 
-export class WorkspaceStateManager extends BaseStateManager {
-  constructor(
-    context: vscode.ExtensionContext,
-    folder: vscode.WorkspaceFolder
-  ) {
-    if (folder.uri.fsPath === '') {
-      logger.error('folder is empty');
-      throw new Error('folder is empty');
-    }
-    super(context, folder);
-  }
+export class WorkspaceStateManager extends BaseWorkspaceStateManager {
   public getWorkspaceQtKits(): Kit[] {
     return this._get<Kit[]>('defaultQtKits', []);
   }
@@ -51,10 +37,7 @@ export class WorkspaceStateManager extends BaseStateManager {
   }
 }
 
-export class GlobalStateManager extends BaseStateManager {
-  constructor(context: vscode.ExtensionContext) {
-    super(context, CoreKey.GLOBAL_WORKSPACE);
-  }
+export class GlobalStateManager extends BaseGlobalStateManager {
   public getGlobalQtKits(): Kit[] {
     return this._get<Kit[]>('globalQtKits', []);
   }
