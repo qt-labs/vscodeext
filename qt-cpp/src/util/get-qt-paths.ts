@@ -5,8 +5,8 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import type { Dirent } from 'fs';
 
-import * as fsutil from '@util/fs';
 import {
+  exists,
   OSExeSuffix,
   IsMacOS,
   findQtPathsInInstallationPath,
@@ -82,7 +82,7 @@ export async function locateNinjaExecutable(qtRootDir: string) {
     );
   }
   for (const checkPath of pathsToCheck) {
-    if (await fsutil.exists(checkPath)) {
+    if (await exists(checkPath)) {
       return checkPath;
     }
   }
@@ -135,7 +135,7 @@ export async function locateCMakeQtToolchainFile(installation: string) {
     qtVersion,
     QtToolchainCMakeFileName
   );
-  if (await fsutil.exists(cmakeQtToolchainFilePath)) {
+  if (await exists(cmakeQtToolchainFilePath)) {
     return cmakeQtToolchainFilePath;
   }
 
@@ -151,7 +151,7 @@ export async function locateCMakeExecutable(rootIns: string) {
     'bin',
     `cmake${OSExeSuffix}`
   );
-  if (await fsutil.exists(cmakeExePath)) {
+  if (await exists(cmakeExePath)) {
     return cmakeExePath;
   }
   return undefined;
