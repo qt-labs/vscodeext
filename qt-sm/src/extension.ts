@@ -11,7 +11,11 @@ import {
   telemetry,
   compareVersions
 } from 'qt-lib';
-import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
+import {
+  EXTENSION_ID,
+  CONF_INSTALLATION_PATH,
+  RESET_PASSWORD_URL
+} from '@/constants';
 import {
   searchPackages,
   installPackage,
@@ -303,6 +307,9 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () =>
       logout(authProvider)
+    ),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.resetPassword`, () =>
+      vscode.env.openExternal(vscode.Uri.parse(RESET_PASSWORD_URL))
     ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.installRequiredExtensions`,

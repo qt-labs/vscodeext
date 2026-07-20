@@ -17,6 +17,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     steps: WalkthroughStepData[];
     successTitle?: string;
     successMessage?: string;
+    /** Whether the user has marked the whole walkthrough as done. */
+    getStartedDone?: boolean;
     reviewingStepId?: string | null;
     onaction?: (stepId: string, command: string, commandArgs?: unknown) => void;
     onreview?: (stepId: string) => void;
@@ -30,6 +32,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     steps,
     successTitle,
     successMessage,
+    getStartedDone = false,
     reviewingStepId = null,
     onaction,
     onreview,
@@ -43,6 +46,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   const allCompleted = $derived(
     steps.length > 0 && completedCount === steps.length
   );
+  // Resetting only makes sense once there is progress (or a done flag) to
+  // clear; otherwise the button is a no-op and stays hidden.
+  const canReset = $derived(completedCount > 0 || getStartedDone);
 
   // Partition steps around the active one so the active card
   // visually breaks out of the compact-row flow.
@@ -96,13 +102,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     </div>
 
     <div class="footer">
-      <button
-        class="reset-link"
-        onclick={() => onreset?.()}
-        aria-label="Reset walkthrough"
-      >
-        Reset walkthrough
-      </button>
+      {#if canReset}
+        <button
+          class="reset-link"
+          onclick={() => onreset?.()}
+          aria-label="Reset walkthrough"
+        >
+          Reset walkthrough
+        </button>
+      {/if}
       <span class="completed-label">Completed</span>
     </div>
   {:else}
@@ -150,17 +158,22 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     </div>
 
     <div class="footer">
-      <button
-        class="reset-link"
-        onclick={() => onreset?.()}
-        aria-label="Reset walkthrough"
-      >
-        Reset walkthrough
-      </button>
+      {#if canReset}
+        <button
+          class="reset-link"
+          onclick={() => onreset?.()}
+          aria-label="Reset walkthrough"
+        >
+          Reset walkthrough
+        </button>
+      {/if}
       {#if activeStep}
         <span class="next-label">Next: {activeStep.title}</span>
       {/if}
-      {@render markDoneControl()}
+      <!-- Once the walkthrough is marked done there is nothing left to mark. -->
+      {#if !getStartedDone}
+        {@render markDoneControl()}
+      {/if}
     </div>
   {/if}
 </div>

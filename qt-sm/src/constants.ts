@@ -11,6 +11,8 @@ export const CONF_RESET_LICENSE_AFTER_INSTALL = 'resetLicenseBeforeInstall';
 // read it via workspace.getConfiguration('qt-sm').get('getStartedDone').
 export const CONF_GET_STARTED_DONE = 'getStartedDone';
 export const DEFAULT_BACKEND_URL = 'https://api.install.qt.io';
+// Qt Account "Forgot password" page, opened from the walkthrough sign-in step.
+export const RESET_PASSWORD_URL = 'https://login.qt.io/forgot';
 
 // Survey popup constants
 export const SURVEY_URL = 'https://www.surveymonkey.com/r/BMQH2W3';
