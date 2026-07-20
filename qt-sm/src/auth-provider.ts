@@ -10,6 +10,7 @@ import {
   type LogLevel
 } from 'sms-api';
 import { createLogger } from 'qt-lib';
+import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('auth');
 
@@ -49,6 +50,9 @@ export class QtAccountAuthenticationProvider
   readonly onDidChangeSessions = this._onDidChangeSessions.event;
 
   private _currentSession: vscode.AuthenticationSession | undefined;
+  // Last email the user typed into the login prompt, kept so a retry after a
+  // failed or cancelled attempt starts from that address instead of empty.
+  private _lastLoginEmail: string | undefined;
 
   constructor() {
     // Try loading existing credentials at startup
@@ -96,6 +100,7 @@ export class QtAccountAuthenticationProvider
       title: 'Qt Account Login',
       prompt: 'Enter your Qt Account email',
       placeHolder: 'you@example.com',
+      ...(this._lastLoginEmail ? { value: this._lastLoginEmail } : {}),
       ignoreFocusOut: true,
       validateInput: (value) => {
         if (!value.includes('@')) {
@@ -108,6 +113,7 @@ export class QtAccountAuthenticationProvider
     if (!email) {
       throw new Error('Login cancelled');
     }
+    this._lastLoginEmail = email;
 
     const password = await vscode.window.showInputBox({
       title: 'Qt Account Login',
@@ -130,6 +136,7 @@ export class QtAccountAuthenticationProvider
     if (!email.toLowerCase().endsWith('@qt.io')) {
       const errMsg = `Qt Account "${email}" is not in the alpha access list.`;
       logger.error(errMsg);
+      void vscode.window.showErrorMessage(errMsg);
       throw new Error(errMsg);
     }
 
@@ -148,10 +155,22 @@ export class QtAccountAuthenticationProvider
         async () => account.login(email, password)
       );
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      logger.error(`Login failed for ${email}: ${msg}`);
-      void vscode.window.showErrorMessage(`Qt Account login failed: ${msg}`);
-      throw err;
+      const raw = err instanceof Error ? err.message : String(err);
+      logger.error(`Login failed for ${email}: ${raw}`);
+      const readable = readableLoginError(raw);
+      // When the credentials were rejected, offer a shortcut to the
+      // password-reset page right from the notification.
+      const actions = isInvalidCredentialsError(raw) ? ['Reset Password'] : [];
+      void vscode.window
+        .showErrorMessage(`Qt Account login failed: ${readable}`, ...actions)
+        .then((pick) => {
+          if (pick === 'Reset Password') {
+            void vscode.commands.executeCommand(
+              `${EXTENSION_ID}.resetPassword`
+            );
+          }
+        });
+      throw new Error(readable);
     }
 
     this._currentSession = credentialsToSession(credentials);
@@ -223,6 +242,34 @@ export class QtAccountAuthenticationProvider
       return undefined;
     }
   }
+}
+
+/** Whether a raw sms-api login error means the server rejected the credentials. */
+function isInvalidCredentialsError(raw: string): boolean {
+  return raw.includes('InvalidCredentials');
+}
+
+/**
+ * Turn a raw sms-api login error — which can embed an HTTP status tag and the
+ * server's raw JSON response body — into a message fit for a notification.
+ */
+function readableLoginError(raw: string): string {
+  if (isInvalidCredentialsError(raw)) {
+    return 'Invalid email or password. Please check your credentials and try again.';
+  }
+  // Other server errors embed the raw JSON body; surface just its "message".
+  const jsonStart = raw.indexOf('{');
+  if (jsonStart !== -1) {
+    try {
+      const body = JSON.parse(raw.slice(jsonStart)) as { message?: unknown };
+      if (typeof body.message === 'string' && body.message) {
+        return body.message;
+      }
+    } catch {
+      // Not JSON after all; fall through to the raw message.
+    }
+  }
+  return raw;
 }
 
 function credentialsToSession(
