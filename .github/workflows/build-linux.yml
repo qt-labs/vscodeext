@@ -46,6 +46,8 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
       - run: npm run ci:all
       - run: npm run compile:qt-lib
+      - run: npm run ci:sms-api
+      - run: npm run compile:sms-api
       - run: npm run prepareNatvisFiles
       - run: npm run ci-lint:all
       - run: npm run package:all
