@@ -929,11 +929,11 @@ export async function login(
   try {
     await authProvider.createSession([AUTH_PROVIDER_ID]);
   } catch (err) {
+    // createSession already notified the user; just log here to avoid
+    // showing the same failure twice.
     const msg = err instanceof Error ? err.message : String(err);
     if (msg !== 'Login cancelled') {
-      const errMsg = `Qt Account login failed: ${msg}`;
-      logger.error(errMsg);
-      void vscode.window.showErrorMessage(errMsg);
+      logger.error(`Qt Account login failed: ${msg}`);
     }
   }
 }
