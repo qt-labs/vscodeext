@@ -21,6 +21,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   let steps = $state<WalkthroughStepData[]>([]);
   let successTitle = $state<string | undefined>(undefined);
   let successMessage = $state<string | undefined>(undefined);
+  let getStartedDone = $state(false);
   let initialized = $state(false);
   let reviewingStepId = $state<string | null>(null);
 
@@ -71,7 +72,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   // Register listener immediately at module evaluation time — NOT in $effect.
   // This guarantees it's ready before the extension's setTimeout fires.
   function handleMessage(event: MessageEvent) {
-    console.debug('WalkthroughApp received message:', event.data);1
+    console.debug('WalkthroughApp received message:', event.data);
     const msg = event.data as MessageToWebview;
     if (!msg || !msg.type) return;
     switch (msg.type) {
@@ -81,6 +82,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         steps = structuredClone(msg.payload.steps);
         successTitle = msg.payload.successTitle;
         successMessage = msg.payload.successMessage;
+        getStartedDone = msg.payload.getStartedDone;
         initialized = true;
         break;
       case 'stepCompleted':
@@ -102,6 +104,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       {steps}
       {successTitle}
       {successMessage}
+      {getStartedDone}
       {reviewingStepId}
       onaction={handleAction}
       onreview={handleReview}

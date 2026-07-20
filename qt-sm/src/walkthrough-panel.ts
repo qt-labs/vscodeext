@@ -77,6 +77,8 @@ interface WalkthroughAction {
   label: string;
   primary?: boolean;
   disabled?: boolean;
+  /** Push the button to the right edge of the step's action row. */
+  trailing?: boolean;
   command?: string;
   commandArgs?: unknown;
 }
@@ -162,6 +164,11 @@ function getDefaultConfig(
             primary: true,
             disabled: s.signin,
             command: `${EXTENSION_ID}.login`
+          },
+          {
+            label: 'Reset password',
+            trailing: true,
+            command: `${EXTENSION_ID}.resetPassword`
           }
         ]
       },

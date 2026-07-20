@@ -47,6 +47,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
                 class={action.primary
                   ? 'action-btn-primary'
                   : 'action-btn-secondary'}
+                class:trailing={action.trailing}
                 disabled={action.disabled}
                 onclick={() => onaction?.(step.id, action.command ?? '', action.commandArgs)}
               >
@@ -95,6 +96,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
           {#each step.actions as action}
             <button
               class={action.primary ? 'action-btn-primary' : 'action-btn-secondary'}
+              class:trailing={action.trailing}
               disabled={action.disabled}
               onclick={() => onaction?.(step.id, action.command ?? '', action.commandArgs)}
             >
@@ -186,6 +188,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     gap: 8px;
     margin-top: 8px;
     flex-wrap: wrap;
+  }
+
+  /* Trailing actions (e.g. "Reset password") sit at the row's right edge. */
+  .active-actions .trailing {
+    margin-left: auto;
   }
 
   .action-btn-primary {
