@@ -111,6 +111,11 @@
         "icon": "$(sign-out)"
       },
       {
+        "command": "qt-sm.resetPassword",
+        "title": "%qt-sm.command.resetPassword.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-sm.resetTestState",
         "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"
