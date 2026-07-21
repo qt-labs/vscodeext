@@ -1,0 +1,209 @@
+{
+  "name": "qt-sm",
+  "displayName": "Qt Software Management (Alpha)",
+  "description": "Qt Software Management",
+  "version": "0.1.3",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "preview": true,
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "Qt",
+    "SMS",
+    "Package Manager"
+  ],
+  "extensionDependencies": [
+    "theqtcompany.qt-core"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qt-sm",
+          "title": "Qt Package Manager",
+          "icon": "res/icons/qt-activitybar.svg"
+        }
+      ]
+    },
+    "views": {
+      "qt-sm": [
+        {
+          "id": "qt-sm.getStartedView",
+          "name": "%qt-sm.view.getStarted.name%"
+        },
+        {
+          "id": "qt-sm.accountView",
+          "name": "%qt-sm.view.account.name%"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "qt-sm.getStartedView",
+        "contents": "%qt-sm.view.getStarted.welcome%"
+      },
+      {
+        "view": "qt-sm.accountView",
+        "contents": "%qt-sm.view.account.welcomeLoggedOut%",
+        "when": "!qt-sm.isLoggedIn"
+      },
+      {
+        "view": "qt-sm.accountView",
+        "contents": "%qt-sm.view.account.welcomeLoggedIn%",
+        "when": "qt-sm.isLoggedIn"
+      }
+    ],
+    "commands": [
+      {
+        "command": "qt-sm.searchPackages",
+        "title": "%qt-sm.command.searchPackages.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.installPackage",
+        "title": "%qt-sm.command.installPackage.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.setInstallationPath",
+        "title": "%qt-sm.command.setInstallationPath.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.openWalkthrough",
+        "title": "%qt-sm.command.openWalkthrough.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.installRequiredExtensions",
+        "title": "%qt-sm.command.installRequiredExtensions.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.login",
+        "title": "%qt-sm.command.login.title%",
+        "category": "Qt",
+        "icon": "$(sign-in)"
+      },
+      {
+        "command": "qt-sm.logout",
+        "title": "%qt-sm.command.logout.title%",
+        "category": "Qt",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "qt-sm.resetPassword",
+        "title": "%qt-sm.command.resetPassword.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.resetTestState",
+        "title": "%qt-sm.command.resetTestState.title%",
+        "category": "Qt"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "qt-sm.login",
+          "when": "!qt-sm.isLoggedIn"
+        },
+        {
+          "command": "qt-sm.logout",
+          "when": "qt-sm.isLoggedIn"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Qt Software Management Configuration",
+      "properties": {
+        "qt-sm.installationPath": {
+          "type": "string",
+          "default": "~/QtAlpha",
+          "description": "Default installation path for Qt packages",
+          "scope": "machine"
+        },
+        "qt-sm.resetLicenseBeforeInstall": {
+          "type": "boolean",
+          "default": false,
+          "description": "Reset license agreement consents after each install so the license review is always shown (alpha testing)",
+          "scope": "machine"
+        },
+        "qt-sm.getStartedDone": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user has completed or dismissed the \"Get Started with Qt\" walkthrough. Set automatically; other Qt extensions read this to avoid re-prompting onboarding.",
+          "scope": "application"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build:webview": "cd webview-ui && npm run build",
+    "ci:webview": "cd webview-ui && npm ci",
+    "ci:all": "npm run ci:webview && npm ci",
+    "install:webview": "cd webview-ui && npm install",
+    "install:all": "npm run install:webview && npm install",
+    "vscode:prepublish": "npm run build:webview && cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
+    "compile": "npm run build:webview && node ./esbuild.mjs",
+    "compile-test": "node ./esbuild.mjs --test",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "test:only": "npm run compile-test && cd ./out/test/ && node runTest.js",
+    "test": "npm run test:only --",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,mts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,mts,json,mjs,cjs}\"",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata",
+    "package": "vsce package --out out && rm commit"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "1.94.0",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
+    "glob": "^11.0.2",
+    "mocha": "^11.3.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "module-alias": "^2.2.3",
+    "qt-lib": "file:../qt-lib",
+    "sms-api": "file:../sms-api",
+    "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
+  }
+}

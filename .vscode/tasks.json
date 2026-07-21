@@ -60,6 +60,23 @@
     },
     {
       "type": "shell",
+      "label": "npm qt-sm watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-sm"
+      }
+    },
+    {
+      "type": "shell",
       "label": "npm qt-qml watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",
