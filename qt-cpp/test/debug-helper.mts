@@ -154,10 +154,10 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
     type: isWin ? 'cppvsdbg' : 'cppdbg',
     request: 'launch',
     ...(isWin ? {} : { MIMode: miMode }),
-    // Always the correct binary/dir for the *selected kit* and *build type*
+    // Always the correct binary/dir for the *selected configuration* and *build type*
     program: program, //'${command:cmake.launchTargetPath}', // built binary
     cwd: cwd, //'${command:cmake.getLaunchTargetDirectory}', // correct working dir
-    // Let the Qt extension provide the NatVis (need a Qt kit to be selected)
+    // Let the Qt extension provide the NatVis (needs a resolvable Qt version)
     visualizerFile: visualizerFile, //'${command:qt-cpp.natvis}', // Qt NatVis provider
     stopAtEntry: true,
     console: 'internalConsole',
