@@ -13,6 +13,7 @@ import {
   PySideProject,
   getQtBridgeCSharpApi,
   type QtBridgeCSharpAPI,
+  type QtBridgeMetadataChangeEvent,
   type QtBridgeProject
 } from 'qt-lib';
 import { Qmlls } from '@/qmlls.mjs';
@@ -55,15 +56,24 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
       qtBridgeApi.onDidChangeProjects(() => {
         void this.handleQtBridgeProjectsChanged('project');
       }),
-      qtBridgeApi.onDidChangeMetadata(() => {
-        void this.handleQtBridgeProjectsChanged('metadata');
+      qtBridgeApi.onDidChangeMetadata((event) => {
+        void this.handleQtBridgeProjectsChanged('metadata', event);
       })
     );
   }
 
-  private async handleQtBridgeProjectsChanged(signal: QtBridgeQmllsSignal) {
+  private async handleQtBridgeProjectsChanged(
+    signal: QtBridgeQmllsSignal,
+    event?: QtBridgeMetadataChangeEvent
+  ) {
     logger.info('Qt Bridge project state changed');
     for (const project of this.getProjects()) {
+      if (
+        event
+        && project.folder.uri.toString() !== event.project.folder.uri.toString()
+      ) {
+        continue;
+      }
       await project.handleQtBridgeProjectSignal(signal);
     }
   }
@@ -186,8 +196,9 @@ export class QMLProject implements Project {
   }
 
   refreshQtBridgeProject() {
-    const project = qtBridgeApi?.getProject(this.folder);
-    const projects = project ? [project] : [];
+    const projects = (qtBridgeApi?.getProjects() ?? []).filter(
+      (project) => project.folder.uri.toString() === this.folder.uri.toString()
+    );
     this._qtBridgeProjects = projects;
     this._qtBridgeQmllsAggregation =
       aggregateQtBridgeQmllsProjects(projects);
