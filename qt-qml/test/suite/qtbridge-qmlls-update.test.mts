@@ -3,7 +3,10 @@
 
 import { expect } from 'chai';
 import type { QtBridgeProject } from 'qt-lib';
-import { aggregateQtBridgeQmllsProjects } from '@/qtbridge-qmlls-update.mjs';
+import {
+  aggregateQtBridgeQmllsProjects,
+  chooseQtBridgeQmllsUpdate
+} from '@/qtbridge-qmlls-update.mjs';
 
 function bridgeProject(name: string): QtBridgeProject {
   const projectDirectory = `/workspace/${name}`;
@@ -39,5 +42,31 @@ describe('Qt Bridge qmlls aggregation', () => {
       '/workspace/Application/obj/qt/native/source/qml'
     ]);
     expect(aggregation.useNoCMakeCalls).to.equal(true);
+  });
+});
+
+describe('Qt Bridge qmlls updates', () => {
+  it('restarts when effective startup state changes', () => {
+    expect(
+      chooseQtBridgeQmllsUpdate('before', 'after', 'metadata', true)
+    ).to.equal('restart');
+  });
+
+  it('refreshes build directories for unchanged ready metadata', () => {
+    expect(
+      chooseQtBridgeQmllsUpdate('same', 'same', 'metadata', true)
+    ).to.equal('refresh');
+  });
+
+  it('does not refresh unavailable metadata', () => {
+    expect(
+      chooseQtBridgeQmllsUpdate('same', 'same', 'metadata', false)
+    ).to.equal('none');
+  });
+
+  it('ignores project signals with unchanged startup state', () => {
+    expect(chooseQtBridgeQmllsUpdate('same', 'same', 'project', true)).to.equal(
+      'none'
+    );
   });
 });

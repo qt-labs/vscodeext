@@ -18,7 +18,9 @@ import {
 import { Qmlls } from '@/qmlls.mjs';
 import {
   aggregateQtBridgeQmllsProjects,
-  type QtBridgeQmllsAggregation
+  chooseQtBridgeQmllsUpdate,
+  type QtBridgeQmllsAggregation,
+  type QtBridgeQmllsSignal
 } from '@/qtbridge-qmlls-update.mjs';
 import { coreAPI } from '@/extension.mjs';
 import { QmllsOperationQueue, QmllsOperationType } from '@/qmlls-queue.mjs';
@@ -51,18 +53,25 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
     }
     this._disposables.push(
       qtBridgeApi.onDidChangeProjects(() => {
-        void this.handleQtBridgeProjectsChanged();
+        void this.handleQtBridgeProjectsChanged('project');
       }),
       qtBridgeApi.onDidChangeMetadata(() => {
-        void this.handleQtBridgeProjectsChanged();
+        void this.handleQtBridgeProjectsChanged('metadata');
       })
     );
   }
 
-  private async handleQtBridgeProjectsChanged() {
+  private async handleQtBridgeProjectsChanged(signal: QtBridgeQmllsSignal) {
     logger.info('Qt Bridge project state changed');
     for (const project of this.getProjects()) {
-      await project.handleQtBridgeProjectSignal();
+      try {
+        await project.handleQtBridgeProjectSignal(signal);
+      } catch (error) {
+        logger.error(
+          `Failed to update qmlls after Qt Bridge ${signal} state changed for ` +
+            `${project.folder.uri.fsPath}: ${String(error)}`
+        );
+      }
     }
   }
 
@@ -196,13 +205,32 @@ export class QMLProject implements Project {
     );
   }
 
-  async handleQtBridgeProjectSignal() {
+  async handleQtBridgeProjectSignal(signal: QtBridgeQmllsSignal) {
     const previousState = this._qtBridgeQmllsAggregation.stateKey;
     this.refreshQtBridgeProject();
     const currentState = this._qtBridgeQmllsAggregation.stateKey;
-    if (previousState === currentState) {
+    const update = chooseQtBridgeQmllsUpdate(
+      previousState,
+      currentState,
+      signal,
+      this._qtBridgeQmllsAggregation.sessionConfigs.length > 0
+    );
+    if (update === 'none') {
+      logger.info(
+        `Qt Bridge ${signal} signal did not change qmlls state for ${this.folder.uri.fsPath}`
+      );
       return;
     }
+    if (update === 'refresh') {
+      logger.info(
+        `Refreshing Qt Bridge build directories in qmlls for ${this.folder.uri.fsPath}`
+      );
+      await this.qmlls.refreshQtBridgeBuildDirs();
+      return;
+    }
+    logger.info(
+      `Restarting qmlls after Qt Bridge ${signal} state changed for ${this.folder.uri.fsPath}`
+    );
     this.updateQmllsParams();
     await this.restartQmlls();
   }
