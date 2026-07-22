@@ -6,7 +6,11 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { XMLParser } from 'fast-xml-parser';
-import { createLogger, type QtBridgeProject } from 'qt-lib';
+import {
+  createLogger,
+  type QtBridgeProject,
+  type QtBridgeQmlMetadata
+} from 'qt-lib';
 
 const logger = createLogger('qtbridge-project');
 
@@ -509,6 +513,9 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
   readonly packageVersion: string | undefined;
   readonly qtDir: vscode.Uri | undefined;
   readonly qmlImportRoot: vscode.Uri | undefined;
+  private _metadata: QtBridgeQmlMetadata | undefined;
+  private _isMetadataReady = false;
+  private _metadataCandidates: readonly QtBridgeQmlMetadata[] = [];
 
   constructor(
     readonly folder: vscode.WorkspaceFolder,
@@ -527,5 +534,27 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
 
   async refresh(): Promise<void> {
     await this.refreshCallback();
+  }
+
+  get metadata() {
+    return this._metadata;
+  }
+
+  get isMetadataReady() {
+    return this._isMetadataReady;
+  }
+
+  get metadataCandidates() {
+    return this._metadataCandidates;
+  }
+
+  updateMetadata(
+    metadata: QtBridgeQmlMetadata | undefined,
+    isReady: boolean,
+    candidates: readonly QtBridgeQmlMetadata[] = []
+  ) {
+    this._metadata = metadata;
+    this._isMetadataReady = isReady;
+    this._metadataCandidates = candidates;
   }
 }
