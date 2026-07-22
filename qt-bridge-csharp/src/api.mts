@@ -9,9 +9,10 @@ export class QtBridgeCSharpApi implements QtBridgeCSharpAPI, vscode.Disposable {
   private readonly projectManager = new QtBridgeProjectManager();
 
   readonly onDidChangeProjects = this.projectManager.onDidChangeProjects;
+  readonly onDidChangeMetadata = this.projectManager.onDidChangeMetadata;
 
-  async initialize(): Promise<void> {
-    await this.projectManager.initialize();
+  async initialize(workspaceState?: vscode.Memento): Promise<void> {
+    await this.projectManager.initialize(workspaceState);
   }
 
   getProjects(): readonly QtBridgeProject[] {
@@ -24,6 +25,10 @@ export class QtBridgeCSharpApi implements QtBridgeCSharpAPI, vscode.Disposable {
 
   getProjectForUri(uri: vscode.Uri): QtBridgeProject | undefined {
     return this.projectManager.getProjectForUri(uri);
+  }
+
+  async selectMetadata(): Promise<void> {
+    await this.projectManager.selectMetadata();
   }
 
   dispose() {

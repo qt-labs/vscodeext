@@ -36,6 +36,14 @@
   "extensionDependencies": [
     "theqtcompany.qt-core"
   ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "qt-bridge-csharp.selectQmlMetadata",
+        "title": "Qt Bridge C#: Select QML Build Metadata"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
     "compile": "node ./esbuild.mjs",
