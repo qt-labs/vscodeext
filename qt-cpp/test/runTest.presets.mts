@@ -30,7 +30,15 @@ async function main() {
       await setupTestInfrastructure(vscodeExecutablePath);
 
     setupVSCodeSettings(userDataDir, qtRoot, {
-      'cmake.configureOnOpen': false
+      'cmake.configureOnOpen': false,
+      // Must be seeded before VS Code starts: qt-cpp fixes the project type
+      // (Kit vs Presets) at activation, and seeding it also keeps qt-cpp from
+      // generating kits in the background, which races with the test's own
+      // configure calls.
+      'cmake.useCMakePresets': 'always',
+      // The Windows preset pins Ninja + clang-cl, which needs the VS
+      // developer environment; see runTest.natvis.mts for the full story.
+      'cmake.useVsDeveloperEnvironment': 'always'
     });
     const extensions: ExtensionInstallInfo[] = [
       { idOrVsix: 'ms-vscode.cmake-tools', preRelease: true },

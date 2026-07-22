@@ -34,7 +34,20 @@ async function main() {
     // Seed VS Code settings (shared helper + natvis-specific tweaks)
     setupVSCodeSettings(userDataDir, qtRoot, {
       // Extra natvis-specific setting
-      'cmake.configureOnOpen': false
+      'cmake.configureOnOpen': false,
+      // Must be seeded before VS Code starts: qt-cpp fixes the project type
+      // (Kit vs Presets) at activation, and `qt-cpp.natvis` resolves the Qt
+      // version through the configure preset only for Presets projects.
+      'cmake.useCMakePresets': 'always',
+      // The Windows preset pins Ninja + clang-cl, which needs the VS
+      // developer environment (CMake links via link.exe and resolves the
+      // MSVC libraries from LIB). Kits provided it through their
+      // `visualStudio` binding; for presets CMake Tools only applies it via
+      // this setting. The default 'auto' is not enough: it skips the dev
+      // environment whenever clang-cl and ninja are found on PATH (e.g. a
+      // standalone LLVM install), even though configure then fails to link.
+      // Windows-only behavior; ignored on other platforms.
+      'cmake.useVsDeveloperEnvironment': 'always'
     });
 
     // Install core required extensions (CMake Tools + qt-core) via helper

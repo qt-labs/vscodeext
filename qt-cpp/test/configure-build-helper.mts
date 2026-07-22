@@ -9,18 +9,26 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import { delay } from 'qt-lib';
 
-import { selectAndApplyQtKit } from './qt-kits-helper.mts';
 import {
   waitForVSCodeIdle,
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
+  cmakeConfigForWorkspace,
+  prepareCMakeQtEnvWithVersion,
   readCMakeCacheVar,
   dlog
 } from './helper.mts';
 
 // ---------------------------------------------------------------------------
-// Shared helper: configure + build minimal Qt project and select Qt kit
+// Shared helper: configure + build minimal Qt project using CMake Presets
 // ---------------------------------------------------------------------------
+
+// Test timing constants
+const FS_SETTLE_DELAY_MS = 500; // Wait for file system to settle after writing files
+const DISK_FLUSH_DELAY_MS = 400; // Wait for build artifacts to flush to disk
+
+// Name of the configure preset written by `configureAndBuildMinimalQtProject`.
+const CONFIGURE_PRESET_NAME = 'qt-debug';
 
 /**
  * Result object returned by `configureAndBuildMinimalQtProject`.
@@ -32,7 +40,7 @@ import {
  *   - `wsFolder`   : The resolved VS Code workspace folder.
  *   - `projectDir`: Absolute path to the project root on disk.
  *   - `buildDir`  : Absolute path to the CMake build directory used for the test.
- *   - `kit`       : Identifier of the Qt kit selected and applied for this build.
+ *   - `preset`    : Name of the configure preset applied for this build.
  *   - `errSpy`    : Sinon spy on `vscode.window.showErrorMessage`, used to assert
  *                   that no unexpected user-facing errors occurred during
  *                   configure or build.
@@ -45,73 +53,9 @@ type ConfigureResult = {
   wsFolder: vscode.WorkspaceFolder;
   projectDir: string;
   buildDir: string;
-  kit: string;
+  preset: string;
   errSpy: sinon.SinonSpy;
 };
-
-/**
- * Detect the required Qt **major version** for the test project by inspecting
- * its top-level CMakeLists.txt.
- *
- * The function looks for a `find_package(Qt<major> ...)` invocation, e.g.:
- *
- *   - find_package(Qt6 REQUIRED COMPONENTS Core)
- *   - find_package ( Qt5 CONFIG REQUIRED ... )
- *
- * This is used by NatVis and snippet tests to select a compatible Qt kit
- * before configuring and building the project.
- *
- * Behavior:
- *   - Returns the numeric Qt major version (e.g. 5 or 6) if found.
- *   - Throws a descriptive error if:
- *       • CMakeLists.txt is missing,
- *       • no suitable `find_package(Qt<major> ...)` line is found,
- *       • or the version cannot be parsed.
- *
- * This function intentionally fails fast: without a detectable Qt major,
- * the test cannot reliably select a Qt kit.
- *
- * @param projectDir Absolute path to the test project root.
- * @returns          The required Qt major version (e.g. 5 or 6).
- */
-function getRequiredQtMajorFromCMake(projectDir: string): number {
-  const cmakeListsPath = path.join(projectDir, 'CMakeLists.txt');
-
-  if (!fs.existsSync(cmakeListsPath)) {
-    const message =
-      `[natvis.test] CMakeLists.txt not found at ${cmakeListsPath}; ` +
-      'cannot detect required Qt major version.';
-    throw new Error(message);
-  }
-
-  const content = fs.readFileSync(cmakeListsPath, 'utf8');
-
-  // Match e.g.:
-  //   find_package(Qt6 REQUIRED COMPONENTS Core)
-  //   find_package ( Qt5 CONFIG REQUIRED ... )
-  const regex = /find_package\s*\(\s*Qt(\d+)\b[^)]*\)/i;
-  const match = regex.exec(content);
-
-  if (!match || !match[1]) {
-    const message =
-      '[natvis.test] Could not find a line like ' +
-      '"find_package(Qt<major> ...)" in CMakeLists.txt; ' +
-      'cannot determine required Qt major version.';
-    throw new Error(message);
-  }
-
-  const majorStr = match[1];
-  const major = Number.parseInt(majorStr, 10);
-
-  if (Number.isNaN(major)) {
-    const message =
-      `[natvis.test] Could not parse Qt major version from '${majorStr}' ` +
-      'in CMakeLists.txt.';
-    throw new Error(message);
-  }
-
-  return major;
-}
 
 /**
  * Materialize a platform-specific debug configuration from a snippet-style
@@ -167,42 +111,52 @@ export function materializeSnippetConfigForCurrentPlatform(
 }
 
 /**
- * Configure and build the minimal Qt test project using CMake Tools and
- * the qt-cpp extension, ensuring a valid Qt kit is selected.
+ * Re-run the CMake configure directly and print its full output.
  *
- * This helper encapsulates the full **project bring-up phase** required
- * before any NatVis or debugger-based test can run:
- *
- *   - Resolves the workspace folder and cleans the build directory.
- *   - Scans for available Qt kits and selects one matching the Qt major
- *     version required by the project's CMakeLists.txt.
- *   - Runs `cmake.configure` and `cmake.build`, asserting successful results.
- *   - Verifies that the expected build artifact exists on disk.
- *   - Spies on `vscode.window.showErrorMessage` to ensure no unexpected
- *     user-facing errors occurred during configure/build.
- *
- * Test-environment behavior:
- *   - On CI: **fails hard** if no suitable Qt kit is available, so
- *     misconfiguration is immediately visible.
- *   - On local developer machines: **skips the test** cleanly if no
- *     matching Qt kit is found.
- *
- * Design notes:
- *   - All assertions live here so callers can assume a fully built,
- *     ready-to-debug project.
- *   - The Sinon sandbox is passed explicitly to avoid hidden global state
- *     and to integrate cleanly with per-test sandbox lifecycles.
- *
- * @param ctx        Mocha test context, used only to skip the test locally
- *                   when no suitable Qt kit is available.
- * @param logPrefix  Prefix used for debug logging to keep test output readable.
- * @param sandbox    Sinon sandbox used to register spies for this test run.
- *
- * @returns An object containing workspace paths, the selected Qt kit,
- *          the build directory, and the error-message spy.
- *
- * @throws Error on CI if no Qt kit is available, or if configure/build fails.
+ * Like `dumpBuildOutput` below, but for the configure step:
+ * `vscode.commands.executeCommand('cmake.configure')` only resolves to an
+ * exit code, and the actual CMake diagnostics land in the CMake Tools output
+ * channel, which never reaches the CI log. Re-running `cmake --preset` puts
+ * the real error (toolchain detection, find_package, ...) right before the
+ * assertion failure. Best-effort only: any problem spawning cmake is logged
+ * and swallowed so it never masks the original rc.
  */
+function dumpConfigureOutput(
+  logPrefix: string,
+  projectDir: string,
+  presetName: string
+): void {
+  console.log(
+    `${logPrefix} ===== cmake.configure failed; re-running configure to capture output =====`
+  );
+  try {
+    const res = cp.spawnSync('cmake', ['--preset', presetName], {
+      cwd: projectDir,
+      encoding: 'utf-8',
+      shell: process.platform === 'win32'
+    });
+    if (res.error) {
+      console.log(
+        `${logPrefix} could not spawn cmake --preset: ${res.error.message}`
+      );
+    }
+    if (res.stdout) {
+      console.log(res.stdout);
+    }
+    if (res.stderr) {
+      console.log(res.stderr);
+    }
+    console.log(
+      `${logPrefix} cmake --preset exit code: ${res.status ?? '<none>'}`
+    );
+  } catch (err) {
+    console.log(
+      `${logPrefix} failed to capture configure output: ${(err as Error).message}`
+    );
+  }
+  console.log(`${logPrefix} ===== end of captured configure output =====`);
+}
+
 /**
  * Re-run the CMake build directly and print its full output.
  *
@@ -249,51 +203,52 @@ function dumpBuildOutput(logPrefix: string, buildDir: string): void {
 }
 
 /**
- * Run `cmake.configure`, retrying while CMake Tools reports it did not run.
+ * Configure and build the minimal Qt test project using CMake Tools and
+ * CMake Presets.
  *
- * Applying a Qt kit (`cmake.setKitByName`) makes CMake Tools kick off a
- * background reconfigure. When the test then invokes `cmake.configure` while
- * that is still settling, the command can be deduplicated/cancelled and resolve
- * to a *negative* exit code (typically -1) instead of the real configure
- * result. That is a readiness race, not a configuration error: a genuine CMake
- * failure returns a positive code (e.g. 1) with diagnostics.
+ * This helper encapsulates the full **project bring-up phase** required
+ * before any NatVis or debugger-based test can run:
  *
- * We therefore treat a negative (or non-numeric) rc as "not ready yet", let
- * CMake Tools settle, and try again a few times before giving up. A
- * non-negative rc is returned immediately so a real failure (rc>0) still
- * surfaces to the caller's assertion.
+ *   - Resolves the workspace folder and cleans the build directory.
+ *   - Resolves the Qt installation to test against (QT_TEST_QT_ROOT /
+ *     qt-core.qtInstallationRoot, honoring QT_VERSION_FOR_TEST).
+ *   - Writes a CMakePresets.json pinning the build directory and
+ *     CMAKE_PREFIX_PATH, and applies it via `cmake.setConfigurePreset`.
+ *   - Runs `cmake.configure` and `cmake.build`, asserting successful results.
+ *   - Verifies that the expected build artifact exists on disk.
+ *   - Spies on `vscode.window.showErrorMessage` to ensure no unexpected
+ *     user-facing errors occurred during configure/build.
  *
- * NOTE: we deliberately do NOT disable `configureOnOpen`/`automaticReconfigure`
- * to avoid the race — on Linux CI that leaves CMake Tools without a bootstrapped
- * driver and `cmake.configure` then returns -1 on *every* attempt, so the retry
- * loop spins until the mocha timeout. Leaving auto-reconfigure enabled lets the
- * driver initialize; the retry only needs to ride past the transient -1.
+ * We deliberately use CMake Presets instead of (generated) kits here: kit
+ * generation kicks off background scans/reconfigures in CMake Tools that
+ * race with the test's own `cmake.configure` call, while a preset applies
+ * deterministically.
  *
- * @returns The exit code of the configure that actually ran (0 on success).
+ * NOTE: the test runner must seed `cmake.useCMakePresets: 'always'` in the
+ * user settings so that qt-cpp classifies the project as a Presets project
+ * at activation time (the project type is fixed when the extension
+ * activates); `qt-cpp.natvis` resolves the Qt version through the preset.
+ *
+ * Test-environment behavior:
+ *   - On CI: **fails hard** if no suitable Qt installation is available, so
+ *     misconfiguration is immediately visible.
+ *   - On local developer machines: **skips the test** cleanly if no
+ *     matching Qt installation is found.
+ *
+ * The workspace is a temp copy created by the test runner, so the written
+ * CMakePresets.json and the workspace-level CMake settings need no cleanup.
+ *
+ * @param ctx        Mocha test context, used only to skip the test locally
+ *                   when no suitable Qt installation is available.
+ * @param logPrefix  Prefix used for debug logging to keep test output readable.
+ * @param sandbox    Sinon sandbox used to register spies for this test run.
+ *
+ * @returns An object containing workspace paths, the applied configure
+ *          preset, the build directory, and the error-message spy.
+ *
+ * @throws Error on CI if no Qt installation is available, or if
+ *         configure/build fails.
  */
-async function configureWithRetry(logPrefix: string): Promise<number> {
-  const maxAttempts = 4;
-  const settleDelayMs = 2000;
-  let rc: number = -1;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    dlog(
-      `${logPrefix} Running cmake.configure (attempt ${attempt.toString()}/${maxAttempts.toString()})...`
-    );
-    rc = await vscode.commands.executeCommand<number>('cmake.configure');
-    await waitForVSCodeIdle();
-    if (typeof rc === 'number' && rc >= 0) {
-      return rc;
-    }
-    console.log(
-      `${logPrefix} cmake.configure did not run (rc=${String(rc)}); ` +
-        `CMake Tools is likely still settling. Retrying...`
-    );
-    await delay(settleDelayMs);
-    await waitForVSCodeIdle();
-  }
-  return rc;
-}
-
 export async function configureAndBuildMinimalQtProject(
   ctx: { skip(): void },
   logPrefix: string,
@@ -303,36 +258,25 @@ export async function configureAndBuildMinimalQtProject(
   const projectDir = wsFolder.uri.fsPath;
   dlog(`${logPrefix} Using projectDir:`, projectDir);
 
-  const buildDir = await cleanBuildDir(projectDir);
-
-  // Diagnostic: qt-cpp registers Qt kits by running `qtpaths -query` and, on
-  // failure, calls showWarningMessage("qtPaths info not found for '...'
-  // Error: ...") — which never reaches stdout. Capture it so that, if no Qt
-  // kit ends up registered, the CI log shows *why* (query failed vs no
-  // qtpaths discovered) instead of a bare "No Qt kit available".
-  const warnSpy = sandbox.spy(vscode.window, 'showWarningMessage');
-
-  // Ensure Qt kit is available and applied
-  await vscode.commands.executeCommand('qt-cpp.scanForQtKits');
+  const cmakeConfigurator = cmakeConfigForWorkspace(wsFolder);
+  await cmakeConfigurator.set('useCMakePresets', 'always');
   await waitForVSCodeIdle();
 
-  const requiredQtMajor = getRequiredQtMajorFromCMake(projectDir);
-  const kit = await selectAndApplyQtKit(wsFolder, requiredQtMajor);
+  const buildDir = await cleanBuildDir(projectDir);
 
-  if (!kit) {
-    const warnings = warnSpy
-      .getCalls()
-      .map((c) => String(c.args[0]))
-      .filter((m) => /qtPaths|qtpaths|Qt/i.test(m));
-    console.log(
-      `${logPrefix} No Qt kit registered. Captured ${warnings.length.toString()} ` +
-        `qt-cpp warning(s) during scan:`
-    );
-    for (const w of warnings) {
-      console.log(`${logPrefix}   - ${w}`);
-    }
+  const qtRoot = vscode.workspace
+    .getConfiguration('qt-core')
+    .get<string>('qtInstallationRoot');
+  if (typeof qtRoot !== 'string' || qtRoot.trim() === '') {
+    throw new Error('qt-core.qtInstallationRoot is not configured.');
+  }
 
-    const message = `${logPrefix} No Qt kit available on this machine. `;
+  let qtEnv;
+  try {
+    qtEnv = prepareCMakeQtEnvWithVersion({ topLevel: qtRoot, verbose: true });
+  } catch (err) {
+    const message = `${logPrefix} No suitable Qt installation found under '${qtRoot}': ${String(err)}`;
+    console.warn(message);
     if (process.env.CI) {
       // On CI: fail hard so we notice misconfiguration
       throw new Error(message);
@@ -343,21 +287,100 @@ export async function configureAndBuildMinimalQtProject(
     throw new Error('Test skipped');
   }
 
-  dlog(`${logPrefix} Selected Qt kit:`, kit);
+  const presetsPath = path.join(projectDir, 'CMakePresets.json');
+
+  // Create a CMake Presets configuration
+  //
+  // On Windows the toolchain is pinned to Ninja + clang-cl instead of letting
+  // CMake fall back to the default Visual Studio generator (MSVC cl). The
+  // NatVis goldens are validated against clang-cl debug info: with cl, vsdbg
+  // applies a silent evaluation budget to NatVis DisplayString expressions of
+  // member variables, so the pointer-cast entries (QPoint, QRect, QUuid, ...)
+  // come back empty even after warmUpNatvisDisplay() (see commit 0716837a).
+  // The previous kit-based flow selected the clang-cl Qt kit; the preset
+  // reproduces that toolchain. On other platforms the default generator is
+  // kept, as before.
+  //
+  // clang-cl + Ninja only configure inside the VS developer environment
+  // (CMake links via link.exe with libraries resolved from LIB). The kit
+  // carried that environment through its `visualStudio` binding; for
+  // presets, CMake Tools applies it because the test runner seeds
+  // `cmake.useVsDeveloperEnvironment: 'always'`. The `architecture` field
+  // uses the presets-spec "external" strategy: CMake ignores it, but CMake
+  // Tools reads it to pick the environment's target architecture.
+  const isWin = process.platform === 'win32';
+  const presets = {
+    version: 3,
+    configurePresets: [
+      {
+        name: CONFIGURE_PRESET_NAME,
+        displayName: 'Qt Debug Configuration',
+        description: 'Debug build using Qt with CMake Presets',
+        binaryDir: buildDir,
+        ...(isWin
+          ? {
+              generator: 'Ninja',
+              architecture: { value: 'x64', strategy: 'external' }
+            }
+          : {}),
+        cacheVariables: {
+          CMAKE_BUILD_TYPE: 'Debug',
+          CMAKE_PREFIX_PATH: qtEnv.leaf,
+          ...(isWin
+            ? {
+                CMAKE_C_COMPILER: 'clang-cl',
+                CMAKE_CXX_COMPILER: 'clang-cl'
+              }
+            : {})
+        }
+      }
+    ]
+  };
+
+  fs.writeFileSync(presetsPath, JSON.stringify(presets, null, 2), 'utf-8');
+  dlog(
+    `${logPrefix} Created CMakePresets.json with CMAKE_PREFIX_PATH:`,
+    qtEnv.leaf
+  );
+
+  // Wait for file system to settle after writing CMakePresets.json
+  await delay(FS_SETTLE_DELAY_MS);
+  await waitForVSCodeIdle();
+
+  // Disable automatic configuration to have precise control over test flow
+  // configureOnOpen would trigger configure before we can set the preset
+  // automaticReconfigure would interfere with our explicit configure call
+  await cmakeConfigurator.set('configureOnOpen', false);
+  await cmakeConfigurator.set('automaticReconfigure', false);
 
   // Spy on error popups during configure/build
   const errSpy = sandbox.spy(vscode.window, 'showErrorMessage');
 
   // ---- configure + build --------------------------------------------
-  const rcCfg = await configureWithRetry(logPrefix);
+  dlog(`${logPrefix} Setting configure preset: ${CONFIGURE_PRESET_NAME}`);
+  await vscode.commands.executeCommand(
+    'cmake.setConfigurePreset',
+    CONFIGURE_PRESET_NAME
+  );
+  await waitForVSCodeIdle();
+
+  dlog(`${logPrefix} Running cmake.configure...`);
+  const rcCfg = await vscode.commands.executeCommand<number>('cmake.configure');
+  await waitForVSCodeIdle();
+  if (rcCfg !== 0) {
+    // Like the build below, `cmake.configure` only returns an exit code and
+    // the diagnostics stay in the CMake Tools output channel. Re-run the
+    // configure directly so the real error is visible in the CI log.
+    dumpConfigureOutput(logPrefix, projectDir, CONFIGURE_PRESET_NAME);
+  }
   expect(rcCfg, `${logPrefix} cmake.configure failed (rc=${rcCfg})`).to.equal(
     0
   );
 
   dlog(`${logPrefix} == WHAT CMAKE USED ==`);
   dlog(
-    `${logPrefix}   Qt6_DIR =`,
-    readCMakeCacheVar(buildDir, 'Qt6_DIR') ?? '<unknown>'
+    `${logPrefix}   CMAKE_PREFIX_PATH =`,
+    readCMakeCacheVar(buildDir, 'CMAKE_PREFIX_PATH') ?? '<unknown>'
   );
 
   const rcBuild = await vscode.commands.executeCommand<number>('cmake.build');
@@ -372,8 +395,10 @@ export async function configureAndBuildMinimalQtProject(
     0
   );
 
-  await delay(400); // flush to disk
+  await delay(DISK_FLUSH_DELAY_MS); // flush to disk
 
+  // Ninja (single-config) is pinned on Windows, so the binary lands directly
+  // in the build directory on every platform.
   const bin = process.platform === 'win32' ? 'hello.exe' : 'hello';
   const outPath = path.join(buildDir, bin);
   dlog(`${logPrefix} Checking for binary at`, outPath);
@@ -385,5 +410,11 @@ export async function configureAndBuildMinimalQtProject(
   expect(errSpy.called, `${logPrefix} Unexpected error popups during build`).to
     .be.false;
 
-  return { wsFolder, projectDir, buildDir, kit, errSpy };
+  return {
+    wsFolder,
+    projectDir,
+    buildDir,
+    preset: CONFIGURE_PRESET_NAME,
+    errSpy
+  };
 }

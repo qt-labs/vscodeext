@@ -1,8 +1,4 @@
 {
-  "cmake.configureSettings": {
-    "CMAKE_BUILD_TYPE": "Debug"
-  },
-  "cmake.buildConfig": "Debug",
   "cmake.scanForKitsOnOpen": false,
   "cmake.configureOnOpen": false,
   "cmake.loggingLevel": "error",

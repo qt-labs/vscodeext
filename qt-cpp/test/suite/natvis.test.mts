@@ -45,7 +45,7 @@ import {
  * NatVis integration tests for the qt-cpp extension.
  *
  * This suite:
- *   - Configures and builds a minimal Qt CMake project using the selected Qt kit.
+ *   - Configures and builds a minimal Qt CMake project using CMake Presets.
  *   - Launches the C++ debugger, stops on a marker breakpoint, and captures Locals.
  *   - Normalizes and filters Locals to a stable Snapshot model.
  *   - Compares the NatVis-formatted Locals against a hand-curated Golden snapshot,
@@ -93,7 +93,7 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
       wsFolder,
       projectDir,
       buildDir
-      // kit, errSpy (already asserted in helper)
+      // preset, errSpy (already asserted in helper)
     } = await configureAndBuildMinimalQtProject(this, '[snippet-test]', sb);
 
     let session: vscode.DebugSession | undefined;

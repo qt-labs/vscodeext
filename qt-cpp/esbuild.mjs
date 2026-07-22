@@ -13,13 +13,16 @@ await runEsbuild({
     './test/runTest.mts',
     './test/runTest.build.mts',
     './test/runTest.natvis.mts',
+    './test/runTest.presets.mts',
     './test/util/stdioFilter.mts',
     './test/suite/index.mts',
     './test/suite/index-build.mts',
     './test/suite/index-natvis.mts',
+    './test/suite/index-presets.mts',
     './test/suite/extension.test.mts',
     './test/suite/commands.test.mts',
     './test/suite/build.test.mts',
-    './test/suite/natvis.test.mts'
+    './test/suite/natvis.test.mts',
+    './test/suite/presets.test.mts'
   ]
 });
