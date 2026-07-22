@@ -1,0 +1,89 @@
+{
+  "name": "qt-bridge-csharp",
+  "displayName": "Qt Bridge C#",
+  "description": "Qt Bridge C# project support",
+  "version": "1.17.0",
+  "homepage": "https://www.qt.io/",
+  "icon": "res/icons/qt.png",
+  "publisher": "theqtcompany",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qt-labs/vscodeext"
+  },
+  "bugs": {
+    "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues"
+  },
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "Qt",
+    "QML",
+    "C#",
+    "CSharp",
+    ".NET"
+  ],
+  "qna": "marketplace",
+  "pricing": "Free",
+  "activationEvents": [
+    "workspaceContains:**/*.csproj"
+  ],
+  "main": "./out/extension.js",
+  "extensionDependencies": [
+    "theqtcompany.qt-core"
+  ],
+  "scripts": {
+    "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
+    "compile": "node ./esbuild.mjs",
+    "compile-test": "node ./esbuild.mjs --test",
+    "watch": "node ./esbuild.mjs --watch",
+    "pretest": "npm run compile && npm run lint",
+    "prepare-vsix": "npm --prefix ../qt-core run package",
+    "run-test": "cd ./out/test/ && node runTest.js",
+    "run-test:only": "cd ./out/test/ && node runTest.js",
+    "test:only": "npm run compile-test && npm run run-test:only",
+    "test": "npm run prepare-vsix && npm run compile-test && npm run run-test",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,json,mjs,cjs}\"",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata",
+    "package": "vsce package --out out && rm commit"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "1.94.0",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.9.1",
+    "chai": "^6.2.2",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
+    "glob": "^12.0.0",
+    "mocha": "^11.3.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "qt-lib": "file:../qt-lib",
+    "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "mocha": {
+      "diff": "^8.0.3",
+      "serialize-javascript": "^7.0.5"
+    }
+  },
+  "allowScripts": {
+    "esbuild@0.25.0": true
+  }
+}
