@@ -9,6 +9,11 @@ on:
         default: "false"
         required: true
 
+# Cancel superseded runs when a PR branch is force-pushed or updated
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
