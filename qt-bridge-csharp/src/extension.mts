@@ -15,8 +15,14 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.sendEvent('activated');
 
   const api = new QtBridgeCSharpApi();
-  context.subscriptions.push(api);
-  await api.initialize();
+  context.subscriptions.push(
+    api,
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.selectQmlMetadata`,
+      async () => api.selectMetadata()
+    )
+  );
+  await api.initialize(context.workspaceState);
   return api;
 }
 
