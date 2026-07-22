@@ -3,6 +3,9 @@
 
 import type { QtBridgeProject } from 'qt-lib';
 
+export type QtBridgeQmllsSignal = 'project' | 'metadata';
+type QtBridgeQmllsUpdate = 'none' | 'refresh' | 'restart';
+
 export interface QtBridgeQmllsSessionConfig {
   readonly projectSourceDir: string;
   readonly buildDirs: readonly string[];
@@ -63,4 +66,19 @@ export function aggregateQtBridgeQmllsProjects(
     ...effectiveState,
     stateKey: JSON.stringify(effectiveState)
   };
+}
+
+export function chooseQtBridgeQmllsUpdate(
+  previousState: string,
+  currentState: string,
+  signal: QtBridgeQmllsSignal,
+  hasReadyMetadata: boolean
+): QtBridgeQmllsUpdate {
+  if (previousState !== currentState) {
+    return 'restart';
+  }
+  if (signal === 'metadata' && hasReadyMetadata) {
+    return 'refresh';
+  }
+  return 'none';
 }
