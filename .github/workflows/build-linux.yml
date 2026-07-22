@@ -39,11 +39,9 @@ jobs:
           node-version: '20'
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-        # qt-lib should be built first as it is a dependency for other packages
-      - run: npm run ci:qt-lib
-      - run: npm run compile:qt-lib
       - run: npm run ci:all
-      - run: npm run compile:all
+      - run: npm run compile:qt-lib
+      - run: npm run prepareNatvisFiles
       - run: npm run ci-lint:all
       - run: npm run package:all
       - name: Upload qt-cpp
