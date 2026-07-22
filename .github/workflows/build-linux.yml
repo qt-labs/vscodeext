@@ -69,3 +69,8 @@ jobs:
         with:
           name: qt-python-vsix
           path: qt-python/out/*.vsix
+      - name: Upload qt-bridge-csharp
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-bridge-csharp-vsix
+          path: qt-bridge-csharp/out/*.vsix

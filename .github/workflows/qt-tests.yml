@@ -29,6 +29,7 @@ on:
             - qt-cpp
             - qt-qml
             - qt-python
+            - qt-bridge-csharp
 
 jobs:
   tests:
@@ -101,11 +102,12 @@ jobs:
       - name: Prepare NatVis files
         run: npm run prepareNatvisFiles
       # Compile other extensions once (runtime build)
-      - name: Compile qt-cpp / qt-qml / qt-python
+      - name: Compile qt-cpp / qt-qml / qt-python / qt-bridge-csharp
         run: |
           npm --prefix qt-cpp run compile
           npm --prefix qt-qml run compile
           npm --prefix qt-python run compile
+          npm --prefix qt-bridge-csharp run compile
 
 
       # Install Qt using a community-maintained action.
@@ -223,6 +225,10 @@ jobs:
             if should_run qt-python; then
               run_cmd "${XVFB[@]}" npm --prefix qt-python run test:only
             fi
+
+            if should_run qt-bridge-csharp; then
+              run_cmd "${XVFB[@]}" npm --prefix qt-bridge-csharp run test:only
+            fi
           else
             if should_run qt-core; then
               run_cmd npm --prefix qt-core run test:only
@@ -238,5 +244,9 @@ jobs:
 
             if should_run qt-python; then
               run_cmd npm --prefix qt-python run test:only
+            fi
+
+            if should_run qt-bridge-csharp; then
+              run_cmd npm --prefix qt-bridge-csharp run test:only
             fi
           fi
