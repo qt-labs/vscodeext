@@ -639,6 +639,13 @@ export class Qmlls {
       );
     }
 
+    await this.sendQtBridgeBuildDirs(client, sessionConfigs);
+  }
+
+  private async sendQtBridgeBuildDirs(
+    client: LanguageClient,
+    sessionConfigs: readonly QtBridgeQmllsSessionConfig[]
+  ) {
     logger.info(
       `Sending $/addBuildDirs for ${this._folder.uri.fsPath}: `
         + sessionConfigs
@@ -651,6 +658,33 @@ export class Qmlls {
         buildDirs: [...config.buildDirs]
       }))
     });
+  }
+
+  private async refreshQtBridgeBuildDirsInternal() {
+    const client = this._client;
+    const sessionConfigs = this._qtBridgeSessionConfigs;
+    if (!client?.isRunning() || sessionConfigs.length === 0) {
+      logger.info(
+        `Skipping Qt Bridge build-directory refresh for ${this._folder.uri.fsPath}: `
+          + `clientRunning=${String(client?.isRunning() === true)}; `
+          + `sessionConfigs=${String(sessionConfigs.length)}`
+      );
+      return;
+    }
+
+    // Recent qmlls versions re-read an already known .qmlls.build.ini when
+    // $/addBuildDirs is repeated. This refreshes generated QML state without
+    // restarting the server when its command-line inputs did not change.
+    await this.sendQtBridgeBuildDirs(client, sessionConfigs);
+  }
+
+  public async refreshQtBridgeBuildDirs() {
+    return projectManager.qmllsQueue.enqueue(
+      QmllsOperationType.Update,
+      async () => {
+        await this.refreshQtBridgeBuildDirsInternal();
+      }
+    );
   }
 
   public async stop() {
