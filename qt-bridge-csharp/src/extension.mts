@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 import { createLogger, initLogger, telemetry } from 'qt-lib';
 import { EXTENSION_ID, LOG_NAME } from '@/constants.js';
+import { QtBridgeCSharpApi } from '@/api.mjs';
 
 const logger = createLogger('extension');
 
@@ -12,6 +13,10 @@ export function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
   logger.info(`Activating ${EXTENSION_ID}`);
   telemetry.sendEvent('activated');
+
+  const api = new QtBridgeCSharpApi();
+  context.subscriptions.push(api);
+  return api;
 }
 
 export function deactivate() {
