@@ -10,7 +10,8 @@ import {
 } from '@debug/debug-connection.mjs';
 import { QmlPreviewClient, FpsInfo } from './preview-client.mts';
 import { QrcResourceFinder } from './qrc-resource-finder.mts';
-import { createLogger, delay, IsWindows } from 'qt-lib';
+import { createLogger, delay } from 'qt-lib';
+import { normalizePathForComparison } from '@/utils.mjs';
 
 const logger = createLogger('qml-preview-manager');
 
@@ -74,20 +75,6 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     super();
     this._qrcFinder = new QrcResourceFinder();
     logger.info('QmlPreviewConnectionManager created');
-  }
-
-  /**
-   * Normalize a file path for consistent comparisons across platforms
-   * - Converts backslashes to forward slashes
-   * - Lowercases the path on Windows (since Windows paths are case-insensitive)
-   */
-  private static normalizePath(filePath: string): string {
-    let normalized = filePath.replace(/\\/g, '/');
-    // On Windows, paths are case-insensitive, so normalize to lowercase
-    if (IsWindows) {
-      normalized = normalized.toLowerCase();
-    }
-    return normalized;
   }
 
   // Signal accessors (public event properties)
@@ -219,6 +206,33 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   }
 
   /**
+   * Register a file that the target application already loaded itself.
+   *
+   * Qt Bridge applications load their root QML during normal startup, so the
+   * extension must not send an initial loadUrl command. Still, hot reload needs
+   * the same local-file to target-url mapping that loadUrl/path requests create
+   * for CMake and PySide previews.
+   */
+  registerLoadedFile(localPath: string, targetUrl: string) {
+    const parsedUrl = QmlPreviewConnectionManager.createUrlFromPath(targetUrl);
+    if (!parsedUrl) {
+      logger.warn('Failed to register loaded file target URL:', targetUrl);
+      return;
+    }
+
+    const normalizedLocalPath = normalizePathForComparison(localPath);
+    this._lastLoadedUrl = parsedUrl;
+    this._pathMap.set(normalizedLocalPath, targetUrl);
+    this.addFileToWatcher(localPath);
+    logger.info(
+      'Registered loaded file:',
+      `"${normalizedLocalPath}"`,
+      '->',
+      `"${targetUrl}"`
+    );
+  }
+
+  /**
    * Rerun the QML application
    */
   rerun() {
@@ -335,7 +349,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         // File - map it and load contents
         // This is key: map the real filesystem path to the QRC path
         // so we can find it later during file change events
-        const normalizedRealPath = QmlPreviewConnectionManager.normalizePath(
+        const normalizedRealPath = normalizePathForComparison(
           resource.realPath
         );
         this._pathMap.set(normalizedRealPath, requestedPath);
@@ -416,8 +430,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
           // Store the path mapping (identity mapping for filesystem paths)
           // Normalize path for consistent lookups
-          const normalizedFsPath =
-            QmlPreviewConnectionManager.normalizePath(fsPath);
+          const normalizedFsPath = normalizePathForComparison(fsPath);
           this._pathMap.set(normalizedFsPath, requestedPath);
           logger.info(
             'Mapped filesystem:',
@@ -462,7 +475,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
    */
   private addFileToWatcher(filePath: string) {
     // Normalize path for consistent comparisons (Windows uses backslashes)
-    const normalizedPath = QmlPreviewConnectionManager.normalizePath(filePath);
+    const normalizedPath = normalizePathForComparison(filePath);
 
     // Check if already watching
     if (this._watchedFiles.has(normalizedPath)) {
@@ -545,7 +558,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     // Maps to: connect(&m_fileSystemWatcher, &FileSystemWatcher::fileChanged, ...)
     this._fileSystemWatcher.onDidChange(async (uri) => {
       // Normalize path for consistent comparisons (Windows uses backslashes)
-      const changedFile = QmlPreviewConnectionManager.normalizePath(uri.fsPath);
+      const changedFile = normalizePathForComparison(uri.fsPath);
 
       // Only process files we're actively watching (Qt Creator pattern)
       if (!this._watchedFiles.has(changedFile)) {

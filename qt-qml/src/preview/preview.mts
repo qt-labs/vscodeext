@@ -11,16 +11,28 @@ import {
   telemetry,
   PySideProject,
   QtWorkspaceFeatures,
-  CoreKey
+  CoreKey,
+  type QtBridgePreviewLaunch,
+  type QtBridgeProject
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
 import { QmlPreviewConnectionManager } from '@/preview/preview-connection-manager.mjs';
 import { FpsInfo } from '@/preview/preview-client.mjs';
 import { ServerScheme } from '@debug/debug-connection.mjs';
-import { QtProcess, spawnProcessForTool } from '@/utils.mts';
+import {
+  QtProcess,
+  normalizePathForComparison,
+  spawnProcessForTool,
+  spawnProgramForTool
+} from '@/utils.mts';
 import { QmlPreviewUI } from '@preview/ui.js';
-import { QMLProject } from '@/project.mjs';
+import { getQtBridgeProjects, QMLProject } from '@/project.mjs';
+import {
+  getQtBridgePreviewProjects,
+  isQtBridgePreviewAvailable,
+  selectQtBridgePreviewProject
+} from '@/preview/qtbridge-preview-project.mjs';
 
 const logger = createLogger('qml-preview');
 const ui = new QmlPreviewUI();
@@ -28,9 +40,15 @@ const ui = new QmlPreviewUI();
 let qmlPreviewOutputChannel: vscode.OutputChannel | undefined;
 let previewManager: QmlPreviewConnectionManager | undefined;
 let previewProcess: QtProcess | undefined;
+let previewLaunch: QtBridgePreviewLaunch | undefined;
+let previewStartPromise: Promise<void> | undefined;
 
-function isConnected() {
-  return previewManager?.isConnected() ?? false;
+function isPreviewStartingOrRunning() {
+  return (
+    previewStartPromise !== undefined ||
+    previewManager !== undefined ||
+    previewProcess !== undefined
+  );
 }
 
 function cleanupSession() {
@@ -38,10 +56,16 @@ function cleanupSession() {
   previewManager = undefined;
   previewProcess?.kill();
   previewProcess = undefined;
+  previewLaunch?.dispose();
+  previewLaunch = undefined;
   ui.setPreviewStopped();
 }
 
 function createPreviewManager() {
+  return createPreviewManagerForBuildDirs(projectManager.getBuildDirs());
+}
+
+function createPreviewManagerForBuildDirs(projectBuildDirs: readonly string[]) {
   const manager = new QmlPreviewConnectionManager();
   manager.setupFileWatcher();
 
@@ -49,7 +73,6 @@ function createPreviewManager() {
     'additionalBuildDirs',
     []
   );
-  const projectBuildDirs = projectManager.getBuildDirs();
   manager.buildDirs = [...projectBuildDirs, ...additionalBuildDirs];
 
   return manager;
@@ -108,13 +131,13 @@ async function resolveWorkspaceFolder(
  * Determine the project type for the given workspace folder.
  */
 function getProjectType(
-  folder: vscode.WorkspaceFolder
-): 'cmake' | 'pyside' | undefined {
+  folder: vscode.WorkspaceFolder,
+  bridgeProject?: QtBridgeProject
+): 'bridge' | 'cmake' | 'pyside' | undefined {
   const project = projectManager.getProject(folder);
   if (project?.pySideProject) {
     return 'pyside';
   }
-
   const features = coreAPI?.getValue<QtWorkspaceFeatures>(
     folder,
     CoreKey.WORKSPACE_FEATURES
@@ -124,6 +147,9 @@ function getProjectType(
   }
   if (features?.projectTypes.pyside) {
     return 'pyside';
+  }
+  if (isQtBridgePreviewAvailable(bridgeProject)) {
+    return 'bridge';
   }
 
   return undefined;
@@ -180,6 +206,130 @@ async function launchCMakePreview(qmlFile?: string) {
   } catch (err) {
     logger.error(`Failed to start QML Preview: ${String(err)}`);
     manager.dispose();
+    ui.showFailedToStart(err instanceof Error ? err : new Error(String(err)));
+    return false;
+  }
+}
+
+function quoteCommandArg(arg: string) {
+  return `"${arg.replace(/(["\\])/g, '\\$1')}"`;
+}
+
+function resolveQtBridgePreviewUrl(
+  project: QtBridgeProject,
+  qmlFile: string | undefined
+) {
+  if (!qmlFile) {
+    return undefined;
+  }
+
+  const metadataFile = project.metadata?.qml.files.find(
+    (file) =>
+      normalizePathForComparison(file.sourcePath) ===
+      normalizePathForComparison(qmlFile)
+  );
+  if (!metadataFile) {
+    logger.info(`No Qt Bridge QRC mapping found for preview file: ${qmlFile}`);
+    return undefined;
+  }
+
+  const previewUrl = metadataFile.resourceUrl;
+  logger.info(`Resolved Qt Bridge preview URL: ${qmlFile} -> ${previewUrl}`);
+  return previewUrl;
+}
+
+async function launchQtBridgePreview(
+  folder: vscode.WorkspaceFolder,
+  bridgeProject: QtBridgeProject,
+  qmlFile?: string
+) {
+  const metadata = bridgeProject.metadata;
+  if (!metadata || !bridgeProject.isMetadataReady) {
+    logger.error(
+      `Qt Bridge preview is unavailable for folder: ${folder.uri.fsPath}`
+    );
+    ui.showFailedToStart(
+      new Error('Qt Bridge build metadata is not available yet')
+    );
+    return false;
+  }
+
+  const host = '127.0.0.1';
+  const port = await getPort();
+  if (!port) {
+    logger.error('Failed to obtain a free port');
+    ui.showFailedToStart(new Error('Failed to obtain a free port'));
+    return false;
+  }
+  logger.info(`Host: ${host}, Port: ${port.toString()}`);
+
+  // Keep Bridge startup paused until the preview client attaches. Qt consumes
+  // this argument before the remaining argv is forwarded to managed Main.
+  const previewArgs = buildPreviewArgs(host, port);
+  const additionalArgs = getPreviewConfig().get<string[]>('args', []);
+  let launch: QtBridgePreviewLaunch | undefined;
+  let manager: QmlPreviewConnectionManager | undefined;
+
+  try {
+    launch = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Preparing Qt Bridge QML Preview...'
+      },
+      async () => bridgeProject.prepareQmlPreview()
+    );
+    if (!launch) {
+      logger.error(
+        `Could not resolve Qt Bridge host path for folder: ${folder.uri.fsPath}`
+      );
+      ui.showFailedToStart(
+        new Error('Could not resolve Qt Bridge host executable')
+      );
+      return false;
+    }
+
+    manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs);
+    const previewUrl = resolveQtBridgePreviewUrl(bridgeProject, qmlFile);
+    if (qmlFile && previewUrl) {
+      manager.registerLoadedFile(qmlFile, previewUrl);
+    }
+    manager.onConnectionClosed(() => {
+      logger.info('QML Preview connection closed');
+      cleanupSession();
+    });
+    manager.setFpsHandler((fps: FpsInfo) => {
+      ui.updateFps(fps);
+    });
+    const processArgs = [previewArgs, ...additionalArgs];
+    logger.info(
+      `Command: ${quoteCommandArg(launch.executable)} ${processArgs.join(' ')}`
+    );
+
+    const process = await spawnProgramForTool(launch.executable, processArgs, {
+      pathEntries: launch.pathEntries,
+      cwd: launch.cwd,
+      env: { ...launch.environment },
+      sanitizeVsCodeEnv: true
+    });
+
+    if (process.killed || process.pid === undefined) {
+      logger.error('Failed to start Qt Bridge preview process');
+      manager.dispose();
+      launch.dispose();
+      ui.showFailedToStart(new Error('Process failed to start'));
+      return false;
+    }
+    logger.info(
+      `Qt Bridge preview process started with PID: ${process.pid.toString()}`
+    );
+
+    previewLaunch = launch;
+    setupProcessForPreview(process, manager, undefined, host, port);
+    return true;
+  } catch (err) {
+    logger.error(`Failed to start Qt Bridge preview: ${String(err)}`);
+    manager?.dispose();
+    launch?.dispose();
     ui.showFailedToStart(err instanceof Error ? err : new Error(String(err)));
     return false;
   }
@@ -330,6 +480,8 @@ function setupProcessForPreview(
   host: string,
   port: number
 ) {
+  const processStartedAt = Date.now();
+  let processExited = false;
   // Set up output channel
   if (!qmlPreviewOutputChannel) {
     qmlPreviewOutputChannel =
@@ -337,16 +489,30 @@ function setupProcessForPreview(
   }
 
   proc.stdout?.on('data', (data: Buffer) => {
-    qmlPreviewOutputChannel?.append(data.toString());
+    const text = data.toString();
+    qmlPreviewOutputChannel?.append(text);
+    const trimmed = text.trimEnd();
+    if (trimmed.length > 0) {
+      logger.info(`QML Preview stdout: ${trimmed}`);
+    }
   });
 
   proc.stderr?.on('data', (data: Buffer) => {
-    qmlPreviewOutputChannel?.append(data.toString());
+    const text = data.toString();
+    qmlPreviewOutputChannel?.append(text);
+    const trimmed = text.trimEnd();
+    if (trimmed.length > 0) {
+      logger.error(`QML Preview stderr: ${trimmed}`);
+    }
   });
 
   proc.on('exit', (code, signal) => {
+    processExited = true;
+    const elapsedMs = Date.now() - processStartedAt;
     logger.info(
-      `QML Preview process exited with code ${String(code)}, signal ${String(signal)}`
+      `QML Preview process exited with code ${String(code)}, ` +
+        `signal ${String(signal)}, ` +
+        `elapsed ${String(elapsedMs)} ms`
     );
     cleanupSession();
   });
@@ -355,7 +521,7 @@ function setupProcessForPreview(
   previewProcess = proc as QtProcess;
 
   manager.connectToServer({ host, port, scheme: ServerScheme.Tcp });
-  logger.info('QML Preview connected successfully');
+  logger.info('QML Preview connection attempt started');
 
   // If a QML file was specified, wait for connection and load it
   if (qmlFile) {
@@ -378,6 +544,16 @@ function setupProcessForPreview(
 
     void waitForConnection()
       .then(() => {
+        if (
+          processExited ||
+          previewProcess !== proc ||
+          previewManager !== manager
+        ) {
+          logger.info(
+            'Skipping initial QML load because the preview session already ended'
+          );
+          return;
+        }
         logger.info(`Loading QML file: ${qmlFile}`);
         manager.loadUrl(qmlFile);
       })
@@ -427,11 +603,6 @@ function attachPreview(host: string, port: number) {
 }
 
 async function startQmlPreviewImpl(loadCurrentFile: boolean) {
-  if (isConnected()) {
-    ui.showAlreadyRunning();
-    return;
-  }
-
   // Resolve the workspace folder.
   // For "preview current file": get folder from active file.
   // For "preview whole application" in multi-workspace: show picker.
@@ -445,6 +616,7 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
   }
 
   let qmlFile: string | undefined;
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
 
   if (loadCurrentFile) {
     const activeEditor = vscode.window.activeTextEditor;
@@ -463,7 +635,19 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
     }
   }
 
-  const projectType = getProjectType(folder);
+  let bridgeProject: QtBridgeProject | undefined;
+  let projectType = getProjectType(folder);
+  if (!projectType) {
+    const bridgeProjects = getQtBridgePreviewProjects(
+      getQtBridgeProjects(folder)
+    );
+    bridgeProject = await selectQtBridgePreviewProject(folder, activeUri);
+    if (bridgeProjects.length > 1 && !bridgeProject) {
+      logger.info('Qt Bridge project selection was cancelled');
+      return;
+    }
+    projectType = getProjectType(folder, bridgeProject);
+  }
   logger.info(`Project type for ${folder.name}: ${projectType ?? 'unknown'}`);
 
   if (projectType === 'pyside') {
@@ -477,9 +661,37 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
       return;
     }
     await launchPySidePreview(folder, qmlFile);
+  } else if (projectType === 'bridge') {
+    if (!bridgeProject) {
+      logger.error(
+        `No Qt Bridge project found for folder: ${folder.uri.fsPath}`
+      );
+      return;
+    }
+    await launchQtBridgePreview(folder, bridgeProject, qmlFile);
   } else {
     // Default to CMake preview (existing behavior)
     await launchCMakePreview(qmlFile);
+  }
+}
+
+async function startQmlPreview(loadCurrentFile: boolean) {
+  if (isPreviewStartingOrRunning()) {
+    logger.info(
+      'Ignoring QML Preview start request: a session is already active'
+    );
+    ui.showAlreadyRunning();
+    return;
+  }
+
+  const startPromise = startQmlPreviewImpl(loadCurrentFile);
+  previewStartPromise = startPromise;
+  try {
+    await startPromise;
+  } finally {
+    if (previewStartPromise === startPromise) {
+      previewStartPromise = undefined;
+    }
   }
 }
 
@@ -489,7 +701,7 @@ export function registerStartQmlPreviewCommand() {
     async () => {
       logger.info('Starting QML Preview');
       telemetry.sendAction('startQmlPreview');
-      await startQmlPreviewImpl(false);
+      await startQmlPreview(false);
     }
   );
 }
@@ -500,7 +712,7 @@ export function registerStartQmlPreviewForCurrentFileCommand() {
     async () => {
       logger.info('Starting QML Preview for current file');
       telemetry.sendAction('startQmlPreviewForCurrentFile');
-      await startQmlPreviewImpl(true);
+      await startQmlPreview(true);
     }
   );
 }
@@ -512,7 +724,7 @@ export function registerAttachQmlPreviewCommand() {
       logger.info('Attaching to QML Preview');
       telemetry.sendAction('attachQmlPreview');
 
-      if (isConnected()) {
+      if (isPreviewStartingOrRunning()) {
         ui.showAlreadyRunning();
         return;
       }
