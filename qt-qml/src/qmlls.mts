@@ -31,6 +31,7 @@ import { QmllsOperationType } from '@/qmlls-queue.mjs';
 
 const logger = createLogger('qmlls');
 const QMLLS_CONFIG = `${EXTENSION_ID}.qmlls`;
+const QmllsStopTimeoutMs = 5000;
 
 interface QmllsExeConfig {
   qmllsPath: string;
@@ -136,9 +137,9 @@ export async function fetchAssetAndDecide(options?: {
 // under the same tag, so the upload time is part of the comparison.
 function isSameVersion(
   a: installer.InstallVersion,
-  b: installer.InstallVersion | undefined
+  b: installer.InstallVersion
 ): boolean {
-  return b !== undefined && a.tag === b.tag && a.createdAt === b.createdAt;
+  return a.tag === b.tag && a.createdAt === b.createdAt;
 }
 
 function describeVersion(
@@ -183,6 +184,7 @@ export function registerQmllsManifestWatcher(): vscode.Disposable {
       // or the manifest vanished (start() would fall back to a Qt kit).
       if (
         !published ||
+        !Qmlls.runningInstalledVersion ||
         isSameVersion(published, Qmlls.runningInstalledVersion)
       ) {
         logger.info(
@@ -543,15 +545,19 @@ export class Qmlls {
           }
         }
         if (this._client.isRunning()) {
+          // A busy qmlls (e.g. mid-indexing) often needs more than the
+          // default 2s to answer the shutdown handshake. On timeout the
+          // client force-kills the server, so this failure is recoverable
+          // and only logged as a warning.
           await this._client
-            .stop()
+            .stop(QmllsStopTimeoutMs)
             .then(() => {
               logger.info(
                 `QML Language Server stopped: "${this._folder.name}"`
               );
             })
             .catch((e: unknown) => {
-              logger.error(
+              logger.warn(
                 `QML Language Server stop failed: "${this._folder.name}", ${String(e)}`
               );
             });
