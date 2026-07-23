@@ -3,30 +3,30 @@
 
 import * as vscode from 'vscode';
 import { type QtBridgeCSharpAPI, type QtBridgeProject } from 'qt-lib';
+import { QtBridgeProjectManager } from '@/project-manager.mjs';
 
 export class QtBridgeCSharpApi implements QtBridgeCSharpAPI, vscode.Disposable {
-  private readonly projects: readonly QtBridgeProject[] = [];
-  private readonly projectsChanged = new vscode.EventEmitter<void>();
+  private readonly projectManager = new QtBridgeProjectManager();
 
-  readonly onDidChangeProjects = this.projectsChanged.event;
+  readonly onDidChangeProjects = this.projectManager.onDidChangeProjects;
+
+  async initialize(): Promise<void> {
+    await this.projectManager.initialize();
+  }
 
   getProjects(): readonly QtBridgeProject[] {
-    return this.projects;
+    return this.projectManager.getProjects();
   }
 
   getProject(folder: vscode.WorkspaceFolder): QtBridgeProject | undefined {
-    return this.projects.find(
-      (project) => project.folder.uri.toString() === folder.uri.toString()
-    );
+    return this.projectManager.getProject(folder);
   }
 
   getProjectForUri(uri: vscode.Uri): QtBridgeProject | undefined {
-    return this.projects.find(
-      (project) => project.projectFile.toString() === uri.toString()
-    );
+    return this.projectManager.getProjectForUri(uri);
   }
 
   dispose() {
-    this.projectsChanged.dispose();
+    this.projectManager.dispose();
   }
 }

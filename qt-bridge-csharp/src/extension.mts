@@ -8,7 +8,7 @@ import { QtBridgeCSharpApi } from '@/api.mjs';
 
 const logger = createLogger('extension');
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   initLogger(LOG_NAME);
   telemetry.activate(context);
   logger.info(`Activating ${EXTENSION_ID}`);
@@ -16,6 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const api = new QtBridgeCSharpApi();
   context.subscriptions.push(api);
+  await api.initialize();
   return api;
 }
 
