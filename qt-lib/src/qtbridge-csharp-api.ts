@@ -24,6 +24,7 @@ export interface QtBridgeProject {
   readonly metadata: QtBridgeQmlMetadata | undefined;
   readonly isMetadataReady: boolean;
 
+  prepareQmlPreview(): Promise<QtBridgePreviewLaunch | undefined>;
 }
 
 export interface QtBridgeQmlMetadata {
@@ -73,6 +74,13 @@ export interface QtBridgeMetadataChangeEvent {
   readonly previous: QtBridgeQmlMetadata | undefined;
   readonly current: QtBridgeQmlMetadata | undefined;
   readonly reason: 'metadata' | 'ready-marker' | 'project';
+}
+
+export interface QtBridgePreviewLaunch extends vscode.Disposable {
+  readonly executable: string;
+  readonly cwd: string;
+  readonly pathEntries: readonly string[];
+  readonly environment: Readonly<Record<string, string>>;
 }
 
 export async function getQtBridgeCSharpApi(): Promise<
