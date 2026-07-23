@@ -23,11 +23,25 @@ import {
   type QtBridgeQmllsAggregation,
   type QtBridgeQmllsSignal
 } from '@/qtbridge-qmlls-update.mjs';
-import { coreAPI } from '@/extension.mjs';
+import { coreAPI, updatePreviewLaunchContext } from '@/extension.mjs';
 import { QmllsOperationQueue, QmllsOperationType } from '@/qmlls-queue.mjs';
 
 const logger = createLogger('project');
 let qtBridgeApi: QtBridgeCSharpAPI | undefined;
+
+export function getQtBridgeProjectForUri(uri: vscode.Uri) {
+  return qtBridgeApi?.getProjectForUri(uri);
+}
+
+export function getQtBridgeProject(folder: vscode.WorkspaceFolder) {
+  return qtBridgeApi?.getProject(folder);
+}
+
+export function getQtBridgeProjects(folder: vscode.WorkspaceFolder) {
+  return (qtBridgeApi?.getProjects() ?? []).filter(
+    (project) => project.folder.uri.toString() === folder.uri.toString()
+  );
+}
 
 export async function createQMLProject(
   folder: vscode.WorkspaceFolder,
@@ -146,6 +160,7 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
     }
     return buildDirs;
   }
+
 }
 // Project class represents a workspace folder in the extension.
 export class QMLProject implements Project {
@@ -207,6 +222,7 @@ export class QMLProject implements Project {
         + `projects=${String(projects.length)}; `
         + `readyQmllsProjects=${String(this._qtBridgeQmllsAggregation.sessionConfigs.length)}`
     );
+    updatePreviewLaunchContext();
   }
 
   async handleQtBridgeProjectSignal(signal: QtBridgeQmllsSignal) {

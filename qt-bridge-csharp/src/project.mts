@@ -6,8 +6,10 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { XMLParser } from 'fast-xml-parser';
+import { createHash } from 'crypto';
 import {
   createLogger,
+  type QtBridgePreviewLaunch,
   type QtBridgeProject,
   type QtBridgeQmlMetadata
 } from 'qt-lib';
@@ -507,6 +509,128 @@ export function resolveQtBridgeQmlImportPath(
   return undefined;
 }
 
+function pathExists(filePath: string) {
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getEnvironmentValue(
+  environment: NodeJS.ProcessEnv,
+  name: string,
+  platform: NodeJS.Platform
+) {
+  if (platform !== 'win32') {
+    return environment[name];
+  }
+  const entry = Object.entries(environment).find(
+    ([key]) => key.toLowerCase() === name.toLowerCase()
+  );
+  return entry?.[1];
+}
+
+export function findDotNetPathEntry(
+  environment: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+  architecture = process.arch
+) {
+  const executableName = platform === 'win32' ? 'dotnet.exe' : 'dotnet';
+  const delimiter = platform === 'win32' ? ';' : ':';
+  const inheritedPath = getEnvironmentValue(environment, 'PATH', platform);
+  const inheritedEntries = (inheritedPath ?? '')
+    .split(delimiter)
+    .filter((entry) => entry.length > 0);
+  if (
+    inheritedEntries.some((entry) =>
+      pathExists(path.join(entry, executableName))
+    )
+  ) {
+    return undefined;
+  }
+
+  const dotNetHostPath = getEnvironmentValue(
+    environment,
+    'DOTNET_HOST_PATH',
+    platform
+  );
+  if (dotNetHostPath && pathExists(dotNetHostPath)) {
+    return path.dirname(path.resolve(dotNetHostPath));
+  }
+
+  let architectureRootName = 'DOTNET_ROOT_X64';
+  if (architecture === 'arm64') {
+    architectureRootName = 'DOTNET_ROOT_ARM64';
+  } else if (architecture === 'ia32') {
+    architectureRootName = 'DOTNET_ROOT_X86';
+  }
+  const candidates = [
+    getEnvironmentValue(environment, architectureRootName, platform)
+  ];
+  if (platform === 'win32' && architecture === 'ia32') {
+    candidates.push(
+      getEnvironmentValue(environment, 'DOTNET_ROOT(x86)', platform)
+    );
+  }
+  candidates.push(getEnvironmentValue(environment, 'DOTNET_ROOT', platform));
+  if (platform === 'win32') {
+    const programFiles =
+      getEnvironmentValue(environment, 'ProgramFiles', platform) ??
+      'C:\\Program Files';
+    const programFilesX86 =
+      getEnvironmentValue(environment, 'ProgramFiles(x86)', platform) ??
+      'C:\\Program Files (x86)';
+    const dotNetProgramFiles =
+      architecture === 'ia32' ? programFilesX86 : programFiles;
+    if (architecture === 'x64') {
+      candidates.push(path.join(dotNetProgramFiles, 'dotnet', 'x64'));
+    }
+    candidates.push(path.join(dotNetProgramFiles, 'dotnet'));
+  } else if (platform === 'darwin') {
+    if (architecture === 'x64') {
+      candidates.push('/usr/local/share/dotnet/x64');
+    }
+    candidates.push(
+      '/usr/local/share/dotnet',
+      '/opt/homebrew/share/dotnet'
+    );
+  } else {
+    candidates.push(
+      '/usr/share/dotnet',
+      '/usr/lib/dotnet',
+      '/usr/local/share/dotnet'
+    );
+  }
+
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+    const normalized = path.resolve(candidate);
+    if (pathExists(path.join(normalized, executableName))) {
+      return normalized;
+    }
+  }
+  return undefined;
+}
+
+function createPreviewStagingKey(
+  managedOutputDir: string,
+  nativeHostPath: string,
+  executableName: string
+) {
+  return createHash('sha256')
+    .update(managedOutputDir)
+    .update('\0')
+    .update(nativeHostPath)
+    .update('\0')
+    .update(executableName)
+    .digest('hex')
+    .slice(0, 16);
+}
+
 export class QtBridgeProjectSnapshot implements QtBridgeProject {
   readonly projectFile: vscode.Uri;
   readonly packageId: string | undefined;
@@ -556,5 +680,99 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
     this._metadata = metadata;
     this._isMetadataReady = isReady;
     this._metadataCandidates = candidates;
+  }
+
+  async prepareQmlPreview(): Promise<QtBridgePreviewLaunch | undefined> {
+    const metadata = this._metadata;
+    const application = metadata?.application;
+    if (!this._isMetadataReady || !metadata || !application) {
+      logger.info(
+        `Preview preparation requires ready application metadata: ${this.projectFile.fsPath}`
+      );
+      return undefined;
+    }
+    if (!pathExists(application.managedOutputDir)) {
+      logger.warn(
+        `Qt Bridge managed output does not exist: ${application.managedOutputDir}`
+      );
+      return undefined;
+    }
+
+    const stagingKey = createPreviewStagingKey(
+      application.managedOutputDir,
+      application.nativeHostPath,
+      application.executableName
+    );
+    const targetDirectory = path.join(
+      os.tmpdir(),
+      'qt-qml-preview',
+      application.assemblyName,
+      stagingKey
+    );
+    const stagedHostPath = path.join(
+      targetDirectory,
+      application.executableName
+    );
+
+    // Keep generated QML outside the workspace so Preview's source watcher
+    // does not mistake staging operations for user file changes.
+    await fs.promises.rm(targetDirectory, { recursive: true, force: true });
+    await fs.promises.cp(application.managedOutputDir, targetDirectory, {
+      recursive: true
+    });
+    if (!pathExists(stagedHostPath)) {
+      if (!pathExists(application.nativeHostPath)) {
+        await fs.promises.rm(targetDirectory, {
+          recursive: true,
+          force: true
+        });
+        logger.warn(
+          `Qt Bridge native host does not exist: ${application.nativeHostPath}`
+        );
+        return undefined;
+      }
+      await fs.promises.copyFile(application.nativeHostPath, stagedHostPath);
+    }
+
+    const qmlImportRoot = path.join(targetDirectory, 'qml');
+    const qmlImportPath = [
+      qmlImportRoot,
+      ...metadata.qml.importPaths
+    ].join(path.delimiter);
+    const pathEntries: string[] = [];
+    if (this.qtDir) {
+      pathEntries.push(path.join(this.qtDir.fsPath, 'bin'));
+    }
+    const dotNetPathEntry = findDotNetPathEntry();
+    if (dotNetPathEntry) {
+      pathEntries.push(dotNetPathEntry);
+    }
+    logger.info(`Prepared Qt Bridge preview host: ${stagedHostPath}`);
+
+    let disposed = false;
+    return {
+      executable: stagedHostPath,
+      cwd: path.dirname(this.projectFile.fsPath),
+      pathEntries,
+      environment: {
+        QML_IMPORT_PATH: qmlImportPath,
+        QML2_IMPORT_PATH: qmlImportPath,
+        QT_QUICK_CONTROLS_STYLE: 'Basic'
+      },
+      qmlImportRoot,
+      dispose() {
+        if (disposed) {
+          return;
+        }
+        disposed = true;
+        void fs.promises
+          .rm(targetDirectory, { recursive: true, force: true })
+          .catch((error: unknown) => {
+            logger.warn(
+              `Failed to remove Qt Bridge preview staging directory ${targetDirectory}: ${String(error)}`
+            );
+          });
+      }
+    };
   }
 }

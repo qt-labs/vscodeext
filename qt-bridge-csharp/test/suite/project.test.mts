@@ -6,8 +6,18 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { defaultQtRid, inspectQtBridgeProject } from '@/project.mjs';
+import {
+  defaultQtRid,
+  findDotNetPathEntry,
+  inspectQtBridgeProject,
+  QtBridgeProjectSnapshot
+} from '@/project.mjs';
 import { QtBridgeProjectManager } from '@/project-manager.mjs';
+import type { QtBridgeQmlMetadata } from 'qt-lib';
+
+function normalizedPath(filePath: string | undefined) {
+  return process.platform === 'win32' ? filePath?.toLowerCase() : filePath;
+}
 
 describe('Qt Bridge project discovery', () => {
   let testDirectory: string;
@@ -32,6 +42,95 @@ describe('Qt Bridge project discovery', () => {
     expect(defaultQtRid('darwin', 'arm64')).to.equal('osx-arm64');
     expect(defaultQtRid('darwin', 'x64')).to.equal('osx-x64');
   });
+
+  it('preserves PATH when dotnet is already available', async () => {
+    const pathDirectory = path.join(testDirectory, 'path');
+    await fs.promises.mkdir(pathDirectory);
+    await fs.promises.writeFile(
+      path.join(pathDirectory, 'dotnet.exe'),
+      '',
+      'utf8'
+    );
+
+    expect(
+      findDotNetPathEntry(
+        {
+          PATH: pathDirectory,
+          DOTNET_ROOT_X64: path.join(testDirectory, 'fallback')
+        },
+        'win32',
+        'x64'
+      )
+    ).to.be.undefined;
+  });
+
+  it('uses DOTNET_HOST_PATH when PATH does not contain dotnet', async () => {
+    const dotNetDirectory = path.join(testDirectory, 'host');
+    const dotNetHostPath = path.join(dotNetDirectory, 'dotnet');
+    await fs.promises.mkdir(dotNetDirectory);
+    await fs.promises.writeFile(dotNetHostPath, '', 'utf8');
+
+    expect(
+      findDotNetPathEntry(
+        {
+          PATH: '',
+          DOTNET_HOST_PATH: dotNetHostPath
+        },
+        'darwin',
+        'arm64'
+      )
+    ).to.equal(path.resolve(dotNetDirectory));
+  });
+
+  for (const scenario of [
+    {
+      name: 'Windows x64',
+      platform: 'win32' as NodeJS.Platform,
+      architecture: 'x64',
+      variable: 'DOTNET_ROOT_X64',
+      executable: 'dotnet.exe'
+    },
+    {
+      name: 'Linux x64',
+      platform: 'linux' as NodeJS.Platform,
+      architecture: 'x64',
+      variable: 'DOTNET_ROOT_X64',
+      executable: 'dotnet'
+    },
+    {
+      name: 'macOS ARM64',
+      platform: 'darwin' as NodeJS.Platform,
+      architecture: 'arm64',
+      variable: 'DOTNET_ROOT_ARM64',
+      executable: 'dotnet'
+    }
+  ] as const) {
+    it(`resolves ${scenario.name} architecture-specific DOTNET_ROOT`, async () => {
+      const dotNetRoot = path.join(
+        testDirectory,
+        scenario.platform,
+        scenario.architecture
+      );
+      await fs.promises.mkdir(dotNetRoot, { recursive: true });
+      await fs.promises.writeFile(
+        path.join(dotNetRoot, scenario.executable),
+        '',
+        'utf8'
+      );
+
+      expect(
+        findDotNetPathEntry(
+          {
+            PATH: '',
+            [scenario.variable]: dotNetRoot,
+            DOTNET_ROOT: path.join(testDirectory, 'generic')
+          },
+          scenario.platform,
+          scenario.architecture
+        )
+      ).to.equal(path.resolve(dotNetRoot));
+    });
+  }
 
   it('detects a literal package reference and explicit QtDir', async () => {
     const qtDir = path.join(testDirectory, 'Qt');
@@ -209,5 +308,92 @@ describe('Qt Bridge project discovery', () => {
     } finally {
       manager.dispose();
     }
+  });
+
+  it('prepares and disposes a staged QML Preview launch', async () => {
+    const projectFile = path.join(testDirectory, 'Application.csproj');
+    const managedOutputDir = path.join(testDirectory, 'bin', 'Debug');
+    const nativeOutputDir = path.join(testDirectory, 'obj', 'native');
+    const nativeHostPath = path.join(nativeOutputDir, 'Application.exe');
+    const qtDir = path.join(testDirectory, 'Qt');
+    await Promise.all([
+      fs.promises.mkdir(managedOutputDir, { recursive: true }),
+      fs.promises.mkdir(nativeOutputDir, { recursive: true }),
+      fs.promises.mkdir(path.join(qtDir, 'qml'), { recursive: true })
+    ]);
+    await Promise.all([
+      fs.promises.writeFile(projectFile, '<Project />', 'utf8'),
+      fs.promises.writeFile(
+        path.join(managedOutputDir, 'Application.dll'),
+        'managed',
+        'utf8'
+      ),
+      fs.promises.writeFile(nativeHostPath, 'native', 'utf8')
+    ]);
+
+    const folder: vscode.WorkspaceFolder = {
+      uri: vscode.Uri.file(testDirectory),
+      name: 'workspace',
+      index: 0
+    };
+    const project = new QtBridgeProjectSnapshot(
+      folder,
+      {
+        projectFile,
+        packageId: 'QtGroup.Qt.Bridge.CSharp.win-x64',
+        packageVersion: '1.0.0',
+        qtDir,
+        qtInstallRoot: undefined
+      },
+      async () => {}
+    );
+    const metadata: QtBridgeQmlMetadata = {
+      metadataFile: path.join(testDirectory, 'obj', 'qtbridge-qml.ide.json'),
+      version: 1,
+      projectFile,
+      configuration: 'Debug',
+      targetFramework: 'net10.0',
+      application: {
+        assemblyName: 'Application',
+        executableName: 'Application.exe',
+        managedOutputDir,
+        managedHostPath: path.join(managedOutputDir, 'Application.exe'),
+        nativeHostPath
+      },
+      qml: {
+        sourceDir: path.join(testDirectory, 'obj', 'native', 'source'),
+        projectSourceDir: testDirectory,
+        buildDirs: [path.join(testDirectory, 'obj', 'native', 'build')],
+        importPaths: [path.join(testDirectory, 'imports')],
+        files: []
+      },
+      qmlLanguageServer: undefined
+    };
+    project.updateMetadata(metadata, true);
+
+    const launch = await project.prepareQmlPreview();
+    expect(launch).not.to.be.undefined;
+    if (!launch) {
+      throw new Error('Expected a QML Preview launch');
+    }
+
+    expect(await fs.promises.readFile(launch.executable, 'utf8')).to.equal(
+      'native'
+    );
+    expect(normalizedPath(launch.cwd)).to.equal(normalizedPath(testDirectory));
+    expect(normalizedPath(launch.pathEntries[0])).to.equal(
+      normalizedPath(path.join(qtDir, 'bin'))
+    );
+    expect(launch.environment.QML_IMPORT_PATH).to.include(launch.qmlImportRoot);
+    expect(launch.environment.QML_IMPORT_PATH).to.include(
+      path.join(testDirectory, 'imports')
+    );
+
+    const stagingDirectory = path.dirname(launch.executable);
+    launch.dispose();
+    for (let attempt = 0; attempt < 20 && fs.existsSync(stagingDirectory); ++attempt) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(fs.existsSync(stagingDirectory)).to.equal(false);
   });
 });
