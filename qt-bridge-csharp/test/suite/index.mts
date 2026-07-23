@@ -9,7 +9,7 @@ export function run(): Promise<void> {
   const mocha = new Mocha({ ui: 'bdd', color: true });
   const testsRoot = path.resolve(__dirname);
   return new Promise((resolve, reject) => {
-    const testFiles = new glob.Glob('extension.test.js', { cwd: testsRoot });
+    const testFiles = new glob.Glob('*.test.js', { cwd: testsRoot });
     const stream = testFiles.stream();
     stream.on('data', (file) => {
       mocha.addFile(path.resolve(testsRoot, file));
