@@ -64,6 +64,7 @@ export async function activate(context: vscode.ExtensionContext) {
   installer.initialize(context.globalStorageUri);
 
   projectManager = new QMLProjectManager(context);
+  await projectManager.initializeQtBridgeIntegration();
   coreAPI = await getCoreApi();
   if (!coreAPI) {
     const err = 'Failed to get CoreAPI';
@@ -226,6 +227,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
       }
     }
     if (updateQmlls) {
+      logger.info(
+        `Refreshing qmlls after CoreAPI change for ${project.folder.uri.fsPath}`
+      );
+      project.refreshQtBridgeProject();
       project.updateQmllsParams();
       void project.restartQmlls();
     }
