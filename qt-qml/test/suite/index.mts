@@ -15,7 +15,7 @@ export function run(): Promise<void> {
   const testsRoot = path.resolve(__dirname);
   return new Promise((c, e) => {
     const testFiles = new glob.Glob(
-      '{extension,command,installer,integrity,traceviewer,versioned-installations,qtbridge-qmlls-update}.test.js',
+      '{extension,command,installer,integrity,traceviewer,versioned-installations,qtbridge-qmlls-update,qtbridge-preview}.test.js',
       {
         cwd: testsRoot
       }
