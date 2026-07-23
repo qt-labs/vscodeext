@@ -25,7 +25,13 @@ import {
 } from '@/qmlls.mjs';
 import * as installer from '@/installer.mjs';
 import * as consts from '@/constants.js';
-import { QMLProjectManager, createQMLProject } from '@/project.mjs';
+import {
+  QMLProjectManager,
+  createQMLProject,
+  getQtBridgeProject,
+  getQtBridgeProjectForUri,
+  getQtBridgeProjects
+} from '@/project.mjs';
 import { registerResetCommand } from '@cmd/reset.mjs';
 import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter.mjs';
 import {
@@ -149,7 +155,7 @@ export function deactivate() {
   }
 }
 
-function updatePreviewLaunchContext() {
+export function updatePreviewLaunchContext() {
   const activeUri = vscode.window.activeTextEditor?.document.uri;
   const folder = activeUri
     ? vscode.workspace.getWorkspaceFolder(activeUri)
@@ -157,14 +163,27 @@ function updatePreviewLaunchContext() {
 
   let launchEnabled = false;
   if (folder) {
+    const bridgeProject = activeUri
+      ? getQtBridgeProjectForUri(activeUri)
+      : getQtBridgeProject(folder);
+    const bridgeProjects = bridgeProject
+      ? [bridgeProject]
+      : getQtBridgeProjects(folder);
     const features = coreAPI?.getValue<QtWorkspaceFeatures>(
       folder,
       CoreKey.WORKSPACE_FEATURES
     );
-    // Enable preview launch for CMake and PySide projects.
+    // Enable preview launch for CMake, PySide, and Qt Bridge projects with
+    // usable build metadata.
     launchEnabled =
       features?.projectTypes.cmake === true ||
-      features?.projectTypes.pyside === true;
+      features?.projectTypes.pyside === true ||
+      bridgeProjects.some(
+        (project) =>
+          project.isMetadataReady &&
+          project.metadata?.application !== undefined &&
+          project.metadata.qml.files.length > 0
+      );
   }
   logger.info(
     `Setting qmlPreviewLaunchEnabled to ${String(launchEnabled)} for folder "${String(folder?.name)}"`

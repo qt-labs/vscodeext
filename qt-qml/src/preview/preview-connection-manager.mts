@@ -219,6 +219,28 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   }
 
   /**
+   * Register a file that the target application already loaded itself.
+   *
+   * Qt Bridge applications load their root QML during normal startup, so the
+   * extension must not send an initial loadUrl command. Still, hot reload needs
+   * the same local-file to target-url mapping that loadUrl/path requests create
+   * for CMake and PySide previews.
+   */
+  registerLoadedFile(localPath: string, targetUrl: string) {
+    const parsedUrl = QmlPreviewConnectionManager.createUrlFromPath(targetUrl);
+    if (!parsedUrl) {
+      logger.warn('Failed to register loaded file target URL:', targetUrl);
+      return;
+    }
+
+    const normalizedLocalPath = QmlPreviewConnectionManager.normalizePath(localPath);
+    this._lastLoadedUrl = parsedUrl;
+    this._pathMap.set(normalizedLocalPath, targetUrl);
+    this.addFileToWatcher(localPath);
+    logger.info('Registered loaded file:', `"${normalizedLocalPath}"`, '->', `"${targetUrl}"`);
+  }
+
+  /**
    * Rerun the QML application
    */
   rerun() {
