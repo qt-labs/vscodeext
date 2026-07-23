@@ -42,7 +42,19 @@
         "command": "qt-bridge-csharp.selectQmlMetadata",
         "title": "Qt Bridge C#: Select QML Build Metadata"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Qt Bridge C# Configuration",
+      "properties": {
+        "qt-bridge-csharp.qtDir": {
+          "type": "string",
+          "default": "",
+          "description": "Override the Qt installation used by Qt Bridge C# tooling.",
+          "scope": "machine-overridable"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "cross-env NODE_ENV=production node ./esbuild.mjs && git rev-parse HEAD > commit",
