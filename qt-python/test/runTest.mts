@@ -12,6 +12,7 @@ import {
 
 import {
   getLocalQtCore,
+  getQuietVSCodeArgs
 } from '../../qt-lib/src/test-constants.js';
 import {
   parseVSCodeDirs,
@@ -51,13 +52,14 @@ async function main() {
     }
 
 const launchArgs = [...args];
+const quietArgs = [...args, ...getQuietVSCodeArgs()];
 const requiredIds = ['theqtcompany.qt-core', 'ms-python.python'];
 
 // Install required extensions into the SAME profile/dir combo
-installExtensionWithRetry(cli as string, launchArgs, {
+installExtensionWithRetry(cli as string, quietArgs, {
   idOrVsix: localQtCoreVsix
 });
-installExtensionWithRetry(cli as string, launchArgs, {
+installExtensionWithRetry(cli as string, quietArgs, {
   idOrVsix: 'ms-python.python'
 });
 
