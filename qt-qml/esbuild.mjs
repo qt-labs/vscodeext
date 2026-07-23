@@ -19,6 +19,7 @@ await runEsbuild({
     './test/runTestHelper.mts',
     './test/suite/index-qml-debug.mts',
     './test/suite/qml-debug.test.mts',
+    './test/suite/versioned-installations.test.mts',
     './test/debug-helper.mts'
   ]
 });
