@@ -11,6 +11,7 @@ await runEsbuild({
   testEntryPoints: [
     './test/runTest.mts',
     './test/suite/index.mts',
-    './test/suite/extension.test.mts'
+    './test/suite/extension.test.mts',
+    './test/suite/project.test.mts'
   ]
 });
