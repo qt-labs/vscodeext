@@ -138,18 +138,16 @@ async function showMessageOrInstall(result: CheckResult) {
         : [btnCreate, btnCreateUv, btnSelect]
       : [btnCreate, btnSelect];
 
-    void vscode.window
-      .showWarningMessage(msg, ...buttons)
-      .then((value) => {
-        const exec = vscode.commands.executeCommand;
-        if (value === btnCreate) {
-          void exec(consts.COMMAND_PYTHON_CREATE_ENV);
-        } else if (value === btnCreateUv) {
-          void createUvVenv(result.folder);
-        } else if (value === btnSelect) {
-          void exec(consts.COMMAND_PYTHON_SELECT_PYTHON);
-        }
-      });
+    void vscode.window.showWarningMessage(msg, ...buttons).then((value) => {
+      const exec = vscode.commands.executeCommand;
+      if (value === btnCreate) {
+        void exec(consts.COMMAND_PYTHON_CREATE_ENV);
+      } else if (value === btnCreateUv) {
+        void createUvVenv(result.folder);
+      } else if (value === btnSelect) {
+        void exec(consts.COMMAND_PYTHON_SELECT_PYTHON);
+      }
+    });
 
     return;
   }
@@ -408,8 +406,7 @@ async function createUvVenv(folder: vscode.WorkspaceFolder) {
     } catch (e) {
       logger.error(`Failed to create uv venv: ${String(e)}`);
       void vscode.window.showWarningMessage(
-        texts.install.popup.uvVenvFailed(folder.name) +
-          ` (${linkShowLogs})`
+        texts.install.popup.uvVenvFailed(folder.name) + ` (${linkShowLogs})`
       );
     }
   });

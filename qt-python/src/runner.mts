@@ -52,7 +52,11 @@ export class PySideCommandRunner {
       if (timeoutMs) {
         timeout = setTimeout(() => {
           proc.kill();
-          reject(new Error(`Process timed out after ${String(timeoutMs)} milliseconds`));
+          reject(
+            new Error(
+              `Process timed out after ${String(timeoutMs)} milliseconds`
+            )
+          );
         }, timeoutMs);
       }
 
