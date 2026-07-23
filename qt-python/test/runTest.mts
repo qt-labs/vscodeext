@@ -51,29 +51,28 @@ async function main() {
       console.log('[runTest][qt-python] extensionsDir:', extensionsDir);
     }
 
-const launchArgs = [...args];
-const quietArgs = [...args, ...getQuietVSCodeArgs()];
-const requiredIds = ['theqtcompany.qt-core', 'ms-python.python'];
+    const launchArgs = [...args];
+    const quietArgs = [...args, ...getQuietVSCodeArgs()];
+    const requiredIds = ['theqtcompany.qt-core', 'ms-python.python'];
 
-// Install required extensions into the SAME profile/dir combo
-installExtensionWithRetry(cli as string, quietArgs, {
-  idOrVsix: localQtCoreVsix
-});
-installExtensionWithRetry(cli as string, quietArgs, {
-  idOrVsix: 'ms-python.python'
-});
+    // Install required extensions into the SAME profile/dir combo
+    installExtensionWithRetry(cli as string, quietArgs, {
+      idOrVsix: localQtCoreVsix
+    });
+    installExtensionWithRetry(cli as string, quietArgs, {
+      idOrVsix: 'ms-python.python'
+    });
 
-debugListExtensions(cli as string, args);
-assertExtensionsInstalled(cli as string, args, requiredIds);
+    debugListExtensions(cli as string, args);
+    assertExtensionsInstalled(cli as string, args, requiredIds);
 
-// Run the integration tests with the SAME VS Code executable and dirs
-await runTests({
-  vscodeExecutablePath,
-  extensionDevelopmentPath,
-  extensionTestsPath,
-  launchArgs
-});
-
+    // Run the integration tests with the SAME VS Code executable and dirs
+    await runTests({
+      vscodeExecutablePath,
+      extensionDevelopmentPath,
+      extensionTestsPath,
+      launchArgs
+    });
   } catch (e: Error | unknown) {
     console.error('Failed to run tests');
     console.error(e);
