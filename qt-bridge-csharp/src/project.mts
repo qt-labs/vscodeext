@@ -6,13 +6,20 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { XMLParser } from 'fast-xml-parser';
+import { createHash } from 'crypto';
 import {
   createLogger,
+  type QtBridgePreviewLaunch,
   type QtBridgeProject,
   type QtBridgeQmlMetadata
 } from 'qt-lib';
 
 const logger = createLogger('qtbridge-project');
+
+const PREVIEW_STAGING_DIR_NAME = 'qt-qml-preview';
+const PREVIEW_STAGING_PREFIX = 'launch-';
+const PREVIEW_STAGING_OWNER_FILE_NAME = '.qt-qml-preview-owner.json';
+const DEFAULT_PREVIEW_STAGING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 const KNOWN_QT_BRIDGE_PACKAGE_PREFIX = 'QtGroup.Qt.Bridge.CSharp';
 const TEMPLATED_QT_BRIDGE_PACKAGE_ID = '$(QtBridgePackageId)';
@@ -508,6 +515,290 @@ export function resolveQtBridgeQmlImportPath(
   return undefined;
 }
 
+function pathExists(filePath: string) {
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getEnvironmentValue(
+  environment: NodeJS.ProcessEnv,
+  name: string,
+  platform: NodeJS.Platform
+) {
+  if (platform !== 'win32') {
+    return environment[name];
+  }
+  const entry = Object.entries(environment).find(
+    ([key]) => key.toLowerCase() === name.toLowerCase()
+  );
+  return entry?.[1];
+}
+
+export function findDotNetPathEntry(
+  environment: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+  architecture = process.arch
+) {
+  const executableName = platform === 'win32' ? 'dotnet.exe' : 'dotnet';
+  const delimiter = platform === 'win32' ? ';' : ':';
+  const inheritedPath = getEnvironmentValue(environment, 'PATH', platform);
+  const inheritedEntries = (inheritedPath ?? '')
+    .split(delimiter)
+    .filter((entry) => entry.length > 0);
+  if (
+    inheritedEntries.some((entry) =>
+      pathExists(path.join(entry, executableName))
+    )
+  ) {
+    return undefined;
+  }
+
+  const dotNetHostPath = getEnvironmentValue(
+    environment,
+    'DOTNET_HOST_PATH',
+    platform
+  );
+  if (dotNetHostPath && pathExists(dotNetHostPath)) {
+    return path.dirname(path.resolve(dotNetHostPath));
+  }
+
+  let architectureRootName = 'DOTNET_ROOT_X64';
+  if (architecture === 'arm64') {
+    architectureRootName = 'DOTNET_ROOT_ARM64';
+  } else if (architecture === 'ia32') {
+    architectureRootName = 'DOTNET_ROOT_X86';
+  }
+  const candidates = [
+    getEnvironmentValue(environment, architectureRootName, platform)
+  ];
+  if (platform === 'win32' && architecture === 'ia32') {
+    candidates.push(
+      getEnvironmentValue(environment, 'DOTNET_ROOT(x86)', platform)
+    );
+  }
+  candidates.push(getEnvironmentValue(environment, 'DOTNET_ROOT', platform));
+  if (platform === 'win32') {
+    const programFiles =
+      getEnvironmentValue(environment, 'ProgramFiles', platform) ??
+      'C:\\Program Files';
+    const programFilesX86 =
+      getEnvironmentValue(environment, 'ProgramFiles(x86)', platform) ??
+      'C:\\Program Files (x86)';
+    const dotNetProgramFiles =
+      architecture === 'ia32' ? programFilesX86 : programFiles;
+    if (architecture === 'x64') {
+      candidates.push(path.join(dotNetProgramFiles, 'dotnet', 'x64'));
+    }
+    candidates.push(path.join(dotNetProgramFiles, 'dotnet'));
+  } else if (platform === 'darwin') {
+    if (architecture === 'x64') {
+      candidates.push('/usr/local/share/dotnet/x64');
+    }
+    candidates.push('/usr/local/share/dotnet', '/opt/homebrew/share/dotnet');
+  } else {
+    candidates.push(
+      '/usr/share/dotnet',
+      '/usr/lib/dotnet',
+      '/usr/local/share/dotnet'
+    );
+  }
+
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+    const normalized = path.resolve(candidate);
+    if (pathExists(path.join(normalized, executableName))) {
+      return normalized;
+    }
+  }
+  return undefined;
+}
+
+function createPreviewStagingKey(
+  managedOutputDir: string,
+  nativeHostPath: string,
+  executableName: string
+) {
+  return createHash('sha256')
+    .update(managedOutputDir)
+    .update('\0')
+    .update(nativeHostPath)
+    .update('\0')
+    .update(executableName)
+    .digest('hex')
+    .slice(0, 16);
+}
+
+/**
+ * Root of the per-launch preview staging directories. Kept outside the
+ * workspace so Preview's source watcher does not mistake staging operations
+ * for user file changes.
+ */
+export function getPreviewStagingRoot(): string {
+  return path.join(os.tmpdir(), PREVIEW_STAGING_DIR_NAME);
+}
+
+export interface PreviewStagingGcResult {
+  removed: string[];
+  skipped: string[];
+}
+
+interface PreviewStagingOwner {
+  pid: number;
+  createdAt: number;
+}
+
+function isProcessAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) {
+    return false;
+  }
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    // EPERM means that the process exists but belongs to another user. Any
+    // other error is also retained conservatively.
+    return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+  }
+}
+
+async function readPreviewStagingOwner(
+  directory: string
+): Promise<PreviewStagingOwner | undefined> {
+  try {
+    const owner = JSON.parse(
+      await fs.promises.readFile(
+        path.join(directory, PREVIEW_STAGING_OWNER_FILE_NAME),
+        'utf8'
+      )
+    ) as Partial<PreviewStagingOwner>;
+    const pid = owner.pid;
+    const createdAt = owner.createdAt;
+    if (
+      typeof pid !== 'number' ||
+      !Number.isInteger(pid) ||
+      pid <= 0 ||
+      typeof createdAt !== 'number' ||
+      !Number.isFinite(createdAt)
+    ) {
+      return undefined;
+    }
+    return { pid, createdAt };
+  } catch {
+    return undefined;
+  }
+}
+
+async function writePreviewStagingOwner(directory: string) {
+  const owner: PreviewStagingOwner = {
+    pid: process.pid,
+    createdAt: Date.now()
+  };
+  await fs.promises.writeFile(
+    path.join(directory, PREVIEW_STAGING_OWNER_FILE_NAME),
+    JSON.stringify(owner),
+    'utf8'
+  );
+}
+
+async function listDirectories(directory: string): Promise<fs.Dirent[]> {
+  try {
+    const entries = await fs.promises.readdir(directory, {
+      withFileTypes: true
+    });
+    return entries.filter((entry) => entry.isDirectory());
+  } catch {
+    return [];
+  }
+}
+
+async function removeIfEmpty(directory: string) {
+  // Fails with ENOTEMPTY while another session still stages here, which is
+  // exactly the wanted behaviour.
+  await fs.promises.rmdir(directory).catch(() => undefined);
+}
+
+/**
+ * Best-effort removal of staging directories left behind by extension hosts
+ * that never got to clean up. QtBridgePreviewLaunch.dispose() removes a
+ * directory as soon as its session ends. A crash or force-kill can leave a
+ * directory behind, so the owner marker identifies the extension host that
+ * created it. Only directories whose owner has exited and whose grace period
+ * has elapsed are removed. Unmarked or malformed legacy directories are kept
+ * because their liveness cannot be established safely.
+ */
+export async function collectPreviewStagingGarbage(options?: {
+  stagingRoot?: string;
+  maxAgeMs?: number;
+  isProcessAlive?: (pid: number) => boolean;
+}): Promise<PreviewStagingGcResult> {
+  const stagingRoot = options?.stagingRoot ?? getPreviewStagingRoot();
+  const maxAgeMs = options?.maxAgeMs ?? DEFAULT_PREVIEW_STAGING_MAX_AGE_MS;
+  const checkProcessAlive = options?.isProcessAlive ?? isProcessAlive;
+  const result: PreviewStagingGcResult = { removed: [], skipped: [] };
+
+  const isStale = async (fullPath: string) => {
+    const owner = await readPreviewStagingOwner(fullPath);
+    if (!owner || checkProcessAlive(owner.pid)) {
+      return false;
+    }
+    return Date.now() - owner.createdAt > maxAgeMs;
+  };
+
+  for (const assembly of await listDirectories(stagingRoot)) {
+    const assemblyDirectory = path.join(stagingRoot, assembly.name);
+    for (const key of await listDirectories(assemblyDirectory)) {
+      const keyDirectory = path.join(assemblyDirectory, key.name);
+      for (const launch of await listDirectories(keyDirectory)) {
+        if (!launch.name.startsWith(PREVIEW_STAGING_PREFIX)) {
+          continue;
+        }
+        const launchDirectory = path.join(keyDirectory, launch.name);
+        if (!(await isStale(launchDirectory))) {
+          continue;
+        }
+        try {
+          await fs.promises.rm(launchDirectory, { recursive: true });
+          result.removed.push(launchDirectory);
+        } catch {
+          result.skipped.push(launchDirectory);
+        }
+      }
+      await removeIfEmpty(keyDirectory);
+    }
+    await removeIfEmpty(assemblyDirectory);
+  }
+
+  return result;
+}
+
+async function stagePreviewManagedOutput(
+  stagingParent: string,
+  managedOutputDir: string
+): Promise<string> {
+  await fs.promises.mkdir(stagingParent, { recursive: true });
+  const stagingDirectory = await fs.promises.mkdtemp(
+    path.join(stagingParent, PREVIEW_STAGING_PREFIX)
+  );
+  try {
+    await writePreviewStagingOwner(stagingDirectory);
+    await fs.promises.cp(managedOutputDir, stagingDirectory, {
+      recursive: true
+    });
+    return stagingDirectory;
+  } catch (error) {
+    await fs.promises
+      .rm(stagingDirectory, { recursive: true, force: true })
+      .catch(() => undefined);
+    throw error;
+  }
+}
+
 export class QtBridgeProjectSnapshot implements QtBridgeProject {
   readonly projectFile: vscode.Uri;
   readonly packageId: string | undefined;
@@ -552,5 +843,102 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
     this._metadata = metadata;
     this._isMetadataReady = isReady;
     this._metadataCandidates = candidates;
+  }
+
+  async prepareQmlPreview(): Promise<QtBridgePreviewLaunch | undefined> {
+    const metadata = this._metadata;
+    const application = metadata?.application;
+    if (!this._isMetadataReady || !metadata || !application) {
+      logger.info(
+        `Preview preparation requires ready application metadata: ${this.projectFile.fsPath}`
+      );
+      return undefined;
+    }
+    if (!pathExists(application.managedOutputDir)) {
+      logger.warn(
+        `Qt Bridge managed output does not exist: ${application.managedOutputDir}`
+      );
+      return undefined;
+    }
+
+    const stagingKey = createPreviewStagingKey(
+      application.managedOutputDir,
+      application.nativeHostPath,
+      application.executableName
+    );
+    const stagingParent = path.join(
+      getPreviewStagingRoot(),
+      application.assemblyName,
+      stagingKey
+    );
+    let targetDirectory: string;
+    try {
+      targetDirectory = await stagePreviewManagedOutput(
+        stagingParent,
+        application.managedOutputDir
+      );
+    } catch (error) {
+      logger.warn(
+        `Failed to stage Qt Bridge preview output for ${this.projectFile.fsPath}: ${String(error)}`
+      );
+      return undefined;
+    }
+    const stagedHostPath = path.join(
+      targetDirectory,
+      application.executableName
+    );
+
+    if (!pathExists(stagedHostPath)) {
+      if (!pathExists(application.nativeHostPath)) {
+        await fs.promises.rm(targetDirectory, {
+          recursive: true,
+          force: true
+        });
+        logger.warn(
+          `Qt Bridge native host does not exist: ${application.nativeHostPath}`
+        );
+        return undefined;
+      }
+      await fs.promises.copyFile(application.nativeHostPath, stagedHostPath);
+    }
+
+    const qmlImportRoot = path.join(targetDirectory, 'qml');
+    const qmlImportPath = [qmlImportRoot, ...metadata.qml.importPaths].join(
+      path.delimiter
+    );
+    const pathEntries: string[] = [];
+    if (this.qtDir) {
+      pathEntries.push(path.join(this.qtDir.fsPath, 'bin'));
+    }
+    const dotNetPathEntry = findDotNetPathEntry();
+    if (dotNetPathEntry) {
+      pathEntries.push(dotNetPathEntry);
+    }
+    logger.info(`Prepared Qt Bridge preview host: ${stagedHostPath}`);
+
+    let disposed = false;
+    return {
+      executable: stagedHostPath,
+      cwd: path.dirname(this.projectFile.fsPath),
+      pathEntries,
+      environment: {
+        QML_IMPORT_PATH: qmlImportPath,
+        QML2_IMPORT_PATH: qmlImportPath,
+        QT_QUICK_CONTROLS_STYLE: 'Basic'
+      },
+      dispose() {
+        if (disposed) {
+          return;
+        }
+        disposed = true;
+        void fs.promises
+          .rm(targetDirectory, { recursive: true, force: true })
+          .catch((error: unknown) => {
+            logger.warn(
+              `Failed to remove Qt Bridge preview staging directory ${targetDirectory}: ${String(error)}`
+            );
+          });
+      }
+    };
   }
 }
