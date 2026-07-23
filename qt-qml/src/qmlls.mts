@@ -16,7 +16,6 @@ import {
   createLogger,
   findQtKits,
   isError,
-  exists,
   OSExeSuffix,
   compareVersions,
   CoreKey,
@@ -133,6 +132,80 @@ export async function fetchAssetAndDecide(options?: {
   return vscode.window.withProgress(progressOptions, task);
 }
 
+// A tag alone does not identify a build: new assets can be re-published
+// under the same tag, so the upload time is part of the comparison.
+function isSameVersion(
+  a: installer.InstallVersion,
+  b: installer.InstallVersion | undefined
+): boolean {
+  return b !== undefined && a.tag === b.tag && a.createdAt === b.createdAt;
+}
+
+function describeVersion(
+  version: installer.InstallVersion | undefined
+): string {
+  return version
+    ? `${version.tag} (uploaded ${version.createdAt || 'unknown'})`
+    : 'none';
+}
+
+/**
+ * Watch the install manifest for versions published by other VS Code
+ * instances and silently restart the language clients to adopt them. This is
+ * best-effort: if the watcher never fires on some platform, the new version
+ * is still picked up at the next natural (re)start, because the exe path is
+ * resolved fresh from the manifest every time.
+ */
+export function registerQmllsManifestWatcher(): vscode.Disposable {
+  const manifestPath = path.join(
+    installer.getInstallRoot(),
+    installer.ManifestFileName
+  );
+  logger.info(
+    `Watching for qmlls versions published by other VS Code instances: ${manifestPath}`
+  );
+  const watcher = vscode.workspace.createFileSystemWatcher(
+    new vscode.RelativePattern(
+      vscode.Uri.file(installer.getInstallRoot()),
+      installer.ManifestFileName
+    )
+  );
+  let debounce: NodeJS.Timeout | undefined;
+  const onManifestChanged = () => {
+    if (debounce) {
+      clearTimeout(debounce);
+    }
+    debounce = setTimeout(() => {
+      debounce = undefined;
+      const published = installer.getInstalledVersion();
+      // Restarting with an unchanged manifest would only interrupt users:
+      // the publisher is this instance (its install flow already restarts),
+      // or the manifest vanished (start() would fall back to a Qt kit).
+      if (
+        !published ||
+        isSameVersion(published, Qmlls.runningInstalledVersion)
+      ) {
+        logger.info(
+          `Manifest changed but no restart is needed (published: ${describeVersion(published)}, running: ${describeVersion(Qmlls.runningInstalledVersion)})`
+        );
+        return;
+      }
+      logger.info(
+        `qmlls ${describeVersion(published)} was published by another VS Code instance, restarting`
+      );
+      void projectManager.restartQmlls();
+    }, 1000);
+  };
+  watcher.onDidCreate(onManifestChanged);
+  watcher.onDidChange(onManifestChanged);
+  return new vscode.Disposable(() => {
+    if (debounce) {
+      clearTimeout(debounce);
+    }
+    watcher.dispose();
+  });
+}
+
 export class Qmlls {
   private _docsPath: string | undefined;
   private readonly _disposables: vscode.Disposable[] = [];
@@ -182,17 +255,38 @@ export class Qmlls {
     this._importPaths.clear();
   }
 
+  /**
+   * The identity of the managed qmlls install the language clients are
+   * running from or adopting. Used by the manifest watcher to tell a version
+   * published by another VS Code instance apart from our own install. The
+   * upload time is part of the identity: a build re-published under the same
+   * tag must still trigger a restart.
+   */
+  static runningInstalledVersion: installer.InstallVersion | undefined;
+
   public static async install(asset: installer.AssetWithTag) {
     try {
-      logger.info('Stopping QML language server to install new version');
-      await projectManager.stopQmlls();
-
+      // The new version is staged next to the running one, so the language
+      // server keeps serving during the whole download and only restarts
+      // once the new version is published.
       logger.info(`Installing: ${asset.name}, ${asset.tag_name}`);
       await installer.install(asset);
       logger.info('Installation done');
 
+      // Adopt the version before the restart, not in start(): the manifest
+      // watcher's debounce can fire while the restart is still stopping the
+      // old server, and must not mistake our own publish for one made by
+      // another VS Code instance.
+      Qmlls.runningInstalledVersion = {
+        tag: asset.tag_name,
+        createdAt: asset.created_at
+      };
+      logger.info(
+        `Adopted qmlls ${describeVersion(Qmlls.runningInstalledVersion)}, restarting`
+      );
+
       projectManager.updateQmllsParams();
-      await projectManager.startQmlls();
+      await projectManager.restartQmlls();
     } catch (error) {
       logger.warn(isError(error) ? error.message : String(error));
     }
@@ -244,13 +338,24 @@ export class Qmlls {
           throw res.error ?? new Error(res.stderr.toString());
         }
         telemetry.sendAction('customQmllsUsage');
+        logger.info(`Using custom qmlls: ${resolvedCustomPath}`);
         this.startLanguageClient(resolvedCustomPath);
       } else {
-        const installed = installer.getExpectedQmllsPath();
-        if (await exists(installed)) {
+        // Resolved fresh on every start: another VS Code instance may have
+        // published a new version since the last one.
+        const installed = installer.resolveQmllsExePath();
+        if (installed) {
+          const version = installer.getInstalledVersion();
+          Qmlls.runningInstalledVersion = version;
+          logger.info(
+            `Using managed qmlls ${describeVersion(version)}: ${installed}`
+          );
           this.startLanguageClient(installed);
           return;
         }
+        logger.info(
+          'No managed qmlls installed, looking for one in the Qt kits'
+        );
 
         const qmllsExeConfig = await findMostRecentExecutableQmlLS();
         if (!qmllsExeConfig) {
@@ -266,6 +371,9 @@ export class Qmlls {
           return;
         }
 
+        logger.info(
+          `Using qmlls from Qt ${qmllsExeConfig.qtVersion}: ${qmllsExeConfig.qmllsPath}`
+        );
         this.startLanguageClient(qmllsExeConfig.qmllsPath);
       }
     } catch (error) {

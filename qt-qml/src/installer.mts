@@ -16,23 +16,28 @@ import {
   IsWindows,
   IsMacOS,
   IsLinux,
-  IsArm64,
-  IsUnix
+  IsArm64
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
 import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
+import {
+  VersionedInstallations,
+  type InstallVersion
+} from '@/versioned-installations.mjs';
 import { projectManager } from './extension.mts';
 import { QmllsOperationType } from './qmlls-queue.mts';
+
+export { ManifestFileName } from '@/versioned-installations.mjs';
+export type { InstallVersion } from '@/versioned-installations.mjs';
 
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;
 const DownloadDir = os.tmpdir();
+const QmllsExeName = 'qmlls' + OSExeSuffix;
 
 let InstallDir: string;
-let ExtractDir: string;
-let QmllsExePath: string;
-let ReleaseJsonPath: string;
+let installations: VersionedInstallations;
 
 const logger = createLogger('installer');
 
@@ -44,13 +49,85 @@ const logger = createLogger('installer');
 export function initialize(globalStorageUri: vscode.Uri) {
   const globalStoragePath = globalStorageUri.fsPath;
   InstallDir = path.join(globalStoragePath, 'qmlls');
-  ExtractDir = path.join(InstallDir, 'files');
-  QmllsExePath = path.join(InstallDir, 'files', 'qmlls' + OSExeSuffix);
-  ReleaseJsonPath = path.join(InstallDir, 'release.json');
+  installations = new VersionedInstallations(InstallDir, QmllsExeName);
+  // The manifest watcher needs an existing directory to watch.
+  fs.mkdirSync(InstallDir, { recursive: true });
   logger.info(`Installer initialized with path: ${InstallDir}`);
 
   // Clean up old installation directory that polluted the user file system
   cleanupOldInstallation();
+
+  try {
+    const migrated = installations.migrateLegacyLayout(
+      path.join(InstallDir, 'files'),
+      path.join(InstallDir, 'release.json')
+    );
+    if (migrated) {
+      logger.info('Migrated legacy qmlls installation to the versioned layout');
+    }
+  } catch (error) {
+    logger.warn(`Legacy qmlls layout migration failed: ${String(error)}`);
+  }
+
+  collectGarbage();
+
+  const current = getInstalledVersion();
+  if (current) {
+    logger.info(
+      `Current qmlls version: ${current.tag}, uploaded: ${current.createdAt || '<unknown>'} (${resolveQmllsExePath() ?? 'exe missing'})`
+    );
+  } else {
+    logger.info('No managed qmlls version installed');
+  }
+}
+
+/**
+ * The directory holding the versioned qmlls installations and the manifest.
+ */
+export function getInstallRoot(): string {
+  return InstallDir;
+}
+
+/**
+ * Resolve the exe of the currently published qmlls version, or undefined if
+ * none is installed. Resolved fresh on every call because another VS Code
+ * instance may publish a new version and garbage-collect the previous one at
+ * any time.
+ */
+export function resolveQmllsExePath(): string | undefined {
+  return installations.resolveCurrentExePath();
+}
+
+/**
+ * The identity (tag and asset upload time) of the currently published qmlls
+ * version, if any. The upload time is empty for installs that predate
+ * upload-time tracking.
+ */
+export function getInstalledVersion(): InstallVersion | undefined {
+  return installations.readManifest();
+}
+
+/**
+ * Best-effort removal of everything except the current version. Version
+ * dirs whose exe is still running (Windows locks them) are skipped and
+ * retried on a later run; on Unix, deleting a running exe is harmless.
+ */
+function collectGarbage() {
+  try {
+    const result = installations.collectGarbage();
+    if (result.removed.length > 0) {
+      logger.info(
+        `Removed outdated qmlls installs: ${result.removed.join(', ')}`
+      );
+    }
+    if (result.skipped.length > 0) {
+      logger.info(
+        `Skipped qmlls installs that could not be removed (likely still in use): ${result.skipped.join(', ')}`
+      );
+    }
+  } catch (error) {
+    logger.warn(`qmlls garbage collection failed: ${String(error)}`);
+  }
 }
 
 /**
@@ -108,24 +185,20 @@ interface CheckResult {
   status: AssetStatus;
 }
 
-export function getExpectedQmllsPath() {
-  return QmllsExePath;
+function isRunnable(exePath: string): boolean {
+  const res = spawnSync(exePath, ['--help'], { timeout: 1000 });
+  return res.status === 0;
 }
 
-export function writeReleaseInfo(asset: AssetWithTag): void {
-  fs.writeFileSync(
-    ReleaseJsonPath,
-    JSON.stringify(
-      { tag_name: asset.tag_name, created_at: asset.created_at },
-      null,
-      2
-    )
-  );
+function versionOf(asset: AssetWithTag): InstallVersion {
+  return { tag: asset.tag_name, createdAt: asset.created_at };
 }
 
 export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   // check installation
-  if (!fs.existsSync(ReleaseJsonPath) || !fs.existsSync(QmllsExePath)) {
+  const local = getInstalledVersion();
+  const exePath = resolveQmllsExePath();
+  if (!local || !exePath) {
     return {
       message: 'Not Installed',
       status: AssetStatus.NotInstalled
@@ -133,34 +206,28 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   }
 
   // check if outdated
-  const local = JSON.parse(fs.readFileSync(ReleaseJsonPath, 'utf8')) as {
-    tag_name: string;
-    created_at?: string;
-  };
-
-  if (local.tag_name !== asset.tag_name) {
+  if (local.tag !== asset.tag_name) {
     return {
       message:
         'Tag mismatch, ' +
-        `local = ${local.tag_name}, ` +
+        `local = ${local.tag}, ` +
         `recent = ${asset.tag_name}`,
       status: AssetStatus.Outdated
     };
   }
 
-  if (local.created_at !== asset.created_at) {
+  if (local.createdAt !== asset.created_at) {
     return {
       message:
         'Upload time mismatch, ' +
-        `local = ${local.created_at ?? '<unknown>'}, ` +
+        `local = ${local.createdAt || '<unknown>'}, ` +
         `recent = ${asset.created_at}`,
       status: AssetStatus.Outdated
     };
   }
 
   // check if executable
-  const res = spawnSync(QmllsExePath, ['--help'], { timeout: 1000 });
-  if (res.status !== 0) {
+  if (!isRunnable(exePath)) {
     return {
       message: 'Found, but not executable',
       status: AssetStatus.Broken
@@ -196,32 +263,71 @@ export async function install(asset: AssetWithTag) {
   return projectManager.qmllsQueue.enqueue(
     QmllsOperationType.Install,
     async () => {
-      const tmpPath = path.join(DownloadDir, asset.name);
-
-      logger.info(`Downloading from: ${asset.browser_download_url}`);
-      await downloadWithProgress(asset.browser_download_url, tmpPath);
-
-      // Remove existing files before extraction to avoid ETXTBSY error on Linux.
-      // On Linux, even after the language server process has stopped, the kernel
-      // may still hold a reference to the executable file briefly. Deleting the
-      // file first works because Linux allows deletion of open files - the inode
-      // persists until all handles are closed, but the directory entry is removed,
-      // allowing us to create a new file with the same name.
-      if (IsUnix) {
-        if (fs.existsSync(ExtractDir)) {
-          logger.info(`Removing existing installation: ${ExtractDir}`);
-          fs.rmSync(ExtractDir, { recursive: true, force: true });
-        }
+      // Another VS Code instance may have installed this exact build (same
+      // tag and upload time) already; then only the manifest needs to be
+      // published.
+      const version = versionOf(asset);
+      const existingExe = path.join(
+        installations.versionDirPath(version),
+        QmllsExeName
+      );
+      if (installations.hasVersion(version) && isRunnable(existingExe)) {
+        logger.info(
+          `${asset.tag_name} (uploaded ${asset.created_at}) is already installed, publishing it`
+        );
+        installations.publishCurrent(version);
+        collectGarbage();
+        return;
       }
 
-      logger.info(`Unzipping to: ${ExtractDir}`);
-      await unzipWithProgress(tmpPath);
+      // The pid in the name keeps parallel downloads from different VS Code
+      // instances from clobbering each other's file.
+      const tmpPath = path.join(
+        DownloadDir,
+        `qmlls-${process.pid.toFixed(0)}-${asset.name}`
+      );
 
-      // follow up
-      logger.info(`QML language server installed to: ${QmllsExePath}`);
-      fs.chmodSync(QmllsExePath, 0o755);
-      fs.unlinkSync(tmpPath);
-      writeReleaseInfo(asset);
+      logger.info(
+        `Downloading from: ${asset.browser_download_url} to: ${tmpPath}`
+      );
+      await downloadWithProgress(asset.browser_download_url, tmpPath);
+      logger.info(`Download finished: ${tmpPath}`);
+
+      // Extract into a private staging dir and atomically rename it into
+      // place, so a version dir is either absent or complete and running
+      // exes are never overwritten. If the rename loses the race against
+      // another instance installing the same version, theirs is used.
+      const stagingDir = installations.createStagingDir();
+      try {
+        logger.info(`Unzipping to: ${stagingDir}`);
+        await unzipWithProgress(tmpPath, stagingDir);
+        logger.info(`Unzipping finished: ${stagingDir}`);
+
+        const stagedExe = path.join(stagingDir, QmllsExeName);
+        logger.info(`Setting executable permission for: ${stagedExe}`);
+        fs.chmodSync(stagedExe, 0o755);
+        logger.info(`Executable permission set for: ${stagedExe}`);
+        if (!isRunnable(stagedExe)) {
+          logger.error(`Staged qmlls is not runnable: ${stagedExe}`);
+          throw new Error(`${stagedExe} is not runnable`);
+        }
+        logger.info(`Staged qmlls is runnable: ${stagedExe}`);
+        const versionDir = installations.commitStagedInstall(
+          stagingDir,
+          version
+        );
+        logger.info(`QML language server installed to: ${versionDir}`);
+      } catch (error) {
+        logger.error(`Installation failed: ${String(error)}`);
+        fs.rmSync(stagingDir, { recursive: true, force: true });
+        throw error;
+      } finally {
+        logger.info(`Removing temporary download file: ${tmpPath}`);
+        fs.rmSync(tmpPath, { force: true });
+      }
+
+      installations.publishCurrent(version);
+      collectGarbage();
     }
   );
 }
@@ -345,13 +451,13 @@ async function downloadWithProgress(url: string, destPath: string) {
   await vscode.window.withProgress(options, downloadTask);
 }
 
-async function unzipWithProgress(zipPath: string) {
+async function unzipWithProgress(zipPath: string, destDir: string) {
   const unzipTask = async (
     progress: vscode.Progress<{ message?: string; increment?: number }>
   ) => {
     const unzipStreamProvider = (entry: unzipper.Entry) => {
       const name = entry.fileName;
-      const dest = path.join(ExtractDir, name);
+      const dest = path.join(destDir, name);
 
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       progress.report({ message: name });

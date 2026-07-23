@@ -8,7 +8,11 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import * as vscode from 'vscode';
 
+import { OSExeSuffix } from 'qt-lib';
 import * as installer from '@/installer.mjs';
+import { VersionedInstallations } from '@/versioned-installations.mjs';
+
+const QmllsExeName = 'qmlls' + OSExeSuffix;
 
 const BASE_ASSET: installer.AssetWithTag = {
   id: '101',
@@ -25,36 +29,30 @@ function makeAsset(
   return { ...BASE_ASSET, ...overrides };
 }
 
-// release.json lives one directory above the qmlls executable
-// (<globalStorage>/qmlls/release.json vs <globalStorage>/qmlls/files/qmlls).
-function releaseJsonPath(): string {
-  return path.resolve(
-    path.dirname(installer.getExpectedQmllsPath()),
-    '..',
-    'release.json'
+// Installs a fake build into the versioned store the installer operates on
+// and publishes it as current, like a finished install() would. The exe is
+// not runnable; only tests that must reach the health check need
+// installRunnableBuild() instead.
+function installFakeBuild(
+  version: installer.InstallVersion,
+  content: string | Buffer = 'not a real executable'
+): string {
+  const installations = new VersionedInstallations(
+    installer.getInstallRoot(),
+    QmllsExeName
   );
+  const stagingDir = installations.createStagingDir();
+  fs.writeFileSync(path.join(stagingDir, QmllsExeName), content);
+  const versionDir = installations.commitStagedInstall(stagingDir, version);
+  installations.publishCurrent(version);
+  return path.join(versionDir, QmllsExeName);
 }
 
-function writeInstalledReleaseJson(record: object): void {
-  fs.mkdirSync(path.dirname(releaseJsonPath()), { recursive: true });
-  fs.writeFileSync(releaseJsonPath(), JSON.stringify(record, null, 2));
-}
-
-// Places a file at the expected qmlls path so the "is installed" checks pass.
-// The file is not a runnable executable; only tests that must reach the
-// health check need provideRunnableQmllsExecutable() instead.
-function provideDummyQmllsFile(): void {
-  const exePath = installer.getExpectedQmllsPath();
-  fs.mkdirSync(path.dirname(exePath), { recursive: true });
-  fs.writeFileSync(exePath, 'not a real executable');
-}
-
-// Places a file at the expected qmlls path that exits 0 for `qmlls --help`,
-// so checkStatusAgainst can reach the UpToDate verdict. Returns false when no
+// Installs a fake build whose exe exits 0 for `qmlls --help`, so
+// checkStatusAgainst can reach the UpToDate verdict. Returns false when no
 // suitable executable can be provided on this machine (caller should skip).
-function provideRunnableQmllsExecutable(): boolean {
-  const exePath = installer.getExpectedQmllsPath();
-  fs.mkdirSync(path.dirname(exePath), { recursive: true });
+function installRunnableBuild(version: installer.InstallVersion): boolean {
+  let content: string | Buffer;
   if (process.platform === 'win32') {
     // A .exe must be a real binary; reuse the node.exe that runs the tests.
     const where = spawnSync('where', ['node'], { encoding: 'utf8' });
@@ -65,10 +63,11 @@ function provideRunnableQmllsExecutable(): boolean {
     if (where.status !== 0 || !nodePath) {
       return false;
     }
-    fs.copyFileSync(nodePath, exePath);
+    content = fs.readFileSync(nodePath);
   } else {
-    fs.writeFileSync(exePath, '#!/bin/sh\nexit 0\n');
+    content = '#!/bin/sh\nexit 0\n';
   }
+  const exePath = installFakeBuild(version, content);
   fs.chmodSync(exePath, 0o755);
   return true;
 }
@@ -92,11 +91,7 @@ describe('installer: qmlls update detection', () => {
   });
 
   it('reports Outdated when the remote tag differs from the installed one', () => {
-    provideDummyQmllsFile();
-    writeInstalledReleaseJson({
-      tag_name: '0.6',
-      created_at: BASE_ASSET.created_at
-    });
+    installFakeBuild({ tag: '0.6', createdAt: BASE_ASSET.created_at });
 
     const result = installer.checkStatusAgainst(makeAsset({ tag_name: '0.7' }));
 
@@ -104,10 +99,9 @@ describe('installer: qmlls update detection', () => {
   });
 
   it('reports Outdated when an asset is re-uploaded under the same tag (revert)', () => {
-    provideDummyQmllsFile();
-    writeInstalledReleaseJson({
-      tag_name: BASE_ASSET.tag_name,
-      created_at: '2026-03-16T16:19:16Z'
+    installFakeBuild({
+      tag: BASE_ASSET.tag_name,
+      createdAt: '2026-03-16T16:19:16Z'
     });
 
     const result = installer.checkStatusAgainst(
@@ -117,21 +111,24 @@ describe('installer: qmlls update detection', () => {
     expect(result.status).to.equal(installer.AssetStatus.Outdated);
   });
 
-  it('reports Outdated when the installed release.json predates upload tracking', () => {
-    provideDummyQmllsFile();
-    // Older extension versions stored only the tag.
-    writeInstalledReleaseJson({ tag_name: BASE_ASSET.tag_name });
+  it('reports Outdated when the install predates upload-time tracking', () => {
+    // Migrated legacy installs may have no recorded upload time.
+    installFakeBuild({ tag: BASE_ASSET.tag_name, createdAt: '' });
 
     const result = installer.checkStatusAgainst(makeAsset());
 
     expect(result.status).to.equal(installer.AssetStatus.Outdated);
   });
 
-  it('recognizes an asset recorded by writeReleaseInfo as up to date', function () {
-    if (!provideRunnableQmllsExecutable()) {
+  it('recognizes the published build as up to date when tag and upload time match', function () {
+    if (
+      !installRunnableBuild({
+        tag: BASE_ASSET.tag_name,
+        createdAt: BASE_ASSET.created_at
+      })
+    ) {
       this.skip();
     }
-    installer.writeReleaseInfo(makeAsset());
 
     const result = installer.checkStatusAgainst(makeAsset());
 

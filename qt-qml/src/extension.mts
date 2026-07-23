@@ -18,7 +18,11 @@ import { registerRestartQmllsCommand } from '@cmd/restart-qmlls.mjs';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls.mjs';
 import { registerDebugPort } from '@cmd/debug.mjs';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update.mjs';
-import { getDoNotAskForDownloadingQmlls, Qmlls } from '@/qmlls.mjs';
+import {
+  getDoNotAskForDownloadingQmlls,
+  Qmlls,
+  registerQmllsManifestWatcher
+} from '@/qmlls.mjs';
 import * as installer from '@/installer.mjs';
 import * as consts from '@/constants.js';
 import { QMLProjectManager, createQMLProject } from '@/project.mjs';
@@ -86,6 +90,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor(() => {
       updatePreviewLaunchContext();
     }),
+    registerQmllsManifestWatcher(),
     registerDebugPort(),
     registerRestartQmllsCommand(),
     registerCheckQmllsUpdateCommand(),

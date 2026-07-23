@@ -55,20 +55,6 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
   }
 
   /**
-   * Stop all qmlls instances. This is called internally during install,
-   * so it does NOT go through the queue to avoid deadlock.
-   */
-  async stopQmlls() {
-    return this._qmllsQueue.enqueue(QmllsOperationType.Stop, async () => {
-      const promises = [];
-      for (const project of this.getProjects()) {
-        promises.push(project.qmlls.stop());
-      }
-      return Promise.all(promises);
-    });
-  }
-
-  /**
    * Start all qmlls instances through the queue.
    */
   async startQmlls() {
