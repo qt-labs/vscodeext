@@ -40,6 +40,16 @@ export interface QtBridgeProjectInfo {
   readonly qtInstallRoot: string | undefined;
 }
 
+export interface QtBridgeQtDirFallbacks {
+  readonly configuredQtDir?: string;
+  readonly selectedQtDir?: string;
+}
+
+function normalizeQtDir(value: string | undefined) {
+  const trimmed = value?.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
 function normalizeQtArchitecture(arch: string | undefined): string {
   switch ((arch ?? '').toLowerCase()) {
     case 'x86':
@@ -344,7 +354,9 @@ function inferQtBridgePackageId(
   return `${packagePrefix}.${configuredRid}`;
 }
 
-function inferQtDir(properties: Map<string, string>): string | undefined {
+function inferProjectQtDir(
+  properties: Map<string, string>
+): string | undefined {
   const configuredQtDir = resolvePropertyExpression(
     getMsBuildProperty(properties, 'QtDir'),
     properties
@@ -361,7 +373,20 @@ function inferQtDir(properties: Map<string, string>): string | undefined {
     return configuredQtInstallRoot;
   }
 
-  return getEnvironmentVariable(['QTDIR', 'QtDir', 'QtInstallRoot']);
+  return undefined;
+}
+
+export function resolveQtBridgeQtDir(
+  projectQtDir: string | undefined,
+  fallbacks: QtBridgeQtDirFallbacks = {},
+  environmentQtDir = getEnvironmentVariable(['QTDIR', 'QtDir', 'QtInstallRoot'])
+): string | undefined {
+  return (
+    normalizeQtDir(projectQtDir) ??
+    normalizeQtDir(fallbacks.configuredQtDir) ??
+    normalizeQtDir(environmentQtDir) ??
+    normalizeQtDir(fallbacks.selectedQtDir)
+  );
 }
 
 function findNuGetPackageVersionDirectory(
@@ -420,7 +445,8 @@ function findBundledWindowsQtDir(
 }
 
 export function inspectQtBridgeProject(
-  projectFile: vscode.Uri
+  projectFile: vscode.Uri,
+  qtDirFallbacks: QtBridgeQtDirFallbacks = {}
 ): QtBridgeProjectInfo | undefined {
   try {
     const projectXml = fs.readFileSync(projectFile.fsPath, 'utf8');
@@ -439,6 +465,7 @@ export function inspectQtBridgeProject(
       return undefined;
     }
 
+    const projectQtDir = inferProjectQtDir(properties);
     const projectInfo = {
       projectFile: projectFile.fsPath,
       packageId,
@@ -450,7 +477,7 @@ export function inspectQtBridgeProject(
           ) ??
           getPackageReferenceVersion(packageReferences, packageId, properties))
         : undefined,
-      qtDir: inferQtDir(properties),
+      qtDir: resolveQtBridgeQtDir(projectQtDir, qtDirFallbacks),
       qtInstallRoot: resolvePropertyExpression(
         getMsBuildProperty(properties, 'QtInstallRoot'),
         properties
