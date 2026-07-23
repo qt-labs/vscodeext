@@ -112,6 +112,17 @@ export function getExpectedQmllsPath() {
   return QmllsExePath;
 }
 
+export function writeReleaseInfo(asset: AssetWithTag): void {
+  fs.writeFileSync(
+    ReleaseJsonPath,
+    JSON.stringify(
+      { tag_name: asset.tag_name, created_at: asset.created_at },
+      null,
+      2
+    )
+  );
+}
+
 export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   // check installation
   if (!fs.existsSync(ReleaseJsonPath) || !fs.existsSync(QmllsExePath)) {
@@ -124,6 +135,7 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
   // check if outdated
   const local = JSON.parse(fs.readFileSync(ReleaseJsonPath, 'utf8')) as {
     tag_name: string;
+    created_at?: string;
   };
 
   if (local.tag_name !== asset.tag_name) {
@@ -132,6 +144,16 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
         'Tag mismatch, ' +
         `local = ${local.tag_name}, ` +
         `recent = ${asset.tag_name}`,
+      status: AssetStatus.Outdated
+    };
+  }
+
+  if (local.created_at !== asset.created_at) {
+    return {
+      message:
+        'Upload time mismatch, ' +
+        `local = ${local.created_at ?? '<unknown>'}, ` +
+        `recent = ${asset.created_at}`,
       status: AssetStatus.Outdated
     };
   }
@@ -199,10 +221,7 @@ export async function install(asset: AssetWithTag) {
       logger.info(`QML language server installed to: ${QmllsExePath}`);
       fs.chmodSync(QmllsExePath, 0o755);
       fs.unlinkSync(tmpPath);
-      fs.writeFileSync(
-        ReleaseJsonPath,
-        JSON.stringify({ tag_name: asset.tag_name }, null, 2)
-      );
+      writeReleaseInfo(asset);
     }
   );
 }
