@@ -4,7 +4,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
+  CoreKey,
   createLogger,
+  getCoreApi,
+  type CoreAPI,
   type QtBridgeMetadataChangeEvent,
   type QtBridgeProject
 } from 'qt-lib';
@@ -14,7 +17,11 @@ import {
   getQtBridgeMetadataIdentity,
   persistQtBridgeMetadataSelection
 } from '@/metadata.mjs';
-import { inspectQtBridgeProject, QtBridgeProjectSnapshot } from '@/project.mjs';
+import {
+  inspectQtBridgeProject,
+  QtBridgeProjectSnapshot,
+  type QtBridgeQtDirFallbacks
+} from '@/project.mjs';
 import { EXTENSION_ID } from '@/constants.js';
 
 const logger = createLogger('project-manager');
@@ -34,6 +41,7 @@ function isGeneratedProject(uri: vscode.Uri): boolean {
 }
 
 export class QtBridgeProjectManager implements vscode.Disposable {
+  private coreApi: CoreAPI | undefined;
   private workspaceState: vscode.Memento | undefined;
   private readonly projects = new Map<string, QtBridgeProjectSnapshot>();
   private readonly folderWatchers = new Map<string, vscode.FileSystemWatcher>();
@@ -59,12 +67,38 @@ export class QtBridgeProjectManager implements vscode.Disposable {
           this.watchFolder(folder);
           void this.refreshFolder(folder);
         }
+      }),
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        for (const folder of vscode.workspace.workspaceFolders ?? []) {
+          if (event.affectsConfiguration(`${EXTENSION_ID}.qtDir`, folder.uri)) {
+            this.scheduleRefresh(folder);
+          }
+        }
       })
     );
   }
 
   async initialize(workspaceState?: vscode.Memento): Promise<void> {
     this.workspaceState = workspaceState;
+    this.coreApi = await getCoreApi();
+    if (this.coreApi) {
+      this.disposables.push(
+        this.coreApi.onValueChanged((message) => {
+          if (!message.config.has(CoreKey.SELECTED_QT_PATHS)) {
+            return;
+          }
+          for (const folder of vscode.workspace.workspaceFolders ?? []) {
+            if (
+              typeof message.workspaceFolder === 'string' ||
+              message.workspaceFolder.uri.toString() === folder.uri.toString()
+            ) {
+              this.scheduleRefresh(folder);
+            }
+          }
+        })
+      );
+    }
+
     for (const folder of vscode.workspace.workspaceFolders ?? []) {
       this.watchFolder(folder);
       await this.refreshFolder(folder, false);
@@ -224,8 +258,9 @@ export class QtBridgeProjectManager implements vscode.Disposable {
       new vscode.RelativePattern(folder, '**/*.csproj'),
       PROJECT_EXCLUDE_PATTERN
     );
+    const qtDirFallbacks = this.getQtDirFallbacks(folder);
     const inspectedProjects = projectFiles.map((projectFile) =>
-      inspectQtBridgeProject(projectFile)
+      inspectQtBridgeProject(projectFile, qtDirFallbacks)
     );
 
     for (const project of previousProjects) {
@@ -260,6 +295,30 @@ export class QtBridgeProjectManager implements vscode.Disposable {
     if (notify) {
       this.projectsChanged.fire();
     }
+  }
+
+  private getQtDirFallbacks(
+    folder: vscode.WorkspaceFolder
+  ): QtBridgeQtDirFallbacks {
+    const configuredQtDir = vscode.workspace
+      .getConfiguration(EXTENSION_ID, folder.uri)
+      .get<string>('qtDir')
+      ?.trim();
+    const selectedQtPaths =
+      this.coreApi?.getValue<string>(folder, CoreKey.SELECTED_QT_PATHS) ??
+      this.coreApi?.getValue<string>(
+        CoreKey.GLOBAL_WORKSPACE,
+        CoreKey.SELECTED_QT_PATHS
+      );
+    const selectedQtInfo = selectedQtPaths
+      ? this.coreApi?.getQtInfoFromPath(selectedQtPaths).info
+      : undefined;
+    const selectedQtDir = selectedQtInfo?.get('QT_INSTALL_PREFIX');
+
+    return {
+      ...(configuredQtDir ? { configuredQtDir } : {}),
+      ...(selectedQtDir ? { selectedQtDir } : {})
+    };
   }
 
   private async refreshMetadata(

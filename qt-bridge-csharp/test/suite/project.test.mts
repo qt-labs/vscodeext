@@ -10,6 +10,7 @@ import {
   defaultQtRid,
   findDotNetPathEntry,
   inspectQtBridgeProject,
+  resolveQtBridgeQtDir,
   QtBridgeProjectSnapshot
 } from '@/project.mjs';
 import { QtBridgeProjectManager } from '@/project-manager.mjs';
@@ -207,6 +208,34 @@ describe('Qt Bridge project discovery', () => {
       </Project>`);
 
     expect(project).to.be.undefined;
+  });
+
+  it('resolves QtDir fallbacks by precedence', () => {
+    const fallbacks = {
+      configuredQtDir: '/settings/Qt',
+      selectedQtDir: '/qt-core/Qt'
+    };
+
+    expect(
+      resolveQtBridgeQtDir('/project/Qt', fallbacks, '/environment/Qt')
+    ).to.equal('/project/Qt');
+    expect(
+      resolveQtBridgeQtDir(undefined, fallbacks, '/environment/Qt')
+    ).to.equal('/settings/Qt');
+    expect(
+      resolveQtBridgeQtDir(
+        undefined,
+        { selectedQtDir: fallbacks.selectedQtDir },
+        '/environment/Qt'
+      )
+    ).to.equal('/environment/Qt');
+    expect(
+      resolveQtBridgeQtDir(
+        undefined,
+        { selectedQtDir: fallbacks.selectedQtDir },
+        ''
+      )
+    ).to.equal('/qt-core/Qt');
   });
 
   it('resolves a templated package reference', async () => {
