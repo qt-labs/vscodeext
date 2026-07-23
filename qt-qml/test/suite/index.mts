@@ -14,7 +14,7 @@ export function run(): Promise<void> {
   });
   const testsRoot = path.resolve(__dirname);
   return new Promise((c, e) => {
-    const testFiles = new glob.Glob('{extension,command}.test.js', {
+    const testFiles = new glob.Glob('{extension,command,installer}.test.js', {
       cwd: testsRoot
     });
     const testFileStream = testFiles.stream();
