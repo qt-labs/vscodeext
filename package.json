@@ -126,7 +126,7 @@
     "prettierBase": "prettier --config \"common/.prettierrc\" --ignore-path \"common/.prettierignore\"",
     "auditFix": "npm audit fix && cd qt-lib && npm audit fix && cd ../qt-core && npm audit fix && cd ../qt-cpp && npm audit fix && cd ../qt-qml && npm audit fix && cd ../qt-python && npm audit fix && cd ../qt-bridge-csharp && npm audit fix && cd ../qt-core/webview-ui && npm audit fix",
     "auditFixForce": "npm audit fix --force && cd qt-lib && npm audit fix --force && cd ../qt-core && npm audit fix --force && cd ../qt-cpp && npm audit fix --force && cd ../qt-qml && npm audit fix --force && cd ../qt-python && npm audit fix --force && cd ../qt-bridge-csharp && npm audit fix --force && cd ../qt-core/webview-ui && npm audit fix --force",
-    "build:qt-cli": "cd qt-cli && bash run.sh build"
+    "build:qt-cli": "node qt-cli/run.mjs build"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
