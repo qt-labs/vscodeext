@@ -77,6 +77,58 @@
     },
     {
       "type": "shell",
+      "label": "npm qt-bridge-csharp watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-bridge-csharp"
+      }
+    },
+    {
+      "label": "npm qt-bridge-csharp watch + dependencies",
+      "dependsOn": [
+        "npm qt-core watch",
+        "npm qt-qml watch",
+        "npm qt-bridge-csharp watch",
+        "vite:start"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "type": "shell",
+      "label": "npm qt-bridge-csharp watch and test",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run compile-test && npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-bridge-csharp"
+      }
+    },
+    {
+      "label": "npm qt-bridge-csharp watch and test + dependencies",
+      "dependsOn": [
+        "npm qt-core watch",
+        "npm qt-bridge-csharp watch and test"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "type": "shell",
       "label": "npm qt-qml watch and test",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch && npm run compile-test",

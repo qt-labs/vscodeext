@@ -17,6 +17,11 @@ Before every commit, run `npm run ci-lint:all`
 `.vsix` files in each extension's `out` directory.
 - Also, you can run `npm run package:<extension_name>` to generate the package for a specific extension.
 
+## Test extensions in VS Code
+
+- Open the repository root in VS Code.
+- Select the extension's launch configuration in the Run and Debug view and press `F5`.
+
 ## Install
 
 - To install all extensions, run `npm run install:all`
