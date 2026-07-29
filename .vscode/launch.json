@@ -63,6 +63,22 @@
       }
     },
     {
+      "name": "Run qt-bridge-csharp",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-qml",
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-bridge-csharp"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/qt-core/out/**/*.js",
+        "${workspaceFolder}/qt-qml/out/**/*.js",
+        "${workspaceFolder}/qt-bridge-csharp/out/**/*.js"
+      ],
+      "preLaunchTask": "npm qt-bridge-csharp watch + dependencies"
+    },
+    {
       "name": "Run Extension Tests qt-core",
       "type": "extensionHost",
       "request": "launch",
@@ -200,7 +216,20 @@
         "QT_LOG_SUPPRESSED_TELEMETRY": "1"
       },
       "outFiles": ["${workspaceFolder}/qt-ui/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-ui watch and test",
+      "preLaunchTask": "npm qt-ui watch and test"
+    },
+    {
+      "name": "Run Extension Tests qt-bridge-csharp",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-bridge-csharp",
+        "--extensionTestsPath=${workspaceFolder}/qt-bridge-csharp/out/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/qt-bridge-csharp/out/test/**/*.js"],
+      "preLaunchTask": "npm qt-bridge-csharp watch and test + dependencies"
     }
   ]
 }
