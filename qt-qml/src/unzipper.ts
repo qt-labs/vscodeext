@@ -11,9 +11,34 @@ export async function unzip(
   streamProvider: (entry: yauzl.Entry) => Writable | null
 ) {
   return new Promise<void>((resolve, reject) => {
+    // Reading an entry only means its bytes have been handed to the
+    // destination stream, not that they have landed on disk. Resolving as
+    // soon as the zip's central directory is exhausted would let callers
+    // touch files (e.g. spawn an extracted exe) while the last entries are
+    // still being flushed. So track outstanding writers and only resolve
+    // once every 'finish' has fired too.
+    let pendingWrites = 0;
+    let allEntriesRead = false;
+    let settled = false;
+
+    const fail = (error: Error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      reject(error);
+    };
+
+    const resolveIfDone = () => {
+      if (!settled && allEntriesRead && pendingWrites === 0) {
+        settled = true;
+        resolve();
+      }
+    };
+
     const callback = (error: Error | null, zipFile: yauzl.ZipFile) => {
       if (error) {
-        reject(error);
+        fail(error);
         return;
       }
 
@@ -25,9 +50,10 @@ export async function unzip(
           return;
         }
 
+        pendingWrites++;
         zipFile.openReadStream(entry, (e, reader) => {
           if (e) {
-            reject(e);
+            fail(e);
             return;
           }
 
@@ -36,18 +62,24 @@ export async function unzip(
             zipFile.readEntry();
           });
 
-          reader.on('error', reject);
-          writer.on('error', reject);
+          writer.on('finish', () => {
+            pendingWrites--;
+            resolveIfDone();
+          });
+
+          reader.on('error', fail);
+          writer.on('error', fail);
         });
       });
 
       zipFile.on('end', () => {
         zipFile.close();
-        resolve();
+        allEntriesRead = true;
+        resolveIfDone();
       });
 
       zipFile.on('error', () => {
-        reject(new Error('zipfile error'));
+        fail(new Error('zipfile error'));
       });
     };
 
