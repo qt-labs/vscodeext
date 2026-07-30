@@ -158,7 +158,7 @@ export function matchesVersionPattern(installationPath: string): boolean {
 }
 
 export function isPathToQtPathsOrQMake(filePath: string): boolean {
-  return filePath.match(/(qtpaths|qmake)[0-9]?(\.(exe|bat|EXE|BAT))?$/)
+  return /(qtpaths|qmake)[0-9]?(\.(exe|bat|EXE|BAT))?$/.exec(filePath)
     ? true
     : false;
 }
@@ -269,7 +269,7 @@ export async function fetchWithAbort(
 export async function waitForQtCpp() {
   const qtcpp = vscode.extensions.getExtension('theqtcompany.qt-cpp');
   if (qtcpp) {
-    return qtcpp.activate();
+    await qtcpp.activate();
   }
 }
 

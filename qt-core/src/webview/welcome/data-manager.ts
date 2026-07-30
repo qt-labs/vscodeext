@@ -203,11 +203,11 @@ export class WelcomePageDataManager {
   }
 
   private _findBlogImgSrc(html: string) {
-    const imgMatch = html.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/i);
+    const imgMatch = /<img[^>]+src=["']([^"']+)["'][^>]*>/i.exec(html);
     const imgTag = imgMatch?.[0] ?? '';
 
-    const widthMatch = imgTag.match(/width=["']?(\d+)["']?/i);
-    const heightMatch = imgTag.match(/height=["']?(\d+)["']?/i);
+    const widthMatch = /width=["']?(\d+)["']?/i.exec(imgTag);
+    const heightMatch = /height=["']?(\d+)["']?/i.exec(imgTag);
 
     const src = imgMatch?.[1] ?? '';
     const w = widthMatch ? Number(widthMatch[1]) : 0;

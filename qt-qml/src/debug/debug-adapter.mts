@@ -105,7 +105,7 @@ export class QmlDebugSession extends LoggingDebugSession {
     }
     return undefined;
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
+
   protected override async disconnectRequest(
     response: DebugProtocol.DisconnectResponse,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -614,7 +614,7 @@ export class QmlDebugSession extends LoggingDebugSession {
         const portStr = getParam(portRegex, args.debuggerArgs);
         host = getParam(hostRegex, args.debuggerArgs);
 
-        const hostMatch = args.debuggerArgs.match(hostRegex);
+        const hostMatch = hostRegex.exec(args.debuggerArgs);
         if (hostMatch?.[1] === undefined) {
           throw new Error('Host not found in debuggerArgs');
         }

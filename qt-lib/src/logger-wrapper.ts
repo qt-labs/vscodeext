@@ -148,5 +148,7 @@ function formatValue(value: unknown): string {
     }
   }
 
+  // Objects are handled above, so the default stringification is safe.
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   return String(value);
 }

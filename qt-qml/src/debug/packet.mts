@@ -28,7 +28,6 @@ export class PacketProtocol {
     socket.on('readable', () => {
       this.readyToRead();
     });
-    socket.readable;
     socket.on('close', () => {
       this.aboutToClose();
     });

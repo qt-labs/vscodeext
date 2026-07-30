@@ -40,9 +40,7 @@ export class CoreAPIImpl implements CoreAPI {
   private static obtainArchs(content: string) {
     const keysToCheck = ['QT_ARCHS', 'QT_TARGET_ARCH', 'QT_ARCH'];
     for (const k of keysToCheck) {
-      const match = content.match(
-        new RegExp(`${k}\\s*\\=\\s*(?!.*\\$\\$)(.*)`)
-      );
+      const match = new RegExp(`${k}\\s*\\=\\s*(?!.*\\$\\$)(.*)`).exec(content);
       if (match) {
         return match[1];
       }
@@ -51,9 +49,7 @@ export class CoreAPIImpl implements CoreAPI {
   }
 
   private static obtainKeyFromConfigPri(content: string, key: string) {
-    const match = content.match(
-      new RegExp(`${key}\\s*\\=\\s*(?!.*\\$\\$)(.*)`)
-    );
+    const match = new RegExp(`${key}\\s*\\=\\s*(?!.*\\$\\$)(.*)`).exec(content);
     if (match) {
       return match[1];
     }
@@ -102,7 +98,7 @@ export class CoreAPIImpl implements CoreAPI {
       'QT_MSVC_PATCH_VERSION'
     ];
     for (const k of keysToCheck) {
-      const match = content.match(new RegExp(`${k}\\s*\\=\\s*(.*)`));
+      const match = new RegExp(`${k}\\s*\\=\\s*(.*)`).exec(content);
       if (match) {
         if (k === 'QT_MSVC_MAJOR_VERSION') {
           ret.major = parseInt(match[1] ?? '-1');

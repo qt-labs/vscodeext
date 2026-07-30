@@ -56,6 +56,9 @@ export function parseXml(data: string): RccTag | undefined {
 }
 
 export function generateXml(qrc: RccTag): string {
+  // XMLBuilder still ships with fast-xml-parser; migrating to the separate
+  // fast-xml-builder package is a separate task.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const builder = new XMLBuilder({
     format: true,
     indentBy: '    ', // to be compatible with Qt Creator

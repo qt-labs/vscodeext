@@ -86,8 +86,8 @@ export function getMsvcInfo(installationPath: string): MsvcInfo | undefined {
     return undefined;
   }
   const match =
-    toolchain.match(MsvcToolchainRegexp) ??
-    toolchain.match(MsvcToolchainNoArchRegexp);
+    MsvcToolchainRegexp.exec(toolchain) ??
+    MsvcToolchainNoArchRegexp.exec(toolchain);
   if (!match) {
     return undefined;
   }

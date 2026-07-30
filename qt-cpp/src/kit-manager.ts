@@ -336,7 +336,7 @@ export class KitManager {
         qtInfo.info,
         await cmakeKits
       );
-      for await (const k of kit) {
+      for (const k of kit) {
         logger.info('newKit: ' + JSON.stringify(k));
         if (k) {
           kits.push(k);
