@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import _ from 'lodash';
-import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import XMLBuilder from 'fast-xml-builder';
+import { XMLParser } from 'fast-xml-parser';
 import type { JPathOrMatcher } from 'fast-xml-parser';
 
 import {
@@ -56,9 +57,6 @@ export function parseXml(data: string): RccTag | undefined {
 }
 
 export function generateXml(qrc: RccTag): string {
-  // XMLBuilder still ships with fast-xml-parser; migrating to the separate
-  // fast-xml-builder package is a separate task.
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const builder = new XMLBuilder({
     format: true,
     indentBy: '    ', // to be compatible with Qt Creator
