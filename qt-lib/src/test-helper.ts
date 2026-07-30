@@ -32,7 +32,7 @@ export function assertAllDependenciesAreActive(packageJson: PackageJson): void {
 
   for (const extensionId of dependencies) {
     const isActive = vscode.extensions.getExtension(extensionId)?.isActive;
-    expect(isActive, `Dependency not active: ${extensionId}`).to.be.true;
+    expect(isActive, `Dependency not active: ${extensionId}`).to.equal(true);
   }
 }
 /**

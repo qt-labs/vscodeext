@@ -113,7 +113,7 @@ export async function locateMingwBinDirPath(qtRootDir: string) {
   ) as string[];
   const mingwVersions = new Map<number, string>(
     mingwsWithBins.map((item) => {
-      const m = item.match(/mingw(\d+)_\d+/);
+      const m = /mingw(\d+)_\d+/.exec(item);
       let v = 0;
       if (m?.[1] !== undefined) {
         v = parseInt(m[1], 10);

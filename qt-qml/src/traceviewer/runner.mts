@@ -164,12 +164,20 @@ export function showViewerNotFoundMessage() {
 }
 
 // helpers
+function asTrimmedString(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  if (typeof value === 'number') {
+    return String(value);
+  }
+  return '';
+}
+
 async function parseJsonOutput(uri: vscode.Uri, text: string) {
   const obj = JSON.parse(text) as Record<string, unknown>;
-  const version = String(obj.jsonrpc ?? '').trim();
-  const method = String(obj.method ?? '')
-    .trim()
-    .toLowerCase();
+  const version = asTrimmedString(obj.jsonrpc);
+  const method = asTrimmedString(obj.method).toLowerCase();
   if (version !== '2.0' || method.length === 0) {
     throw new Error(
       `Invalid JSON-RPC: version = ${version}, method = ${method}`
@@ -185,9 +193,9 @@ async function parseJsonOutput(uri: vscode.Uri, text: string) {
     }
 
     const params = (obj.params ?? {}) as Record<string, unknown>;
-    const col = parseInt(String(params.columnNumber ?? '').trim());
-    const line = parseInt(String(params.lineNumber ?? '').trim());
-    const filePath = String(params.sourceFilePath ?? '').trim();
+    const col = parseInt(asTrimmedString(params.columnNumber));
+    const line = parseInt(asTrimmedString(params.lineNumber));
+    const filePath = asTrimmedString(params.sourceFilePath);
 
     const finder = new FileFinder();
     finder.buildDirs = dirs;

@@ -155,7 +155,7 @@ export function removeQtPathFromSettings(
         ? vscode.ConfigurationTarget.WorkspaceFolder
         : vscode.ConfigurationTarget.Global
     )
-    .then(undefined, (err) => {
+    .then(undefined, (err: unknown) => {
       logger.error(`Failed to update ${AdditionalQtPathsName}: ${String(err)}`);
     });
 }
