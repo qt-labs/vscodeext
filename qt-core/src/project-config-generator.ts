@@ -121,13 +121,15 @@ function qmlAttachLaunchConfig(): LaunchConfiguration {
     name: 'Attach to QML debugger',
     type: 'qml',
     request: 'attach',
-    host: 'localhost',
+    host: '127.0.0.1',
     port: '${command:qt-qml.debugPort}'
   };
 }
 
+// The QML debug server only accepts an IP address literal as the host, so
+// "localhost" would make it listen on all interfaces (VSCODEEXT-219).
 const qmlDebuggerArgs =
-  '-qmljsdebugger=host:localhost,port:${command:qt-qml.debugPort},' +
+  '-qmljsdebugger=host:127.0.0.1,port:${command:qt-qml.debugPort},' +
   'block,services:DebugMessages,QmlDebugger,V8Debugger';
 
 function cppQmlCppdbgLaunchConfig(): LaunchConfiguration {
