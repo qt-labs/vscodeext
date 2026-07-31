@@ -374,7 +374,7 @@
               "host": {
                 "type": "string",
                 "description": "Hostname (or IP address) of the target program's debug service",
-                "default": "localhost"
+                "default": "127.0.0.1"
               },
               "port": {
                 "type": [
@@ -427,7 +427,7 @@
             "type": "qml",
             "request": "attach",
             "name": "Attach to QML debugger",
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": "^\"Custom port or \\${command:qt-qml.debugPort} for compound usage\""
           }
         ],
@@ -449,7 +449,7 @@
               "name": "%qt-qml.debug.qmlDebuggingAttach.label%",
               "type": "qml",
               "request": "attach",
-              "host": "localhost",
+              "host": "127.0.0.1",
               "port": "^\"Custom port or \\${command:qt-qml.debugPort} for compound usage\""
             }
           },
@@ -466,7 +466,7 @@
               "visualizerFile": "^\"\\${command:qt-cpp.natvis}\"",
               "showDisplayString": true,
               "args": [
-                "^\"-qmljsdebugger=host:localhost,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
+                "^\"-qmljsdebugger=host:127.0.0.1,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
               ],
               "linux": {
                 "MIMode": "gdb",
@@ -520,7 +520,7 @@
               "cwd": "^\"\\${workspaceFolder}\"",
               "visualizerFile": "^\"\\${command:qt-cpp.natvis}\"",
               "args": [
-                "^\"-qmljsdebugger=host:localhost,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
+                "^\"-qmljsdebugger=host:127.0.0.1,port:\\${command:qt-qml.debugPort},block,services:DebugMessages,QmlDebugger,V8Debugger\""
               ],
               "windows": {
                 "sourceFileMap": {

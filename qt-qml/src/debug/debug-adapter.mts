@@ -595,7 +595,10 @@ export class QmlDebugSession extends LoggingDebugSession {
       let port: number | undefined;
       let host: string | undefined;
       if (args.debuggerArgs === undefined) {
-        host = 'localhost';
+        // The QML debug server parses the host as an IP address literal, so
+        // hostnames like "localhost" are rejected and the server would fall
+        // back to listening on all interfaces (VSCODEEXT-219).
+        host = '127.0.0.1';
         port = await getPort();
         debuggerArgs = `-qmljsdebugger=host:${host},port:${port.toString()},block,services:DebugMessages,QmlDebugger,V8Debugger`;
       } else {
