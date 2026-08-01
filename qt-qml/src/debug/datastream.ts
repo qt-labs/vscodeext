@@ -3,7 +3,7 @@
 
 // Replacement of QDataStream
 export class DataStream {
-  private _data = Buffer.alloc(0);
+  private _data: Buffer = Buffer.alloc(0);
   private readOffset = 0;
   private writeOffset = 0;
 
