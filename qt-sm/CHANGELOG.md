@@ -1,5 +1,18 @@
 # Change Log
 
+## 0.1.4 (Aug 4, 2026)
+
+🎉 **Added**
+
+- Allow the `theqtcompany.com` domain to access the alpha version
+- Add a "Reset password" button to the walkthrough sign-in step
+
+⚠️ **Changed**
+
+- Prefill the login email prompt with the last attempted address on retry
+- Show a readable message with a "Reset Password" action for invalid credentials
+- Hide "Reset walkthrough" when there is no progress and "Mark Done" once done
+
 ## 0.1.3 (Jun 25, 2026)
 
 🎉 **Added**
