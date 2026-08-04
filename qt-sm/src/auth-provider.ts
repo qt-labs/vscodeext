@@ -133,7 +133,10 @@ export class QtAccountAuthenticationProvider
     }
 
     // Restrict alpha access to Qt employees.
-    if (!email.toLowerCase().endsWith('@qt.io')) {
+    if (
+      !email.toLowerCase().endsWith('@qt.io') &&
+      !email.toLowerCase().endsWith('@theqtcompany.com')
+    ) {
       const errMsg = `Qt Account "${email}" is not in the alpha access list.`;
       logger.error(errMsg);
       void vscode.window.showErrorMessage(errMsg);
