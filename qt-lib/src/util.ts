@@ -67,6 +67,13 @@ export async function exists(filePath: string) {
   }
 }
 
+export function normalizeDriveLetter(fsPath: string): string {
+  if (IsWindows && /^[a-z]:/.test(fsPath)) {
+    return fsPath.charAt(0).toUpperCase() + fsPath.slice(1);
+  }
+  return fsPath;
+}
+
 export function askForKitSelection({
   message = 'No CMake kit selected. Please select a CMake kit.',
   buttonName = 'Select CMake Kit'

@@ -5,7 +5,7 @@ import _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
+import { createLogger, normalizeDriveLetter } from 'qt-lib';
 import { WebviewChannel } from '@/webview/channel';
 import {
   Command,
@@ -229,11 +229,7 @@ export class ExBrowserDispatcher {
 
     const folderUri = await vscode.window.showOpenDialog(options);
     if (folderUri && folderUri.length > 0) {
-      let folder = folderUri[0]?.fsPath ?? '';
-      if (process.platform === 'win32' && /^[a-z]:/.test(folder)) {
-        folder = folder.charAt(0).toUpperCase() + folder.slice(1);
-      }
-
+      const folder = normalizeDriveLetter(folderUri[0]?.fsPath ?? '');
       this._comm.postDataReply(cmd, folder);
     }
   };
