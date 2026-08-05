@@ -1,19 +1,18 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as os from 'os';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger, OSExeSuffix } from 'qt-lib';
+import { createLogger, Home, OSExeSuffix } from 'qt-lib';
 
 export const qtcliExeName = 'qtcli' + OSExeSuffix;
 const logger = createLogger('qtcli');
 
 export function fallbackWorkingDir(): string {
-  const docs = path.join(os.homedir(), 'Documents');
+  const docs = path.join(Home, 'Documents');
   const settings =
     vscode.workspace
       .getConfiguration('files')

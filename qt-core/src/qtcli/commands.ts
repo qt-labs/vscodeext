@@ -5,7 +5,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { exists, IsArm64 } from 'qt-lib';
+import { exists, IsArm64, IsLinux, IsMacOS, IsWindows } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import {
   qtcliExeName,
@@ -53,16 +53,14 @@ function getDefaultProjectDir(): string | undefined {
 }
 
 function findQtcliOsPrefix(): string {
-  const platform = process.platform;
-
-  if (platform === 'win32') {
+  if (IsWindows) {
     return `qtcli-windows-${IsArm64 ? 'arm64-' : 'amd64-'}`;
-  } else if (platform === 'linux') {
+  } else if (IsLinux) {
     return `qtcli-linux-${IsArm64 ? 'arm64-' : 'amd64-'}`;
-  } else if (platform === 'darwin') {
+  } else if (IsMacOS) {
     return 'qtcli-darwin-all-';
   } else {
-    throw new Error(`Platform '${platform}' is not supported`);
+    throw new Error(`Platform '${process.platform}' is not supported`);
   }
 }
 
