@@ -1,7 +1,6 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as os from 'os';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
@@ -9,6 +8,7 @@ import * as vscode from 'vscode';
 
 import {
   IsMacOS,
+  IsWindows,
   OSExeSuffix,
   createWrappedLogger,
   resolveConfiguration,
@@ -204,7 +204,7 @@ async function checkExeStatus(input: string): Promise<ExeCheckResult> {
     return ExeCheckResult.NotAFile;
   }
 
-  if (os.platform() === 'win32') {
+  if (IsWindows) {
     const args = ['.exe', '.cmd', '.bat', '.com'];
     if (!args.includes(path.extname(normalized).toLowerCase())) {
       return ExeCheckResult.NotExecutableExtension;

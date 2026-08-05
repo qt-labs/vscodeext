@@ -1,13 +1,12 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import os from 'os';
 import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 import { randomUUID } from 'crypto';
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 
-import { createLogger } from 'qt-lib';
+import { createLogger, IsWindows } from 'qt-lib';
 import { findQtcliExePath } from '@/qtcli/commands';
 import { isErrorResponse, Issue } from '@/webview/shared/message';
 
@@ -33,10 +32,9 @@ export class QtcliRestClient {
     this._api = axios.create({
       baseURL: 'http://unix',
       timeout: 15 * 1000,
-      socketPath:
-        os.platform() !== 'win32'
-          ? `/tmp/qtcli/${socketName}.sock`
-          : String.raw`\\.\pipe\qtcli` + `\\${socketName}.pipe`
+      socketPath: !IsWindows
+        ? `/tmp/qtcli/${socketName}.sock`
+        : String.raw`\\.\pipe\qtcli` + `\\${socketName}.pipe`
     });
 
     this._timerId = setInterval(() => {
