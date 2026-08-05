@@ -4,6 +4,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+import { IsLinux, IsMacOS, IsWindows } from 'qt-lib';
+
 /**
  * Debug-session utilities for qt-cpp NatVis integration tests.
  *
@@ -125,10 +127,7 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
  * @throws Error if required launch paths or the NatVis file cannot be resolved.
  */
 export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
-  const isWin = process.platform === 'win32';
-  const isMac = process.platform === 'darwin';
-  const isLinux = process.platform === 'linux';
-  const miMode = process.env.MIMODE || (isMac ? 'lldb' : 'gdb');
+  const miMode = process.env.MIMODE || (IsMacOS ? 'lldb' : 'gdb');
 
   // Resolve what ${command:...} would have produced
   const program = await vscode.commands.executeCommand<string>(
@@ -151,9 +150,9 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   }
   const cfg: vscode.DebugConfiguration = {
     name: 'natvis-test-launch',
-    type: isWin ? 'cppvsdbg' : 'cppdbg',
+    type: IsWindows ? 'cppvsdbg' : 'cppdbg',
     request: 'launch',
-    ...(isWin ? {} : { MIMode: miMode }),
+    ...(IsWindows ? {} : { MIMode: miMode }),
     // Always the correct binary/dir for the *selected configuration* and *build type*
     program: program, //'${command:cmake.launchTargetPath}', // built binary
     cwd: cwd, //'${command:cmake.getLaunchTargetDirectory}', // correct working dir
@@ -166,11 +165,11 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   };
 
   // Non-Windows: set MI mode, and on Linux also force the debugger path.
-  if (!isWin) {
+  if (!IsWindows) {
     (cfg as any).MIMode = miMode;
 
     // On Ubuntu CI, cpptools can't infer the MI debugger, so we point it at gdb explicitly.
-    if (isLinux && !(cfg as any).miDebuggerPath) {
+    if (IsLinux && !(cfg as any).miDebuggerPath) {
       (cfg as any).miDebuggerPath = 'gdb';
     }
   }
@@ -366,7 +365,7 @@ export async function warmUpNatvisDisplay(
   session: vscode.DebugSession,
   frameId: number
 ): Promise<void> {
-  if (process.platform !== 'win32') return;
+  if (!IsWindows) return;
 
   const topLocals = await getLocals(session, frameId);
 
@@ -584,11 +583,9 @@ export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
     );
   }
 
-  const isWin = process.platform === 'win32';
-
   let snippet: DebugConfigurationSnippet | undefined;
 
-  if (isWin) {
+  if (IsWindows) {
     // Windows: use the Visual Studio debugger snippet
     snippet = allSnippets.find((s) => s.body?.type === 'cppvsdbg');
   } else {
@@ -614,7 +611,7 @@ export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
   if (!normalized.name) {
     normalized.name =
       snippet.label ??
-      (isWin ? 'Qt snippet (cppvsdbg)' : 'Qt snippet (cppdbg)');
+      (IsWindows ? 'Qt snippet (cppvsdbg)' : 'Qt snippet (cppdbg)');
   }
 
   return normalized;

@@ -11,7 +11,8 @@ import {
   delay,
   getCoreApi,
   CoreKey,
-  findQtPathsInInstallationPath
+  findQtPathsInInstallationPath,
+  IsWindows
 } from 'qt-lib';
 import {
   setupSandboxLifecycleHooks,
@@ -127,8 +128,7 @@ describe('presets: CMake Presets integration', function () {
     // Wait for build artifacts to be written to disk
     await delay(DISK_FLUSH_DELAY_MS);
 
-    const bin =
-      process.platform === 'win32' ? path.join('Debug', 'hello.exe') : 'hello';
+    const bin = IsWindows ? path.join('Debug', 'hello.exe') : 'hello';
     const outPath = path.join(buildDir, bin);
     console.log('Checking for binary at', outPath);
 

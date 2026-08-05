@@ -4,9 +4,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 
-import { delay } from '../src/util.js';
+import { delay, IsMacOS, IsWindows, UserLocalDir } from '../src/util.js';
 
 /** Let VS Code flush microtasks (useful between command execution and assertions). */
 export async function waitForVSCodeIdle(): Promise<void> {
@@ -338,28 +337,16 @@ export function prepareStandardCMakeArgs(
   return args;
 }
 
-/** :
- *  - Windows:  %USERPROFILE%\AppData\Local\CMakeTools\cmake-tools-kits.json
- *  - Others (incl. macOS): ~/.local/share/CMakeTools/cmake-tools-kits.json
+/** Matches CMake Tools' kits file location (userLocalDir/CMakeTools):
+ *  - Windows:  %LOCALAPPDATA%\CMakeTools\cmake-tools-kits.json
+ *  - Others (incl. macOS): ($XDG_DATA_HOME or
+ *    ~/.local/share)/CMakeTools/cmake-tools-kits.json
  */
 function kitsPath(): string {
-  const home = os.homedir();
-  if (process.platform === 'win32') {
-    return path.join(
-      home,
-      'AppData',
-      'Local',
-      'CMakeTools',
-      'cmake-tools-kits.json'
-    );
+  if (!UserLocalDir) {
+    throw new Error('Cannot determine the user local data directory');
   }
-  return path.join(
-    home,
-    '.local',
-    'share',
-    'CMakeTools',
-    'cmake-tools-kits.json'
-  );
+  return path.join(UserLocalDir, 'CMakeTools', 'cmake-tools-kits.json');
 }
 
 type KitLike = { name?: string; label?: string };
@@ -395,12 +382,11 @@ function readKitsFromDisk(): KitLike[] {
 function pickKit(list: KitLike[]): string | undefined {
   if (!Array.isArray(list) || list.length === 0) return undefined;
 
-  const preferences: RegExp[] =
-    process.platform === 'darwin'
-      ? [/Clang.*arm64/i, /AppleClang/i, /Clang/i, /GCC/i]
-      : process.platform === 'win32'
-        ? [/MSVC|Visual Studio|Clang-cl/i, /Clang/i, /GCC|MinGW/i]
-        : [/GCC/i, /Clang/i];
+  const preferences: RegExp[] = IsMacOS
+    ? [/Clang.*arm64/i, /AppleClang/i, /Clang/i, /GCC/i]
+    : IsWindows
+      ? [/MSVC|Visual Studio|Clang-cl/i, /Clang/i, /GCC|MinGW/i]
+      : [/GCC/i, /Clang/i];
 
   for (const re of preferences) {
     const k = list.find((kk) => re.test(kk.name ?? kk.label ?? ''));

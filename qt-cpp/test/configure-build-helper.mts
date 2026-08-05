@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
-import { delay } from 'qt-lib';
+import { delay, IsMacOS, IsWindows, OSExeSuffix } from 'qt-lib';
 
 import {
   waitForVSCodeIdle,
@@ -89,9 +89,7 @@ type ConfigureResult = {
 export function materializeSnippetConfigForCurrentPlatform(
   base: vscode.DebugConfiguration
 ): vscode.DebugConfiguration {
-  const isWin = process.platform === 'win32';
-  const isMac = process.platform === 'darwin';
-  const platformKey = isWin ? 'windows' : isMac ? 'osx' : 'linux';
+  const platformKey = IsWindows ? 'windows' : IsMacOS ? 'osx' : 'linux';
 
   const platformOverrides = (base as any)[platformKey] as
     | Record<string, unknown>
@@ -133,7 +131,7 @@ function dumpConfigureOutput(
     const res = cp.spawnSync('cmake', ['--preset', presetName], {
       cwd: projectDir,
       encoding: 'utf-8',
-      shell: process.platform === 'win32'
+      shell: IsWindows
     });
     if (res.error) {
       console.log(
@@ -178,7 +176,7 @@ function dumpBuildOutput(logPrefix: string, buildDir: string): void {
   try {
     const res = cp.spawnSync('cmake', ['--build', buildDir], {
       encoding: 'utf-8',
-      shell: process.platform === 'win32'
+      shell: IsWindows
     });
     if (res.error) {
       console.log(
@@ -308,7 +306,6 @@ export async function configureAndBuildMinimalQtProject(
   // `cmake.useVsDeveloperEnvironment: 'always'`. The `architecture` field
   // uses the presets-spec "external" strategy: CMake ignores it, but CMake
   // Tools reads it to pick the environment's target architecture.
-  const isWin = process.platform === 'win32';
   const presets = {
     version: 3,
     configurePresets: [
@@ -317,7 +314,7 @@ export async function configureAndBuildMinimalQtProject(
         displayName: 'Qt Debug Configuration',
         description: 'Debug build using Qt with CMake Presets',
         binaryDir: buildDir,
-        ...(isWin
+        ...(IsWindows
           ? {
               generator: 'Ninja',
               architecture: { value: 'x64', strategy: 'external' }
@@ -326,7 +323,7 @@ export async function configureAndBuildMinimalQtProject(
         cacheVariables: {
           CMAKE_BUILD_TYPE: 'Debug',
           CMAKE_PREFIX_PATH: qtEnv.leaf,
-          ...(isWin
+          ...(IsWindows
             ? {
                 CMAKE_C_COMPILER: 'clang-cl',
                 CMAKE_CXX_COMPILER: 'clang-cl'
@@ -399,7 +396,7 @@ export async function configureAndBuildMinimalQtProject(
 
   // Ninja (single-config) is pinned on Windows, so the binary lands directly
   // in the build directory on every platform.
-  const bin = process.platform === 'win32' ? 'hello.exe' : 'hello';
+  const bin = 'hello' + OSExeSuffix;
   const outPath = path.join(buildDir, bin);
   dlog(`${logPrefix} Checking for binary at`, outPath);
 
