@@ -266,13 +266,6 @@ export async function fetchWithAbort(
   });
 }
 
-export async function waitForQtCpp() {
-  const qtcpp = vscode.extensions.getExtension('theqtcompany.qt-cpp');
-  if (qtcpp) {
-    await qtcpp.activate();
-  }
-}
-
 export function findQtPathsInInstallationPath(dir: string): string | undefined {
   const qtpathsVersions = ['qtpaths', 'qtpaths6'];
   const suffixes = [OSExeSuffix];
