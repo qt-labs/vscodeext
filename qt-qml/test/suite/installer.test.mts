@@ -8,7 +8,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import * as vscode from 'vscode';
 
-import { OSExeSuffix } from 'qt-lib';
+import { OSExeSuffix, IsWindows } from 'qt-lib';
 import * as installer from '@/installer.mjs';
 import { VersionedInstallations } from '@/versioned-installations.mjs';
 
@@ -53,7 +53,7 @@ function installFakeBuild(
 // suitable executable can be provided on this machine (caller should skip).
 function installRunnableBuild(version: installer.InstallVersion): boolean {
   let content: string | Buffer;
-  if (process.platform === 'win32') {
+  if (IsWindows) {
     // A .exe must be a real binary; reuse the node.exe that runs the tests.
     const where = spawnSync('where', ['node'], { encoding: 'utf8' });
     const nodePath = where.stdout

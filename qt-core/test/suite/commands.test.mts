@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import {
+  Home,
   isMultiWorkspace,
   QtAdditionalPath,
   AdditionalQtPathsName,
@@ -12,7 +13,6 @@ import {
   generateDefaultQtPathsName
 } from 'qt-lib';
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import {
   addQtPathToSettings,
@@ -373,7 +373,7 @@ describe('command: registerQt', () => {
 
     // Pick one candidate and pretend it exists
     const candidates = getDefaultQtRootCandidates();
-    const portable = path.join(os.homedir(), 'Qt');
+    const portable = path.join(Home, 'Qt');
     // Guard to ensure test stays aligned with production candidates
     expect(
       candidates.includes(portable),
