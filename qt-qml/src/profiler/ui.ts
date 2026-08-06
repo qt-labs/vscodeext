@@ -32,6 +32,7 @@ export class QmlProfilerUI {
     this._recordingStatusItem.tooltip =
       'QML Profiler is connecting. Click to stop.';
     this._recordingStatusItem.command = 'qt-qml.stopQmlProfiler';
+    this._recordingStatusItem.backgroundColor = undefined;
     this._recordingStatusItem.show();
   }
 
@@ -50,6 +51,9 @@ export class QmlProfilerUI {
     this._recordingStatusItem.tooltip =
       'QML Profiler is recording. Click to stop and save trace.';
     this._recordingStatusItem.command = 'qt-qml.stopQmlProfiler';
+    this._recordingStatusItem.backgroundColor = new vscode.ThemeColor(
+      'statusBarItem.errorBackground'
+    );
     this._recordingStatusItem.show();
   }
 
