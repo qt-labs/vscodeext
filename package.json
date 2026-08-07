@@ -135,5 +135,10 @@
   },
   "dependencies": {
     "commander": "^12.1.0"
+  },
+  "allowScripts": {
+    "keytar": true,
+    "oxc-resolver": true,
+    "@vscode/vsce-sign": true
   }
 }

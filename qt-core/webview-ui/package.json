@@ -45,5 +45,9 @@
     "marked": "^15.0.7",
     "nanoid": "^5.1.5",
     "zod": "^3.25.67"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "@parcel/watcher": true
   }
 }
