@@ -18,7 +18,8 @@ export {
   readCMakeCacheVar,
   prepareStandardCMakeArgs,
   selectAndApplyKit,
-  CMakeConfigurator
+  CMakeConfigurator,
+  setConfigurePresetWithRetry
 } from '../../qt-lib/test/helper.mjs';
 
 /**

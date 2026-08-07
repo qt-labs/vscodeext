@@ -16,6 +16,7 @@ import {
   cmakeConfigForWorkspace,
   prepareCMakeQtEnvWithVersion,
   readCMakeCacheVar,
+  setConfigurePresetWithRetry,
   dlog
 } from './helper.mts';
 
@@ -26,8 +27,6 @@ import {
 // Test timing constants
 const FS_SETTLE_DELAY_MS = 500; // Wait for file system to settle after writing files
 const DISK_FLUSH_DELAY_MS = 400; // Wait for build artifacts to flush to disk
-const PRESET_APPLY_TIMEOUT_MS = 30_000; // Give up waiting for CMake Tools to apply the preset
-const PRESET_APPLY_RETRY_DELAY_MS = 500; // Pause between preset apply attempts
 
 // Name of the configure preset written by `configureAndBuildMinimalQtProject`.
 const CONFIGURE_PRESET_NAME = 'qt-debug';
@@ -356,38 +355,10 @@ export async function configureAndBuildMinimalQtProject(
   const errSpy = sandbox.spy(vscode.window, 'showErrorMessage');
 
   // ---- configure + build --------------------------------------------
-  // `cmake.setConfigurePreset` resolves the preset name against CMake Tools'
-  // in-memory presets model, which is only refreshed once its file watcher
-  // has reparsed the CMakePresets.json written above. If the reload has not
-  // happened yet (seen on macOS CI), the lookup fails and CMake Tools
-  // silently resets the selection to null instead of applying it — and the
-  // cmake.configure below then blocks forever on a preset quick pick nobody
-  // can answer. Retry until the active preset reads back correctly.
   dlog(`${logPrefix} Setting configure preset: ${CONFIGURE_PRESET_NAME}`);
-  const presetDeadline = Date.now() + PRESET_APPLY_TIMEOUT_MS;
-  for (;;) {
-    await vscode.commands.executeCommand(
-      'cmake.setConfigurePreset',
-      CONFIGURE_PRESET_NAME
-    );
-    const activePreset = await vscode.commands.executeCommand<string>(
-      'cmake.activeConfigurePresetName'
-    );
-    if (activePreset === CONFIGURE_PRESET_NAME) {
-      break;
-    }
-    if (Date.now() >= presetDeadline) {
-      throw new Error(
-        `${logPrefix} CMake Tools did not apply configure preset ` +
-          `'${CONFIGURE_PRESET_NAME}' within ${PRESET_APPLY_TIMEOUT_MS}ms ` +
-          `(active preset: '${activePreset}')`
-      );
-    }
-    dlog(
-      `${logPrefix} Configure preset not applied yet (active: '${activePreset}'), retrying...`
-    );
-    await delay(PRESET_APPLY_RETRY_DELAY_MS);
-  }
+  await setConfigurePresetWithRetry(CONFIGURE_PRESET_NAME, (msg) =>
+    dlog(`${logPrefix} ${msg}`)
+  );
   await waitForVSCodeIdle();
 
   dlog(`${logPrefix} Running cmake.configure...`);

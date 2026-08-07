@@ -292,6 +292,54 @@ export function cmakeConfigForWorkspace(ws: vscode.WorkspaceFolder) {
   return new CMakeConfigurator(ws);
 }
 
+const PRESET_APPLY_TIMEOUT_MS = 30_000; // Give up waiting for CMake Tools to apply the preset
+const PRESET_APPLY_RETRY_DELAY_MS = 500; // Pause between preset apply attempts
+
+/**
+ * Sets the CMake Tools configure preset and verifies it was applied.
+ *
+ * `cmake.setConfigurePreset` resolves the preset name against CMake Tools'
+ * in-memory presets model, which is only refreshed once its file watcher
+ * has reparsed a freshly written CMakePresets.json. If the reload has not
+ * happened yet (seen on macOS and Windows CI), the lookup fails and CMake
+ * Tools silently resets the selection to null instead of applying it — and
+ * a subsequent `cmake.configure` blocks forever on a preset quick pick
+ * nobody can answer. Retry until the active preset reads back correctly.
+ *
+ * @param presetName - Name of the configure preset to apply.
+ * @param log - Optional sink for retry diagnostics (e.g. a test's `dlog`).
+ */
+export async function setConfigurePresetWithRetry(
+  presetName: string,
+  log: (message: string) => void = () => {
+    /* silent by default */
+  }
+): Promise<void> {
+  const deadline = Date.now() + PRESET_APPLY_TIMEOUT_MS;
+  for (;;) {
+    await vscode.commands.executeCommand(
+      'cmake.setConfigurePreset',
+      presetName
+    );
+    const activePreset = await vscode.commands.executeCommand<string>(
+      'cmake.activeConfigurePresetName'
+    );
+    if (activePreset === presetName) {
+      break;
+    }
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `CMake Tools did not apply configure preset '${presetName}' ` +
+          `within ${PRESET_APPLY_TIMEOUT_MS}ms (active preset: '${activePreset}')`
+      );
+    }
+    log(
+      `Configure preset not applied yet (active: '${activePreset}'), retrying...`
+    );
+    await delay(PRESET_APPLY_RETRY_DELAY_MS);
+  }
+}
+
 /**
  * Reads a specific variable value from a CMake build directory's `CMakeCache.txt` file.
  *

@@ -22,7 +22,8 @@ import {
   getWorkspaceFolderOrThrow,
   cleanBuildDir,
   readCMakeCacheVar,
-  cmakeConfigForWorkspace
+  cmakeConfigForWorkspace,
+  setConfigurePresetWithRetry
 } from '../helper.mts';
 
 // Test timing constants
@@ -99,10 +100,7 @@ describe('presets: CMake Presets integration', function () {
 
     // Set the configure preset using the correct CMake Tools command
     console.log('Setting configure preset: qt-debug');
-    await vscode.commands.executeCommand(
-      'cmake.setConfigurePreset',
-      'qt-debug'
-    );
+    await setConfigurePresetWithRetry('qt-debug', (msg) => console.log(msg));
     await waitForVSCodeIdle();
 
     console.log('Running cmake.configure with presets...');
