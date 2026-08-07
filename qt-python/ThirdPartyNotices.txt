@@ -677,7 +677,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-brace-expansion 5.0.6 - MIT
+brace-expansion 5.0.9 - MIT
 https://github.com/juliangruber/brace-expansion#readme
 
 MIT License
