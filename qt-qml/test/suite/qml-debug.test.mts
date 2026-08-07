@@ -17,7 +17,8 @@ import {
   cleanBuildDir,
   cmakeConfigForWorkspace,
   waitForVSCodeIdle,
-  CMakeConfigurator
+  CMakeConfigurator,
+  setConfigurePresetWithRetry
 } from '../helper.mts';
 import {
   prepareQmlBreakpointsFromMarkers,
@@ -130,9 +131,8 @@ describe('QML Debugger integration', function () {
 
     // Set the configure preset
     console.log('[qml-debug] Setting configure preset: qml-debug');
-    await vscode.commands.executeCommand(
-      'cmake.setConfigurePreset',
-      'qml-debug'
+    await setConfigurePresetWithRetry('qml-debug', (msg) =>
+      console.log('[qml-debug]', msg)
     );
     await waitForVSCodeIdle();
 
