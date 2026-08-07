@@ -632,5 +632,10 @@
       "diff": "^8.0.3",
       "serialize-javascript": "^7.0.5"
     }
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "keytar": true,
+    "@vscode/vsce-sign": true
   }
 }
