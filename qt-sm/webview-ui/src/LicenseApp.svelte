@@ -13,9 +13,13 @@
   let selectedAgreement: LicenseAgreement | undefined = $derived(
     agreements[selectedIndex]
   );
+  // The user must explicitly tick the accept checkbox before the primary
+  // button unlocks.
+  let accepted: boolean = $state(false);
 
   let cancelBtn: HTMLButtonElement | undefined = $state();
   let acceptBtn: HTMLButtonElement | undefined = $state();
+  let acceptCheckbox: HTMLInputElement | undefined = $state();
 
   // @ts-ignore — acquireVsCodeApi is injected by the host
   const vscodeApi = typeof acquireVsCodeApi === 'function'
@@ -31,10 +35,14 @@
     if (msg.type === 'init') {
       agreements = msg.payload.agreements;
       selectedIndex = 0;
+      accepted = false;
     }
   }
 
   function onAccept() {
+    if (!accepted) {
+      return;
+    }
     postMessage({ type: 'accept' });
   }
 
@@ -43,20 +51,28 @@
   }
 
   function handleGlobalKeydown(event: KeyboardEvent) {
-    const btns = [cancelBtn, acceptBtn].filter(Boolean) as HTMLButtonElement[];
-    if (btns.length === 0) {
+    // Focus cycle in visual order: checkbox, Cancel, Continue. Skip
+    // disabled buttons (Continue while unchecked) so arrow-key navigation
+    // never lands on a control that cannot be activated.
+    type Control = HTMLInputElement | HTMLButtonElement;
+    const controls = [acceptCheckbox, cancelBtn, acceptBtn].filter(
+      (c) => c && !c.disabled
+    ) as Control[];
+    if (controls.length === 0) {
       return;
     }
-    const focused = btns.indexOf(document.activeElement as HTMLButtonElement);
+    const active = document.activeElement as Control | null;
+    const focused = active ? controls.indexOf(active) : -1;
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
       event.preventDefault();
-      btns[(focused + 1) % btns.length]?.focus();
+      controls[(focused + 1) % controls.length]?.focus();
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
       event.preventDefault();
-      btns[(focused - 1 + btns.length) % btns.length]?.focus();
+      controls[(focused - 1 + controls.length) % controls.length]?.focus();
     } else if (event.key === 'Enter' || event.key === ' ') {
-      const active = document.activeElement as HTMLButtonElement | null;
-      if (active && btns.includes(active)) {
+      // Enter activates the focused control; for the checkbox, click()
+      // toggles it (Space already toggles natively, Enter does not).
+      if (active && controls.includes(active)) {
         event.preventDefault();
         active.click();
       }
@@ -72,10 +88,11 @@
     };
   });
 
-  // Auto-focus the primary button once it is rendered
+  // Auto-focus the accept checkbox once it is rendered — the primary button
+  // starts disabled, so the checkbox is the first actionable control.
   $effect(() => {
-    if (agreements.length > 0 && acceptBtn) {
-      acceptBtn.focus();
+    if (agreements.length > 0 && acceptCheckbox) {
+      acceptCheckbox.focus();
     }
   });
 </script>
@@ -112,11 +129,28 @@
         </div>
       </div>
 
+      <!-- Accept checkbox: gates the Continue button -->
+      <div class="accept-row">
+        <label class="accept-label">
+          <input
+            type="checkbox"
+            bind:this={acceptCheckbox}
+            bind:checked={accepted}
+          />
+          I have read these and accept the license agreements
+        </label>
+      </div>
+
       <!-- Footer with action buttons -->
       <div class="footer" role="group">
         <button bind:this={cancelBtn} class="btn btn-secondary" onclick={onCancel}>Cancel</button>
-        <button bind:this={acceptBtn} class="btn btn-primary" onclick={onAccept}>
-          Agree &amp; Continue
+        <button
+          bind:this={acceptBtn}
+          class="btn btn-primary"
+          disabled={!accepted}
+          onclick={onAccept}
+        >
+          Continue
         </button>
       </div>
     </div>
@@ -237,12 +271,43 @@
     color: var(--vscode-editor-foreground);
   }
 
+  /* ── Accept checkbox ──────────────────────────────────────────── */
+  .accept-row {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .accept-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .accept-label input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--vscode-button-background);
+  }
+
+  .accept-label input[type='checkbox']:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+  }
+
   /* ── Footer ───────────────────────────────────────────────────── */
   .footer {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
     flex-shrink: 0;
+    border-top: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
+    padding-top: 15px;
   }
 
   .btn {
@@ -266,6 +331,15 @@
 
   .btn-primary:hover {
     background-color: var(--vscode-button-hoverBackground);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .btn-primary:disabled:hover {
+    background-color: var(--vscode-button-background);
   }
 
   .btn-secondary {
