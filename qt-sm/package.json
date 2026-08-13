@@ -116,6 +116,11 @@
         "category": "Qt"
       },
       {
+        "command": "qt-sm.createAccount",
+        "title": "%qt-sm.command.createAccount.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-sm.resetTestState",
         "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"

@@ -14,6 +14,7 @@ import {
 import {
   EXTENSION_ID,
   CONF_INSTALLATION_PATH,
+  CREATE_ACCOUNT_URL,
   RESET_PASSWORD_URL
 } from '@/constants';
 import {
@@ -184,6 +185,14 @@ export function getLoggedIn() {
   return loggedIn;
 }
 
+// Account label (email) of the active session, shown in the walkthrough's
+// sign-in step. Kept in sync with the account view's session.
+let accountLabel: string | undefined;
+
+export function getAccountLabel(): string | undefined {
+  return accountLabel;
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
   logger.info(`Activating ${context.extension.id}`);
@@ -242,12 +251,20 @@ export async function activate(context: vscode.ExtensionContext) {
   accountViewProvider.setTreeView(accountTreeView);
   context.subscriptions.push(accountTreeView);
 
+  // Update both the account view and the walkthrough's account label.
+  const setAccountSession = (
+    session: vscode.AuthenticationSession | undefined
+  ) => {
+    accountLabel = session?.account.label;
+    accountViewProvider.setSession(session);
+  };
+
   // Check login status at startup
   const sessions = await authProvider.getSessions();
   if (sessions.length > 0 && sessions[0]) {
     logger.info(`Already logged in as ${sessions[0].account.label}`);
     setLoggedIn(true);
-    accountViewProvider.setSession(sessions[0]);
+    setAccountSession(sessions[0]);
     syncInstalledPackages();
   } else {
     logger.info('No active session, attempting to renew stored credentials');
@@ -256,12 +273,12 @@ export async function activate(context: vscode.ExtensionContext) {
       logger.info(`Session renewed for ${renewed.account.label}`);
       setLoggedIn(true);
       const renewedSessions = await authProvider.getSessions();
-      accountViewProvider.setSession(renewedSessions[0]);
+      setAccountSession(renewedSessions[0]);
       syncInstalledPackages();
     } else {
       logger.info('No stored credentials found, user is not logged in');
       setLoggedIn(false);
-      accountViewProvider.setSession(undefined);
+      setAccountSession(undefined);
     }
   }
 
@@ -271,20 +288,21 @@ export async function activate(context: vscode.ExtensionContext) {
       logger.info('Authentication sessions changed');
       if (e.added && e.added.length > 0) {
         setLoggedIn(true);
-        // Re-render so the sign-in step's button is recomputed as disabled.
-        refreshWalkthrough();
         const currentSessions = await authProvider.getSessions();
-        accountViewProvider.setSession(currentSessions[0]);
+        setAccountSession(currentSessions[0]);
+        // Re-render (after the account label is known) so the sign-in step
+        // shows the signed-in account and its Sign Out action.
+        refreshWalkthrough();
         syncInstalledPackages();
       } else if (e.removed && e.removed.length > 0) {
         setLoggedIn(false);
-        accountViewProvider.setSession(undefined);
+        setAccountSession(undefined);
         // Signed out: the sign-in step (and everything gated behind it)
         // reverts, so re-render the walkthrough.
         refreshWalkthrough();
       } else if (e.changed && e.changed.length > 0) {
         const currentSessions = await authProvider.getSessions();
-        accountViewProvider.setSession(currentSessions[0]);
+        setAccountSession(currentSessions[0]);
       }
     })
   );
@@ -310,6 +328,9 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.resetPassword`, () =>
       vscode.env.openExternal(vscode.Uri.parse(RESET_PASSWORD_URL))
+    ),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.createAccount`, () =>
+      vscode.env.openExternal(vscode.Uri.parse(CREATE_ACCOUNT_URL))
     ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.installRequiredExtensions`,
