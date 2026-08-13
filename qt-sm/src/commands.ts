@@ -49,6 +49,10 @@ import {
   isAnyVersionInstalledOnDisk
 } from '@/installed-packages-store';
 import {
+  type InstalledPackageItem,
+  refreshInstalledPackagesView
+} from '@/installed-packages-view';
+import {
   refreshWalkthrough,
   refreshLatestFrameworkState
 } from '@/walkthrough-panel';
@@ -308,12 +312,15 @@ export function syncInstalledPackages() {
   const hasInstalled = isAnyVersionInstalledOnDisk();
   if (hasInstalled) {
     logger.info('Found installed Qt version(s) on disk');
-    void vscode.commands.executeCommand(
-      'setContext',
-      `${EXTENSION_ID}.packageInstalled`,
-      true
-    );
   }
+  // Always set the context (also to false) so the Installed Packages view
+  // hides again when the last version is removed.
+  void vscode.commands.executeCommand(
+    'setContext',
+    `${EXTENSION_ID}.packageInstalled`,
+    hasInstalled
+  );
+  refreshInstalledPackagesView();
 }
 
 async function requireLogin(): Promise<boolean> {
@@ -542,6 +549,116 @@ function registerInstalledQtPaths(version: string): void {
   message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
   logger.info(`Notifying coreAPI with message: ${message.toString()}`);
   coreAPI?.notify(message);
+}
+
+/**
+ * Remove qtpaths entries under the given version's directory from qt-core's
+ * additional Qt paths — the inverse of registerInstalledQtPaths — and notify
+ * qt-cpp via coreAPI so the kit disappears immediately.
+ */
+function unregisterInstalledQtPaths(version: string): void {
+  const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawInstallRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawInstallRoot) {
+    return;
+  }
+  const installRoot = resolveConfiguration(rawInstallRoot);
+  const versionDir = path.join(installRoot, 'QtFramework', version);
+
+  const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
+  const existing = coreConfig.inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  const filtered = currentPaths.filter((p) => {
+    const pPath = typeof p === 'string' ? p : (p as { path: string }).path;
+    return !pPath.startsWith(versionDir);
+  });
+  if (filtered.length === currentPaths.length) {
+    return;
+  }
+  void coreConfig.update(
+    AdditionalQtPathsName,
+    filtered.length > 0 ? filtered : undefined,
+    vscode.ConfigurationTarget.Global
+  );
+  logger.info(`Unregistered Qt installation(s) under ${versionDir}`);
+
+  const allPaths: QtAdditionalPath[] = filtered.map((p) =>
+    typeof p === 'string' ? { path: p } : (p as QtAdditionalPath)
+  );
+  const message = new QtWorkspaceConfigMessage(CoreKey.GLOBAL_WORKSPACE);
+  coreAPI?.setValue(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.ADDITIONAL_QT_PATHS,
+    allPaths
+  );
+  message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
+  coreAPI?.notify(message);
+}
+
+/**
+ * Remove an installed Qt version. Invoked from the trash icon in the
+ * Installed Packages view.
+ *
+ * TODO: Use the service's `packages/remove` once it is implemented — it
+ * currently fails with "packages/remove is not yet implemented", so the
+ * version directory is deleted from disk directly instead.
+ */
+export async function removePackage(
+  item?: InstalledPackageItem
+): Promise<void> {
+  const version = item?.version;
+  if (!version) {
+    return;
+  }
+  const confirm = await vscode.window.showWarningMessage(
+    `Remove Qt ${version}? This deletes the installed files from disk.`,
+    { modal: true },
+    'Remove'
+  );
+  if (confirm !== 'Remove') {
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawPath) {
+    void vscode.window.showErrorMessage('Installation path is not set.');
+    return;
+  }
+  const versionDir = path.join(
+    resolveConfiguration(rawPath),
+    'QtFramework',
+    version
+  );
+
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Removing Qt ${version}...`,
+        cancellable: false
+      },
+      async () => fs.promises.rm(versionDir, { recursive: true, force: true })
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Failed to remove Qt ${version}: ${msg}`);
+    void vscode.window.showErrorMessage(
+      `Failed to remove Qt ${version}: ${msg}`
+    );
+    return;
+  }
+
+  logger.info(`Removed Qt ${version} from disk: ${versionDir}`);
+  unregisterInstalledQtPaths(version);
+  void vscode.window.showInformationMessage(`Removed Qt ${version}.`);
+  // Updates the packageInstalled context and the Installed Packages view.
+  syncInstalledPackages();
+  // The framework step (and "Get latest") may have regressed.
+  refreshWalkthrough();
+  void refreshLatestFrameworkState();
 }
 
 // Known license agreement IDs from the backend (alpha testing).
@@ -790,11 +907,8 @@ async function installPackageByIdImpl(
       void vscode.window.showInformationMessage(
         `Successfully installed ${pkg.name || pkg.id} ${pkg.version}`
       );
-      void vscode.commands.executeCommand(
-        'setContext',
-        `${EXTENSION_ID}.packageInstalled`,
-        true
-      );
+      // Updates the packageInstalled context and the Installed Packages view.
+      syncInstalledPackages();
       // Re-render so the framework step's install button is recomputed as
       // disabled now that a version is installed.
       refreshWalkthrough();
