@@ -9,6 +9,8 @@ export interface WalkthroughAction {
   disabled?: boolean;
   /** Push the button to the right edge of the step's action row. */
   trailing?: boolean;
+  /** Render as plain text (e.g. the "or" between buttons), not a button. */
+  text?: boolean;
   command?: string;
   commandArgs?: unknown;
 }
