@@ -12,6 +12,7 @@
   "qt-sm.command.login.title": "SM: Login to Qt Account",
   "qt-sm.command.logout.title": "SM: Logout from Qt Account",
   "qt-sm.command.resetPassword.title": "SM: Reset Qt Account Password",
+  "qt-sm.command.createAccount.title": "SM: Create Qt Account",
   "qt-sm.command.resetTestState.title": "SM: Reset Test State (testing only)",
   "qt-sm.walkthrough.getStarted.title": "Get started with Qt",
   "qt-sm.walkthrough.getStarted.description": "Take your first steps in setting up a Qt project. Complete each step in order to unlock the next.",

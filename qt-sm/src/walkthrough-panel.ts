@@ -10,7 +10,11 @@ import {
 } from '@/constants';
 import { isAnyVersionInstalledOnDisk } from '@/installed-packages-store';
 import { isLatestFrameworkInstalled } from '@/latest-framework';
-import { getLoggedIn, getRequiredExtensionsContext } from './extension';
+import {
+  getAccountLabel,
+  getLoggedIn,
+  getRequiredExtensionsContext
+} from './extension';
 import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 
 const logger = createLogger('walkthrough-panel');
@@ -79,6 +83,8 @@ interface WalkthroughAction {
   disabled?: boolean;
   /** Push the button to the right edge of the step's action row. */
   trailing?: boolean;
+  /** Render as plain text (e.g. the "or" between buttons), not a button. */
+  text?: boolean;
   command?: string;
   commandArgs?: unknown;
 }
@@ -155,22 +161,41 @@ function getDefaultConfig(
       {
         id: 'signin',
         title: 'Sign in to Qt Account',
-        description:
-          'Sign in to your Qt Account to get started. This is what lets you download and install Qt.',
+        description: s.signin
+          ? `You are currently signed in as ${getAccountLabel() ?? 'your Qt Account'}`
+          : 'Sign in to your Qt Account to get started. This is what lets you download and install Qt.',
         status: computeStatus(s.signin, true),
-        actions: [
-          {
-            label: 'Sign In',
-            primary: true,
-            disabled: s.signin,
-            command: `${EXTENSION_ID}.login`
-          },
-          {
-            label: 'Reset password',
-            trailing: true,
-            command: `${EXTENSION_ID}.resetPassword`
-          }
-        ]
+        actions: s.signin
+          ? [
+              {
+                label: 'Sign Out',
+                primary: true,
+                command: `${EXTENSION_ID}.logout`
+              },
+              {
+                label: 'Reset password',
+                trailing: true,
+                command: `${EXTENSION_ID}.resetPassword`
+              }
+            ]
+          : [
+              {
+                label: 'Sign In',
+                primary: true,
+                command: `${EXTENSION_ID}.login`
+              },
+              { label: 'or', text: true },
+              {
+                label: 'Create Account',
+                primary: true,
+                command: `${EXTENSION_ID}.createAccount`
+              },
+              {
+                label: 'Forgot Password',
+                trailing: true,
+                command: `${EXTENSION_ID}.resetPassword`
+              }
+            ]
       },
       {
         id: 'extensions',

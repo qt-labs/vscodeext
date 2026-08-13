@@ -43,16 +43,20 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
             transition:fade={{ duration: 200, delay: 100 }}
           >
             {#each step.actions as action}
-              <button
-                class={action.primary
-                  ? 'action-btn-primary'
-                  : 'action-btn-secondary'}
-                class:trailing={action.trailing}
-                disabled={action.disabled}
-                onclick={() => onaction?.(step.id, action.command ?? '', action.commandArgs)}
-              >
-                {action.label}
-              </button>
+              {#if action.text}
+                <span class="action-separator">{action.label}</span>
+              {:else}
+                <button
+                  class={action.primary
+                    ? 'action-btn-primary'
+                    : 'action-btn-secondary'}
+                  class:trailing={action.trailing}
+                  disabled={action.disabled}
+                  onclick={() => onaction?.(step.id, action.command ?? '', action.commandArgs)}
+                >
+                  {action.label}
+                </button>
+              {/if}
             {/each}
           </div>
         {/if}
@@ -94,14 +98,18 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       {#if step.actions?.length}
         <div class="active-actions" transition:fade={{ duration: 200, delay: 50 }}>
           {#each step.actions as action}
-            <button
-              class={action.primary ? 'action-btn-primary' : 'action-btn-secondary'}
-              class:trailing={action.trailing}
-              disabled={action.disabled}
-              onclick={() => onaction?.(step.id, action.command ?? '', action.commandArgs)}
-            >
-              {action.label}
-            </button>
+            {#if action.text}
+              <span class="action-separator">{action.label}</span>
+            {:else}
+              <button
+                class={action.primary ? 'action-btn-primary' : 'action-btn-secondary'}
+                class:trailing={action.trailing}
+                disabled={action.disabled}
+                onclick={() => onaction?.(step.id, action.command ?? '', action.commandArgs)}
+              >
+                {action.label}
+              </button>
+            {/if}
           {/each}
         </div>
       {/if}
@@ -193,6 +201,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   /* Trailing actions (e.g. "Reset password") sit at the row's right edge. */
   .active-actions .trailing {
     margin-left: auto;
+  }
+
+  /* Plain-text separator between buttons (e.g. "Sign In *or* Create Account"). */
+  .action-separator {
+    align-self: center;
+    color: var(--vscode-descriptionForeground);
+    font-size: 0.85em;
   }
 
   .action-btn-primary {
