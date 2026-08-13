@@ -144,7 +144,7 @@ function getDefaultConfig(
 ): WalkthroughConfig {
   const s = completion;
   return {
-    title: 'Get started with Qt',
+    title: 'Install Qt',
     description:
       'Take your first steps in setting up a Qt project. Complete each step in order to unlock the next.',
     successTitle: "You're all set!",
@@ -322,6 +322,9 @@ function wirePanel(
   currentPanel = panel;
   panelContext = context;
 
+  // Serialized panels are restored with their old tab title after a window
+  // reload; normalize it so renames take effect there too.
+  panel.title = 'Install Qt';
   // Give the tab the themed Qt icon, matching the Qt Welcome page.
   panel.iconPath = createWebviewPanelIcons(context);
 
@@ -416,7 +419,7 @@ export function showWalkthroughPanel(
 
   const panel = vscode.window.createWebviewPanel(
     `${EXTENSION_ID}.walkthrough`,
-    'Get Started with Qt',
+    'Install Qt',
     vscode.ViewColumn.Active,
     {
       enableScripts: true,
@@ -540,7 +543,7 @@ function getWebviewHtml(
                    img-src ${webview.cspSource} https: data:;"
         />
         <link rel="stylesheet" type="text/css" href="${cssUri.toString()}" />
-        <title>Get Started with Qt</title>
+        <title>Install Qt</title>
       </head>
       <body data-app="walkthrough">
         <div id="app"></div>
