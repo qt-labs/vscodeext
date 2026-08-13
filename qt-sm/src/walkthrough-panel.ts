@@ -407,19 +407,8 @@ function wirePanel(
           break;
         }
         case 'resetAll': {
-          // Re-send init with fresh (all-false) completion so the
-          // walkthrough restarts from step 1, and clear the done flag.
           logger.info('Walkthrough reset requested by webview');
-          getWalkthroughState(context).firstAppDone = false;
-          postConfig(
-            {
-              signin: getLoggedIn(),
-              extensions: getRequiredExtensionsContext(),
-              framework: isAnyVersionInstalledOnDisk(),
-              firstApp: false
-            },
-            false
-          );
+          void resetWalkthroughState(context);
           break;
         }
       }
@@ -495,6 +484,21 @@ export function refreshWalkthrough(): void {
     return;
   }
   postConfig(computeLiveCompletion(panelContext));
+}
+
+/**
+ * Clear all persisted walkthrough state (the first-app step and the global
+ * "get started done" flag) and re-render the panel if one is open, so the
+ * walkthrough restarts from step 1. Used by the webview's Reset link and by
+ * resetTestState.
+ */
+export async function resetWalkthroughState(
+  context: vscode.ExtensionContext
+): Promise<void> {
+  getWalkthroughState(context).firstAppDone = false;
+  // Await so the re-render below reads the cleared flag.
+  await setGetStartedDone(false);
+  refreshWalkthrough();
 }
 
 /**
