@@ -31,7 +31,7 @@ import {
 } from '@/commands';
 import { disconnect } from '@/service-connection';
 import { registerAuthenticationProvider } from '@/auth-provider';
-import { AccountViewProvider } from '@/account-view';
+import { registerAccountView } from '@/account-view';
 import { initSurvey, disposeSurvey } from '@/survey';
 import {
   showWalkthroughPanel,
@@ -243,13 +243,7 @@ export async function activate(context: vscode.ExtensionContext) {
   setAuthProvider(authProvider);
 
   // Activity bar account view
-  const accountViewProvider = new AccountViewProvider();
-  const accountTreeView = vscode.window.createTreeView(
-    `${EXTENSION_ID}.accountView`,
-    { treeDataProvider: accountViewProvider }
-  );
-  accountViewProvider.setTreeView(accountTreeView);
-  context.subscriptions.push(accountTreeView);
+  const accountViewProvider = registerAccountView(context);
 
   // Update both the account view and the walkthrough's account label.
   const setAccountSession = (
