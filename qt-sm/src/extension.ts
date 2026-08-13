@@ -20,6 +20,7 @@ import {
 import {
   searchPackages,
   installPackage,
+  removePackage,
   setInstallationPath,
   onInstallationPathChanged,
   login,
@@ -43,6 +44,7 @@ import {
 
 import { installBootstrap } from '@/bootstrap';
 import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
+import { registerInstalledPackagesView } from '@/installed-packages-view';
 import { publishQtToolsPaths, watchQtToolsOnDisk } from '@/qt-tools-store';
 
 const logger = createLogger('extension');
@@ -221,6 +223,8 @@ export async function activate(context: vscode.ExtensionContext) {
   watchInstalledPackagesOnDisk(context, () => {
     refreshWalkthrough();
     void refreshLatestFrameworkState();
+    // Keep the Installed Packages view and its context key in sync too.
+    syncInstalledPackages();
   });
 
   void installBootstrap();
@@ -244,6 +248,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Activity bar account view
   const accountViewProvider = registerAccountView(context);
+
+  // Activity bar installed packages view (visible while packages exist)
+  registerInstalledPackagesView(context);
+  syncInstalledPackages();
 
   // Update both the account view and the walkthrough's account label.
   const setAccountSession = (
@@ -327,6 +335,10 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.env.openExternal(vscode.Uri.parse(CREATE_ACCOUNT_URL))
     ),
     vscode.commands.registerCommand(
+      `${EXTENSION_ID}.removePackage`,
+      removePackage
+    ),
+    vscode.commands.registerCommand(
       `${EXTENSION_ID}.installRequiredExtensions`,
       async () => installRequiredExtensions(context)
     ),
@@ -352,6 +364,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // The new root may contain a different set of installed Qt versions,
         // so the framework step can go forward or backward.
         refreshWalkthrough();
+        syncInstalledPackages();
         // The new root may also bundle different build tools; re-detect and
         // re-publish them to qt-core/qt-cpp.
         publishQtToolsPaths();
