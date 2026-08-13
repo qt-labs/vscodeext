@@ -51,6 +51,7 @@
           "name": "%qt-sm.view.getStarted.name%"
         },
         {
+          "type": "webview",
           "id": "qt-sm.accountView",
           "name": "%qt-sm.view.account.name%"
         }
@@ -60,16 +61,6 @@
       {
         "view": "qt-sm.getStartedView",
         "contents": "%qt-sm.view.getStarted.welcome%"
-      },
-      {
-        "view": "qt-sm.accountView",
-        "contents": "%qt-sm.view.account.welcomeLoggedOut%",
-        "when": "!qt-sm.isLoggedIn"
-      },
-      {
-        "view": "qt-sm.accountView",
-        "contents": "%qt-sm.view.account.welcomeLoggedIn%",
-        "when": "qt-sm.isLoggedIn"
       }
     ],
     "commands": [
