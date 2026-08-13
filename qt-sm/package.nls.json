@@ -1,6 +1,7 @@
 {
   "qt-sm.view.getStarted.name": "Get Started",
   "qt-sm.view.getStarted.welcome": "[Install Qt](command:qt-sm.openWalkthrough)",
+  "qt-sm.view.installedPackages.name": "Installed Packages",
   "qt-sm.view.account.name": "Qt Account",
   "qt-sm.command.searchPackages.title": "SM: Search available packages",
   "qt-sm.command.installPackage.title": "SM: Install package",
@@ -11,6 +12,7 @@
   "qt-sm.command.logout.title": "SM: Logout from Qt Account",
   "qt-sm.command.resetPassword.title": "SM: Reset Qt Account Password",
   "qt-sm.command.createAccount.title": "SM: Create Qt Account",
+  "qt-sm.command.removePackage.title": "Remove",
   "qt-sm.command.resetTestState.title": "SM: Reset Test State (testing only)",
   "qt-sm.walkthrough.getStarted.title": "Get started with Qt",
   "qt-sm.walkthrough.getStarted.description": "Take your first steps in setting up a Qt project. Complete each step in order to unlock the next.",
