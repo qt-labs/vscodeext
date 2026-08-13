@@ -51,6 +51,11 @@
           "name": "%qt-sm.view.getStarted.name%"
         },
         {
+          "id": "qt-sm.installedPackagesView",
+          "name": "%qt-sm.view.installedPackages.name%",
+          "when": "qt-sm.packageInstalled"
+        },
+        {
           "type": "webview",
           "id": "qt-sm.accountView",
           "name": "%qt-sm.view.account.name%"
@@ -112,6 +117,12 @@
         "category": "Qt"
       },
       {
+        "command": "qt-sm.removePackage",
+        "title": "%qt-sm.command.removePackage.title%",
+        "category": "Qt",
+        "icon": "$(trash)"
+      },
+      {
         "command": "qt-sm.resetTestState",
         "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"
@@ -126,6 +137,17 @@
         {
           "command": "qt-sm.logout",
           "when": "qt-sm.isLoggedIn"
+        },
+        {
+          "command": "qt-sm.removePackage",
+          "when": "false"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "qt-sm.removePackage",
+          "when": "view == qt-sm.installedPackagesView && viewItem == installedPackage",
+          "group": "inline"
         }
       ]
     },

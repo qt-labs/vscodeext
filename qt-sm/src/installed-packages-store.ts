@@ -30,21 +30,34 @@ export function isVersionInstalledOnDisk(version: string): boolean {
  * subdirectory.
  */
 export function isAnyVersionInstalledOnDisk(): boolean {
+  return listInstalledVersionsOnDisk().length > 0;
+}
+
+/**
+ * List the Qt versions installed on disk, sorted newest first.
+ * Each subdirectory of <installationPath>/QtFramework/ is a version.
+ */
+export function listInstalledVersionsOnDisk(): string[] {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
   if (!rawPath) {
-    return false;
+    return [];
   }
   const installPath = resolveConfiguration(rawPath);
   const frameworkDir = path.join(installPath, 'QtFramework');
   if (!fs.existsSync(frameworkDir)) {
-    return false;
+    return [];
   }
   try {
     const entries = fs.readdirSync(frameworkDir, { withFileTypes: true });
-    return entries.some((e) => e.isDirectory());
+    return entries
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort((a, b) =>
+        b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' })
+      );
   } catch {
-    return false;
+    return [];
   }
 }
 
