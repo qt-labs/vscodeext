@@ -54,7 +54,8 @@ import {
 } from '@/installed-packages-view';
 import {
   refreshWalkthrough,
-  refreshLatestFrameworkState
+  refreshLatestFrameworkState,
+  resetWalkthroughState
 } from '@/walkthrough-panel';
 import { isInstalling, setInstalling } from '@/install-state';
 import { publishQtToolsPaths } from '@/qt-tools-store';
@@ -1070,6 +1071,7 @@ export async function logout(
  *   - qtaccount.ini (Qt account credentials)
  *   - The QtSoftwareManagementService lock file
  *   - The IPC socket / named pipe
+ *   - The persisted walkthrough state, so it restarts from step 1
  *
  * It also kills any running QtSoftwareManagementService process and
  * disconnects the current IPC session.
@@ -1147,6 +1149,12 @@ export async function resetTestState(): Promise<void> {
     logger.info(
       `Removed ${String(currentPaths.length - filtered.length)} Qt path(s) under ${installPath}`
     );
+  }
+
+  // Clear the persisted walkthrough state last, so the re-render sees the
+  // already-reset sign-in and install state.
+  if (extensionContext) {
+    await resetWalkthroughState(extensionContext);
   }
 }
 
