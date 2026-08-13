@@ -2,8 +2,6 @@
   "qt-sm.view.getStarted.name": "Get Started",
   "qt-sm.view.getStarted.welcome": "[Install Qt](command:qt-sm.openWalkthrough)",
   "qt-sm.view.account.name": "Qt Account",
-  "qt-sm.view.account.welcomeLoggedOut": "Sign in to your Qt Account to manage packages.\n[Sign In](command:qt-sm.login)",
-  "qt-sm.view.account.welcomeLoggedIn": "Signed in to your Qt Account.\n[Sign Out](command:qt-sm.logout)",
   "qt-sm.command.searchPackages.title": "SM: Search available packages",
   "qt-sm.command.installPackage.title": "SM: Install package",
   "qt-sm.command.setInstallationPath.title": "SM: Set installation path",
