@@ -1,0 +1,37 @@
+/*
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+*/
+
+.qt-item-list {
+  overflow-y: auto;
+
+  & .title {
+    font-size: var(--qt-font-xs);
+    font-weight: var(--qt-font-semibold);
+    color: var(--qt-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 12px 8px;
+  }
+
+  & .item {
+    padding: 6px 12px;
+    color: var(--qt-text-muted);
+    text-align: left;
+    cursor: pointer;
+    border: none;
+    transition-property: background, color;
+    transition-duration: var(--duration-short);
+
+    &:hover {
+      background: var(--qt-hover-bg);
+      color: var(--qt-text-default);
+    }
+
+    &.active {
+      background: var(--qt-selected-bg);
+      color: var(--qt-selected-fg);
+    }
+  }
+}

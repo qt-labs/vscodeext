@@ -122,10 +122,10 @@ export function isExPackage(x: unknown): x is ExPackage {
 }
 
 // category
-export type ExCategoryType = 'general' | 'all' | 'featured';
+export type ExCategoryType = 'general' | 'all';
 
 export function isExCategoryType(x: unknown): x is ExCategoryType {
-  return x === 'general' || x === 'all' || x === 'featured';
+  return x === 'general' || x === 'all';
 }
 
 export interface ExCategory {
@@ -133,6 +133,7 @@ export interface ExCategory {
   name: string;
   tags: string[];
   count: number;
+  tagCounts: Record<string, number>;
 }
 
 export function isExCategory(x: unknown): x is ExCategory {
@@ -147,7 +148,10 @@ export function isExCategory(x: unknown): x is ExCategory {
     typeof o.name === 'string' &&
     Array.isArray(o.tags) &&
     o.tags.every((t) => typeof t === 'string') &&
-    typeof o.count === 'number'
+    typeof o.count === 'number' &&
+    typeof o.tagCounts === 'object' &&
+    o.tagCounts !== null &&
+    Object.values(o.tagCounts).every((v) => typeof v === 'number')
   );
 }
 
@@ -194,6 +198,7 @@ export function isExBrowserViewConfig(x: unknown): x is ExBrowserViewConfig {
 export type ExActionTypes =
   | 'file-open'
   | 'project-open'
+  | 'project-open-as-workspace'
   | 'project-open-file'
   | 'project-reveal'
   | 'project-create'

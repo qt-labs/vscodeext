@@ -1,0 +1,10 @@
+/*
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+*/
+
+@utility qt-absolute-cy {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+}

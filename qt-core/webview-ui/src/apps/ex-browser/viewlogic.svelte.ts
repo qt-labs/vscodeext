@@ -16,14 +16,14 @@ import {
   isExCategoryArray,
   isExBrowserViewConfig,
   isExResolvedPathsRecord
-} from "@shared/ex-browser";
+} from '@shared/ex-browser';
 import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
-import { CommandId, isErrorResponse } from "@shared/message";
-import { data, ui, type OverlayName } from './states.svelte';
+import { CommandId, isErrorResponse } from '@shared/message';
+import { data, ui } from './states.svelte';
 
 export async function onAppMount() {
-  ui.input.onEvent(onNewProjectFormEvent);
-  ui.input.onValidate(validateNewProjectForm);
+  ui.sidebar.newProject.input.onEvent(onNewProjectFormEvent);
+  ui.sidebar.newProject.input.onValidate(validateNewProjectForm);
   ui.theme.monitor.start();
 
   await loadConfigs();
@@ -32,10 +32,14 @@ export async function onAppMount() {
   if (data.packages[0]) {
     await selectPackage(data.packages[0]);
   }
+
+  setEventListenerEnabled(true);
+  ui.filter.searchInputEl?.focus();
 }
 
 export async function onAppDestroy() {
   ui.theme.monitor.stop();
+  setEventListenerEnabled(false);
 }
 
 export async function selectPackage(p: ExPackage) {
@@ -49,27 +53,28 @@ export async function selectPackage(p: ExPackage) {
 
   const categories = _.get(r, 'categories', []);
   const resolvedPaths = _.get(r, 'resolvedPaths', {});
-  data.categories = isExCategoryArray(categories) ? categories : [];
-  data.resolvedPaths =
-    isExResolvedPathsRecord(resolvedPaths) ? resolvedPaths : {};
 
-  ui.filter.query = '';
+  selectExample(undefined);
+  data.examples = [];
+  data.categories = isExCategoryArray(categories) ? categories : [];
+  data.resolvedPaths = isExResolvedPathsRecord(resolvedPaths)
+    ? resolvedPaths
+    : {};
+
+  ui.filter.tags = [];
+  ui.filter.searchInput = '';
   ui.filter.category = findCategoryByName('all');
   ui.selected.package = p;
-  ui.selected.example = undefined;
-  ui.imageUrlCache.clear();
 
-  if (ui.grid) {
-    ui.grid.scrollTop = 0;
-  }
+  ui.imageUrlCache.clear();
+  resetMainViewScroll();
 
   await loadExamples('selectPackage');
 }
 
 export async function selectCategory(category?: ExCategory | string) {
-  const c = (typeof category === 'string')
-    ? findCategoryByName(category)
-    : category;
+  const c =
+    typeof category === 'string' ? findCategoryByName(category) : category;
 
   if (!_.isEqual(ui.filter.category, c)) {
     ui.filter.category = c;
@@ -79,44 +84,42 @@ export async function selectCategory(category?: ExCategory | string) {
 
 export async function selectExample(example: ExEntry | undefined) {
   ui.selected.example = example;
-  ui.overlays.details.visible = (example !== undefined);
-  ui.overlays.details.collapsed = false;
-  ui.overlays.details.expanded = false;
+  ui.sidebar.visible = example !== undefined;
+  ui.sidebar.newProject.expanded = false;
 }
 
-export async function setQuery(q: string) {
-  const v = validateQuery(q);
-
-  if (ui.filter.query !== v) {
-    ui.filter.query = v;
+export async function setSearchInput(s: string) {
+  if (ui.filter.searchInput !== s) {
+    ui.filter.searchInput = s;
     await loadExamples();
   }
 }
 
-export async function toggleTagInQuery(tag: string) {
-  const token = TagPrefix + tag;
-  const q = !hasTagInQuery(tag)
-    ? `${ui.filter.query} ${token}`
-    : ui.filter.query.replace(token, '').trim();
-
-  await setQuery(q);
-}
-
-export function hasTagInQuery(tag: string) {
-  const token = TagPrefix + tag;
-  return ui.filter.query
-    .split(' ')
-    .some(t => t.trim() === token);
-}
-
-export function setNewProjectFormVisible(visible: boolean) {
-  if (ui.overlays.details.expanded === visible) {
+export async function toggleTag(rawTag: string) {
+  const trimmed = rawTag.trim();
+  if (trimmed.length === 0) {
     return;
   }
 
-  ui.overlays.details.expanded = visible;
+  if (isTagSelected(trimmed)) {
+    ui.filter.tags = ui.filter.tags.filter((t) => t !== trimmed);
+  } else {
+    ui.filter.tags.push(trimmed);
+  }
+
+  await loadExamples();
+}
+
+export function isTagSelected(rawTag: string) {
+  const t = rawTag.trim();
+  return t.length === 0 ? false : ui.filter.tags.includes(rawTag);
+}
+
+export function setNewProjectFormVisible(visible: boolean) {
+  ui.sidebar.newProject.expanded = visible;
+
   if (visible) {
-    ui.input.validate();
+    ui.sidebar.newProject.input.validate();
   }
 }
 
@@ -134,7 +137,7 @@ export async function runExAction(action: ExActionTypes, args: object = {}) {
 
 export async function openFolder(folder: string) {
   await vscode.post(CommandId.CommonOpenFolder, { folder });
-};
+}
 
 export async function resolveImageUrl(example: ExEntry) {
   const src = example.imageUrl;
@@ -155,42 +158,12 @@ export async function resolveImageUrl(example: ExEntry) {
   return webviewUrl;
 }
 
-export function setOverlayVisible(name: OverlayName, visible: boolean) {
-  const overlay = ui.overlays[name];
-  if (!overlay || overlay.visible === visible) {
-    return;
-  }
+export async function onNewProjectFormEvent(
+  type: NewItemForm.EventType,
+  args?: unknown
+) {
+  const controller = ui.sidebar.newProject.input;
 
-  switch (name) {
-    case 'catalog': {
-      ui.overlays.tagCloud.visible = false;
-      break;
-    }
-
-    case 'tagCloud': {
-      const o = ui.overlays.tagCloud;
-      if (visible && o.refRect) {
-        const gap = 6;
-        const r = o.refRect;
-        o.position = `
-          position: fixed;
-          top: ${r.bottom + gap}px;
-          left: ${r.left}px;
-          width: 700px;
-        `
-        ui.overlays.catalog.visible = false;
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
-
-  overlay.visible = visible;
-}
-
-export async function onNewProjectFormEvent(type: NewItemForm.EventType, args?: unknown) {
   switch (type) {
     case 'inputChanged':
       validateNewProjectForm();
@@ -202,42 +175,41 @@ export async function onNewProjectFormEvent(type: NewItemForm.EventType, args?: 
 
     case 'browseClicked':
       void vscode
-        .post(CommandId.UiSelectWorkingDir, ui.input.states.workingDir, -1)
+        .post(CommandId.UiSelectWorkingDir, controller.states.workingDir, -1)
         .then((data) => {
           if (typeof data === 'string') {
-            ui.input.states.workingDir = data;
+            controller.states.workingDir = data;
             validateNewProjectForm();
           }
-        })
+        });
       break;
 
     case 'createClicked':
       if (ui.selected.example) {
         await runExAction('project-create', {
-          name: ui.input.states.name,
-          workingDir: ui.input.states.workingDir,
-          saveProjectDir: ui.input.states.saveProjectDir,
-          openIn: String(ui.input.states.openIn)
+          name: controller.states.name,
+          workingDir: controller.states.workingDir,
+          saveProjectDir: controller.states.saveProjectDir,
+          openIn: String(controller.states.openIn)
         } as ExNewProjectArgs);
-
-        ui.overlays.details.expanded = false;
       }
       break;
   }
 }
 
 export async function validateNewProjectForm() {
+  const input = ui.sidebar.newProject.input;
   const payload = {
     type: 'project',
-    name: ui.input.states.name,
-    workingDir: ui.input.states.workingDir,
+    name: input.states.name,
+    workingDir: input.states.workingDir
   };
 
   try {
     await vscode.post(CommandId.UiValidateInputs, payload);
-    ui.input.clearIssues();
+    input.clearIssues();
   } catch (e) {
-    ui.input.applyValidationResult(isErrorResponse(e) ? e : undefined);
+    input.applyValidationResult(isErrorResponse(e) ? e : undefined);
   }
 }
 
@@ -246,11 +218,12 @@ async function loadConfigs() {
   const r = await vscode.post(CommandId.UiGetConfigs);
   if (isExBrowserViewConfig(r)) {
     const all = r.newProject;
+    const input = ui.sidebar.newProject.input;
 
-    ui.input.states.name = all.name;
-    ui.input.states.workingDir = all.workingDir;
-    ui.input.states.saveProjectDir = all.saveProjectDir;
-    ui.input.states.openIn = all.openIn;
+    input.states.name = all.name;
+    input.states.workingDir = all.workingDir;
+    input.states.saveProjectDir = all.saveProjectDir;
+    input.states.openIn = all.openIn;
   }
 }
 
@@ -263,8 +236,8 @@ async function loadPackages() {
 
 async function loadExamples(reason: 'selectPackage' | '' = '') {
   const r = await vscode.post(CommandId.ExBrowserGetExamples, {
-    query: ui.filter.query,
-    category: $state.snapshot(ui.filter.category),
+    query: createFilterQuery(ui.filter.searchInput, ui.filter.tags),
+    category: $state.snapshot(ui.filter.category)
   });
 
   if (Array.isArray(r) && r.every(isExEntry)) {
@@ -272,42 +245,62 @@ async function loadExamples(reason: 'selectPackage' | '' = '') {
   }
 
   if (reason === 'selectPackage') {
-    clearSelectedExample();
+    selectExample(undefined);
     return;
   }
 
   if (ui.selected.example) {
-    const hit = data.examples.find(e => {
+    const hit = data.examples.find((e) => {
       return _.isEqual(ui.selected.example, e);
     });
 
     if (!hit) {
-      clearSelectedExample();
+      selectExample(undefined);
     }
   }
 }
 
 function findCategoryByName(name: string) {
-  return data.categories.find(c => {
+  return data.categories.find((c) => {
     return c.name.toLocaleLowerCase() === name.toLowerCase();
   });
 }
 
-function validateQuery(query: string): string {
-  const tokens: string[] = [];
+function createFilterQuery(keywords: string, tags: string[]) {
+  const tagsJoined = tags
+    .map((e) => {
+      const t = e.trim();
+      return t.length === 0 ? '' : TagPrefix + t;
+    })
+    .filter((e) => e.length !== 0)
+    .join(' ');
 
-  query.split(' ').forEach((s) => {
-    s = s.trim();
-    if (s.length !== 0 && s !== TagPrefix) {
-      tokens.push(s);
-    }
-  });
-
-  return tokens.join(' ');
+  return `${keywords} ${tagsJoined}`;
 }
 
-function clearSelectedExample() {
-  ui.selected.example = undefined;
-  ui.overlays.details.visible = false;
+function onKeyDown(e: KeyboardEvent) {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+    e.preventDefault();
+    e.stopPropagation();
+    ui.filter.searchInputEl?.focus();
+    ui.filter.searchInputEl?.select();
+  }
 }
 
+function setEventListenerEnabled(enable: boolean) {
+  const callback = enable
+    ? document.addEventListener.bind(document)
+    : document.removeEventListener.bind(document);
+
+  callback('keydown', onKeyDown, { capture: true });
+}
+
+function resetMainViewScroll() {
+  if (ui.grid) {
+    ui.grid.scrollTop = 0;
+  }
+
+  if (ui.list) {
+    ui.list.scrollTop = 0;
+  }
+}

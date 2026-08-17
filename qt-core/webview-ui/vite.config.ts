@@ -17,9 +17,11 @@ export default defineConfig({
       output: {
         entryFileNames: 'index.js',
         assetFileNames: 'index[extname]',
-        chunkFileNames: 'chunk.js'
+        chunkFileNames: 'chunk.js',
+        inlineDynamicImports: true
       }
     },
+    cssCodeSplit: false,
     chunkSizeWarningLimit: 600
   },
   resolve: {

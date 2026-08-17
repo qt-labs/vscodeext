@@ -6,12 +6,12 @@ import {
   type ExPackage,
   type ExCategory,
   type ExResolvedPaths
-} from "@shared/ex-browser";
+} from '@shared/ex-browser';
 
 import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
 import * as VscodeThemeMonitor from '@/comps/VscodeThemeMonitor.svelte';
 
-export type OverlayName = 'catalog' | 'details' | 'tagCloud';
+export type ViewMode = 'grid' | 'list';
 
 export const data = $state({
   packages: [] as ExPackage[],
@@ -22,37 +22,41 @@ export const data = $state({
 
 export const ui = $state({
   grid: undefined as HTMLDivElement | undefined,
+  list: undefined as HTMLDivElement | undefined,
   theme: VscodeThemeMonitor.createController(),
 
   selected: {
     example: undefined as ExEntry | undefined,
-    package: undefined as ExPackage | undefined
+    package: undefined as ExPackage | undefined,
+    viewMode: 'grid' as ViewMode
   },
 
   filter: {
-    query: '',
-    category: undefined as ExCategory | undefined,
+    tags: [] as string[],
+    tagsFilterInput: '',
+    searchInput: '',
+    searchInputEl: undefined as HTMLInputElement | undefined,
+    category: undefined as ExCategory | undefined
   },
 
-  overlays: {
-    catalog: {
-      visible: false
-    },
-
-    details: {
-      visible: false,
-      collapsed: false,
-      alignLeft: false,
+  sidebar: {
+    visible: false,
+    newProject: {
       expanded: false,
+      input: NewItemForm.createController(),
     },
+  },
 
-    tagCloud: {
+  popovers: {
+    catalog: {
       visible: false,
-      position: '',
-      refRect: undefined as (DOMRect | undefined),
+      reference: undefined as HTMLElement | undefined
+    },
+    tags: {
+      visible: false,
+      reference: undefined as HTMLElement | undefined
     }
   },
 
-  input: NewItemForm.createController(),
-  imageUrlCache: new Map<string, string>(),
-})
+  imageUrlCache: new Map<string, string>()
+});

@@ -8,8 +8,6 @@ export function filterByCategory(source: ExEntry[], category: ExCategory) {
   const predicate = (entry: ExEntry): boolean => {
     if (category.type === 'all') {
       return true;
-    } else if (category.type === 'featured') {
-      return !!entry.highlighted;
     }
 
     const nameLC = category.name.trim().toLowerCase();

@@ -1,0 +1,27 @@
+/*
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--qt-text-default);
+  background: var(--qt-bg-default);
+  font-size: var(--vscode-font-size, var(--qt-font-m, 13px));
+  font-weight: var(--vscode-font-weight, var(--qt-font-normal, 400));
+  font-family: var(
+    --vscode-font-family,
+    'Segoe UI Variable',
+    'Segoe UI',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Inter',
+    system-ui,
+    sans-serif
+  );
+}

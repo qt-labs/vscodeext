@@ -1,0 +1,106 @@
+/*
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+*/
+
+/* ==============================================================
+  DESIGN SYSTEM TOKENS
+  Qt Product Components (Figma node 5606-1544) — Dark mode
+  Blended with VS Code Dark Theme CSS variable namespace
+============================================================== */
+
+/* prettier-ignore */
+:root {
+  /* ── Semantic aliases — each maps a VS Code theme token with a
+  standalone dark-theme fallback for use outside the webview ── */
+
+  /* Surfaces */
+  --qt-bg-default:             var(--vscode-editor-background,                 #1e1e1e);
+  --qt-bg-subtle:              var(--vscode-sideBar-background,                #252526);
+  --qt-bg-elevated:            var(--vscode-editorWidget-background,           #2d2d2d);
+  --qt-bg-input:               var(--vscode-input-background,                  #3c3c3c);
+
+  /* Borders */
+  --qt-stroke-subtle:          var(--vscode-sideBar-border,                    rgba(204,204,204,0.18));
+  --qt-stroke-muted:           var(--vscode-input-border,                      #6b6b6b);
+
+  /* always visible regardless of VS Code border tokens */
+  --qt-stable-border:          color-mix(in srgb, var(--qt-text-muted) 30%, transparent);
+
+  /* Text */
+  --qt-text-default:           var(--vscode-editor-foreground,                 #cccccc);
+  --qt-text-muted:             var(--vscode-descriptionForeground,             #9d9d9d);
+
+  /* Accent */
+  --qt-accent-info:            var(--vscode-focusBorder,                       #007acc);
+  --qt-accent-hover:           var(--vscode-button-hoverBackground,            #1177bb);
+  --qt-accent-active:          var(--vscode-textLink-foreground,               #3794ff);
+  --qt-accent-blue:          rgb(0, 122, 204);
+  --qt-accent-blue-muted:      color-mix(in srgb, var(--qt-accent-blue) 20%, transparent);
+  --qt-accent-blue-default:    color-mix(in srgb, var(--qt-accent-blue) 30%, transparent);
+
+  /* List states */
+  --qt-hover-bg:               var(--vscode-list-hoverBackground,              #2a2d2e);
+  --qt-selected-bg:            var(--vscode-list-activeSelectionBackground,    #094771);
+  --qt-selected-fg:            var(--vscode-list-activeSelectionForeground,    #ffffff);
+
+  /* Buttons */
+  --qt-button-primary-bg:      var(--vscode-button-background,                 #0e639c);
+  --qt-button-primary-hover:   var(--vscode-button-hoverBackground,            #1177bb);
+  --qt-button-fg:              var(--vscode-button-foreground,                 #ffffff);
+  --qt-button-secondary-bg:    var(--vscode-button-secondaryBackground,        #3a3d41);
+  --qt-button-secondary-hover: var(--vscode-button-secondaryHoverBackground,   #45494e);
+  --qt-button-secondary-fg:    var(--vscode-button-secondaryForeground,        #cccccc);
+
+  /* Dropdowns */
+  --qt-dropdown-bg:            var(--vscode-dropdown-background,               #3c3c3c);
+  --qt-dropdown-border:        var(--vscode-dropdown-border,                   #454545);
+  --qt-dropdown-fg:            var(--vscode-dropdown-foreground,               #cccccc);
+
+  /* Links & scrollbars */
+  --qt-link-fg:                var(--vscode-textLink-foreground,               #3794ff);
+  --qt-scrollbar:              var(--vscode-scrollbarSlider-background,        rgba(121,121,121,0.4));
+  --qt-scrollbar-hover:        var(--vscode-scrollbarSlider-hoverBackground,   rgba(100,100,100,0.7));
+
+  /* Icon-button hover (VS Code toolbar pattern) */
+  --qt-icon-hover-bg:          var(--vscode-toolbar-hoverBackground,           rgba(90,93,94,0.31));
+
+  /* Spacing & radius — not theme-dependent */
+  --qt-radius-s:   4px;
+  --qt-radius-m:   8px;
+
+  --qt-spacing-xs: 4px;
+  --qt-spacing-s:  6px;
+  --qt-spacing-m:  8px;
+  --qt-spacing-xl: 16px;
+
+  /* States of controls, mainly for the input fields */
+  --qt-error-fg: var(--vscode-inputValidation-errorForeground, var(--vscode-input-foreground));
+  --qt-error-bg: var(--vscode-inputValidation-errorBackground);
+  --qt-error-border: var(--vscode-inputValidation-errorBorder);
+
+  --qt-warning-fg: var(--vscode-inputValidation-warningForeground, var(--vscode-input-foreground));
+  --qt-warning-bg: var(--vscode-inputValidation-warningBackground);
+  --qt-warning-border: var(--vscode-inputValidation-warningBorder);
+
+  --qt-info-fg: var(--vscode-inputValidation-infoForeground, var(--vscode-input-foreground));
+  --qt-info-bg: var(--vscode-inputValidation-infoBackground);
+  --qt-info-border: var(--vscode-inputValidation-infoBorder);
+
+  /* Texts */
+  --qt-font-m:   13px;
+  --qt-font-s:   calc(var(--qt-font-m) - 1px);
+  --qt-font-xs:  calc(var(--qt-font-m) - 2px);
+  --qt-font-2xs: calc(var(--qt-font-m) - 3px);
+  --qt-font-3xs: calc(var(--qt-font-m) - 4px);
+
+  --qt-font-normal:   400;
+  --qt-font-semibold: 600;
+
+  /* Transition */
+  --qt-duration-fast:    80ms;
+  --qt-duration-normal: 160ms;
+
+  /* Others */
+  --qt-separator-color: var(--qt-stroke-subtle);
+}
