@@ -44,7 +44,13 @@ export async function unzip(
 
       zipFile.readEntry();
       zipFile.on('entry', (entry: yauzl.Entry) => {
-        const writer = streamProvider(entry);
+        let writer: Writable | null;
+        try {
+          writer = streamProvider(entry);
+        } catch (err) {
+          fail(err as Error);
+          return;
+        }
         if (writer === null) {
           zipFile.readEntry();
           return;
