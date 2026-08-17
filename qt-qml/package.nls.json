@@ -1,4 +1,5 @@
 {
+  "qt-qml.untrustedWorkspaces.description": "Qt QML runs QML tooling such as the QML Language Server and profiler as external programs, using paths taken from workspace settings. It stays disabled until you trust this workspace.",
   "qt-qml.command.restartQmlls.title": "Restart QML language server",
   "qt-qml.command.checkQmllsUpdate.title": "Check for QML language server update",
   "qt-qml.command.downloadQmlls.title": "Download the most recent QML language server",

@@ -61,6 +61,12 @@
   ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "%qt-cpp.untrustedWorkspaces.description%"
+    }
+  },
   "contributes": {
     "configuration": {
       "title": "Qt C++ Configuration",

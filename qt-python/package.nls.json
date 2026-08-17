@@ -1,4 +1,5 @@
 {
+  "qt-python.untrustedWorkspaces.description": "Qt Python runs Qt for Python build tooling for this project. It stays disabled until you trust this workspace.",
   "qt-python.command.installPySide6.title": "Install PySide6",
   "qt-python.command.createUvEnv.title": "Create virtual environment with uv",
   "qt-python.debug.launch.label": "Qt: PySide: Launch",
