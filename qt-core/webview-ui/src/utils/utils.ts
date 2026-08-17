@@ -19,3 +19,22 @@ export function focusAnyChild(el: HTMLElement) {
   const fallback = el?.querySelector(selector) as HTMLElement;
   fallback?.focus();
 }
+
+export function extractQtVersion(input: string): string {
+  // Extract version numbers only, must start with 'Qt-', e.g.;
+  // - 'Qt-6.11.1'      -> '6.11.1'
+  // - 'Qt-6.11'        -> '6.11'
+  // - 'Qt-6'           -> '6'
+  // - 'no version here' -> input (unchanged)
+  // - 'prefix-Qt-6.2.4' -> input (unchanged, doesn't start with Qt-)
+  const match = input.match(/^Qt-(\d+\.\d+\.\d+)/);
+  return match?.[1] ?? input;
+}
+
+export function addSpaceBeforeUppercase(str: string): string {
+  // 'QtQuickControls' => 'Qt Quick Controls'
+  // 'QMLTestRunner' => 'QML Test Runner'
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+}

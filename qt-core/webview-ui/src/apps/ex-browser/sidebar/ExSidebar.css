@@ -1,0 +1,23 @@
+/*
+Copyright (C) 2026 The Qt Company Ltd.
+SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+*/
+
+@scope ([data-area='sidebar']) {
+  :scope {
+    padding: 12px 14px 24px;
+    overflow: hidden auto;
+  }
+
+  .qt-button {
+    text-align: left;
+
+    &:not(:disabled) {
+      border-color: transparent;
+    }
+
+    &[data-active='true'] {
+      background: var(--qt-button-primary-hover);
+    }
+  }
+}

@@ -15,20 +15,14 @@ const categoryScores: Map<string, number> = createCategoryScores();
 
 export class CategoriesCollector {
   private readonly _all: CategoryBuilder;
-  private readonly _featured: CategoryBuilder;
   private readonly _general = new Map<string, CategoryBuilder>();
 
   public constructor() {
     this._all = new CategoryBuilder(texts.specialCategory.all, 'all');
-    this._featured = new CategoryBuilder(
-      texts.specialCategory.featured,
-      'featured'
-    );
   }
 
   public collectFrom(example: ExEntry) {
     this._all.reflect(example);
-    this._featured.reflect(example);
 
     example.categories.forEach((c) => {
       const collector = this._findGeneralCategoryBuilder(c);
@@ -43,11 +37,7 @@ export class CategoriesCollector {
       builder.build()
     );
 
-    return [
-      this._all.build(),
-      this._featured.build(),
-      ...sortCategories(generals)
-    ];
+    return [this._all.build(), ...sortCategories(generals)];
   }
 
   private _findGeneralCategoryBuilder(name: string) {
@@ -61,7 +51,7 @@ export class CategoriesCollector {
 
 class CategoryBuilder {
   private _count = 0;
-  private readonly _tags = new Set<string>();
+  private readonly _tagCounts = new Map<string, number>();
 
   public constructor(
     private readonly _name: string,
@@ -75,32 +65,30 @@ class CategoryBuilder {
       example.tags.forEach((t) => {
         const candidate = t.trim();
         if (candidate) {
-          this._tags.add(candidate);
+          this._tagCounts.set(
+            candidate,
+            (this._tagCounts.get(candidate) ?? 0) + 1
+          );
         }
       });
     }
   }
 
   public build(): ExCategory {
+    const tags = _.sortBy(Array.from(this._tagCounts.keys()));
+    const tagCounts = Object.fromEntries(this._tagCounts);
+
     return {
       type: this._type,
       name: this._name,
-      tags: _.sortBy(Array.from(this._tags)),
-      count: this._count
+      tags,
+      count: this._count,
+      tagCounts
     };
   }
 
   private _isRelevant(example: ExEntry) {
-    switch (this._type) {
-      case 'all':
-        return true;
-
-      case 'featured':
-        return example.highlighted;
-
-      default:
-        return example.categories.includes(this._name);
-    }
+    return this._type === 'all' || example.categories.includes(this._name);
   }
 }
 

@@ -155,7 +155,9 @@ export const exBrowser = {
       'Examples are loaded from the installation root or additional qtpaths',
       'Adjust qt-core settings or check the directories.'
     ],
-    example: 'Adjust filter settings or try other Qt versions from the navigation menu'
+    example: [
+      'Adjust filter settings or try other Qt versions from the navigation menu'
+    ]
   },
 
   featuredBadge: 'Featured',
@@ -164,46 +166,70 @@ export const exBrowser = {
     title: 'Catalog',
     versions: 'Qt versions',
     categories: 'Categories',
-    locationInfo: 'Examples come from the Qt installation folder and'
-      + 'any additional paths configured in settings.'
-      + 'To add more, open the Command Palette and search for \'Qt: Register Qt\''
-      + 'or edit settings manually.',
-    location: 'Location',
+    locationInfo: ['Examples come from the Qt installation folder and',
+      'any additional paths configured in settings.',
+      'To add more, open the Command Palette and search for \'Qt: Register Qt\'',
+      'or edit settings manually.',
+    ].join(' '),
     revealLocationTooltip: 'Reveal folder in the file manager'
   },
 
-  tagCloud: {
-    title: 'Available tags'
-  },
-
   details: {
-    newProject: {
-      button: 'New project',
-      tooltip: "Create a new project based on this example",
-      dependencyWarning: [
-        'The extension does not check whether the Qt modules and resources ',
-        'used in the example are available.',
-        'You might need to install and add them before running the example.'
-      ]
+    title: 'Example details',
+
+    actions: {
+      title: 'Actions',
+      openExample: {
+        button: 'Open example',
+        menuAdd: 'Add to workspace',
+        menuNew: 'Open in new window',
+        menuReveal: 'Reveal in the file manager'
+      },
+      reveal: {
+        button: 'Reveal in the file manager'
+      },
+      newProject: {
+        button: 'Open example',
+        note: [
+          'Keeps your changes out of the Qt installation folder,',
+          'so a Qt update can’t overwrite them.'
+        ].join(' '),
+        name: 'Project name',
+        workingDir: 'Create in',
+        workingDirTooltip: 'Browse',
+        workingDirSaveCheckbox: 'Use as default project directory',
+        createButton: {
+          new: 'Create and open in new window',
+          add: 'Create and add to workspace'
+        },
+        menuItem: {
+          note: 'Create and ...',
+          new: 'Open in new window',
+          add: 'Add to current workspace'
+        }
+      },
+
+      openDoc: {
+        button: 'Read the documentation',
+        openExtTooltip: 'Open documentation in external browser'
+      }
     },
-    doc: {
-      button: 'Documentation',
-      tooltip: 'Open documentation in VS Code',
-      openExtTooltip: 'Open documentation in an external browser'
-    },
-    files: {
-      title: 'Project overview'
+
+    details: {
+      title: 'Details',
+      itemNames: {
+        version: 'Qt',
+        module: 'Module',
+        files: 'Files',
+        cat: 'Category',
+        tags: 'Tags'
+      } as Record<string, string>
     }
   },
 
   searchBox: {
     defaultPlaceholder: 'Search in examples...',
     placeholder: (category: string) => `Search in '${category}'`
-  },
-
-  projectToolbar: {
-    openInVscode: 'Open project in a new window',
-    reveal: 'Reveal project directory in the file manager',
   }
 }
 
@@ -299,12 +325,12 @@ export const welcome = {
       description: 'Browse installed Qt examples and create a project'
     },
 
-    documenation: {
+    documentation: {
       title: 'Documentation',
       description: 'Browse online documentation'
     },
 
-    bugreport: {
+    bugReport: {
       title: 'Bug report',
       description: 'Report bugs or issues'
     },
@@ -330,11 +356,4 @@ export const welcome = {
   showAll: 'Show all',
   checkShowOnActivation: 'Show welcome page on activation',
   emptyData: 'No data available'
-}
-
-export const uiFile = {
-  buttons: {
-    openDesigner: 'Open with Qt Widgets Designer',
-    openAsText: 'Open as text'
-  },
 }

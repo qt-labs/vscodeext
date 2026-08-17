@@ -172,6 +172,8 @@ export class ExBrowserDispatcher {
 
       if (action === 'project-open') {
         void fsDir(abs).openAsWorkspace({ newWindow: true });
+      } else if (action === 'project-open-as-workspace') {
+        void fsDir(abs).openAsWorkspace({ newWindow: false });
       } else if (action === 'project-open-file') {
         void fsFile(resolvedPaths.projectFile).openInEditor();
       } else if (action === 'project-reveal') {
@@ -229,8 +231,10 @@ export class ExBrowserDispatcher {
 
     const folderUri = await vscode.window.showOpenDialog(options);
     if (folderUri && folderUri.length > 0) {
-      const folder = normalizeDriveLetter(folderUri[0]?.fsPath ?? '');
-      this._comm.postDataReply(cmd, folder);
+      this._comm.postDataReply(
+        cmd,
+        normalizeDriveLetter(folderUri[0]?.fsPath ?? '')
+      );
     }
   };
 

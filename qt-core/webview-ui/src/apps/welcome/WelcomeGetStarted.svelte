@@ -58,7 +58,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       },
     },
     {
-      ...texts.documenation,
+      ...texts.documentation,
       icon: Book,
       onclick: () => {
         viewlogic.openWebsite('documentation');
@@ -67,7 +67,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     },
     ...(data.walkthroughAvailable ? [walkthroughItem] : []),
     {
-      ...texts.bugreport,
+      ...texts.bugReport,
       icon: Bug,
       onclick: () => {
         viewlogic.openWebsite('bug-report');
