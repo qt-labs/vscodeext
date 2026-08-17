@@ -36,6 +36,12 @@
     "onWebviewPanel:ViewTypeWelcomePage"
   ],
   "main": "./out/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "%qt-core.untrustedWorkspaces.description%"
+    }
+  },
   "contributes": {
     "configurationDefaults": {
       "workbench.editorAssociations": {

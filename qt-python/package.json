@@ -37,6 +37,12 @@
   ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "%qt-python.untrustedWorkspaces.description%"
+    }
+  },
   "contributes": {
     "configuration": {
       "title": "Qt Python Configuration",

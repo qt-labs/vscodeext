@@ -1,4 +1,5 @@
 {
+  "qt-cpp.untrustedWorkspaces.description": "Qt C++ configures and runs CMake and Qt build tooling for this project. It stays disabled until you trust this workspace.",
   "qt-cpp.command.scanForQtKits.title": "Scan for Qt kits",
   "qt-cpp.command.dummyregisterQt.title": "Dummy register Qt",
   "qt-cpp.debugger.cppdbg.snippet.label": "Qt: Debug with cppdbg",

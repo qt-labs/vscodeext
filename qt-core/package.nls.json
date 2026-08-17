@@ -1,4 +1,5 @@
 {
+  "qt-core.untrustedWorkspaces.description": "Qt Core runs Qt tools such as qmake/qtpaths and Qt Widgets Designer as external programs, using paths taken from workspace settings. It stays disabled until you trust this workspace.",
   "qt-core.command.documentationHomepage.title": "Documentation: Open homepage",
   "qt-core.command.documentationSearchManually.title": "Documentation: Search",
   "qt-core.command.documentationSearchForCurrentWord.title": "Documentation: Search for the current word",
