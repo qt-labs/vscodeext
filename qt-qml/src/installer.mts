@@ -20,6 +20,7 @@ import {
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
+import { sha256OfFile, digestMatches } from '@/integrity.js';
 import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
 import {
   VersionedInstallations,
@@ -168,6 +169,9 @@ interface Asset {
   size: number;
   browser_download_url: string;
   created_at: string;
+  // SHA256 of the asset ("sha256:<hex>"), shipped by the release manifest and
+  // used to verify the download before it is unzipped, chmod'd, or run.
+  digest?: string;
 }
 
 export interface AssetWithTag extends Asset {
@@ -299,6 +303,22 @@ export async function install(asset: AssetWithTag) {
       // another instance installing the same version, theirs is used.
       const stagingDir = installations.createStagingDir();
       try {
+        // Integrity gate: verify the downloaded bytes against the SHA256 digest
+        // the release manifest ships, before we unzip, chmod, or run anything.
+        // Fail closed if the digest is missing or does not match.
+        if (!asset.digest) {
+          throw new Error(
+            `Refusing to install ${asset.name}: the release manifest did not provide a SHA256 digest to verify the download.`
+          );
+        }
+        const actualDigest = await sha256OfFile(tmpPath);
+        if (!digestMatches(asset.digest, actualDigest)) {
+          throw new Error(
+            `Integrity check failed for ${asset.name}: the download does not match the expected SHA256 digest.`
+          );
+        }
+        logger.info(`Integrity check passed for: ${asset.name}`);
+
         logger.info(`Unzipping to: ${stagingDir}`);
         await unzipWithProgress(tmpPath, stagingDir);
         logger.info(`Unzipping finished: ${stagingDir}`);
