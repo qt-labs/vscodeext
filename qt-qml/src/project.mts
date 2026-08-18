@@ -83,8 +83,8 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
     logger.info('Qt Bridge project state changed');
     for (const project of this.getProjects()) {
       if (
-        event
-        && project.folder.uri.toString() !== event.project.folder.uri.toString()
+        event &&
+        project.folder.uri.toString() !== event.project.folder.uri.toString()
       ) {
         continue;
       }
@@ -160,7 +160,6 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
     }
     return buildDirs;
   }
-
 }
 // Project class represents a workspace folder in the extension.
 export class QMLProject implements Project {
@@ -215,12 +214,11 @@ export class QMLProject implements Project {
       (project) => project.folder.uri.toString() === this.folder.uri.toString()
     );
     this._qtBridgeProjects = projects;
-    this._qtBridgeQmllsAggregation =
-      aggregateQtBridgeQmllsProjects(projects);
+    this._qtBridgeQmllsAggregation = aggregateQtBridgeQmllsProjects(projects);
     logger.info(
-      `Qt Bridge project detection result for ${this.folder.uri.fsPath}: `
-        + `projects=${String(projects.length)}; `
-        + `readyQmllsProjects=${String(this._qtBridgeQmllsAggregation.sessionConfigs.length)}`
+      `Qt Bridge project detection result for ${this.folder.uri.fsPath}: ` +
+        `projects=${String(projects.length)}; ` +
+        `readyQmllsProjects=${String(this._qtBridgeQmllsAggregation.sessionConfigs.length)}`
     );
     updatePreviewLaunchContext();
   }
@@ -267,10 +265,10 @@ export class QMLProject implements Project {
       CoreKey.WORKSPACE_FEATURES
     );
     logger.info(
-      `Project config for ${this.folder.uri.fsPath}: `
-        + `qtpathsExe=${this.qtpathsExe ?? '<none>'}; `
-        + `buildDir=${this._buildDir ?? '<none>'}; `
-        + `pyside=${String(features?.projectTypes.pyside === true)}`
+      `Project config for ${this.folder.uri.fsPath}: ` +
+        `qtpathsExe=${this.qtpathsExe ?? '<none>'}; ` +
+        `buildDir=${this._buildDir ?? '<none>'}; ` +
+        `pyside=${String(features?.projectTypes.pyside === true)}`
     );
     if (features?.projectTypes.pyside === true && !this._pySideProject) {
       void this.initPySideProject();
@@ -292,10 +290,10 @@ export class QMLProject implements Project {
       this.qmlls.addImportPath(importPath);
     }
     logger.info(
-      `Applying Qt Bridge qmlls aggregation for ${this.folder.uri.fsPath}: `
-        + `projects=${String(this._qtBridgeProjects.length)}; `
-        + `sessions=${String(aggregation.sessionConfigs.length)}; `
-        + `imports=${String(aggregation.importPaths.length)}`
+      `Applying Qt Bridge qmlls aggregation for ${this.folder.uri.fsPath}: ` +
+        `projects=${String(this._qtBridgeProjects.length)}; ` +
+        `sessions=${String(aggregation.sessionConfigs.length)}; ` +
+        `imports=${String(aggregation.importPaths.length)}`
     );
 
     if (this.qtpathsExe) {
@@ -308,8 +306,8 @@ export class QMLProject implements Project {
         throw new Error('Cannot find QT_INSTALL_QML');
       }
       logger.info(
-        `Adding Qt import root from selected Qt path for ${this.folder.uri.fsPath}: `
-          + qmlImportPath
+        `Adding Qt import root from selected Qt path for ${this.folder.uri.fsPath}: ` +
+          qmlImportPath
       );
       this.qmlls.addImportPath(qmlImportPath);
       const docsPath = info.get('QT_INSTALL_DOCS');

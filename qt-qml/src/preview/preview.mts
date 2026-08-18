@@ -20,7 +20,11 @@ import { projectManager, coreAPI } from '@/extension.mjs';
 import { QmlPreviewConnectionManager } from '@/preview/preview-connection-manager.mjs';
 import { FpsInfo } from '@/preview/preview-client.mjs';
 import { ServerScheme } from '@debug/debug-connection.mjs';
-import { QtProcess, spawnProcessForTool, spawnProgramForTool } from '@/utils.mts';
+import {
+  QtProcess,
+  spawnProcessForTool,
+  spawnProgramForTool
+} from '@/utils.mts';
 import { QmlPreviewUI } from '@preview/ui.js';
 import { getQtBridgeProjects, QMLProject } from '@/project.mjs';
 import { selectQtBridgePreviewProject } from '@/preview/qtbridge-preview-project.mjs';
@@ -246,8 +250,12 @@ async function launchQtBridgePreview(
 ) {
   const metadata = bridgeProject.metadata;
   if (!metadata || !bridgeProject.isMetadataReady) {
-    logger.error(`Qt Bridge preview is unavailable for folder: ${folder.uri.fsPath}`);
-    ui.showFailedToStart(new Error('Qt Bridge build metadata is not available yet'));
+    logger.error(
+      `Qt Bridge preview is unavailable for folder: ${folder.uri.fsPath}`
+    );
+    ui.showFailedToStart(
+      new Error('Qt Bridge build metadata is not available yet')
+    );
     return false;
   }
 
@@ -266,8 +274,12 @@ async function launchQtBridgePreview(
   const additionalArgs = getPreviewConfig().get<string[]>('args', []);
   const launch = await bridgeProject.prepareQmlPreview();
   if (!launch) {
-    logger.error(`Could not resolve Qt Bridge host path for folder: ${folder.uri.fsPath}`);
-    ui.showFailedToStart(new Error('Could not resolve Qt Bridge host executable'));
+    logger.error(
+      `Could not resolve Qt Bridge host path for folder: ${folder.uri.fsPath}`
+    );
+    ui.showFailedToStart(
+      new Error('Could not resolve Qt Bridge host executable')
+    );
     return false;
   }
 
@@ -284,7 +296,9 @@ async function launchQtBridgePreview(
     ui.updateFps(fps);
   });
   const processArgs = [previewArgs, ...additionalArgs];
-  logger.info(`Command: ${quoteCommandArg(launch.executable)} ${processArgs.join(' ')}`);
+  logger.info(
+    `Command: ${quoteCommandArg(launch.executable)} ${processArgs.join(' ')}`
+  );
 
   try {
     const process = await spawnProgramForTool(launch.executable, processArgs, {
@@ -301,7 +315,9 @@ async function launchQtBridgePreview(
       ui.showFailedToStart(new Error('Process failed to start'));
       return false;
     }
-    logger.info(`Qt Bridge preview process started with PID: ${process.pid.toString()}`);
+    logger.info(
+      `Qt Bridge preview process started with PID: ${process.pid.toString()}`
+    );
 
     previewLaunch = launch;
     setupProcessForPreview(process, manager, undefined, host, port);
@@ -490,9 +506,9 @@ function setupProcessForPreview(
     processExited = true;
     const elapsedMs = Date.now() - processStartedAt;
     logger.info(
-    `QML Preview process exited with code ${String(code)}, `
-      + `signal ${String(signal)}, `
-      + `elapsed ${String(elapsedMs)} ms`
+      `QML Preview process exited with code ${String(code)}, ` +
+        `signal ${String(signal)}, ` +
+        `elapsed ${String(elapsedMs)} ms`
     );
     cleanupSession();
   });
@@ -524,8 +540,14 @@ function setupProcessForPreview(
 
     void waitForConnection()
       .then(() => {
-        if (processExited || previewProcess !== proc || previewManager !== manager) {
-          logger.info('Skipping initial QML load because the preview session already ended');
+        if (
+          processExited ||
+          previewProcess !== proc ||
+          previewManager !== manager
+        ) {
+          logger.info(
+            'Skipping initial QML load because the preview session already ended'
+          );
           return;
         }
         logger.info(`Loading QML file: ${qmlFile}`);
