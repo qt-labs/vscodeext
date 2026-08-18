@@ -129,7 +129,10 @@ function getXmlAttribute(node: unknown, attributeName: string) {
   for (const [name, value] of Object.entries(
     node as Record<string, unknown>
   )) {
-    if (name.toLowerCase() === expectedName && value !== undefined) {
+    if (
+      name.toLowerCase() === expectedName &&
+      (typeof value === 'string' || typeof value === 'number')
+    ) {
       return String(value).trim();
     }
   }
