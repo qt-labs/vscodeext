@@ -444,29 +444,49 @@ describe('Qt Bridge project discovery', () => {
     };
     project.updateMetadata(metadata, true);
 
-    const launch = await project.prepareQmlPreview();
-    expect(launch).not.to.be.undefined;
-    if (!launch) {
+    const firstLaunch = await project.prepareQmlPreview();
+    const secondLaunch = await project.prepareQmlPreview();
+    expect(firstLaunch).not.to.be.undefined;
+    expect(secondLaunch).not.to.be.undefined;
+    if (!firstLaunch || !secondLaunch) {
       throw new Error('Expected a QML Preview launch');
     }
 
-    expect(await fs.promises.readFile(launch.executable, 'utf8')).to.equal(
+    expect(firstLaunch.executable).not.to.equal(secondLaunch.executable);
+    expect(await fs.promises.readFile(firstLaunch.executable, 'utf8')).to.equal(
       'native'
     );
-    expect(normalizedPath(launch.cwd)).to.equal(normalizedPath(testDirectory));
-    expect(normalizedPath(launch.pathEntries[0])).to.equal(
+    expect(normalizedPath(firstLaunch.cwd)).to.equal(normalizedPath(testDirectory));
+    expect(normalizedPath(firstLaunch.pathEntries[0])).to.equal(
       normalizedPath(path.join(qtDir, 'bin'))
     );
-    expect(launch.environment.QML_IMPORT_PATH).to.include(launch.qmlImportRoot);
-    expect(launch.environment.QML_IMPORT_PATH).to.include(
+    expect(firstLaunch.environment.QML_IMPORT_PATH).to.include(
+      firstLaunch.qmlImportRoot
+    );
+    expect(firstLaunch.environment.QML_IMPORT_PATH).to.include(
       path.join(testDirectory, 'imports')
     );
 
-    const stagingDirectory = path.dirname(launch.executable);
-    launch.dispose();
-    for (let attempt = 0; attempt < 20 && fs.existsSync(stagingDirectory); ++attempt) {
+    const firstStagingDirectory = path.dirname(firstLaunch.executable);
+    const secondStagingDirectory = path.dirname(secondLaunch.executable);
+    firstLaunch.dispose();
+    for (
+      let attempt = 0;
+      attempt < 20 && fs.existsSync(firstStagingDirectory);
+      ++attempt
+    ) {
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
-    expect(fs.existsSync(stagingDirectory)).to.equal(false);
+    expect(fs.existsSync(firstStagingDirectory)).to.equal(false);
+    expect(fs.existsSync(secondStagingDirectory)).to.equal(true);
+    secondLaunch.dispose();
+    for (
+      let attempt = 0;
+      attempt < 20 && fs.existsSync(secondStagingDirectory);
+      ++attempt
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(fs.existsSync(secondStagingDirectory)).to.equal(false);
   });
 });

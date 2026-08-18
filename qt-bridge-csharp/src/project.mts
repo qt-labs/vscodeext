@@ -661,6 +661,27 @@ function createPreviewStagingKey(
     .slice(0, 16);
 }
 
+async function stagePreviewManagedOutput(
+  stagingParent: string,
+  managedOutputDir: string
+): Promise<string> {
+  await fs.promises.mkdir(stagingParent, { recursive: true });
+  const stagingDirectory = await fs.promises.mkdtemp(
+    path.join(stagingParent, 'launch-')
+  );
+  try {
+    await fs.promises.cp(managedOutputDir, stagingDirectory, {
+      recursive: true
+    });
+    return stagingDirectory;
+  } catch (error) {
+    await fs.promises
+      .rm(stagingDirectory, { recursive: true, force: true })
+      .catch(() => undefined);
+    throw error;
+  }
+}
+
 export class QtBridgeProjectSnapshot implements QtBridgeProject {
   readonly projectFile: vscode.Uri;
   readonly packageId: string | undefined;
@@ -733,23 +754,31 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
       application.nativeHostPath,
       application.executableName
     );
-    const targetDirectory = path.join(
+    // Keep generated QML outside the workspace so Preview's source watcher
+    // does not mistake staging operations for user file changes.
+    const stagingParent = path.join(
       os.tmpdir(),
       'qt-qml-preview',
       application.assemblyName,
       stagingKey
     );
+    let targetDirectory: string;
+    try {
+      targetDirectory = await stagePreviewManagedOutput(
+        stagingParent,
+        application.managedOutputDir
+      );
+    } catch (error) {
+      logger.warn(
+        `Failed to stage Qt Bridge preview output for ${this.projectFile.fsPath}: ${String(error)}`
+      );
+      return undefined;
+    }
     const stagedHostPath = path.join(
       targetDirectory,
       application.executableName
     );
 
-    // Keep generated QML outside the workspace so Preview's source watcher
-    // does not mistake staging operations for user file changes.
-    await fs.promises.rm(targetDirectory, { recursive: true, force: true });
-    await fs.promises.cp(application.managedOutputDir, targetDirectory, {
-      recursive: true
-    });
     if (!pathExists(stagedHostPath)) {
       if (!pathExists(application.nativeHostPath)) {
         await fs.promises.rm(targetDirectory, {
