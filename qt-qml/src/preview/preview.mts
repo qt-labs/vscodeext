@@ -635,7 +635,13 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
     }
     await launchPySidePreview(folder, qmlFile);
   } else if (projectType === 'bridge') {
-    await launchQtBridgePreview(folder, bridgeProject!, qmlFile);
+    if (!bridgeProject) {
+      logger.error(
+        `No Qt Bridge project found for folder: ${folder.uri.fsPath}`
+      );
+      return;
+    }
+    await launchQtBridgePreview(folder, bridgeProject, qmlFile);
   } else {
     // Default to CMake preview (existing behavior)
     await launchCMakePreview(qmlFile);

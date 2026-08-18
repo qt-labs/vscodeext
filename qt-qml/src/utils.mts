@@ -29,7 +29,7 @@ export function prependPathEntries(
 
   for (const duplicatePathKey of pathKeys) {
     if (duplicatePathKey !== pathKey) {
-      delete environment[duplicatePathKey];
+      Reflect.deleteProperty(environment, duplicatePathKey);
     }
   }
   environment[pathKey] =
@@ -98,6 +98,7 @@ export async function spawnProcessForTool(
         pathEntries.push(dllDirs);
       }
     } catch {
+      // The Qt C++ extension is optional.
     }
 
     if (pathEntries.length > 0) {
@@ -176,7 +177,7 @@ export async function spawnProgramForTool(
         );
       });
       for (const name of removedNames) {
-        delete env[name];
+        Reflect.deleteProperty(env, name);
       }
     }
 
@@ -186,6 +187,7 @@ export async function spawnProgramForTool(
         pathEntries.push(dllDirs);
       }
     } catch {
+      // The Qt C++ extension is optional.
     }
 
   }
