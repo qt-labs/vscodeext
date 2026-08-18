@@ -43,6 +43,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
   private readonly folderWatchers = new Map<string, vscode.FileSystemWatcher>();
   private readonly metadataWatchers = new Map<string, vscode.Disposable[]>();
   private readonly refreshTimers = new Map<string, NodeJS.Timeout>();
+  private readonly folderRefreshes = new Map<string, Promise<void>>();
   private readonly metadataRefreshTimers = new Map<string, NodeJS.Timeout>();
   private readonly metadataRefreshVersions = new Map<string, number>();
   private readonly projectsChanged = new vscode.EventEmitter<void>();
@@ -242,6 +243,25 @@ export class QtBridgeProjectManager implements vscode.Disposable {
   async refreshFolder(
     folder: vscode.WorkspaceFolder,
     notify = true
+  ): Promise<void> {
+    const folderKey = folder.uri.toString();
+    const previousRefresh = this.folderRefreshes.get(folderKey);
+    const refresh = (previousRefresh ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(async () => this.refreshFolderImpl(folder, notify));
+    this.folderRefreshes.set(folderKey, refresh);
+    try {
+      await refresh;
+    } finally {
+      if (this.folderRefreshes.get(folderKey) === refresh) {
+        this.folderRefreshes.delete(folderKey);
+      }
+    }
+  }
+
+  private async refreshFolderImpl(
+    folder: vscode.WorkspaceFolder,
+    notify: boolean
   ): Promise<void> {
     const previousProjects = this.getProjectsForFolder(folder);
     const previousMetadataFiles = new Map(
@@ -530,6 +550,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
     this.metadataChanged.dispose();
     this.folderWatchers.clear();
     this.refreshTimers.clear();
+    this.folderRefreshes.clear();
     this.projects.clear();
   }
 }

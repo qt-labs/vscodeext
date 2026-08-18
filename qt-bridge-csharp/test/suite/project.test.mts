@@ -339,6 +339,50 @@ describe('Qt Bridge project discovery', () => {
     }
   });
 
+  it('serializes concurrent refreshes for the same folder', async () => {
+    const folder: vscode.WorkspaceFolder = {
+      uri: vscode.Uri.file(testDirectory),
+      name: 'workspace',
+      index: 0
+    };
+    const manager = new QtBridgeProjectManager();
+    const testManager = manager as unknown as {
+      refreshFolderImpl(
+        folder: vscode.WorkspaceFolder,
+        notify: boolean
+      ): Promise<void>;
+    };
+    const started: number[] = [];
+    let releaseFirstRefresh: (() => void) | undefined;
+    const firstRefreshStarted = new Promise<void>((resolve) => {
+      releaseFirstRefresh = resolve;
+    });
+    const firstRefreshComplete = new Promise<void>((resolve) => {
+      testManager.refreshFolderImpl = async () => {
+        started.push(started.length + 1);
+        if (started.length === 1) {
+          resolve();
+          await firstRefreshStarted;
+        }
+      };
+    });
+
+    try {
+      const firstRefresh = manager.refreshFolder(folder, false);
+      await firstRefreshComplete;
+      const secondRefresh = manager.refreshFolder(folder, false);
+
+      await Promise.resolve();
+      expect(started).to.deep.equal([1]);
+      releaseFirstRefresh?.();
+      await Promise.all([firstRefresh, secondRefresh]);
+
+      expect(started).to.deep.equal([1, 2]);
+    } finally {
+      manager.dispose();
+    }
+  });
+
   it('prepares and disposes a staged QML Preview launch', async () => {
     const projectFile = path.join(testDirectory, 'Application.csproj');
     const managedOutputDir = path.join(testDirectory, 'bin', 'Debug');
