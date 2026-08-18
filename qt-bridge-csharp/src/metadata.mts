@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { createLogger, type QtBridgeQmlMetadata } from 'qt-lib';
+import { canonicalPath } from '@/utils.mjs';
 
 const logger = createLogger('qtbridge-metadata');
 const METADATA_FILE_NAME = 'qtbridge-qml.ide.json';
@@ -41,11 +42,6 @@ export interface QtBridgeMetadataDiscoveryOptions {
   readonly requestedTargetFramework?: string;
   readonly previousMetadataFile?: string;
   readonly previousReadyMetadata?: QtBridgeQmlMetadata;
-}
-
-function canonicalPath(filePath: string): string {
-  const resolved = path.resolve(filePath);
-  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
 }
 
 export function getQtBridgeMetadataIdentity(
