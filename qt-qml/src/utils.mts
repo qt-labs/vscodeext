@@ -23,7 +23,7 @@ export function prependPathEntries(
   );
   const pathKey =
     platform === 'win32'
-      ? pathKeys.find((name) => name === 'PATH') ?? pathKeys[0] ?? 'PATH'
+      ? (pathKeys.find((name) => name === 'PATH') ?? pathKeys[0] ?? 'PATH')
       : 'PATH';
   const inheritedPath = environment[pathKey] ?? '';
 
@@ -130,10 +130,7 @@ export async function spawnProgramForTool(
     sanitizeVsCodeEnv?: boolean;
   }
 ): Promise<QtProcess> {
-  logger.info(
-    'Starting program:',
-    [program, ...args].join(' ')
-  );
+  logger.info('Starting program:', [program, ...args].join(' '));
 
   let options: SpawnOptions = {
     shell: false
@@ -169,11 +166,11 @@ export async function spawnProgramForTool(
       const removedNames = Object.keys(env).filter((name) => {
         const upperName = name.toUpperCase();
         return (
-          upperName.startsWith('ELECTRON_')
-          || upperName.startsWith('VSCODE_')
-          || upperName === 'NODE_OPTIONS'
-          || upperName === 'NODE_CHANNEL_FD'
-          || upperName === 'NODE_UNIQUE_ID'
+          upperName.startsWith('ELECTRON_') ||
+          upperName.startsWith('VSCODE_') ||
+          upperName === 'NODE_OPTIONS' ||
+          upperName === 'NODE_CHANNEL_FD' ||
+          upperName === 'NODE_UNIQUE_ID'
         );
       });
       for (const name of removedNames) {
@@ -189,14 +186,17 @@ export async function spawnProgramForTool(
     } catch {
       // The Qt C++ extension is optional.
     }
-
   }
 
   if (pathEntries.length > 0) {
     prependPathEntries(env, pathEntries);
   }
 
-  if (optionsOverrides?.env || optionsOverrides?.sanitizeVsCodeEnv || pathEntries.length > 0) {
+  if (
+    optionsOverrides?.env ||
+    optionsOverrides?.sanitizeVsCodeEnv ||
+    pathEntries.length > 0
+  ) {
     options = { ...options, env: env };
   }
 

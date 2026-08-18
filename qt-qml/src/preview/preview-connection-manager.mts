@@ -233,11 +233,17 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
       return;
     }
 
-    const normalizedLocalPath = QmlPreviewConnectionManager.normalizePath(localPath);
+    const normalizedLocalPath =
+      QmlPreviewConnectionManager.normalizePath(localPath);
     this._lastLoadedUrl = parsedUrl;
     this._pathMap.set(normalizedLocalPath, targetUrl);
     this.addFileToWatcher(localPath);
-    logger.info('Registered loaded file:', `"${normalizedLocalPath}"`, '->', `"${targetUrl}"`);
+    logger.info(
+      'Registered loaded file:',
+      `"${normalizedLocalPath}"`,
+      '->',
+      `"${targetUrl}"`
+    );
   }
 
   /**
