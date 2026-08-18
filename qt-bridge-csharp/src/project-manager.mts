@@ -23,15 +23,11 @@ import {
   type QtBridgeQtDirFallbacks
 } from '@/project.mjs';
 import { EXTENSION_ID } from '@/constants.js';
+import { canonicalPath } from '@/utils.mjs';
 
 const logger = createLogger('project-manager');
 const PROJECT_EXCLUDE_PATTERN =
   '**/{.git,.vs,bin,obj,node_modules,packages}/**';
-
-function canonicalPath(filePath: string): string {
-  const resolved = path.resolve(filePath);
-  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
-}
 
 function isGeneratedProject(uri: vscode.Uri): boolean {
   const segments = canonicalPath(uri.fsPath).split(path.sep);
