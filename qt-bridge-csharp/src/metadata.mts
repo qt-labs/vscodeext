@@ -255,7 +255,8 @@ export async function discoverQtBridgeMetadata(
 ): Promise<QtBridgeMetadataDiscoveryResult> {
   const projectDirectory = path.dirname(projectFile.fsPath);
   const files = await vscode.workspace.findFiles(
-    new vscode.RelativePattern(projectDirectory, `obj/**/${METADATA_FILE_NAME}`)
+    new vscode.RelativePattern(projectDirectory, `obj/**/${METADATA_FILE_NAME}`),
+    null
   );
   const candidates = (
     await Promise.all(
