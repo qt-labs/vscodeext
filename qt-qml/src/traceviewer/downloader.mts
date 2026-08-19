@@ -102,8 +102,38 @@ function createDownloadFilePath() {
   return path.join(dir, fileName);
 }
 
+// download.qt.io redirects file downloads to a changing set of third-party
+// mirrors, so the hosts cannot be pinned here. Follow redirects manually
+// instead of letting fetch do it, so every hop can be forced to stay on
+// https and a redirect cannot downgrade the transfer to cleartext.
+const MaxRedirects = 10;
+
+async function fetchHttpsOnly(url: string, init?: RequestInit) {
+  let current = new URL(url);
+  for (let i = 0; i < MaxRedirects; ++i) {
+    if (current.protocol !== 'https:') {
+      throw new Error(`Refusing non-https download URL: ${current.toString()}`);
+    }
+
+    const res = await fetch(current, { ...init, redirect: 'manual' });
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get('location');
+      if (!location) {
+        throw new Error(`Redirect without a location: ${String(res.status)}`);
+      }
+      await res.body?.cancel();
+      current = new URL(location, current);
+      continue;
+    }
+
+    return res;
+  }
+
+  throw new Error('Download exceeded the maximum number of redirects');
+}
+
 async function fetchAndCheck(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
+  const res = await fetchHttpsOnly(url, init);
   if (!res.ok) {
     throw new Error(`Invalid status code: ${res.statusText}`);
   }
