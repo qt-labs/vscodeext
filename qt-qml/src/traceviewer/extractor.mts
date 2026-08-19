@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { Writable } from 'stream';
 
 import { IsWindows, assertInside } from 'qt-lib';
+import { ExtractionBudget } from '@/unzipper.js';
 import { DownloadResult } from './downloader.mts';
 import { InstalledRelease } from './installation-manager.mts';
 
@@ -69,6 +70,7 @@ export async function unzipV2(
   streamProvider: (entry: yauzl.Entry) => StreamProviderResult
 ) {
   return new Promise<void>((resolve, reject) => {
+    const budget = new ExtractionBudget();
     const callback = (error: Error | null, zipFile: yauzl.ZipFile) => {
       if (error) {
         reject(error);
@@ -77,6 +79,13 @@ export async function unzipV2(
 
       zipFile.readEntry();
       zipFile.on('entry', (entry: yauzl.Entry) => {
+        try {
+          budget.charge(entry);
+        } catch (err) {
+          reject(err as Error);
+          return;
+        }
+
         const unixAttrs = entry.externalFileAttributes >> 16;
         const isSymlink = (unixAttrs & UNIX_FILE_TYPE_MASK) === UNIX_SYMLINK;
 
