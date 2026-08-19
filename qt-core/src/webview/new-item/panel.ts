@@ -68,7 +68,7 @@ export class NewItemPanel {
       panel.onDidDispose(this.dispose.bind(this)),
       this._comm,
       this._comm.onDidReceiveMessage((m) => {
-        this._dispatcher.dispatch(m);
+        void this._dispatcher.dispatch(m);
       })
     ];
   }

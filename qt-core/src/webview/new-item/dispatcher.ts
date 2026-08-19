@@ -65,7 +65,7 @@ export class NewItemDispatcher {
     this._context = context;
   }
 
-  public dispatch(cmd: unknown) {
+  public async dispatch(cmd: unknown) {
     if (!this._panel || !IsCommand(cmd)) {
       return;
     }
@@ -77,7 +77,7 @@ export class NewItemDispatcher {
     }
 
     try {
-      void handler(cmd);
+      await handler(cmd);
     } catch (e) {
       logger.error(
         `Error while handling command '${String(cmd.id)}': ${String(e)}`
