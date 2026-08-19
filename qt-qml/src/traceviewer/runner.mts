@@ -30,7 +30,9 @@ export class QmlTraceViewerRunner {
     };
     this._onStdout = (l) => {
       logger.text(' ' + l).info();
-      void parseJsonOutput(this._uri, l);
+      parseJsonOutput(this._uri, l).catch((e: unknown) => {
+        logger.text(`Cannot handle viewer output: ${String(e)}`).error();
+      });
     };
   }
 
@@ -175,13 +177,23 @@ function asTrimmedString(value: unknown): string {
 }
 
 async function parseJsonOutput(uri: vscode.Uri, text: string) {
-  const obj = JSON.parse(text) as Record<string, unknown>;
+  let obj: Record<string, unknown>;
+  try {
+    obj = JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    // Ordinary diagnostic output, not a JSON-RPC message. It is already
+    // logged by the caller, so it is not an error here.
+    return;
+  }
   const version = asTrimmedString(obj.jsonrpc);
   const method = asTrimmedString(obj.method).toLowerCase();
   if (version !== '2.0' || method.length === 0) {
-    throw new Error(
-      `Invalid JSON-RPC: version = ${version}, method = ${method}`
-    );
+    logger
+      .text('Ignoring non JSON-RPC output')
+      .data('version', version)
+      .data('method', method)
+      .warn();
+    return;
   }
 
   if (method === 'traceeventselected') {

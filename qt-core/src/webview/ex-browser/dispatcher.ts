@@ -71,7 +71,7 @@ export class ExBrowserDispatcher {
     this._disposables = [
       this._comm,
       this._comm.onDidReceiveMessage((m) => {
-        this.dispatch(m);
+        void this.dispatch(m);
       })
     ];
   }
@@ -83,7 +83,7 @@ export class ExBrowserDispatcher {
     this._disposables.length = 0;
   }
 
-  public dispatch(cmd: unknown) {
+  public async dispatch(cmd: unknown) {
     if (!IsCommand(cmd)) {
       return;
     }
@@ -95,7 +95,7 @@ export class ExBrowserDispatcher {
     }
 
     try {
-      void handler(cmd);
+      await handler(cmd);
     } catch (e) {
       logger.error(`Cannot handle command '${String(cmd.id)}': ${String(e)}`);
     }

@@ -499,9 +499,14 @@ export class KitManager {
       return undefined;
     }
     const cmakeKitsFileContent = await fs.readFile(cmakeKitsFile, 'utf8');
-    let currentKits: Kit[] = [];
-    currentKits = JSON.parse(cmakeKitsFileContent) as Kit[];
-    return currentKits;
+    try {
+      return JSON.parse(cmakeKitsFileContent) as Kit[];
+    } catch (error) {
+      const fileName = path.basename(cmakeKitsFile);
+      const message = isError(error) ? error.message : String(error);
+      logger.error(`Malformed JSON in ${fileName}:`, message);
+      return undefined;
+    }
   }
 
   private static async loadCMakeKitsFileJSON(cmakeKitsFile: string) {
