@@ -43,6 +43,7 @@ import {
   registerClearQmlPreviewCacheCommand,
   disposePreviewManager
 } from '@/preview/preview.mjs';
+import { isQtBridgePreviewAvailable } from '@/preview/qtbridge-preview-project.mjs';
 import {
   registerStartQmlProfilerCommand,
   registerAttachQmlProfilerCommand,
@@ -178,12 +179,7 @@ export function updatePreviewLaunchContext() {
     launchEnabled =
       features?.projectTypes.cmake === true ||
       features?.projectTypes.pyside === true ||
-      bridgeProjects.some(
-        (project) =>
-          project.isMetadataReady &&
-          project.metadata?.application !== undefined &&
-          project.metadata.qml.files.length > 0
-      );
+      bridgeProjects.some(isQtBridgePreviewAvailable);
   }
   logger.info(
     `Setting qmlPreviewLaunchEnabled to ${String(launchEnabled)} for folder "${String(folder?.name)}"`
