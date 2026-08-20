@@ -22,6 +22,7 @@ import { FpsInfo } from '@/preview/preview-client.mjs';
 import { ServerScheme } from '@debug/debug-connection.mjs';
 import {
   QtProcess,
+  normalizePathForComparison,
   spawnProcessForTool,
   spawnProgramForTool
 } from '@/utils.mts';
@@ -206,11 +207,6 @@ async function launchCMakePreview(qmlFile?: string) {
 
 function quoteCommandArg(arg: string) {
   return `"${arg.replace(/(["\\])/g, '\\$1')}"`;
-}
-
-function normalizePathForComparison(filePath: string) {
-  const normalized = filePath.replace(/\\/g, '/');
-  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
 }
 
 function resolveQtBridgePreviewUrl(

@@ -9,7 +9,7 @@ import {
   isQtBridgePreviewAvailable,
   selectQtBridgePreviewProject
 } from '@/preview/qtbridge-preview-project.mjs';
-import { prependPathEntries } from '@/utils.mjs';
+import { normalizePathForComparison, prependPathEntries } from '@/utils.mjs';
 
 function workspaceFolder(name: string, index: number): vscode.WorkspaceFolder {
   return {
@@ -30,6 +30,14 @@ function bridgeProject(
 }
 
 describe('Qt Bridge QML Preview project selection', () => {
+  it('normalizes paths used for Preview file matching', () => {
+    const normalized = normalizePathForComparison('Source\\Main.qml');
+    const expected =
+      process.platform === 'win32' ? 'source/main.qml' : 'Source/Main.qml';
+
+    expect(normalized).to.equal(expected);
+  });
+
   it('requires ready application metadata before enabling preview', () => {
     const folder = workspaceFolder('selected', 0);
     const unready = bridgeProject(folder, 'Unready');
