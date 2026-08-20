@@ -13,7 +13,7 @@ import {
 import { resolveQtBridgeCSharpApi } from '../../../qt-lib/src/qtbridge-csharp-api-internal.js';
 
 const packageJson = require('../../package.json');
-const extensionId = 'theqtcompany.qt-bridge-csharp';
+const extensionId = 'theqtcompany.qt-csharp';
 
 describe('API', () => {
   it('returns undefined when the extension is unavailable', async () => {
@@ -54,11 +54,11 @@ describe('extension', () => {
   before('activate', async function () {
     this.timeout(30000);
     const extension = vscode.extensions.getExtension(extensionId);
-    if (!extension) throw new Error('qt-bridge-csharp extension not found');
+    if (!extension) throw new Error('qt-csharp extension not found');
     await extension.activate();
   });
 
-  it('activates the qt-bridge-csharp extension', () => {
+  it('activates the qt-csharp extension', () => {
     expect(isExtensionActive(extensionId)).to.be.true;
   });
 

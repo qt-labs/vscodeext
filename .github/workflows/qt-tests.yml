@@ -30,7 +30,7 @@ on:
             - qt-qml
             - qt-ui
             - qt-python
-            - qt-bridge-csharp
+            - qt-csharp
 
 jobs:
   tests:
@@ -105,13 +105,13 @@ jobs:
       - name: Prepare NatVis files
         run: npm run prepareNatvisFiles
       # Compile other extensions once (runtime build)
-      - name: Compile qt-cpp / qt-ui / qt-qml / qt-python / qt-bridge-csharp
+      - name: Compile qt-cpp / qt-ui / qt-qml / qt-python / qt-csharp
         run: |
           npm --prefix qt-cpp run compile
           npm --prefix qt-ui  run compile
           npm --prefix qt-qml run compile
           npm --prefix qt-python run compile
-          npm --prefix qt-bridge-csharp run compile
+          npm --prefix qt-csharp run compile
 
 
       # Install Qt using a community-maintained action.
@@ -234,8 +234,8 @@ jobs:
               run_cmd "${XVFB[@]}" npm --prefix qt-python run test:only
             fi
 
-            if should_run qt-bridge-csharp; then
-              run_cmd "${XVFB[@]}" npm --prefix qt-bridge-csharp run test:only
+            if should_run qt-csharp; then
+              run_cmd "${XVFB[@]}" npm --prefix qt-csharp run test:only
             fi
           else
             if should_run qt-core; then
@@ -258,7 +258,7 @@ jobs:
               run_cmd npm --prefix qt-python run test:only
             fi
 
-            if should_run qt-bridge-csharp; then
-              run_cmd npm --prefix qt-bridge-csharp run test:only
+            if should_run qt-csharp; then
+              run_cmd npm --prefix qt-csharp run test:only
             fi
           fi

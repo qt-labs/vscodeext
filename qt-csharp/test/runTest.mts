@@ -42,17 +42,17 @@ async function main() {
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
     if (getDebugLevel() >= 1) {
       console.log(
-        '[runTest][qt-bridge-csharp] CLI:',
+        '[runTest][qt-csharp] CLI:',
         cli,
         'args:',
         args.join(' ')
       );
       console.log(
-        '[runTest][qt-bridge-csharp] userDataDir:',
+        '[runTest][qt-csharp] userDataDir:',
         userDataDir
       );
       console.log(
-        '[runTest][qt-bridge-csharp] extensionsDir:',
+        '[runTest][qt-csharp] extensionsDir:',
         extensionsDir
       );
     }

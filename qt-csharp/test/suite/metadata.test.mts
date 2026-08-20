@@ -44,7 +44,7 @@ describe('Qt Bridge build metadata', () => {
 
   beforeEach(async () => {
     testDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'qt-bridge-csharp-metadata-')
+      path.join(os.tmpdir(), 'qt-csharp-metadata-')
     );
     projectFile = path.join(testDirectory, 'Application.csproj');
     await fs.promises.writeFile(projectFile, '<Project />', 'utf8');
