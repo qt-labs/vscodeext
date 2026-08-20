@@ -8,6 +8,11 @@ import { createLogger, IsWindows, IsLinux } from 'qt-lib';
 
 const logger = createLogger('utils');
 
+export function normalizePathForComparison(filePath: string) {
+  const normalized = filePath.replace(/\\/g, '/');
+  return IsWindows ? normalized.toLowerCase() : normalized;
+}
+
 export function prependPathEntries(
   environment: NodeJS.ProcessEnv,
   pathEntries: readonly string[],
