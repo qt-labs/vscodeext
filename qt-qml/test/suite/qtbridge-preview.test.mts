@@ -5,7 +5,10 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import type { QtBridgeProject } from 'qt-lib';
-import { selectQtBridgePreviewProject } from '@/preview/qtbridge-preview-project.mjs';
+import {
+  isQtBridgePreviewAvailable,
+  selectQtBridgePreviewProject
+} from '@/preview/qtbridge-preview-project.mjs';
 import { prependPathEntries } from '@/utils.mjs';
 
 function workspaceFolder(name: string, index: number): vscode.WorkspaceFolder {
@@ -27,6 +30,22 @@ function bridgeProject(
 }
 
 describe('Qt Bridge QML Preview project selection', () => {
+  it('requires ready application metadata before enabling preview', () => {
+    const folder = workspaceFolder('selected', 0);
+    const unready = bridgeProject(folder, 'Unready');
+    const ready = {
+      ...bridgeProject(folder, 'Ready'),
+      isMetadataReady: true,
+      metadata: {
+        application: {},
+        qml: { files: [{}] }
+      }
+    } as unknown as QtBridgeProject;
+
+    expect(isQtBridgePreviewAvailable(unready)).to.equal(false);
+    expect(isQtBridgePreviewAvailable(ready)).to.equal(true);
+  });
+
   it('uses the project containing the active file in the selected folder', async () => {
     const folder = workspaceFolder('selected', 0);
     const first = bridgeProject(folder, 'First');

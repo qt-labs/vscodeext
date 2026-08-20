@@ -27,7 +27,10 @@ import {
 } from '@/utils.mts';
 import { QmlPreviewUI } from '@preview/ui.js';
 import { getQtBridgeProjects, QMLProject } from '@/project.mjs';
-import { selectQtBridgePreviewProject } from '@/preview/qtbridge-preview-project.mjs';
+import {
+  isQtBridgePreviewAvailable,
+  selectQtBridgePreviewProject
+} from '@/preview/qtbridge-preview-project.mjs';
 
 const logger = createLogger('qml-preview');
 const ui = new QmlPreviewUI();
@@ -128,11 +131,7 @@ function getProjectType(
   if (project?.pySideProject) {
     return 'pyside';
   }
-  if (
-    bridgeProject?.isMetadataReady === true &&
-    bridgeProject.metadata?.application !== undefined &&
-    bridgeProject.metadata.qml.files.length > 0
-  ) {
+  if (isQtBridgePreviewAvailable(bridgeProject)) {
     return 'bridge';
   }
 

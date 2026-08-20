@@ -13,6 +13,16 @@ const defaultServices = {
   pickProject: showQtBridgeProjectPicker
 };
 
+export function isQtBridgePreviewAvailable(
+  project: QtBridgeProject | undefined
+): project is QtBridgeProject {
+  return (
+    project?.isMetadataReady === true &&
+    project.metadata?.application !== undefined &&
+    project.metadata.qml.files.length > 0
+  );
+}
+
 export async function selectQtBridgePreviewProject(
   folder: vscode.WorkspaceFolder,
   activeUri: vscode.Uri | undefined,
