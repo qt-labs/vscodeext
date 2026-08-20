@@ -29,6 +29,7 @@ import {
 import { QmlPreviewUI } from '@preview/ui.js';
 import { getQtBridgeProjects, QMLProject } from '@/project.mjs';
 import {
+  getQtBridgePreviewProjects,
   isQtBridgePreviewAvailable,
   selectQtBridgePreviewProject
 } from '@/preview/qtbridge-preview-project.mjs';
@@ -631,7 +632,9 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
   let bridgeProject: QtBridgeProject | undefined;
   let projectType = getProjectType(folder);
   if (!projectType) {
-    const bridgeProjects = getQtBridgeProjects(folder);
+    const bridgeProjects = getQtBridgePreviewProjects(
+      getQtBridgeProjects(folder)
+    );
     bridgeProject = await selectQtBridgePreviewProject(folder, activeUri);
     if (bridgeProjects.length > 1 && !bridgeProject) {
       logger.info('Qt Bridge project selection was cancelled');
