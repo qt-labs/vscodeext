@@ -135,26 +135,26 @@ async function createSpawnOptions(
     pathEntries.push(...optionsOverrides.pathEntries);
   }
 
-  if (IsWindows) {
-    if (optionsOverrides?.sanitizeVsCodeEnv) {
-      // Do not leak VS Code/Electron launch variables into preview applications.
-      // In particular, ELECTRON_RUN_AS_NODE can make a spawned app-host behave
-      // like a Node/Electron helper instead of a normal Qt Bridge executable.
-      const removedNames = Object.keys(env).filter((name) => {
-        const upperName = name.toUpperCase();
-        return (
-          upperName.startsWith('ELECTRON_') ||
-          upperName.startsWith('VSCODE_') ||
-          upperName === 'NODE_OPTIONS' ||
-          upperName === 'NODE_CHANNEL_FD' ||
-          upperName === 'NODE_UNIQUE_ID'
-        );
-      });
-      for (const name of removedNames) {
-        Reflect.deleteProperty(env, name);
-      }
+  if (optionsOverrides?.sanitizeVsCodeEnv) {
+    // Do not leak VS Code/Electron launch variables into preview applications.
+    // In particular, ELECTRON_RUN_AS_NODE can make a spawned app-host behave
+    // like a Node/Electron helper instead of a normal Qt Bridge executable.
+    const removedNames = Object.keys(env).filter((name) => {
+      const upperName = name.toUpperCase();
+      return (
+        upperName.startsWith('ELECTRON_') ||
+        upperName.startsWith('VSCODE_') ||
+        upperName === 'NODE_OPTIONS' ||
+        upperName === 'NODE_CHANNEL_FD' ||
+        upperName === 'NODE_UNIQUE_ID'
+      );
+    });
+    for (const name of removedNames) {
+      Reflect.deleteProperty(env, name);
     }
+  }
 
+  if (IsWindows) {
     try {
       const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
       if (typeof dllDirs === 'string' && dllDirs.length > 0) {
