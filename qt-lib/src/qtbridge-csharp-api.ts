@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import { resolveQtBridgeCSharpApi } from './qtbridge-csharp-api-internal';
 
-const QT_BRIDGE_CSHARP_EXTENSION_ID = 'theqtcompany.qt-bridge-csharp';
+const QT_BRIDGE_CSHARP_EXTENSION_ID = 'theqtcompany.qt-csharp';
 
 export interface QtBridgeCSharpAPI {
   getProjects(): readonly QtBridgeProject[];
