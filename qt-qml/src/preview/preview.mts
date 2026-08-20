@@ -261,35 +261,38 @@ async function launchQtBridgePreview(
   // this argument before the remaining argv is forwarded to managed Main.
   const previewArgs = buildPreviewArgs(host, port);
   const additionalArgs = getPreviewConfig().get<string[]>('args', []);
-  const launch = await bridgeProject.prepareQmlPreview();
-  if (!launch) {
-    logger.error(
-      `Could not resolve Qt Bridge host path for folder: ${folder.uri.fsPath}`
-    );
-    ui.showFailedToStart(
-      new Error('Could not resolve Qt Bridge host executable')
-    );
-    return false;
-  }
-
-  const manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs);
-  const previewUrl = resolveQtBridgePreviewUrl(bridgeProject, qmlFile);
-  if (qmlFile && previewUrl) {
-    manager.registerLoadedFile(qmlFile, previewUrl);
-  }
-  manager.onConnectionClosed(() => {
-    logger.info('QML Preview connection closed');
-    cleanupSession();
-  });
-  manager.setFpsHandler((fps: FpsInfo) => {
-    ui.updateFps(fps);
-  });
-  const processArgs = [previewArgs, ...additionalArgs];
-  logger.info(
-    `Command: ${quoteCommandArg(launch.executable)} ${processArgs.join(' ')}`
-  );
+  let launch: QtBridgePreviewLaunch | undefined;
+  let manager: QmlPreviewConnectionManager | undefined;
 
   try {
+    launch = await bridgeProject.prepareQmlPreview();
+    if (!launch) {
+      logger.error(
+        `Could not resolve Qt Bridge host path for folder: ${folder.uri.fsPath}`
+      );
+      ui.showFailedToStart(
+        new Error('Could not resolve Qt Bridge host executable')
+      );
+      return false;
+    }
+
+    manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs);
+    const previewUrl = resolveQtBridgePreviewUrl(bridgeProject, qmlFile);
+    if (qmlFile && previewUrl) {
+      manager.registerLoadedFile(qmlFile, previewUrl);
+    }
+    manager.onConnectionClosed(() => {
+      logger.info('QML Preview connection closed');
+      cleanupSession();
+    });
+    manager.setFpsHandler((fps: FpsInfo) => {
+      ui.updateFps(fps);
+    });
+    const processArgs = [previewArgs, ...additionalArgs];
+    logger.info(
+      `Command: ${quoteCommandArg(launch.executable)} ${processArgs.join(' ')}`
+    );
+
     const process = await spawnProgramForTool(launch.executable, processArgs, {
       pathEntries: launch.pathEntries,
       cwd: launch.cwd,
@@ -313,8 +316,8 @@ async function launchQtBridgePreview(
     return true;
   } catch (err) {
     logger.error(`Failed to start Qt Bridge preview: ${String(err)}`);
-    manager.dispose();
-    launch.dispose();
+    manager?.dispose();
+    launch?.dispose();
     ui.showFailedToStart(err instanceof Error ? err : new Error(String(err)));
     return false;
   }
