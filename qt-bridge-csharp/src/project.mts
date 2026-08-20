@@ -694,8 +694,7 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
 
   constructor(
     readonly folder: vscode.WorkspaceFolder,
-    info: QtBridgeProjectInfo,
-    private readonly refreshCallback: () => Promise<void>
+    info: QtBridgeProjectInfo
   ) {
     this.projectFile = vscode.Uri.file(info.projectFile);
     this.packageId = info.packageId;
@@ -705,10 +704,6 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
     this.qmlImportRoot = qmlImportRoot
       ? vscode.Uri.file(qmlImportRoot)
       : undefined;
-  }
-
-  async refresh(): Promise<void> {
-    await this.refreshCallback();
   }
 
   get metadata() {
