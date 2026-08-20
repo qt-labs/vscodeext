@@ -59,6 +59,7 @@ export interface QtBridgeQmlFile {
   readonly uri: string;
   readonly typeName: string;
   readonly modulePath: string;
+  readonly resourceUrl: string;
 }
 
 export interface QtBridgeQmlLanguageServerMetadata {
