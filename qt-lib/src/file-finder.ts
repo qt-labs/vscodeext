@@ -4,7 +4,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
+import { createLogger } from './logger';
 import { QRCParser } from './qrc-parser';
+
+const logger = createLogger('file-finder');
 
 export class FileFinder {
   private readonly _qrcParser: QRCParser;
@@ -46,9 +49,21 @@ export class FileFinder {
       const additionalQrcFiles = await vscode.workspace.findFiles(pattern);
       allQrcFiles.push(...additionalQrcFiles);
     }
+    const extraRoots = [
+      ...(vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath) ?? []),
+      ...additionalFolders
+    ];
     // parse all qrc files asynchrounously
     const parsePromises = allQrcFiles.map((file) =>
-      this._qrcParser.parseQRCFile(file.fsPath)
+      this._qrcParser.parseQRCFile(file.fsPath, false, {
+        extraRoots,
+        onViolation: (entry, resolvedPath) => {
+          logger.warn(
+            `Dropping qrc entry outside the allowed roots: ${entry} -> ` +
+              `${resolvedPath} (${file.fsPath})`
+          );
+        }
+      })
     );
     const parsedQrcFiles = await Promise.all(parsePromises);
     this._cache.clear();

@@ -5,6 +5,7 @@ import _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+import { isInsideReal } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import {
   RccTag,
@@ -59,7 +60,10 @@ export class QrcNode {
     const added: FileTag[] = [];
 
     absFilePaths
-      .filter((p) => p.startsWith(this.qrcDir))
+      // Realpath containment, not a prefix check: siblings like
+      // <qrcDir>-evil and symlinks resolving outside the qrc directory
+      // must not become entries.
+      .filter((p) => isInsideReal(this.qrcDir, p))
       .forEach((p) => {
         const text = normalizeFilePath(this.qrcDir, p);
         if (!existingPaths.includes(text)) {
@@ -173,7 +177,7 @@ export class QrcNode {
     this.qrcDir = path.dirname(doc.uri.fsPath);
     this.qrcUri = doc.uri;
     this.fileUri = this.file
-      ? vscode.Uri.file(path.join(this.qrcDir, this.file.text))
+      ? checkedFileUri(doc.uri, this.qrcDir, this.file.text)
       : undefined;
   }
 
@@ -215,6 +219,18 @@ export class QrcNode {
 function normalizeFilePath(qrcDir: string, absPath: string) {
   const rel = path.relative(qrcDir, absPath);
   return rel.replace(/\\/g, '/');
+}
+
+// A `<file>` entry from the parsed document is untrusted text; it must not
+// map to a file outside the workspace folder (or, without one, the qrc
+// directory), or the thumbnail and open/reveal actions would read through
+// it. Must not throw: this runs in the QrcNode constructor and a throw
+// would block every command on the node, including removing the entry.
+function checkedFileUri(qrcUri: vscode.Uri, qrcDir: string, text: string) {
+  const root =
+    vscode.workspace.getWorkspaceFolder(qrcUri)?.uri.fsPath ?? qrcDir;
+  const joined = path.join(qrcDir, text);
+  return isInsideReal(root, joined) ? vscode.Uri.file(joined) : undefined;
 }
 
 function insertAfterOrPush<T>(array: T[], index: number, item: T): number {
