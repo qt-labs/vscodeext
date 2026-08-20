@@ -6,6 +6,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import type { QtBridgeProject } from 'qt-lib';
 import {
+  getQtBridgePreviewProjects,
   isQtBridgePreviewAvailable,
   selectQtBridgePreviewProject
 } from '@/preview/qtbridge-preview-project.mjs';
@@ -21,12 +22,20 @@ function workspaceFolder(name: string, index: number): vscode.WorkspaceFolder {
 
 function bridgeProject(
   folder: vscode.WorkspaceFolder,
-  name: string
+  name: string,
+  ready = true
 ): QtBridgeProject {
   return {
     folder,
-    projectFile: vscode.Uri.joinPath(folder.uri, name, `${name}.csproj`)
-  } as QtBridgeProject;
+    projectFile: vscode.Uri.joinPath(folder.uri, name, `${name}.csproj`),
+    isMetadataReady: ready,
+    metadata: ready
+      ? {
+          application: {},
+          qml: { files: [{}] }
+        }
+      : undefined
+  } as unknown as QtBridgeProject;
 }
 
 describe('Qt Bridge QML Preview project selection', () => {
@@ -40,18 +49,50 @@ describe('Qt Bridge QML Preview project selection', () => {
 
   it('requires ready application metadata before enabling preview', () => {
     const folder = workspaceFolder('selected', 0);
-    const unready = bridgeProject(folder, 'Unready');
-    const ready = {
-      ...bridgeProject(folder, 'Ready'),
-      isMetadataReady: true,
-      metadata: {
-        application: {},
-        qml: { files: [{}] }
-      }
-    } as unknown as QtBridgeProject;
+    const unready = bridgeProject(folder, 'Unready', false);
+    const ready = bridgeProject(folder, 'Ready');
 
     expect(isQtBridgePreviewAvailable(unready)).to.equal(false);
     expect(isQtBridgePreviewAvailable(ready)).to.equal(true);
+  });
+
+  it('excludes unready projects from Preview selection', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const first = bridgeProject(folder, 'First');
+    const second = bridgeProject(folder, 'Second');
+    const unready = bridgeProject(folder, 'Unready', false);
+    const picker = sinon.stub().resolves(second);
+
+    const selected = await selectQtBridgePreviewProject(folder, undefined, {
+      getProjects: () => [first, unready, second],
+      getProjectForUri: () => undefined,
+      getWorkspaceFolder: () => undefined,
+      pickProject: picker
+    });
+
+    expect(selected).to.equal(second);
+    expect(getQtBridgePreviewProjects([first, unready, second])).to.deep.equal([
+      first,
+      second
+    ]);
+    expect(picker.calledOnceWithExactly([first, second])).to.equal(true);
+  });
+
+  it('does not prompt when no Bridge project is ready for Preview', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const first = bridgeProject(folder, 'First', false);
+    const second = bridgeProject(folder, 'Second', false);
+    const picker = sinon.stub().resolves(undefined);
+
+    const selected = await selectQtBridgePreviewProject(folder, undefined, {
+      getProjects: () => [first, second],
+      getProjectForUri: () => undefined,
+      getWorkspaceFolder: () => undefined,
+      pickProject: picker
+    });
+
+    expect(selected).to.equal(undefined);
+    expect(picker.called).to.equal(false);
   });
 
   it('uses the project containing the active file in the selected folder', async () => {

@@ -23,13 +23,19 @@ export function isQtBridgePreviewAvailable(
   );
 }
 
+export function getQtBridgePreviewProjects(
+  projects: readonly QtBridgeProject[]
+): QtBridgeProject[] {
+  return projects.filter(isQtBridgePreviewAvailable);
+}
+
 export async function selectQtBridgePreviewProject(
   folder: vscode.WorkspaceFolder,
   activeUri: vscode.Uri | undefined,
   services = defaultServices,
   pickerTitle?: string
 ): Promise<QtBridgeProject | undefined> {
-  const projects = services.getProjects(folder);
+  const projects = getQtBridgePreviewProjects(services.getProjects(folder));
   if (projects.length === 0) {
     return undefined;
   }
