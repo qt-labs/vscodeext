@@ -417,8 +417,7 @@ describe('Qt Bridge project discovery', () => {
         packageVersion: '1.0.0',
         qtDir,
         qtInstallRoot: undefined
-      },
-      async () => {}
+      }
     );
     const metadata: QtBridgeQmlMetadata = {
       metadataFile: path.join(testDirectory, 'obj', 'qtbridge-qml.ide.json'),

@@ -291,9 +291,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
       if (!projectFile || !info) {
         continue;
       }
-      const project = new QtBridgeProjectSnapshot(folder, info, async () => {
-        await this.refreshFolder(folder);
-      });
+      const project = new QtBridgeProjectSnapshot(folder, info);
       const key = canonicalPath(projectFile.fsPath);
       this.projects.set(key, project);
       await this.refreshMetadata(
