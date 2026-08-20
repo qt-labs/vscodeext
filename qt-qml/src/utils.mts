@@ -71,6 +71,13 @@ export class QtProcess extends ChildProcess {
   }
 }
 
+interface SpawnProgramOptions {
+  pathEntries?: readonly string[];
+  cwd?: string;
+  env?: NodeJS.ProcessEnv;
+  sanitizeVsCodeEnv?: boolean;
+}
+
 export async function spawnProcessForTool(
   command: string,
   additionalArgs: string[] = []
@@ -84,62 +91,27 @@ export async function spawnProcessForTool(
     command += ` ${additionalArgs.map(quoteArg).join(' ')}`;
   }
   logger.info('Starting program:', command);
-  let options: SpawnOptions = {
-    shell: true
-  };
-  if (IsLinux) {
-    options = {
-      ...options,
-      detached: true
-    };
-  }
-  if (IsWindows) {
-    const env = { ...process.env };
-    const pathEntries: string[] = [];
-
-    try {
-      const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
-      if (typeof dllDirs === 'string' && dllDirs.length > 0) {
-        pathEntries.push(dllDirs);
-      }
-    } catch {
-      // The Qt C++ extension is optional.
-    }
-
-    if (pathEntries.length > 0) {
-      prependPathEntries(env, pathEntries);
-      options = {
-        ...options,
-        env: env
-      };
-    }
-  }
+  const options = await createSpawnOptions(true);
   const childProcess = spawn(command, options);
-
-  // Handle spawn errors
-  childProcess.on('error', (error) => {
-    logger.error('Failed to spawn process:', String(error));
-  });
-
-  Object.setPrototypeOf(childProcess, QtProcess.prototype);
-  return childProcess as QtProcess;
+  return createQtProcess(childProcess);
 }
 
 export async function spawnProgramForTool(
   program: string,
   args: string[] = [],
-  optionsOverrides?: {
-    pathEntries?: readonly string[];
-    cwd?: string;
-    env?: NodeJS.ProcessEnv;
-    sanitizeVsCodeEnv?: boolean;
-  }
+  optionsOverrides?: SpawnProgramOptions
 ): Promise<QtProcess> {
   logger.info('Starting program:', [program, ...args].join(' '));
+  const options = await createSpawnOptions(false, optionsOverrides);
+  const childProcess = spawn(program, args, options);
+  return createQtProcess(childProcess);
+}
 
-  let options: SpawnOptions = {
-    shell: false
-  };
+async function createSpawnOptions(
+  shell: boolean,
+  optionsOverrides?: SpawnProgramOptions
+): Promise<SpawnOptions> {
+  let options: SpawnOptions = { shell: shell };
 
   if (optionsOverrides?.cwd) {
     options = {
@@ -205,8 +177,10 @@ export async function spawnProgramForTool(
     options = { ...options, env: env };
   }
 
-  const childProcess = spawn(program, args, options);
+  return options;
+}
 
+function createQtProcess(childProcess: ChildProcess): QtProcess {
   childProcess.on('error', (error) => {
     logger.error('Failed to spawn process:', String(error));
   });
