@@ -290,7 +290,7 @@ export class QMLProject implements Project {
     const aggregation = this._qtBridgeQmllsAggregation;
     this.qmlls.qtBridgeSessionConfigs = aggregation.sessionConfigs;
     this.qmlls.useNoCMakeCalls = aggregation.useNoCMakeCalls;
-    if (aggregation.startupBuildDir) {
+    if (!this._buildDir && aggregation.startupBuildDir) {
       this.qmlls.buildDir = aggregation.startupBuildDir;
     }
     for (const importPath of aggregation.importPaths) {
