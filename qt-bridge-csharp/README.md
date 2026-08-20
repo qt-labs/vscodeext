@@ -1,7 +1,6 @@
 # Qt Bridge C# Extension for VS Code
 
-This extension integrates Qt Bridge C# projects with the Qt extensions for
-Visual Studio Code.
+This extension integrates Qt Bridge C# projects with the Qt Extension for VS Code.
 
 It provides:
 
