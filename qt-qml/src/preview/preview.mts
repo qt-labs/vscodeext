@@ -227,12 +227,7 @@ function resolveQtBridgePreviewUrl(
     return undefined;
   }
 
-  const qrcPath = path.posix.join(
-    '/qt/qml',
-    metadataFile.modulePath.replace(/\\/g, '/'),
-    path.basename(metadataFile.sourcePath)
-  );
-  const previewUrl = `qrc:${qrcPath}`;
+  const previewUrl = metadataFile.resourceUrl;
   logger.info(`Resolved Qt Bridge preview URL: ${qmlFile} -> ${previewUrl}`);
   return previewUrl;
 }
