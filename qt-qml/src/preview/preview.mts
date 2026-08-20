@@ -131,10 +131,6 @@ function getProjectType(
   if (project?.pySideProject) {
     return 'pyside';
   }
-  if (isQtBridgePreviewAvailable(bridgeProject)) {
-    return 'bridge';
-  }
-
   const features = coreAPI?.getValue<QtWorkspaceFeatures>(
     folder,
     CoreKey.WORKSPACE_FEATURES
@@ -144,6 +140,9 @@ function getProjectType(
   }
   if (features?.projectTypes.pyside) {
     return 'pyside';
+  }
+  if (isQtBridgePreviewAvailable(bridgeProject)) {
+    return 'bridge';
   }
 
   return undefined;
@@ -635,13 +634,17 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
     }
   }
 
-  const bridgeProjects = getQtBridgeProjects(folder);
-  const bridgeProject = await selectQtBridgePreviewProject(folder, activeUri);
-  if (bridgeProjects.length > 1 && !bridgeProject) {
-    logger.info('Qt Bridge project selection was cancelled');
-    return;
+  let bridgeProject: QtBridgeProject | undefined;
+  let projectType = getProjectType(folder);
+  if (!projectType) {
+    const bridgeProjects = getQtBridgeProjects(folder);
+    bridgeProject = await selectQtBridgePreviewProject(folder, activeUri);
+    if (bridgeProjects.length > 1 && !bridgeProject) {
+      logger.info('Qt Bridge project selection was cancelled');
+      return;
+    }
+    projectType = getProjectType(folder, bridgeProject);
   }
-  const projectType = getProjectType(folder, bridgeProject);
   logger.info(`Project type for ${folder.name}: ${projectType ?? 'unknown'}`);
 
   if (projectType === 'pyside') {
