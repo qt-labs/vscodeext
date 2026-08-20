@@ -20,30 +20,8 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  private _treeView: vscode.TreeView<vscode.TreeItem> | undefined;
-
-  setTreeView(treeView: vscode.TreeView<vscode.TreeItem>): void {
-    this._treeView = treeView;
-    this.updateBadge();
-  }
-
   refresh(): void {
     this._onDidChangeTreeData.fire(undefined);
-    this.updateBadge();
-  }
-
-  private updateBadge(): void {
-    if (!this._treeView) {
-      return;
-    }
-    const count = listInstalledVersionsOnDisk().length;
-    this._treeView.badge =
-      count > 0
-        ? {
-            value: count,
-            tooltip: `${String(count)} installed Qt version(s)`
-          }
-        : undefined;
   }
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
@@ -79,7 +57,6 @@ export function registerInstalledPackagesView(
     `${EXTENSION_ID}.installedPackagesView`,
     { treeDataProvider: provider }
   );
-  provider.setTreeView(treeView);
   context.subscriptions.push(treeView);
 }
 
