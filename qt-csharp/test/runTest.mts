@@ -41,20 +41,9 @@ async function main() {
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
     if (getDebugLevel() >= 1) {
-      console.log(
-        '[runTest][qt-bridge-csharp] CLI:',
-        cli,
-        'args:',
-        args.join(' ')
-      );
-      console.log(
-        '[runTest][qt-bridge-csharp] userDataDir:',
-        userDataDir
-      );
-      console.log(
-        '[runTest][qt-bridge-csharp] extensionsDir:',
-        extensionsDir
-      );
+      console.log('[runTest][qt-csharp] CLI:', cli, 'args:', args.join(' '));
+      console.log('[runTest][qt-csharp] userDataDir:', userDataDir);
+      console.log('[runTest][qt-csharp] extensionsDir:', extensionsDir);
     }
 
     const launchArgs = [...args];

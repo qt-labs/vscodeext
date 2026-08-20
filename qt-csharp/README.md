@@ -22,7 +22,7 @@ editing and debugging but is not required by the Qt Bridge integration.
 On Linux and macOS, configure the Qt installation as described in the Qt Bridge
 C# documentation. Windows packages can provide their bundled Qt installation.
 
-The extension resolves Qt from the project, the `qt-bridge-csharp.qtDir`
+The extension resolves Qt from the project, the `qt-csharp.qtDir`
 workspace setting, the `QTDIR` environment variable, or the Qt selected by Qt
 Core, in that order. The Qt bundled by a Windows package is used only as the
 final fallback.
