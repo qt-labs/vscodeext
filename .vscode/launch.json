@@ -38,20 +38,20 @@
       "preLaunchTask": "npm qt-python watch"
     },
     {
-      "name": "Run qt-bridge-csharp",
+      "name": "Run qt-csharp",
       "type": "extensionHost",
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
         "--extensionDevelopmentPath=${workspaceFolder}/qt-qml",
-        "--extensionDevelopmentPath=${workspaceFolder}/qt-bridge-csharp"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-csharp"
       ],
       "outFiles": [
         "${workspaceFolder}/qt-core/out/**/*.js",
         "${workspaceFolder}/qt-qml/out/**/*.js",
-        "${workspaceFolder}/qt-bridge-csharp/out/**/*.js"
+        "${workspaceFolder}/qt-csharp/out/**/*.js"
       ],
-      "preLaunchTask": "npm qt-bridge-csharp watch + dependencies"
+      "preLaunchTask": "npm qt-csharp watch + dependencies"
     },
     {
       "name": "Run Extension Tests qt-core",
@@ -155,17 +155,17 @@
       "preLaunchTask": "npm qt-qml watch and test"
     },
     {
-      "name": "Run Extension Tests qt-bridge-csharp",
+      "name": "Run Extension Tests qt-csharp",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
-        "--extensionDevelopmentPath=${workspaceFolder}/qt-bridge-csharp",
-        "--extensionTestsPath=${workspaceFolder}/qt-bridge-csharp/out/test/suite/index"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-csharp",
+        "--extensionTestsPath=${workspaceFolder}/qt-csharp/out/test/suite/index"
       ],
-      "outFiles": ["${workspaceFolder}/qt-bridge-csharp/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-bridge-csharp watch and test + dependencies"
+      "outFiles": ["${workspaceFolder}/qt-csharp/out/test/**/*.js"],
+      "preLaunchTask": "npm qt-csharp watch and test + dependencies"
     }
   ]
 }

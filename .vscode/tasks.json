@@ -77,7 +77,7 @@
     },
     {
       "type": "shell",
-      "label": "npm qt-bridge-csharp watch",
+      "label": "npm qt-csharp watch",
       "problemMatcher": "$tsc-watch",
       "command": "npm run watch",
       "isBackground": true,
@@ -89,22 +89,22 @@
         "isDefault": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/qt-bridge-csharp"
+        "cwd": "${workspaceFolder}/qt-csharp"
       }
     },
     {
-      "label": "npm qt-bridge-csharp watch + dependencies",
+      "label": "npm qt-csharp watch + dependencies",
       "dependsOn": [
         "npm qt-core watch",
         "npm qt-qml watch",
-        "npm qt-bridge-csharp watch",
+        "npm qt-csharp watch",
         "vite:start"
       ],
       "dependsOrder": "parallel"
     },
     {
       "type": "shell",
-      "label": "npm qt-bridge-csharp watch and test",
+      "label": "npm qt-csharp watch and test",
       "problemMatcher": "$tsc-watch",
       "command": "npm run compile-test && npm run watch",
       "isBackground": true,
@@ -116,14 +116,14 @@
         "isDefault": true
       },
       "options": {
-        "cwd": "${workspaceFolder}/qt-bridge-csharp"
+        "cwd": "${workspaceFolder}/qt-csharp"
       }
     },
     {
-      "label": "npm qt-bridge-csharp watch and test + dependencies",
+      "label": "npm qt-csharp watch and test + dependencies",
       "dependsOn": [
         "npm qt-core watch",
-        "npm qt-bridge-csharp watch and test"
+        "npm qt-csharp watch and test"
       ],
       "dependsOrder": "parallel"
     },

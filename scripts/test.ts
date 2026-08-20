@@ -17,18 +17,12 @@ function main() {
     console.error('Error: --extension parameter is required');
     console.log('Usage: ts-node test.ts --extension=<extension-name>');
     console.log(
-      'Available extensions: qt-core, qt-cpp, qt-qml, qt-python, qt-bridge-csharp, all'
+      'Available extensions: qt-core, qt-cpp, qt-qml, qt-python, qt-csharp, all'
     );
     process.exit(1);
   }
 
-  const extensions = [
-    'qt-core',
-    'qt-cpp',
-    'qt-qml',
-    'qt-python',
-    'qt-bridge-csharp'
-  ];
+  const extensions = ['qt-core', 'qt-cpp', 'qt-qml', 'qt-python', 'qt-csharp'];
 
   if (targetExtension === 'all') {
     for (const ext of extensions) {
