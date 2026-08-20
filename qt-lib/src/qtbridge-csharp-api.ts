@@ -24,7 +24,6 @@ export interface QtBridgeProject {
   readonly metadata: QtBridgeQmlMetadata | undefined;
   readonly isMetadataReady: boolean;
 
-  refresh(): Promise<void>;
   prepareQmlPreview(): Promise<QtBridgePreviewLaunch | undefined>;
 }
 
