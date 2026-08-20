@@ -22,7 +22,13 @@ function main() {
     process.exit(1);
   }
 
-  const extensions = ['qt-core', 'qt-cpp', 'qt-qml', 'qt-python', 'qt-bridge-csharp'];
+  const extensions = [
+    'qt-core',
+    'qt-cpp',
+    'qt-qml',
+    'qt-python',
+    'qt-bridge-csharp'
+  ];
 
   if (targetExtension === 'all') {
     for (const ext of extensions) {
