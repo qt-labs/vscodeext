@@ -88,7 +88,14 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
       ) {
         continue;
       }
-      await project.handleQtBridgeProjectSignal(signal);
+      try {
+        await project.handleQtBridgeProjectSignal(signal);
+      } catch (error) {
+        logger.error(
+          `Failed to update qmlls after Qt Bridge ${signal} state changed for ` +
+            `${project.folder.uri.fsPath}: ${String(error)}`
+        );
+      }
     }
   }
 
