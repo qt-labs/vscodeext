@@ -26,7 +26,7 @@ describe('Qt Bridge project discovery', () => {
 
   beforeEach(async () => {
     testDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), 'qt-bridge-csharp-project-')
+      path.join(os.tmpdir(), 'qt-csharp-project-')
     );
   });
 
