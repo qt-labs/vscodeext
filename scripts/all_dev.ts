@@ -57,7 +57,7 @@ function main() {
       'qt-qml',
       'qt-ui',
       'qt-python',
-      'qt-bridge-csharp'
+      'qt-csharp'
     ];
     for (const ext of extensions) {
       const targetRoot = path.join(extensionRoot, ext);
