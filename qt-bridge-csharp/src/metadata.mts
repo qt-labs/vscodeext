@@ -147,7 +147,8 @@ function parseQmlFiles(value: unknown) {
       !isNonEmptyString(file.sourcePath) ||
       !isNonEmptyString(file.uri) ||
       !isNonEmptyString(file.typeName) ||
-      !isNonEmptyString(file.modulePath)
+      !isNonEmptyString(file.modulePath) ||
+      !isNonEmptyString(file.resourceUrl)
     ) {
       return undefined;
     }
@@ -155,7 +156,8 @@ function parseQmlFiles(value: unknown) {
       sourcePath: file.sourcePath,
       uri: file.uri,
       typeName: file.typeName,
-      modulePath: file.modulePath
+      modulePath: file.modulePath,
+      resourceUrl: file.resourceUrl
     });
   }
   return files;

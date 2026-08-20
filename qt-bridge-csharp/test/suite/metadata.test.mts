@@ -112,7 +112,8 @@ describe('Qt Bridge build metadata', () => {
               sourcePath: path.join(testDirectory, 'Main.qml'),
               uri: 'Application',
               typeName: 'Main',
-              modulePath: 'Application/'
+              modulePath: 'Application/',
+              resourceUrl: 'qrc:/qt/qml/Application/Main.qml'
             }
           ]
         },
@@ -156,6 +157,21 @@ describe('Qt Bridge build metadata', () => {
 
     expect(result.metadata).to.be.undefined;
     expect(result.isReady).to.equal(false);
+  });
+
+  it('rejects QML files without a resource URL', async () => {
+    const metadataFile = await writeMetadata('Debug', { ready: true });
+    const json = JSON.parse(
+      await fs.promises.readFile(metadataFile, 'utf8')
+    ) as Record<string, unknown>;
+    const qml = json.qml as Record<string, unknown>;
+    const files = qml.files as Array<Record<string, unknown>>;
+    Reflect.deleteProperty(files[0] ?? {}, 'resourceUrl');
+    await fs.promises.writeFile(metadataFile, JSON.stringify(json), 'utf8');
+
+    const result = await discoverQtBridgeMetadata(vscode.Uri.file(projectFile));
+
+    expect(result.metadata?.qml.files).to.deep.equal([]);
   });
 
   it('keeps a previous ready selection when several candidates are ready', async () => {
