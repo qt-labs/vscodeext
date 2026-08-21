@@ -16,7 +16,8 @@ const defaultServices = {
 export async function selectQtBridgePreviewProject(
   folder: vscode.WorkspaceFolder,
   activeUri: vscode.Uri | undefined,
-  services = defaultServices
+  services = defaultServices,
+  pickerTitle?: string
 ): Promise<QtBridgeProject | undefined> {
   const projects = services.getProjects(folder);
   if (projects.length === 0) {
@@ -44,11 +45,15 @@ export async function selectQtBridgePreviewProject(
     return projects[0];
   }
 
+  if (pickerTitle) {
+    return showQtBridgeProjectPicker(projects, pickerTitle);
+  }
   return services.pickProject(projects);
 }
 
 async function showQtBridgeProjectPicker(
-  projects: readonly QtBridgeProject[]
+  projects: readonly QtBridgeProject[],
+  title = 'QML Preview - select Qt Bridge project'
 ): Promise<QtBridgeProject | undefined> {
   const selection = await vscode.window.showQuickPick(
     projects.map((project) => ({
@@ -58,7 +63,7 @@ async function showQtBridgeProjectPicker(
     })),
     {
       placeHolder: 'Select the Qt Bridge project for QML Preview',
-      title: 'QML Preview - select Qt Bridge project'
+      title
     }
   );
   return selection?.project;
