@@ -93,6 +93,55 @@ func TestHandler_PostItems_Error_On_ExistingItem(t *testing.T) {
 	}
 }
 
+func TestHandler_PostItems_BridgeProjectOptions(t *testing.T) {
+	workingDir := createTempDir(t)
+	defer os.RemoveAll(workingDir)
+
+	req := NewItemRequest{
+		Name:       "hello-world",
+		WorkingDir: workingDir,
+		PresetId:   utils.CreatePresetUniqueId("@projects/csharp/qtbridge"),
+		Options: map[string]any{
+			"Framework":        "net10.0",
+			"SampleCode":       true,
+			"ExportAsMetadata": true,
+		},
+	}
+
+	testNewItem(t, req, http.StatusCreated)
+	projectDir := filepath.Join(workingDir, req.Name)
+	projectFile, err := os.ReadFile(filepath.Join(projectDir, req.Name+".csproj"))
+	require.NoError(t, err)
+	require.Contains(t, string(projectFile), "<TargetFramework>net10.0</TargetFramework>")
+	require.Contains(t, string(projectFile), "<QtExportAs>metadata</QtExportAs>")
+
+	programFile, err := os.ReadFile(filepath.Join(projectDir, "Program.cs"))
+	require.NoError(t, err)
+	require.Contains(t, string(programFile), "namespace hello_world;")
+	require.Contains(t, string(programFile), "public class CounterService")
+
+	qmlFile, err := os.ReadFile(filepath.Join(projectDir, "Main.qml"))
+	require.NoError(t, err)
+	require.Contains(t, string(qmlFile), "import QtQuick.Layouts")
+	require.Contains(t, string(qmlFile), "Counter.clicks")
+}
+
+func TestHandler_PostItems_BridgeProjectDefaultsToSourceExport(t *testing.T) {
+	workingDir := createTempDir(t)
+	defer os.RemoveAll(workingDir)
+
+	req := NewItemRequest{
+		Name:       "hello-world",
+		WorkingDir: workingDir,
+		PresetId:   utils.CreatePresetUniqueId("@projects/csharp/qtbridge"),
+	}
+
+	testNewItem(t, req, http.StatusCreated)
+	projectFile, err := os.ReadFile(filepath.Join(workingDir, req.Name, req.Name+".csproj"))
+	require.NoError(t, err)
+	require.NotContains(t, string(projectFile), "QtExportAs")
+}
+
 // helpers
 func testNewItem(t *testing.T, req NewItemRequest, expectedCode int) {
 	bodyBytes, err := json.Marshal(req)

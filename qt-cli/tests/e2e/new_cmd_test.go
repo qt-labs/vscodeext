@@ -20,6 +20,7 @@ func TestNewCmd(t *testing.T) {
 		{"@projects/cpp/console", "projects_cpp_console"},
 		{"@projects/cpp/qtquick", "projects_cpp_qtquick"},
 		{"@projects/cpp/qwidget", "projects_cpp_qwidget"},
+		{"@projects/csharp/qtbridge", "projects_csharp_qtbridge"},
 		{"@projects/python/qtquick", "projects_python_qtquick"},
 		{"@projects/python/qwidget", "projects_python_qwidget"},
 	}

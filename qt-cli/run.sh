@@ -78,10 +78,12 @@ gen-all() {
   ${qtcli} new projects_cpp_console --preset @projects/cpp/console
   ${qtcli} new projects_cpp_qtquick --preset @projects/cpp/qtquick
   ${qtcli} new projects_cpp_qwidget --preset @projects/cpp/qwidget
+  ${qtcli} new projects_csharp_qtbridge --preset @projects/csharp/qtbridge
   ${qtcli} new projects_python_qtquick --preset @projects/python/qtquick
   ${qtcli} new projects_python_qwidget --preset @projects/python/qwidget
 
   _run_in_dir types_qml ${qtcli} new-file myitem --preset @types/qml
+  _run_in_dir types_qml_qtbridge ${qtcli} new-file myitem --preset @types/qml/qtbridge
   _run_in_dir types_qrc ${qtcli} new-file myasset --preset @types/qrc
   _run_in_dir types_ui  ${qtcli} new-file myui --preset @types/ui
   _run_in_dir cpp_class ${qtcli} new-file MyClass --preset @cpp/class
