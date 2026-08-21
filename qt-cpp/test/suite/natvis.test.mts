@@ -218,6 +218,10 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
 
       const stop = stops[0]!;
       const frameId = stop.frameId!;
+      // On cppvsdbg the NatVis DisplayString is evaluated lazily: a cold
+      // Locals read right after the stop can return empty value strings.
+      // Warm it up first, like the golden test does.
+      await warmUpNatvisDisplay(session, frameId);
       const locals = await getLocals(session, frameId);
       dlog(
         '[snippet-test] Locals at top frame:',
