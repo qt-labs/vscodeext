@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <QtBridgePackagePrefix>QtGroup.Qt.Bridge.CSharp</QtBridgePackagePrefix>
+    <QtBridgeTemplateArch Condition="'$(QtBridgeTemplateArch)' == ''"
+      >$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</QtBridgeTemplateArch>
+    <QtBridgeTemplateArch Condition="'$(QtBridgeTemplateArch)' == 'X64'">x64</QtBridgeTemplateArch>
+    <QtBridgeTemplateArch Condition="'$(QtBridgeTemplateArch)' == 'Arm64'">arm64</QtBridgeTemplateArch>
+    <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and '$(RuntimeIdentifier)' != ''"
+      >$(RuntimeIdentifier)</QtBridgeTemplateRid>
+    <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and $([MSBuild]::IsOSPlatform('Windows'))"
+      >win-x64</QtBridgeTemplateRid>
+    <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and $([MSBuild]::IsOSPlatform('Linux'))"
+      >linux-$(QtBridgeTemplateArch)</QtBridgeTemplateRid>
+    <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and $([MSBuild]::IsOSPlatform('OSX'))"
+      >osx-$(QtBridgeTemplateArch)</QtBridgeTemplateRid>
+    <QtBridgePackageId>$(QtBridgePackagePrefix).$(QtBridgeTemplateRid)</QtBridgePackageId>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(QtBridgeTemplateRid)' == 'win-x64'
+                    or '$(QtBridgeTemplateRid)' == 'linux-x64'
+                    or '$(QtBridgeTemplateRid)' == 'osx-x64'
+                    or '$(QtBridgeTemplateRid)' == 'osx-arm64'">
+    <PackageReference Include="$(QtBridgePackageId)" Version="0.3.*-*" />
+  </ItemGroup>
+
+  <Target Name="EnsureSupportedQtBridgePlatform" BeforeTargets="Restore;Build"
+          Condition="'$(QtBridgeTemplateRid)' != 'win-x64'
+                  and '$(QtBridgeTemplateRid)' != 'linux-x64'
+                  and '$(QtBridgeTemplateRid)' != 'osx-x64'
+                  and '$(QtBridgeTemplateRid)' != 'osx-arm64'">
+    <Error Text="Qt Bridge for C# currently supports win-x64, linux-x64, osx-x64, and osx-arm64. Selected RID: '$(QtBridgeTemplateRid)'." />
+  </Target>
+
+  <ItemGroup>
+    <None Include="Main.qml"/>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+
+</Project>
