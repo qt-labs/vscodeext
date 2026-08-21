@@ -41,9 +41,14 @@ let qmlPreviewOutputChannel: vscode.OutputChannel | undefined;
 let previewManager: QmlPreviewConnectionManager | undefined;
 let previewProcess: QtProcess | undefined;
 let previewLaunch: QtBridgePreviewLaunch | undefined;
+let previewStartPromise: Promise<void> | undefined;
 
-function isConnected() {
-  return previewManager?.isConnected() ?? false;
+function isPreviewStartingOrRunning() {
+  return (
+    previewStartPromise !== undefined ||
+    previewManager !== undefined ||
+    previewProcess !== undefined
+  );
 }
 
 function cleanupSession() {
@@ -266,7 +271,13 @@ async function launchQtBridgePreview(
   let manager: QmlPreviewConnectionManager | undefined;
 
   try {
-    launch = await bridgeProject.prepareQmlPreview();
+    launch = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Preparing Qt Bridge QML Preview...'
+      },
+      async () => bridgeProject.prepareQmlPreview()
+    );
     if (!launch) {
       logger.error(
         `Could not resolve Qt Bridge host path for folder: ${folder.uri.fsPath}`
@@ -592,11 +603,6 @@ function attachPreview(host: string, port: number) {
 }
 
 async function startQmlPreviewImpl(loadCurrentFile: boolean) {
-  if (isConnected()) {
-    ui.showAlreadyRunning();
-    return;
-  }
-
   // Resolve the workspace folder.
   // For "preview current file": get folder from active file.
   // For "preview whole application" in multi-workspace: show picker.
@@ -669,13 +675,33 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
   }
 }
 
+async function startQmlPreview(loadCurrentFile: boolean) {
+  if (isPreviewStartingOrRunning()) {
+    logger.info(
+      'Ignoring QML Preview start request: a session is already active'
+    );
+    ui.showAlreadyRunning();
+    return;
+  }
+
+  const startPromise = startQmlPreviewImpl(loadCurrentFile);
+  previewStartPromise = startPromise;
+  try {
+    await startPromise;
+  } finally {
+    if (previewStartPromise === startPromise) {
+      previewStartPromise = undefined;
+    }
+  }
+}
+
 export function registerStartQmlPreviewCommand() {
   return vscode.commands.registerCommand(
     `${EXTENSION_ID}.startQmlPreview`,
     async () => {
       logger.info('Starting QML Preview');
       telemetry.sendAction('startQmlPreview');
-      await startQmlPreviewImpl(false);
+      await startQmlPreview(false);
     }
   );
 }
@@ -686,7 +712,7 @@ export function registerStartQmlPreviewForCurrentFileCommand() {
     async () => {
       logger.info('Starting QML Preview for current file');
       telemetry.sendAction('startQmlPreviewForCurrentFile');
-      await startQmlPreviewImpl(true);
+      await startQmlPreview(true);
     }
   );
 }
@@ -698,7 +724,7 @@ export function registerAttachQmlPreviewCommand() {
       logger.info('Attaching to QML Preview');
       telemetry.sendAction('attachQmlPreview');
 
-      if (isConnected()) {
+      if (isPreviewStartingOrRunning()) {
         ui.showAlreadyRunning();
         return;
       }
