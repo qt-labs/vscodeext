@@ -1,0 +1,11 @@
+version: "1"
+
+meta:
+  type: file
+  title: Qt Bridge for C# QML file
+  description: >-
+    Creates a QML file for a Qt Bridge for C# project.
+
+files:
+  - in: NewFile.qml
+    out: '{{ .name }}'
