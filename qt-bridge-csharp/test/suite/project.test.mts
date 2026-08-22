@@ -7,6 +7,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
+  collectPreviewStagingGarbage,
   defaultQtRid,
   findDotNetPathEntry,
   inspectQtBridgeProject,
@@ -468,6 +469,13 @@ describe('Qt Bridge project discovery', () => {
 
     const firstStagingDirectory = path.dirname(firstLaunch.executable);
     const secondStagingDirectory = path.dirname(secondLaunch.executable);
+    const firstOwner = JSON.parse(
+      await fs.promises.readFile(
+        path.join(firstStagingDirectory, '.qt-qml-preview-owner.json'),
+        'utf8'
+      )
+    ) as { pid: number };
+    expect(firstOwner.pid).to.equal(process.pid);
     firstLaunch.dispose();
     for (
       let attempt = 0;
@@ -487,5 +495,171 @@ describe('Qt Bridge project discovery', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
     expect(fs.existsSync(secondStagingDirectory)).to.equal(false);
+  });
+});
+
+describe('Qt Bridge preview staging cleanup', () => {
+  let stagingRoot: string;
+
+  beforeEach(async () => {
+    stagingRoot = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'qt-csharp-staging-')
+    );
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(stagingRoot, { recursive: true, force: true });
+  });
+
+  async function createLaunchDirectory(
+    assembly: string,
+    key: string,
+    name: string,
+    ageMs = 0,
+    ownerPid?: number
+  ) {
+    const launchDirectory = path.join(stagingRoot, assembly, key, name);
+    await fs.promises.mkdir(launchDirectory, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(launchDirectory, 'Application.dll'),
+      'managed',
+      'utf8'
+    );
+    if (ownerPid !== undefined) {
+      await fs.promises.writeFile(
+        path.join(launchDirectory, '.qt-qml-preview-owner.json'),
+        JSON.stringify({ pid: ownerPid, createdAt: Date.now() - ageMs }),
+        'utf8'
+      );
+    }
+    if (ageMs > 0) {
+      const modified = new Date(Date.now() - ageMs);
+      await fs.promises.utimes(launchDirectory, modified, modified);
+    }
+    return launchDirectory;
+  }
+
+  it('removes stale directories owned by exited hosts and keeps live ones', async () => {
+    const stale = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-stale',
+      60 * 60 * 1000,
+      1
+    );
+    const live = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-live',
+      60 * 60 * 1000,
+      2
+    );
+
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: (pid) => pid === 2
+    });
+
+    expect(result.removed).to.deep.equal([stale]);
+    expect(result.skipped).to.deep.equal([]);
+    expect(fs.existsSync(stale)).to.equal(false);
+    expect(fs.existsSync(live)).to.equal(true);
+  });
+
+  it('keeps unmarked legacy directories', async () => {
+    const legacy = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-legacy',
+      60 * 60 * 1000
+    );
+
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000
+    });
+
+    expect(result.removed).to.deep.equal([]);
+    expect(fs.existsSync(legacy)).to.equal(true);
+  });
+
+  it('keeps directories with malformed owner markers', async () => {
+    const launchDirectory = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-invalid',
+      60 * 60 * 1000
+    );
+    await fs.promises.writeFile(
+      path.join(launchDirectory, '.qt-qml-preview-owner.json'),
+      'not json',
+      'utf8'
+    );
+
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: () => false
+    });
+
+    expect(result.removed).to.deep.equal([]);
+    expect(fs.existsSync(launchDirectory)).to.equal(true);
+  });
+
+  it('prunes directories left empty by the sweep', async () => {
+    await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-stale',
+      60 * 60 * 1000,
+      1
+    );
+
+    await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: () => false
+    });
+
+    expect(fs.existsSync(path.join(stagingRoot, 'Application'))).to.equal(
+      false
+    );
+    expect(fs.existsSync(stagingRoot)).to.equal(true);
+  });
+
+  it('keeps parent directories that still hold a live launch', async () => {
+    await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-stale',
+      60 * 60 * 1000,
+      1
+    );
+    const recent = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-recent',
+      0,
+      2
+    );
+
+    await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: (pid) => pid === 2
+    });
+
+    expect(fs.existsSync(recent)).to.equal(true);
+  });
+
+  it('reports nothing when the staging root does not exist', async () => {
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot: path.join(stagingRoot, 'missing'),
+      maxAgeMs: 0
+    });
+
+    expect(result.removed).to.deep.equal([]);
+    expect(result.skipped).to.deep.equal([]);
   });
 });

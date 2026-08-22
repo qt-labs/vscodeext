@@ -16,6 +16,11 @@ import {
 
 const logger = createLogger('qtbridge-project');
 
+const PREVIEW_STAGING_DIR_NAME = 'qt-qml-preview';
+const PREVIEW_STAGING_PREFIX = 'launch-';
+const PREVIEW_STAGING_OWNER_FILE_NAME = '.qt-qml-preview-owner.json';
+const DEFAULT_PREVIEW_STAGING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
 const KNOWN_QT_BRIDGE_PACKAGE_PREFIX = 'QtGroup.Qt.Bridge.CSharp';
 const TEMPLATED_QT_BRIDGE_PACKAGE_ID = '$(QtBridgePackageId)';
 
@@ -661,15 +666,159 @@ function createPreviewStagingKey(
     .slice(0, 16);
 }
 
+/**
+ * Root of the per-launch preview staging directories. Kept outside the
+ * workspace so Preview's source watcher does not mistake staging operations
+ * for user file changes.
+ */
+export function getPreviewStagingRoot(): string {
+  return path.join(os.tmpdir(), PREVIEW_STAGING_DIR_NAME);
+}
+
+export interface PreviewStagingGcResult {
+  removed: string[];
+  skipped: string[];
+}
+
+interface PreviewStagingOwner {
+  pid: number;
+  createdAt: number;
+}
+
+function isProcessAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) {
+    return false;
+  }
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    // EPERM means that the process exists but belongs to another user. Any
+    // other error is also retained conservatively.
+    return (error as NodeJS.ErrnoException).code !== 'ESRCH';
+  }
+}
+
+async function readPreviewStagingOwner(
+  directory: string
+): Promise<PreviewStagingOwner | undefined> {
+  try {
+    const owner = JSON.parse(
+      await fs.promises.readFile(
+        path.join(directory, PREVIEW_STAGING_OWNER_FILE_NAME),
+        'utf8'
+      )
+    ) as Partial<PreviewStagingOwner>;
+    const pid = owner.pid;
+    const createdAt = owner.createdAt;
+    if (
+      typeof pid !== 'number' ||
+      !Number.isInteger(pid) ||
+      pid <= 0 ||
+      typeof createdAt !== 'number' ||
+      !Number.isFinite(createdAt)
+    ) {
+      return undefined;
+    }
+    return { pid, createdAt };
+  } catch {
+    return undefined;
+  }
+}
+
+async function writePreviewStagingOwner(directory: string) {
+  const owner: PreviewStagingOwner = {
+    pid: process.pid,
+    createdAt: Date.now()
+  };
+  await fs.promises.writeFile(
+    path.join(directory, PREVIEW_STAGING_OWNER_FILE_NAME),
+    JSON.stringify(owner),
+    'utf8'
+  );
+}
+
+async function listDirectories(directory: string): Promise<fs.Dirent[]> {
+  try {
+    const entries = await fs.promises.readdir(directory, {
+      withFileTypes: true
+    });
+    return entries.filter((entry) => entry.isDirectory());
+  } catch {
+    return [];
+  }
+}
+
+async function removeIfEmpty(directory: string) {
+  // Fails with ENOTEMPTY while another session still stages here, which is
+  // exactly the wanted behaviour.
+  await fs.promises.rmdir(directory).catch(() => undefined);
+}
+
+/**
+ * Best-effort removal of staging directories left behind by extension hosts
+ * that never got to clean up. QtBridgePreviewLaunch.dispose() removes a
+ * directory as soon as its session ends. A crash or force-kill can leave a
+ * directory behind, so the owner marker identifies the extension host that
+ * created it. Only directories whose owner has exited and whose grace period
+ * has elapsed are removed. Unmarked or malformed legacy directories are kept
+ * because their liveness cannot be established safely.
+ */
+export async function collectPreviewStagingGarbage(options?: {
+  stagingRoot?: string;
+  maxAgeMs?: number;
+  isProcessAlive?: (pid: number) => boolean;
+}): Promise<PreviewStagingGcResult> {
+  const stagingRoot = options?.stagingRoot ?? getPreviewStagingRoot();
+  const maxAgeMs = options?.maxAgeMs ?? DEFAULT_PREVIEW_STAGING_MAX_AGE_MS;
+  const checkProcessAlive = options?.isProcessAlive ?? isProcessAlive;
+  const result: PreviewStagingGcResult = { removed: [], skipped: [] };
+
+  const isStale = async (fullPath: string) => {
+    const owner = await readPreviewStagingOwner(fullPath);
+    if (!owner || checkProcessAlive(owner.pid)) {
+      return false;
+    }
+    return Date.now() - owner.createdAt > maxAgeMs;
+  };
+
+  for (const assembly of await listDirectories(stagingRoot)) {
+    const assemblyDirectory = path.join(stagingRoot, assembly.name);
+    for (const key of await listDirectories(assemblyDirectory)) {
+      const keyDirectory = path.join(assemblyDirectory, key.name);
+      for (const launch of await listDirectories(keyDirectory)) {
+        if (!launch.name.startsWith(PREVIEW_STAGING_PREFIX)) {
+          continue;
+        }
+        const launchDirectory = path.join(keyDirectory, launch.name);
+        if (!(await isStale(launchDirectory))) {
+          continue;
+        }
+        try {
+          await fs.promises.rm(launchDirectory, { recursive: true });
+          result.removed.push(launchDirectory);
+        } catch {
+          result.skipped.push(launchDirectory);
+        }
+      }
+      await removeIfEmpty(keyDirectory);
+    }
+    await removeIfEmpty(assemblyDirectory);
+  }
+
+  return result;
+}
+
 async function stagePreviewManagedOutput(
   stagingParent: string,
   managedOutputDir: string
 ): Promise<string> {
   await fs.promises.mkdir(stagingParent, { recursive: true });
   const stagingDirectory = await fs.promises.mkdtemp(
-    path.join(stagingParent, 'launch-')
+    path.join(stagingParent, PREVIEW_STAGING_PREFIX)
   );
   try {
+    await writePreviewStagingOwner(stagingDirectory);
     await fs.promises.cp(managedOutputDir, stagingDirectory, {
       recursive: true
     });
@@ -749,11 +898,8 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
       application.nativeHostPath,
       application.executableName
     );
-    // Keep generated QML outside the workspace so Preview's source watcher
-    // does not mistake staging operations for user file changes.
     const stagingParent = path.join(
-      os.tmpdir(),
-      'qt-qml-preview',
+      getPreviewStagingRoot(),
       application.assemblyName,
       stagingKey
     );
