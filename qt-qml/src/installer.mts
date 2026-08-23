@@ -189,8 +189,20 @@ interface CheckResult {
   status: AssetStatus;
 }
 
+const RunnableProbeTimeoutMs = 2000;
+
 function isRunnable(exePath: string): boolean {
-  const res = spawnSync(exePath, ['--help'], { timeout: 1000 });
+  const res = spawnSync(exePath, ['--help'], {
+    timeout: RunnableProbeTimeoutMs
+  });
+  // A timeout means the process loaded and was still running when it was
+  // killed, which is what this check asks. Only a failure to spawn or a
+  // non-zero exit means the install is unusable. A freshly written exe can
+  // need seconds for its first run while a virus scanner reads it, and
+  // reporting that as broken re-downloads a perfectly good install.
+  if ((res.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') {
+    return true;
+  }
   return res.status === 0;
 }
 
