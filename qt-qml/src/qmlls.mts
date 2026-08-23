@@ -259,7 +259,8 @@ export class Qmlls {
 
   /**
    * The identity of the managed qmlls install the language clients are
-   * running from or adopting. Used by the manifest watcher to tell a version
+   * running from or adopting, and undefined whenever they are not running a
+   * managed install at all. Used by the manifest watcher to tell a version
    * published by another VS Code instance apart from our own install. The
    * upload time is part of the identity: a build re-published under the same
    * tag must still trigger a restart.
@@ -326,10 +327,16 @@ export class Qmlls {
     if (!configs.get<boolean>('enabled', false)) {
       telemetry.sendConfig('QmllsDisabled');
       logger.info('QML Language Server is disabled in the settings');
+      Qmlls.runningInstalledVersion = undefined;
       return;
     }
 
     try {
+      // Only the managed install below adopts a version again. Clearing it
+      // here keeps a custom exe, a Qt kit fallback, or a failed start from
+      // leaving the previously adopted identity behind, which would make the
+      // manifest watcher restart clients that are not running that install.
+      Qmlls.runningInstalledVersion = undefined;
       if (configs.get<string>('customExePath')) {
         const customPath = configs.get<string>('customExePath') ?? '';
         const resolvedCustomPath = resolveConfiguration(customPath);
