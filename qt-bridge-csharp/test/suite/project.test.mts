@@ -461,7 +461,7 @@ describe('Qt Bridge project discovery', () => {
       normalizedPath(path.join(qtDir, 'bin'))
     );
     expect(firstLaunch.environment.QML_IMPORT_PATH).to.include(
-      firstLaunch.qmlImportRoot
+      path.join(path.dirname(firstLaunch.executable), 'qml')
     );
     expect(firstLaunch.environment.QML_IMPORT_PATH).to.include(
       path.join(testDirectory, 'imports')

@@ -959,7 +959,6 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
         QML2_IMPORT_PATH: qmlImportPath,
         QT_QUICK_CONTROLS_STYLE: 'Basic'
       },
-      qmlImportRoot,
       dispose() {
         if (disposed) {
           return;

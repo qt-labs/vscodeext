@@ -81,7 +81,6 @@ export interface QtBridgePreviewLaunch extends vscode.Disposable {
   readonly cwd: string;
   readonly pathEntries: readonly string[];
   readonly environment: Readonly<Record<string, string>>;
-  readonly qmlImportRoot: string;
 }
 
 export async function getQtBridgeCSharpApi(): Promise<
