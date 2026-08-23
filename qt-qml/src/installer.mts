@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { spawnSync } from 'child_process';
+import { spawn } from 'child_process';
 
 import {
   OSExeSuffix,
@@ -181,8 +181,7 @@ export interface AssetWithTag extends Asset {
 export enum AssetStatus {
   Outdated,
   UpToDate,
-  NotInstalled,
-  Broken
+  NotInstalled
 }
 interface CheckResult {
   message: string;
@@ -191,19 +190,44 @@ interface CheckResult {
 
 const RunnableProbeTimeoutMs = 2000;
 
-function isRunnable(exePath: string): boolean {
-  const res = spawnSync(exePath, ['--help'], {
-    timeout: RunnableProbeTimeoutMs
+/**
+ * Smoke-test a freshly unpacked qmlls before it is committed as a version.
+ * Runs asynchronously, so a slow first start never blocks the extension
+ * host. A process that is still running when the probe expires counts as
+ * runnable: the image loaded and executed, which is what this asks. Only a
+ * failure to spawn or a non-zero exit means the artifact is unusable, and
+ * both of those are immediate.
+ *
+ * `args` and `timeoutMs` exist so the probe's classification can be tested
+ * against a known executable; production always uses the defaults.
+ */
+export async function isRunnable(
+  exePath: string,
+  args: string[] = ['--help'],
+  timeoutMs = RunnableProbeTimeoutMs
+): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    // No pipes: nothing here reads the child's output, and a child that
+    // fills the pipe buffer would block until the probe expires instead of
+    // exiting. Buffer capacity is platform-dependent and smallest on Windows.
+    const child = spawn(exePath, args, { stdio: 'ignore' });
+    const timer = setTimeout(() => {
+      child.kill();
+      resolve(true);
+    }, timeoutMs);
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      // Says which of the two failures happened: refused by the OS (an
+      // unnotarized binary under Gatekeeper, a missing exec bit) reads very
+      // differently from a binary that ran and rejected --help.
+      logger.warn(`qmlls probe could not start ${exePath}: ${String(error)}`);
+      resolve(false);
+    });
+    child.on('exit', (code) => {
+      clearTimeout(timer);
+      resolve(code === 0);
+    });
   });
-  // A timeout means the process loaded and was still running when it was
-  // killed, which is what this check asks. Only a failure to spawn or a
-  // non-zero exit means the install is unusable. A freshly written exe can
-  // need seconds for its first run while a virus scanner reads it, and
-  // reporting that as broken re-downloads a perfectly good install.
-  if ((res.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') {
-    return true;
-  }
-  return res.status === 0;
 }
 
 function versionOf(asset: AssetWithTag): InstallVersion {
@@ -242,14 +266,6 @@ export function checkStatusAgainst(asset: AssetWithTag): CheckResult {
     };
   }
 
-  // check if executable
-  if (!isRunnable(exePath)) {
-    return {
-      message: 'Found, but not executable',
-      status: AssetStatus.Broken
-    };
-  }
-
   return {
     message: `Already Up-to-date, tag = ${asset.tag_name}`,
     status: AssetStatus.UpToDate
@@ -283,11 +299,7 @@ export async function install(asset: AssetWithTag) {
       // tag and upload time) already; then only the manifest needs to be
       // published.
       const version = versionOf(asset);
-      const existingExe = path.join(
-        installations.versionDirPath(version),
-        QmllsExeName
-      );
-      if (installations.hasVersion(version) && isRunnable(existingExe)) {
+      if (installations.hasVersion(version)) {
         logger.info(
           `${asset.tag_name} (uploaded ${asset.created_at}) is already installed, publishing it`
         );
@@ -339,7 +351,7 @@ export async function install(asset: AssetWithTag) {
         logger.info(`Setting executable permission for: ${stagedExe}`);
         fs.chmodSync(stagedExe, 0o755);
         logger.info(`Executable permission set for: ${stagedExe}`);
-        if (!isRunnable(stagedExe)) {
+        if (!(await isRunnable(stagedExe))) {
           logger.error(`Staged qmlls is not runnable: ${stagedExe}`);
           throw new Error(`${stagedExe} is not runnable`);
         }
