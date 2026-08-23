@@ -174,6 +174,21 @@ describe('Qt Bridge build metadata', () => {
     expect(result.metadata?.qml.files).to.deep.equal([]);
   });
 
+  it('rejects QML file entries that are not objects', async () => {
+    const metadataFile = await writeMetadata('Debug', { ready: true });
+    const json = JSON.parse(
+      await fs.promises.readFile(metadataFile, 'utf8')
+    ) as Record<string, unknown>;
+    const qml = json.qml as Record<string, unknown>;
+    qml.files = ['Main.qml'];
+    await fs.promises.writeFile(metadataFile, JSON.stringify(json), 'utf8');
+
+    const result = await discoverQtBridgeMetadata(vscode.Uri.file(projectFile));
+
+    expect(result.metadata?.qml.files).to.deep.equal([]);
+    expect(result.metadata?.qmlLanguageServer).not.to.be.undefined;
+  });
+
   it('keeps a previous ready selection when several candidates are ready', async () => {
     const debugMetadata = await writeMetadata('Debug', { ready: true });
     await writeMetadata('Release', { ready: true });

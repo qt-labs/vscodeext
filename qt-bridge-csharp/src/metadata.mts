@@ -105,8 +105,42 @@ function parseStringArray(value: unknown): string[] | undefined {
   return [...value];
 }
 
-function parseApplication(value: unknown) {
+const APPLICATION_FIELD_NAMES = [
+  'assemblyName',
+  'executableName',
+  'managedOutputDir',
+  'managedHostPath',
+  'nativeHostPath'
+] as const;
+
+const QML_FILE_FIELD_NAMES = [
+  'sourcePath',
+  'uri',
+  'typeName',
+  'modulePath',
+  'resourceUrl'
+] as const;
+
+function missingFields(
+  value: Record<string, unknown>,
+  fieldNames: readonly string[]
+): string[] {
+  return fieldNames.filter((name) => !isNonEmptyString(value[name]));
+}
+
+// Preview needs the application and the QML file list; qmlls does not. Both
+// are therefore dropped instead of rejecting the whole metadata, which would
+// take the language server down with them. Dropping them silently is what
+// makes a stale or mismatched Qt Bridge package look exactly like a project
+// that simply has no QML, so say what was wrong and what it costs.
+function parseApplication(metadataFile: string, value: unknown) {
   if (!value || typeof value !== 'object') {
+    if (value !== undefined) {
+      logger.warn(
+        `Ignoring the application section of ${metadataFile}: expected an ` +
+          `object; QML Preview and profiling stay unavailable`
+      );
+    }
     return undefined;
   }
   const application = value as Record<string, unknown>;
@@ -122,6 +156,11 @@ function parseApplication(value: unknown) {
     !isNonEmptyString(managedHostPath) ||
     !isNonEmptyString(nativeHostPath)
   ) {
+    logger.warn(
+      `Ignoring the application section of ${metadataFile}: missing or empty ` +
+        `${missingFields(application, APPLICATION_FIELD_NAMES).join(', ')}; ` +
+        `QML Preview and profiling stay unavailable`
+    );
     return undefined;
   }
   return {
@@ -133,31 +172,58 @@ function parseApplication(value: unknown) {
   };
 }
 
-function parseQmlFiles(value: unknown) {
-  if (!Array.isArray(value)) {
+function parseQmlFiles(metadataFile: string, value: unknown) {
+  if (value === undefined) {
     return undefined;
   }
+  if (!Array.isArray(value)) {
+    logger.warn(
+      `Ignoring the QML file list of ${metadataFile}: expected an array; ` +
+        `QML Preview stays unavailable`
+    );
+    return undefined;
+  }
+
   const files = [];
-  for (const entry of value) {
+  for (const [index, entry] of value.entries()) {
     if (!entry || typeof entry !== 'object') {
+      logger.warn(
+        `Ignoring the QML file list of ${metadataFile}: entry ` +
+          `${String(index)} is not an object; QML Preview stays unavailable`
+      );
       return undefined;
     }
     const file = entry as Record<string, unknown>;
+    const { sourcePath, uri, typeName, modulePath, resourceUrl } = file;
     if (
-      !isNonEmptyString(file.sourcePath) ||
-      !isNonEmptyString(file.uri) ||
-      !isNonEmptyString(file.typeName) ||
-      !isNonEmptyString(file.modulePath) ||
-      !isNonEmptyString(file.resourceUrl)
+      !isNonEmptyString(sourcePath) ||
+      !isNonEmptyString(uri) ||
+      !isNonEmptyString(typeName) ||
+      !isNonEmptyString(modulePath) ||
+      !isNonEmptyString(resourceUrl)
     ) {
+      // The list is generated as a whole, so one incomplete entry means the
+      // generator disagrees with this extension rather than that a single
+      // file is special. Keeping the remaining entries would preview an
+      // application whose QML is only partly reachable.
+      logger.warn(
+        `Ignoring the QML file list of ${metadataFile}: entry ` +
+          `${String(index)}${
+            isNonEmptyString(sourcePath) ? ` (${sourcePath})` : ''
+          } is missing or has empty ` +
+          `${missingFields(file, QML_FILE_FIELD_NAMES).join(', ')}; ` +
+          `QML Preview stays unavailable because the generated metadata is ` +
+          `incomplete. The metadata may be stale, corrupt, or incompatible ` +
+          `with this extension. Rebuild the project and try again.`
+      );
       return undefined;
     }
     files.push({
-      sourcePath: file.sourcePath,
-      uri: file.uri,
-      typeName: file.typeName,
-      modulePath: file.modulePath,
-      resourceUrl: file.resourceUrl
+      sourcePath,
+      uri,
+      typeName,
+      modulePath,
+      resourceUrl
     });
   }
   return files;
@@ -210,13 +276,13 @@ function parseMetadata(
     targetFramework: isNonEmptyString(json.targetFramework)
       ? json.targetFramework
       : undefined,
-    application: parseApplication(json.application),
+    application: parseApplication(metadataFile, json.application),
     qml: {
       sourceDir: json.qml.sourceDir,
       projectSourceDir: json.qml.projectSourceDir,
       buildDirs,
       importPaths,
-      files: parseQmlFiles(json.qml.files) ?? []
+      files: parseQmlFiles(metadataFile, json.qml.files) ?? []
     },
     qmlLanguageServer
   };
