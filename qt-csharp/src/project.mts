@@ -131,9 +131,7 @@ function getXmlAttribute(node: unknown, attributeName: string) {
   }
 
   const expectedName = `@_${attributeName}`.toLowerCase();
-  for (const [name, value] of Object.entries(
-    node as Record<string, unknown>
-  )) {
+  for (const [name, value] of Object.entries(node as Record<string, unknown>)) {
     if (
       name.toLowerCase() === expectedName &&
       (typeof value === 'string' || typeof value === 'number')
@@ -171,9 +169,7 @@ function getXmlChildText(node: unknown, childName: string) {
   const child = Object.entries(node as Record<string, unknown>).find(
     ([name]) => name.toLowerCase() === childName.toLowerCase()
   )?.[1];
-  const firstChild = Array.isArray(child)
-    ? (child as unknown[])[0]
-    : child;
+  const firstChild = Array.isArray(child) ? (child as unknown[])[0] : child;
   return getXmlText(firstChild);
 }
 
@@ -192,7 +188,9 @@ function parseProject(projectXml: string): ParsedProject {
 
   const visit = (node: unknown, conditional = false) => {
     if (Array.isArray(node)) {
-      node.forEach((value) => { visit(value, conditional); });
+      node.forEach((value) => {
+        visit(value, conditional);
+      });
       return;
     }
     if (!node || typeof node !== 'object') {
@@ -300,8 +298,8 @@ function isKnownImportedFile(importProject: string): boolean {
 }
 
 function hasKnownQtBridgeProperty(properties: Map<string, string>): boolean {
-  return KNOWN_QT_BRIDGE_PROPERTY_NAMES.some((propertyName) =>
-    getMsBuildProperty(properties, propertyName) !== undefined
+  return KNOWN_QT_BRIDGE_PROPERTY_NAMES.some(
+    (propertyName) => getMsBuildProperty(properties, propertyName) !== undefined
   );
 }
 
@@ -478,7 +476,7 @@ export function inspectQtBridgeProject(
       projectFile: projectFile.fsPath,
       packageId,
       packageVersion: packageId
-          ? (getPackageReferenceVersion(
+        ? (getPackageReferenceVersion(
             packageReferences,
             TEMPLATED_QT_BRIDGE_PACKAGE_ID,
             properties
@@ -627,10 +625,7 @@ export function findDotNetPathEntry(
     if (architecture === 'x64') {
       candidates.push('/usr/local/share/dotnet/x64');
     }
-    candidates.push(
-      '/usr/local/share/dotnet',
-      '/opt/homebrew/share/dotnet'
-    );
+    candidates.push('/usr/local/share/dotnet', '/opt/homebrew/share/dotnet');
   } else {
     candidates.push(
       '/usr/share/dotnet',
@@ -935,10 +930,9 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
     }
 
     const qmlImportRoot = path.join(targetDirectory, 'qml');
-    const qmlImportPath = [
-      qmlImportRoot,
-      ...metadata.qml.importPaths
-    ].join(path.delimiter);
+    const qmlImportPath = [qmlImportRoot, ...metadata.qml.importPaths].join(
+      path.delimiter
+    );
     const pathEntries: string[] = [];
     if (this.qtDir) {
       pathEntries.push(path.join(this.qtDir.fsPath, 'bin'));

@@ -366,11 +366,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
     ) {
       return;
     }
-    project.updateMetadata(
-      result.metadata,
-      result.isReady,
-      result.candidates
-    );
+    project.updateMetadata(result.metadata, result.isReady, result.candidates);
     if (result.isAmbiguous) {
       logger.warn(
         `Multiple QML build metadata candidates are available for ${project.projectFile.fsPath}; ` +

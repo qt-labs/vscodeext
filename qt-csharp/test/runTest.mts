@@ -41,20 +41,9 @@ async function main() {
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
     const { userDataDir, extensionsDir } = parseVSCodeDirs(args);
     if (getDebugLevel() >= 1) {
-      console.log(
-        '[runTest][qt-csharp] CLI:',
-        cli,
-        'args:',
-        args.join(' ')
-      );
-      console.log(
-        '[runTest][qt-csharp] userDataDir:',
-        userDataDir
-      );
-      console.log(
-        '[runTest][qt-csharp] extensionsDir:',
-        extensionsDir
-      );
+      console.log('[runTest][qt-csharp] CLI:', cli, 'args:', args.join(' '));
+      console.log('[runTest][qt-csharp] userDataDir:', userDataDir);
+      console.log('[runTest][qt-csharp] extensionsDir:', extensionsDir);
     }
 
     const launchArgs = [...args];
@@ -63,9 +52,7 @@ async function main() {
       idOrVsix: localQtCoreVsix
     });
     debugListExtensions(cli as string, args);
-    assertExtensionsInstalled(cli as string, args, [
-      'theqtcompany.qt-core'
-    ]);
+    assertExtensionsInstalled(cli as string, args, ['theqtcompany.qt-core']);
 
     await runTests({
       vscodeExecutablePath,
