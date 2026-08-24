@@ -15,6 +15,7 @@ await runEsbuild({
     './test/suite/extension.test.mts',
     './test/suite/command.test.mts',
     './test/suite/installer.test.mts',
+    './test/suite/integrity.test.mts',
     './test/runTest.qml-debug.mts',
     './test/runTestHelper.mts',
     './test/suite/index-qml-debug.mts',
