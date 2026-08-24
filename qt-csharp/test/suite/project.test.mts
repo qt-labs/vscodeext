@@ -410,16 +410,13 @@ describe('Qt Bridge project discovery', () => {
       name: 'workspace',
       index: 0
     };
-    const project = new QtBridgeProjectSnapshot(
-      folder,
-      {
-        projectFile,
-        packageId: 'QtGroup.Qt.Bridge.CSharp.win-x64',
-        packageVersion: '1.0.0',
-        qtDir,
-        qtInstallRoot: undefined
-      }
-    );
+    const project = new QtBridgeProjectSnapshot(folder, {
+      projectFile,
+      packageId: 'QtGroup.Qt.Bridge.CSharp.win-x64',
+      packageVersion: '1.0.0',
+      qtDir,
+      qtInstallRoot: undefined
+    });
     const metadata: QtBridgeQmlMetadata = {
       metadataFile: path.join(testDirectory, 'obj', 'qtbridge-qml.ide.json'),
       version: 1,
@@ -456,7 +453,9 @@ describe('Qt Bridge project discovery', () => {
     expect(await fs.promises.readFile(firstLaunch.executable, 'utf8')).to.equal(
       'native'
     );
-    expect(normalizedPath(firstLaunch.cwd)).to.equal(normalizedPath(testDirectory));
+    expect(normalizedPath(firstLaunch.cwd)).to.equal(
+      normalizedPath(testDirectory)
+    );
     expect(normalizedPath(firstLaunch.pathEntries[0])).to.equal(
       normalizedPath(path.join(qtDir, 'bin'))
     );

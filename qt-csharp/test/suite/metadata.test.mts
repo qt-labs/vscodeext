@@ -27,9 +27,7 @@ class TestMemento implements vscode.Memento {
   get<T>(key: string): T | undefined;
   get<T>(key: string, defaultValue: T): T;
   get<T>(key: string, defaultValue?: T): T | undefined {
-    return this.values.has(key)
-      ? (this.values.get(key) as T)
-      : defaultValue;
+    return this.values.has(key) ? (this.values.get(key) as T) : defaultValue;
   }
 
   update(key: string, value: unknown): Thenable<void> {
