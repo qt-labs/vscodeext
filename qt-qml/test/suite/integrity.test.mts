@@ -12,24 +12,24 @@ import { digestMatches, sha256OfFile } from '@/integrity.js';
 const sha256 = (data: string) =>
   createHash('sha256').update(Buffer.from(data)).digest('hex');
 
-suite('Download integrity (R3)', () => {
-  test('accepts a matching sha256:-prefixed digest', () => {
+describe('Download integrity (R3)', () => {
+  it('accepts a matching sha256:-prefixed digest', () => {
     const hex = sha256('hello');
     expect(digestMatches(`sha256:${hex}`, hex)).to.equal(true);
   });
 
-  test('accepts a bare-hex digest case-insensitively', () => {
+  it('accepts a bare-hex digest case-insensitively', () => {
     const hex = sha256('hello');
     expect(digestMatches(hex.toUpperCase(), hex)).to.equal(true);
   });
 
-  test('rejects a mismatched digest', () => {
+  it('rejects a mismatched digest', () => {
     expect(
       digestMatches(`sha256:${sha256('hello')}`, sha256('hell0'))
     ).to.equal(false);
   });
 
-  test('fails closed on missing or malformed digests', () => {
+  it('fails closed on missing or malformed digests', () => {
     const hex = sha256('x');
     expect(digestMatches(undefined, hex)).to.equal(false);
     expect(digestMatches('', hex)).to.equal(false);
@@ -37,7 +37,7 @@ suite('Download integrity (R3)', () => {
     expect(digestMatches('sha256:abc', hex)).to.equal(false); // too short
   });
 
-  test('sha256OfFile matches the file contents hash', async () => {
+  it('sha256OfFile matches the file contents hash', async () => {
     const content = 'the quick brown fox';
     const p = path.join(os.tmpdir(), `qmlls-integrity-${process.pid}.bin`);
     fs.writeFileSync(p, Buffer.from(content));
