@@ -60,13 +60,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(Brunei placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
@@ -81,13 +83,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(Default placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
@@ -102,13 +106,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(Marquesas placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
@@ -123,13 +129,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(TimeSecOffset placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
@@ -145,8 +153,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     knownProblem: {
       all:
         'qDateTimeShouldFail is intentionally constructed with an invalid/timezone setup to ' +
-        'exercise QDateTime NatVis error-path behaviour. However, because QDateTime NatVis is ' +
-        'currently broken globally, we cannot yet assert its DisplayString or error formatting.'
+        'exercise QDateTime NatVis error-path behaviour. However, QDateTime NatVis still fails ' +
+        'on every CI configuration (textually inlined intrinsics overflow the MI command buffer ' +
+        'on macOS/Linux; vsdbg falls back to raw output on Windows), so we cannot yet assert ' +
+        'its DisplayString or error formatting.'
     }
   },
   {
@@ -155,13 +165,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(SouthPole placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
@@ -176,13 +188,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(TimeUtc placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
@@ -197,13 +211,15 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'QDateTime(Yukon placeholder)',
     knownProblem: {
       darwin:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so LLDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the lldb-mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       linux:
-        'NatVis expressions reference Windows-only private symbols ' +
-        '(e.g. Qt6Cored.dll!QDateTimePrivate), so GDB cannot evaluate the intrinsics ' +
-        '(priv(), status(), year(), month(), day(), RecZone views), producing long evaluation errors.',
+        'The engine inlines nested NatVis intrinsics textually, so the ' +
+        'QDateTime calendar math expands until it overflows the gdb/mi ' +
+        'command buffer and evaluation fails. Per-intrinsic evaluation is ' +
+        'the pending engine fix.',
       win32:
         'Qt debug info (PDB files) is now available, but DisplayString evaluation still fails ' +
         'and the debugger falls back to a raw "{d={...}}" representation. ' +
