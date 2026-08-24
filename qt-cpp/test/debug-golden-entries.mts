@@ -48,12 +48,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qDate',
     type: 'QDate',
     value: '2024-06-15',
-    knownProblem: {
-      darwin:
-        'LLDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.',
-      linux:
-        'GDB fails to evaluate QDate intrinsics (year(), month(), day()) and prints evaluation errors instead of the formatted date.'
-    },
     children: [
       { name: '[year]', value: '2024' },
       { name: '[month]', value: '6' },
@@ -531,12 +525,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qUrl',
     type: 'QUrl',
     value: 'https://user:pass@github.com/narnaud/natvis4qt?ref=main#section1',
-    knownProblem: {
-      darwin:
-        'LLDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.',
-      linux:
-        'GDB cannot evaluate the pointer-arithmetic intrinsics used to access scheme()/host()/path() relying on MSVC-specific.'
-    },
     children: [
       { name: '[scheme]', value: 'https' },
       { name: '[username]', value: 'user' },
@@ -1115,8 +1103,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QCborMap',
     value: 'empty',
     knownProblem: {
-      darwin:
-        'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.',
       linux:
         'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.'
     },
@@ -1161,9 +1147,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'undefined',
     knownProblem: {
       darwin:
-        'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.',
-      linux:
-        'NatVis formatting is currently unreliable under GDB; value collapses to "undefined".'
+        'NatVis formatting is currently unreliable under LLDB; value collapses to {...}.'
     },
     children: [{ name: '[expect_none]', value: '' }]
   },
@@ -1353,10 +1337,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVariant',
     value: '42',
     knownProblem: {
-      darwin:
-        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
-      linux:
-        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       win32:
         'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
         'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
@@ -1369,10 +1349,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVariant',
     value: 'variant-string',
     knownProblem: {
-      darwin:
-        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
-      linux:
-        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       win32:
         'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
         'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
@@ -1385,10 +1361,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVariant',
     value: 'true',
     knownProblem: {
-      darwin:
-        "QVariant NatVis evaluation fails under LLDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
-      linux:
-        "QVariant NatVis evaluation fails under GDB: rule calls typeId() but the debugger reports 'use of undeclared identifier typeId'.",
       win32:
         'Qt debug info (PDB files) is now available. cl (MSVC) evaluates QVariant correctly; ' +
         'with a clang-cl binary vsdbg cannot evaluate the typeId() intrinsic ' +
@@ -1481,12 +1453,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreStateTypes.qAtomicPtrNull',
     type: 'QBasicAtomicPointer<int>',
     value: 'empty',
-    knownProblem: {
-      darwin:
-        'QBasicAtomicPointer<*> NatVis is not applied under LLDB; value falls back to {...} instead of {_q_value}/empty.',
-      linux:
-        'QBasicAtomicPointer<*> NatVis is not applied under GDB; value falls back to "" instead of {_q_value}/empty.'
-    },
     children: [{ name: '[expect_none]' }]
   },
   {
@@ -1622,14 +1588,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'guiTypes.qPixmap',
     type: 'QPixmap',
     value: 'empty',
-    knownProblem: {
-      darwin:
-        'QPixmap NatVis uses Qt6Gui.dll-qualified intrinsics; LLDB cannot resolve them ' +
-        'so neither the DisplayString nor children are materialized.',
-      linux:
-        'QPixmap NatVis uses Qt6Gui.dll-qualified intrinsics; GDB cannot resolve them ' +
-        'so neither the DisplayString nor children are materialized.'
-    },
     children: [
       {
         // [type] is a <Synthetic> that hardcodes "UINT8" without reading any memory,
@@ -1720,12 +1678,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'guiTypes.qVector2D',
     type: 'QVector2D',
     value: '{ x = 1, y = 2 }',
-    knownProblem: {
-      darwin:
-        'LLDB does not reliably apply the QVector2D NatVis DisplayString on macOS.',
-      linux:
-        'GDB does not reliably apply the QVector2D NatVis DisplayString on Linux.'
-    },
     children: [
       {
         name: '[x]',
@@ -1749,12 +1701,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'guiTypes.qVector3D',
     type: 'QVector3D',
     value: '{ x = 1, y = 2, z = 3 }',
-    knownProblem: {
-      darwin:
-        'LLDB does not reliably apply the QVector3D NatVis DisplayString on macOS.',
-      linux:
-        'GDB does not reliably apply the QVector3D NatVis DisplayString on Linux.'
-    },
     children: [
       {
         name: '[x]',
@@ -1786,12 +1732,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'guiTypes.qVector4D',
     type: 'QVector4D',
     value: '{ x = 1, y = 2, z = 3, w = 4 }',
-    knownProblem: {
-      darwin:
-        'LLDB does not reliably apply the QVector4D NatVis DisplayString on macOS.',
-      linux:
-        'GDB does not reliably apply the QVector4D NatVis DisplayString on Linux.'
-    },
     children: [
       {
         name: '[x]',
