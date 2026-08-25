@@ -33,7 +33,8 @@
   "activationEvents": [
     "workspaceContains:**/*.ui",
     "workspaceContains:**/*.qrc",
-    "onWebviewPanel:ViewTypeWelcomePage"
+    "onWebviewPanel:ViewTypeWelcomePage",
+    "onWebviewPanel:ViewTypeExBrowser"
   ],
   "main": "./out/extension.js",
   "capabilities": {
