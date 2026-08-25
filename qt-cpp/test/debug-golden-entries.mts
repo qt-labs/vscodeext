@@ -471,54 +471,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QTime',
     value: '{ milliseconds = 45296000 }',
     children: [
-      {
-        name: '[hours]',
-        value: '12',
-        knownProblem: {
-          darwin:
-            'LLDB fails to evaluate QTime intrinsic hour(); ' +
-            'reports "use of undeclared identifier \'hour\'".',
-          linux:
-            'GDB fails to evaluate QTime intrinsic hour(); ' +
-            'reports "use of undeclared identifier \'hour\'".'
-        }
-      },
-      {
-        name: '[minutes]',
-        value: '34',
-        knownProblem: {
-          darwin:
-            'LLDB fails to evaluate QTime intrinsic minute(); ' +
-            'reports "use of undeclared identifier \'minute\'".',
-          linux:
-            'GDB fails to evaluate QTime intrinsic minute(); ' +
-            'reports "use of undeclared identifier \'minute\'".'
-        }
-      },
-      {
-        name: '[seconds]',
-        value: '56',
-        knownProblem: {
-          darwin:
-            'LLDB fails to evaluate QTime intrinsic second(); ' +
-            'reports "use of undeclared identifier \'second\'".',
-          linux:
-            'GDB fails to evaluate QTime intrinsic second(); ' +
-            'reports "use of undeclared identifier \'second\'".'
-        }
-      },
-      {
-        name: '[milliseconds]',
-        value: '0',
-        knownProblem: {
-          darwin:
-            'LLDB fails to evaluate QTime intrinsic millisecond(); ' +
-            'reports "use of undeclared identifier \'millisecond\'".',
-          linux:
-            'GDB fails to evaluate QTime intrinsic millisecond(); ' +
-            'reports "use of undeclared identifier \'millisecond\'".'
-        }
-      }
+      { name: '[hours]', value: '12' },
+      { name: '[minutes]', value: '34' },
+      { name: '[seconds]', value: '56' },
+      { name: '[milliseconds]', value: '0' }
     ]
   },
   {
@@ -616,10 +572,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[0]',
         value: '123',
         knownProblem: {
-          darwin:
-            'QVariant NatVis evaluation fails under LLDB. QList expands but element DisplayString becomes an evaluator error.',
-          linux:
-            'QVariant NatVis evaluation fails under GDB. QList expands but element DisplayString becomes an evaluator error.',
           win32:
             'QVariant elements are rendered as their internal storage ' +
             '(d/data/shared/_forAlignment...) instead of the contained scalar value.'
@@ -629,10 +581,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         name: '[1]',
         value: 'hello',
         knownProblem: {
-          darwin:
-            'QVariant NatVis evaluation fails under LLDB. QList expands but element DisplayString becomes an evaluator error.',
-          linux:
-            'QVariant NatVis evaluation fails under GDB. QList expands but element DisplayString becomes an evaluator error.',
           win32:
             'QVariant elements are rendered as their internal storage ' +
             '(d/data/shared/_forAlignment...) instead of the contained scalar value.'
@@ -1679,22 +1627,8 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVector2D',
     value: '{ x = 1, y = 2 }',
     children: [
-      {
-        name: '[x]',
-        value: '1',
-        knownProblem: {
-          darwin: 'QVector2D NatVis children are not materialized under LLDB.',
-          linux: 'QVector2D NatVis children are not materialized under GDB.'
-        }
-      },
-      {
-        name: '[y]',
-        value: '2',
-        knownProblem: {
-          darwin: 'QVector2D NatVis children are not materialized under LLDB.',
-          linux: 'QVector2D NatVis children are not materialized under GDB.'
-        }
-      }
+      { name: '[x]', value: '1' },
+      { name: '[y]', value: '2' }
     ]
   },
   {
@@ -1702,30 +1636,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVector3D',
     value: '{ x = 1, y = 2, z = 3 }',
     children: [
-      {
-        name: '[x]',
-        value: '1',
-        knownProblem: {
-          darwin: 'QVector3D NatVis children are not materialized under LLDB.',
-          linux: 'QVector3D NatVis children are not materialized under GDB.'
-        }
-      },
-      {
-        name: '[y]',
-        value: '2',
-        knownProblem: {
-          darwin: 'QVector3D NatVis children are not materialized under LLDB.',
-          linux: 'QVector3D NatVis children are not materialized under GDB.'
-        }
-      },
-      {
-        name: '[z]',
-        value: '3',
-        knownProblem: {
-          darwin: 'QVector3D NatVis children are not materialized under LLDB.',
-          linux: 'QVector3D NatVis children are not materialized under GDB.'
-        }
-      }
+      { name: '[x]', value: '1' },
+      { name: '[y]', value: '2' },
+      { name: '[z]', value: '3' }
     ]
   },
   {
@@ -1733,38 +1646,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QVector4D',
     value: '{ x = 1, y = 2, z = 3, w = 4 }',
     children: [
-      {
-        name: '[x]',
-        value: '1',
-        knownProblem: {
-          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
-          linux: 'QVector4D NatVis children are not materialized under GDB.'
-        }
-      },
-      {
-        name: '[y]',
-        value: '2',
-        knownProblem: {
-          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
-          linux: 'QVector4D NatVis children are not materialized under GDB.'
-        }
-      },
-      {
-        name: '[z]',
-        value: '3',
-        knownProblem: {
-          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
-          linux: 'QVector4D NatVis children are not materialized under GDB.'
-        }
-      },
-      {
-        name: '[w]',
-        value: '4',
-        knownProblem: {
-          darwin: 'QVector4D NatVis children are not materialized under LLDB.',
-          linux: 'QVector4D NatVis children are not materialized under GDB.'
-        }
-      }
+      { name: '[x]', value: '1' },
+      { name: '[y]', value: '2' },
+      { name: '[z]', value: '3' },
+      { name: '[w]', value: '4' }
     ]
   },
   {
