@@ -131,7 +131,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 </script>
 
-<Column class='w-full gap-3'>
+<Column class='w-full gap-3 min-w-[300px]'>
   {#each items as item, i (i)}
     {@render ItemSection(item)}
   {/each}
@@ -156,27 +156,30 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       {#if Icon}
         <Icon class='medium qt-label bright self-center !shrink-0'/>
       {/if}
-      <Column class='!gap-0 grow'>
-        <p class='qt-label'>{item.title ?? ''}</p>
-        <p class='qt-label dimmed'>{item.description ?? ''}</p>
+      <Column class='!gap-0 grow min-w-0'>
+        <p class='qt-label truncate'>{item.title ?? ''}</p>
+        <p class='qt-label dimmed truncate'>{item.description ?? ''}</p>
       </Column>
 
       {#if item.id === 'doc'}
-        {@render Links(docShortcuts)}
+        <div class='self-end hidden sm:block'>
+          {@render Links(docShortcuts)}
+        </div>
       {/if}
     </Row>
   </button>
 {/snippet}
 
 {#snippet Links(items: Item[])}
-  <Row class='self-end items-center leading-none'>
+  <div class='
+    flex flex-wrap gap-y-1 justify-end self-end items-center leading-none
+  '>
     {#each items as item, i (i)}
-      {#if i !== 0}
-        <p class='qt-label dimmed'>|</p>
-      {/if}
-
       <button
-        class='qt-label link hover:cursor-pointer'
+        class='
+          qt-label link hover:cursor-pointer px-2
+          {i !== 0 ? "border-l border-white/20" : ""}
+        '
         onclick={(e: MouseEvent) => {
           item.onclick?.();
           e.stopPropagation();
@@ -185,5 +188,5 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         {item.title}
       </button>
     {/each}
-  </Row>
+  </div>
 {/snippet}

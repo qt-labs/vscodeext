@@ -16,12 +16,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { type ExtInfo } from '@shared/welcome';
   import Row from '@/comps/Row.svelte';
   import Column from '@/comps/Column.svelte';
-  import Overlay from '@/comps/Overlay.svelte';
   import Separator from '@/comps/Separator.svelte';
   import IconButton from '@/comps/IconButton.svelte';
   import { welcome as texts } from '@/apps/texts';
 
-  import { data, ui } from './states.svelte';
+  import { data } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
 
   const qtcoreVersion = $derived.by(() => {
@@ -40,18 +39,12 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   });
 </script>
 
-<Overlay
-  title={texts.versions.title}
-  collapsible={false}
-  useDropShadow={true}
-  class="w-[350px] max-h-full pointer-events-auto"
-  titleClass="h-[32px] qt-label highlight pl-2"
-  backgroundClass='!opacity-98'
-  onCloseClicked={() => {
-    ui.overlays.versions.visible = false;
-  }}
->
+<div data-role='panel'>
   <Column class='gap-3 p-4'>
+    <span class='qt-label pb-2'>
+      {texts.versions.title}
+    </span>
+
     {#each data.ext as info, i (i)}
       {@render ExtInfoRow(info)}
       <Separator />
@@ -63,7 +56,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
     {@render RefreshIcon()}
   </Column>
-</Overlay>
+</div>
 
 <!-- snippet -->
 {#snippet ExtInfoRow(info: ExtInfo)}
@@ -136,3 +129,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     </p>
   </Row>
 {/snippet}
+
+<style>
+  [data-role='panel'] {
+    width: 350px;
+    max-height: 100%;
+    background: var(--qt-surface-background);
+    border: 1px solid var(--qt-surface-border);
+    padding: 2px;
+    pointer-events: auto;
+    filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.5));
+  }
+</style>

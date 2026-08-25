@@ -37,7 +37,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <Column class='!gap-10 p-4'>
   {@render Header()}
   {@render GetStarted()}
-  <div class='grid grid-cols-2 gap-10 mt-5 w-full'>
+  <div class='flex flex-col md:flex-row gap-10 mt-5 w-full'>
     <WelcomeBlogOrVideo source='blog' items={data.blogs} />
     <WelcomeBlogOrVideo source='video' items={data.videos} />
   </div>
@@ -49,15 +49,17 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <p class='qt-label bright !text-4xl grow'>
       {texts.title}
     </p>
-    <IconButton
-      flat={ui.overlays.versions.visible ? false : true}
-      class='!border-none self-end'
-      icon={versionsOk ? Check : TriangleAlert}
-      text={qtcoreExt?.version ?? ''}
-      onClicked={() => {
-        ui.overlays.versions.visible = !ui.overlays.versions.visible;
-      }}
-    />
+    <div bind:this={ui.overlays.versions.refEl}>
+      <IconButton
+        flat={ui.overlays.versions.visible ? false : true}
+        class='!border-none self-end'
+        icon={versionsOk ? Check : TriangleAlert}
+        text={qtcoreExt?.version ?? ''}
+        onClicked={() => {
+          ui.overlays.versions.visible = !ui.overlays.versions.visible;
+        }}
+      />
+    </div>
   </Row>
 {/snippet}
 

@@ -25,7 +25,8 @@ export const ui = $state({
 
   overlays: {
     versions: {
-      visible: false
+      visible: false,
+      refEl: undefined as HTMLElement | undefined
     }
   }
 })

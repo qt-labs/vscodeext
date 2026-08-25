@@ -7,25 +7,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { onMount } from 'svelte';
   import Checkbox from 'flowbite-svelte/Checkbox.svelte';
   import '@/styles/app.css';
-  import{ welcome as texts } from '@/apps/texts';
+  import { welcome as texts } from '@/apps/texts';
+  import { portal, placeNear, clickOutside } from '@/utils/actions';
 
   import WelcomeAppView from './WelcomeAppView.svelte';
   import WelcomeExtInfoOverlay from './WelcomeExtInfoOverlay.svelte';
   import * as viewlogic from './viewlogic.svelte';
   import { ui } from './states.svelte';
-
-  export function clickOutside(node: HTMLElement, callback: () => void) {
-    const handler = (e: MouseEvent) => {
-      if (!node.contains(e.target as Node)) callback();
-    };
-
-    document.addEventListener('mousedown', handler, true);
-    return {
-      destroy() {
-        document.removeEventListener('mousedown', handler, true);
-      }
-    };
-  }
 
   onMount(viewlogic.onAppMount);
 </script>
@@ -39,10 +27,16 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   {#if ui.overlays.versions.visible}
     <div
-      class='absolute right-25 top-35'
-      use:clickOutside={() => {
-        ui.overlays.versions.visible = false;
+      use:portal
+      use:placeNear={{
+        ref: ui.overlays.versions.refEl,
+        placement: 'bottom-end'
       }}
+      use:clickOutside={(e: MouseEvent) => {
+        ui.overlays.versions.visible = false;
+        e.stopPropagation();
+      }}
+      class='absolute'
     >
       <WelcomeExtInfoOverlay />
     </div>
