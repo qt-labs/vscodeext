@@ -230,6 +230,11 @@ export const exBrowser = {
   searchBox: {
     defaultPlaceholder: 'Search in examples...',
     placeholder: (category: string) => `Search in '${category}'`
+  },
+
+  loading: {
+    busy: 'Loading...',
+    close: 'Close'
   }
 }
 

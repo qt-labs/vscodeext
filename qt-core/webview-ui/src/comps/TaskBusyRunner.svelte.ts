@@ -9,7 +9,7 @@ export class TaskBusyRunner {
   private _busy = $state(false);
   private _error = $state(undefined as unknown);
   private _isDebouncing = $state(false);
-  private _pendingTimer = $state(null as NodeJS.Timeout | null);
+  private _pendingTimer = $state(null as ReturnType<typeof setTimeout> | null);
 
   get busy() {
     return this._busy;

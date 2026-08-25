@@ -22,19 +22,25 @@ import { CommandId, isErrorResponse } from '@shared/message';
 import { data, ui } from './states.svelte';
 
 export async function onAppMount() {
-  ui.sidebar.newProject.input.onEvent(onNewProjectFormEvent);
-  ui.sidebar.newProject.input.onValidate(validateNewProjectForm);
-  ui.theme.monitor.start();
+  try {
+    ui.sidebar.newProject.input.onEvent(onNewProjectFormEvent);
+    ui.sidebar.newProject.input.onValidate(validateNewProjectForm);
+    ui.theme.monitor.start();
 
-  await loadConfigs();
-  await loadPackages();
+    await loadConfigs();
+    await loadPackages();
 
-  if (data.packages[0]) {
-    await selectPackage(data.packages[0]);
+    if (data.packages[0]) {
+      await selectPackage(data.packages[0]);
+    }
+
+    setEventListenerEnabled(true);
+    ui.filter.searchInputEl?.focus();
+    ui.state = 'running';
+  } catch (e) {
+    ui.state = 'error';
+    throw e;
   }
-
-  setEventListenerEnabled(true);
-  ui.filter.searchInputEl?.focus();
 }
 
 export async function onAppDestroy() {
@@ -235,29 +241,33 @@ async function loadPackages() {
 }
 
 async function loadExamples(reason: 'selectPackage' | '' = '') {
-  const r = await vscode.post(CommandId.ExBrowserGetExamples, {
-    query: createFilterQuery(ui.filter.searchInput, ui.filter.tags),
-    category: $state.snapshot(ui.filter.category)
-  });
-
-  if (Array.isArray(r) && r.every(isExEntry)) {
-    data.examples = r;
-  }
-
-  if (reason === 'selectPackage') {
-    selectExample(undefined);
-    return;
-  }
-
-  if (ui.selected.example) {
-    const hit = data.examples.find((e) => {
-      return _.isEqual(ui.selected.example, e);
+  const task = async () => {
+    const r = await vscode.post(CommandId.ExBrowserGetExamples, {
+      query: createFilterQuery(ui.filter.searchInput, ui.filter.tags),
+      category: $state.snapshot(ui.filter.category)
     });
 
-    if (!hit) {
+    if (Array.isArray(r) && r.every(isExEntry)) {
+      data.examples = r;
+    }
+
+    if (reason === 'selectPackage') {
       selectExample(undefined);
+      return;
+    }
+
+    if (ui.selected.example) {
+      const hit = data.examples.find((e) => {
+        return _.isEqual(ui.selected.example, e);
+      });
+
+      if (!hit) {
+        selectExample(undefined);
+      }
     }
   }
+
+  await ui.task.run(task, { debounceTime_ms: 0 });
 }
 
 function findCategoryByName(name: string) {

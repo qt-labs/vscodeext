@@ -56,3 +56,14 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   white-space: normal;
   word-break: break-word;
 }
+
+.qt-spinner {
+  color: transparent;
+  fill: var(--qt-accent-blue);
+}
+
+.qt-spinner-text {
+  color: var(--qt-text-default);
+  background: none;
+  font-size: var(--qt-font-m);
+}
