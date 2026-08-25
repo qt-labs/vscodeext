@@ -17,7 +17,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   } from '@shared/welcome';
 
   import EmptyState from '@/comps/EmptyState.svelte';
-  import ImageTextCard from '@/comps/ImageTextCard.svelte';
+  import WelcomeArticleCard from './WelcomeArticleCard.svelte';
   import { welcome as texts } from '@/apps/texts';
 
   import { data } from './states.svelte';
@@ -37,7 +37,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       return '';
     }
 
-    // expected: "mail-id@qt.io (namea name)";
+    // expected: "mail-id@qt.io (name)";
     const nameMatch = item.author.match(/\(([^)]+)\)/);
     return nameMatch?.[1] ?? '';
   };
@@ -48,7 +48,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 </script>
 
-<Column class='w-full gap-3'>
+<Column class='w-full gap-3 min-w-[300px]'>
   <Row>
     {@render SectionTitle(title)}
     {@render ShowAllButton(() => {
@@ -65,14 +65,13 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     />
   {:else}
     {#each items as item, i (i)}
-      <ImageTextCard
+      <WelcomeArticleCard
         imageSrc={item.thumbnail}
         imageWidth='110px'
-        imageOnRight={true}
         text={item.title}
         textHeightLines={2}
-        annotationLeft={nameText(item)}
-        annotationRight={dateText(item)}
+        author={nameText(item)}
+        date={dateText(item)}
         class='
           hover:-translate-x-1 hover:drop-shadow-sm
           hover:shadow-[-10px_0_0_0_var(--qt-active-color)]
