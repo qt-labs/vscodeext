@@ -6,6 +6,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <script lang="ts">
   import { type ExCategory } from '@shared/ex-browser';
   import EmptyState from '@/comps/EmptyState.svelte';
+  import LoadingMask from '@/comps/LoadingMask.svelte';
   import { exBrowser as texts } from '@/apps/texts';
 
   import './ExMainView.css';
@@ -28,6 +29,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       .filter((e) => e.examples.length !== 0);
   });
 
+  const showBusyIndicator = $derived(ui.task.busy || (ui.state === 'starting'));
+
   function findExamples(category?: ExCategory) {
     if (category?.type === 'general') {
       const name = category?.name.trim() ?? '';
@@ -40,7 +43,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <div data-area='main' class="flex-1 min-w-0 flex flex-col">
   {#if all.length === 0}
-    {@render emptyStateInfo()}
+    {#if showBusyIndicator}
+      {@render busyIndicator()}
+    {:else}
+      {@render emptyStateInfo()}
+    {/if}
   {:else}
     {#each all as { category, examples } (category)}
       {#if category.type === 'general' && examples.length !== 0}
@@ -70,4 +77,14 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       {l}<br />
     {/each}
   </EmptyState>
+{/snippet}
+
+{#snippet busyIndicator()}
+  <LoadingMask
+    busy={true}
+    error={ui.task.error}
+    forceHidden={ui.task.isDebouncing}
+    busyText={texts.loading.busy}
+    closeText={texts.loading.close}
+  />
 {/snippet}

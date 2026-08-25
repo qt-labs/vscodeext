@@ -9,6 +9,7 @@ import {
 } from '@shared/ex-browser';
 
 import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
+import { TaskBusyRunner } from '@/comps/TaskBusyRunner.svelte';
 import * as VscodeThemeMonitor from '@/comps/VscodeThemeMonitor.svelte';
 
 export type ViewMode = 'grid' | 'list';
@@ -21,6 +22,8 @@ export const data = $state({
 });
 
 export const ui = $state({
+  state: 'starting' as 'starting' | 'running' | 'error',
+  task: new TaskBusyRunner(),
   grid: undefined as HTMLDivElement | undefined,
   list: undefined as HTMLDivElement | undefined,
   theme: VscodeThemeMonitor.createController(),
