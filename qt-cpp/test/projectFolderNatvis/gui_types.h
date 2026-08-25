@@ -33,6 +33,10 @@ struct GuiTypes
     QVector3D qVector3D;
     QVector4D qVector4D;
 
+    // colors
+    QColor qColorRgb;
+    QColor qColorRgba;
+
     GuiTypes();
 };
 
@@ -53,6 +57,8 @@ inline GuiTypes::GuiTypes()
     , qVector2D(1.0f, 2.0f)
     , qVector3D(1.0f, 2.0f, 3.0f)
     , qVector4D(1.0f, 2.0f, 3.0f, 4.0f)
+    , qColorRgb(255, 0, 0)
+    , qColorRgba(10, 20, 30, 128)
 {
     // Image: make it non-trivial.
     qImageArgb32.fill(qRgba(10, 20, 30, 255));

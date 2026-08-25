@@ -1669,6 +1669,28 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     ]
   },
   {
+    name: 'guiTypes.qColorRgb',
+    type: 'QColor',
+    value: 'rgb(255, 0, 0)',
+    children: [
+      { name: '[alpha]', value: '255' },
+      { name: '[red]', value: '255' },
+      { name: '[green]', value: '0' },
+      { name: '[blue]', value: '0' }
+    ]
+  },
+  {
+    name: 'guiTypes.qColorRgba',
+    type: 'QColor',
+    value: 'rgba(10, 20, 30, 128)',
+    children: [
+      { name: '[alpha]', value: '128' },
+      { name: '[red]', value: '10' },
+      { name: '[green]', value: '20' },
+      { name: '[blue]', value: '30' }
+    ]
+  },
+  {
     name: 'guiTypes.qMatrix4x4',
     type: 'QMatrix4x4',
     value: '{ m11 = 2, m12 = 0, m13 = 0, m14 = 1, ... }',
