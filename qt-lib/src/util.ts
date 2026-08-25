@@ -9,6 +9,7 @@ import * as fsSync from 'fs';
 import * as async from 'async';
 
 import { QtInfo } from './core-api';
+import { isInside } from './path-containment';
 import { telemetry } from './telemetry';
 
 export const Home = userHome();
@@ -218,7 +219,7 @@ export function inVCPKGRoot(p: string) {
   if (!vcpkgRoot) {
     return false;
   }
-  return p.startsWith(vcpkgRoot);
+  return isInside(vcpkgRoot, p);
 }
 
 export function getVCPKGRoot() {

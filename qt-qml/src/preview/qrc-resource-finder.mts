@@ -122,9 +122,21 @@ export class QrcResourceFinder {
    */
   private processQrcFile(qrcFilePath: string) {
     try {
+      const extraRoots = [
+        ...(vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath) ?? []),
+        ...this._buildDirs
+      ];
       // Parse with includeAllFiles=true to get all resources (images, conf files, etc.)
       const fileMapping: Map<string, string> | undefined =
-        this._qrcParser.parseQRCFile(qrcFilePath, true);
+        this._qrcParser.parseQRCFile(qrcFilePath, true, {
+          extraRoots,
+          onViolation: (entry, resolvedPath) => {
+            logger.warn(
+              `Dropping qrc entry outside the allowed roots: ${entry} -> ` +
+                `${resolvedPath} (${qrcFilePath})`
+            );
+          }
+        });
       if (!fileMapping) {
         return;
       }

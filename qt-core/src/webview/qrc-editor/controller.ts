@@ -7,7 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
+import { createLogger, isInsideReal } from 'qt-lib';
 import { WebviewChannel } from '@/webview/channel';
 import {
   Command,
@@ -88,6 +88,7 @@ export class QrcEditorController {
       logger.error(
         `Error while handling command '${String(cmd.id)}': ${String(e)}`
       );
+      this._comm.postErrorReply(cmd, String(e));
     }
   };
 
@@ -103,11 +104,16 @@ export class QrcEditorController {
       return;
     }
 
-    const paths = await extractOrAskAbsPaths(cmd.payload, node.qrcUri);
+    // Contain before walking: the paths are webview supplied, so an
+    // out-of-tree path must not be traversed at all, and symlinks are
+    // resolved so <qrcDir>/link cannot smuggle an outside tree in.
+    const paths = (await extractOrAskAbsPaths(cmd.payload, node.qrcUri)).filter(
+      (p) => isInsideReal(node.qrcDir, p)
+    );
     const fileIndexes = (
       await Promise.all(
         paths.map(async (p) =>
-          collectAllFiles(p).then((found) => node.addFiles(found))
+          collectAllFiles(p, node.qrcDir).then((found) => node.addFiles(found))
         )
       )
     ).flat();
@@ -340,26 +346,81 @@ function toInteger(value: unknown, defaultValue = 0): number {
   return safe;
 }
 
-async function collectAllFiles(dir: string) {
-  const s = await fs.stat(dir);
+const MaxWalkDepth = 32;
+const MaxWalkEntries = 10000;
+
+// Bounded, symlink aware replacement for the previous unbounded walk,
+// where a symlink cycle or a huge tree hung the editor thread before any
+// containment ran. A directory is only descended when its realpath stays
+// inside `root` and was not visited yet, so every plain file it yields is
+// provably contained; symlinked files are kept only when their target
+// resolves inside `root`. Breaching the depth or entry budget throws
+// instead of returning a partial result.
+async function collectAllFiles(entry: string, root: string) {
+  const s = await fs.stat(entry);
   if (s.isFile()) {
-    return [dir];
+    return isInsideReal(root, entry) ? [entry] : [];
   }
 
-  let found: string[] = [];
-  const list = await fs.readdir(dir);
+  const found: string[] = [];
+  const visited = new Set<string>();
 
-  for (const file of list) {
-    const filePath = path.join(dir, file);
-    const stat = await fs.stat(filePath);
-
-    if (stat.isDirectory()) {
-      found = found.concat(await collectAllFiles(filePath));
-    } else {
-      found.push(filePath);
+  const push = (filePath: string) => {
+    if (found.length >= MaxWalkEntries) {
+      throw new Error(
+        `More than ${MaxWalkEntries.toString()} files under: ${entry}`
+      );
     }
-  }
+    found.push(filePath);
+  };
 
+  const walk = async (dir: string, depth: number) => {
+    if (depth > MaxWalkDepth) {
+      throw new Error(
+        `Directory tree deeper than ${MaxWalkDepth.toString()}: ${dir}`
+      );
+    }
+
+    let real: string;
+    try {
+      real = await fs.realpath(dir);
+    } catch {
+      return;
+    }
+    if (visited.has(real) || !isInsideReal(root, real)) {
+      return;
+    }
+    visited.add(real);
+
+    for (const dirent of await fs.readdir(dir, { withFileTypes: true })) {
+      const filePath = path.join(dir, dirent.name);
+      // Some filesystems do not report dirent types; fall back to lstat.
+      const type =
+        dirent.isFile() || dirent.isDirectory() || dirent.isSymbolicLink()
+          ? dirent
+          : await fs.lstat(filePath);
+
+      if (type.isDirectory()) {
+        await walk(filePath, depth + 1);
+      } else if (type.isFile()) {
+        push(filePath);
+      } else if (type.isSymbolicLink()) {
+        let target;
+        try {
+          target = await fs.stat(filePath);
+        } catch {
+          continue;
+        }
+        if (target.isDirectory()) {
+          await walk(filePath, depth + 1);
+        } else if (target.isFile() && isInsideReal(root, filePath)) {
+          push(filePath);
+        }
+      }
+    }
+  };
+
+  await walk(entry, 0);
   return found;
 }
 

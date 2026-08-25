@@ -14,5 +14,6 @@ export * from './test-helper';
 export * from './test-constants';
 export * from './file-finder';
 export * from './qrc-parser';
+export * from './path-containment';
 export * from './qml-api';
 export * from './msvc';

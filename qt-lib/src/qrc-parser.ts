@@ -5,6 +5,14 @@ import { XMLParser } from 'fast-xml-parser';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface QRCContainmentOptions {
+  // Roots besides the .qrc file's own directory that entries may resolve
+  // into, typically the workspace folders and the build directories.
+  extraRoots?: string[];
+  // Called for each entry dropped because it resolves outside every root.
+  onViolation?: (entry: string, resolvedPath: string) => void;
+}
+
 // Define the structure for the QRC XML
 interface QRCFile {
   '@_alias': string | undefined; // The alias for the file
@@ -34,11 +42,16 @@ export class QRCParser {
     });
   }
 
-  parseQRCFile(filePath: string, includeAllFiles = false) {
+  parseQRCFile(
+    filePath: string,
+    includeAllFiles = false,
+    options?: QRCContainmentOptions
+  ) {
     if (!fs.existsSync(filePath)) {
       throw new Error(`Cannot find file: ${filePath}`);
     }
-    const cacheKey = `${filePath}:${includeAllFiles ? 'all' : 'qml-js'}`;
+    const roots = (options?.extraRoots ?? []).join('|');
+    const cacheKey = `${filePath}:${includeAllFiles ? 'all' : 'qml-js'}:${roots}`;
     const cachedContent = this._cache.get(cacheKey);
     if (cachedContent) {
       return cachedContent;
@@ -47,7 +60,8 @@ export class QRCParser {
     const fileMapping = this.parseQRC(
       xmlContent,
       path.dirname(filePath),
-      includeAllFiles
+      includeAllFiles,
+      options
     );
     if (!fileMapping) {
       return undefined;
@@ -56,7 +70,12 @@ export class QRCParser {
     return fileMapping;
   }
 
-  parseQRC(xmlContent: string, qrcDir: string, includeAllFiles = false) {
+  parseQRC(
+    xmlContent: string,
+    qrcDir: string,
+    includeAllFiles = false,
+    options?: QRCContainmentOptions
+  ) {
     try {
       // Parse the XML content into the defined structure
       const jsonObj = this.parser.parse(xmlContent) as QRCParsed; // Type assertion to QRCParsed
@@ -73,6 +92,14 @@ export class QRCParser {
 
       // Initialize a Map to store file paths and corresponding aliases
       const resourceMap = new Map<string, string>();
+
+      // A crafted .qrc must not map resources onto files outside the
+      // project: entries may only resolve into the .qrc's own directory or
+      // one of the extra roots (workspace folders, build directories).
+      const isContained = createContainmentChecker([
+        qrcDir,
+        ...(options?.extraRoots ?? [])
+      ]);
 
       // Loop through each <qresource> and add its files to the map
       resourcesArray.forEach((resource) => {
@@ -96,9 +123,17 @@ export class QRCParser {
             return;
           }
 
+          const resolved = path.isAbsolute(text)
+            ? text
+            : path.join(qrcDir, text);
+          if (!isContained(resolved)) {
+            options?.onViolation?.(text, resolved);
+            return;
+          }
+
           resourceMap.set(
             path.join(prefix, file['@_alias'] ?? text).replace(/\\/g, '/'),
-            path.isAbsolute(text) ? text : path.join(qrcDir, text)
+            resolved
           );
         });
       });
@@ -108,4 +143,70 @@ export class QRCParser {
       throw new Error(`Cannot parse QRC file: ${error as string}`);
     }
   }
+}
+
+// Returns a containment check over the union of `roots`, resolving symlinks
+// like assertInside but amortized for many candidates: each root is
+// realpathed once and directory realpaths are memoized, since entries
+// cluster in few directories. A candidate that does not exist is resolved
+// through its deepest existing ancestor, so not-yet-built files inside a
+// root still pass. Roots that do not exist cannot contain anything.
+function createContainmentChecker(roots: string[]) {
+  const realRoots: string[] = [];
+  for (const root of roots) {
+    try {
+      realRoots.push(fs.realpathSync.native(root));
+    } catch {
+      // skip missing roots
+    }
+  }
+
+  const dirCache = new Map<string, string | undefined>();
+  const resolveDir = (dir: string): string | undefined => {
+    if (dirCache.has(dir)) {
+      return dirCache.get(dir);
+    }
+    let real: string | undefined;
+    try {
+      real = fs.realpathSync.native(dir);
+    } catch {
+      const parent = path.dirname(dir);
+      if (parent !== dir) {
+        const realParent = resolveDir(parent);
+        real =
+          realParent === undefined
+            ? undefined
+            : path.join(realParent, path.basename(dir));
+      }
+    }
+    dirCache.set(dir, real);
+    return real;
+  };
+
+  const inside = (rootReal: string, candidateReal: string) => {
+    const rel = path.relative(rootReal, candidateReal);
+    return !(
+      rel === '..' ||
+      rel.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(rel)
+    );
+  };
+
+  return (candidate: string): boolean => {
+    let real: string | undefined;
+    try {
+      real = fs.realpathSync.native(candidate);
+    } catch {
+      const realParent = resolveDir(path.dirname(candidate));
+      real =
+        realParent === undefined
+          ? undefined
+          : path.join(realParent, path.basename(candidate));
+    }
+    if (real === undefined) {
+      return false;
+    }
+    const resolved = real;
+    return realRoots.some((root) => inside(root, resolved));
+  };
 }

@@ -7,7 +7,8 @@ import * as yauzl from 'yauzl';
 import * as vscode from 'vscode';
 import { Writable } from 'stream';
 
-import { IsWindows } from 'qt-lib';
+import { IsWindows, assertInside } from 'qt-lib';
+import { ExtractionBudget } from '@/unzipper.js';
 import { DownloadResult } from './downloader.mts';
 import { InstalledRelease } from './installation-manager.mts';
 
@@ -26,6 +27,7 @@ export async function extractWithProgress(
     const unzipStreamProvider = (entry: Entry) => {
       const name = entry.fileName;
       const fullPath = path.join(release.filesDir, name);
+      assertInside(release.filesDir, fullPath);
 
       if (entry.fileName.endsWith('/')) {
         fs.mkdirSync(fullPath, { recursive: true });
@@ -37,6 +39,7 @@ export async function extractWithProgress(
     };
 
     fs.rmSync(release.filesDir, { recursive: true, force: true });
+    fs.mkdirSync(release.filesDir, { recursive: true });
     await unzipV2(
       downloadResult.downloadedFilePath,
       release.filesDir,
@@ -57,6 +60,9 @@ type StreamProviderResult = {
 
 const UNIX_SYMLINK = 0o120000;
 const UNIX_FILE_TYPE_MASK = 0o170000;
+// A symlink target is a path; cap the bytes we accumulate for it so a crafted
+// archive cannot drive the extractor to OOM through the symlink-target read.
+const MaxSymlinkTargetBytes = 4096;
 
 export async function unzipV2(
   inputPath: string,
@@ -64,6 +70,7 @@ export async function unzipV2(
   streamProvider: (entry: yauzl.Entry) => StreamProviderResult
 ) {
   return new Promise<void>((resolve, reject) => {
+    const budget = new ExtractionBudget();
     const callback = (error: Error | null, zipFile: yauzl.ZipFile) => {
       if (error) {
         reject(error);
@@ -72,6 +79,13 @@ export async function unzipV2(
 
       zipFile.readEntry();
       zipFile.on('entry', (entry: yauzl.Entry) => {
+        try {
+          budget.charge(entry);
+        } catch (err) {
+          reject(err as Error);
+          return;
+        }
+
         const unixAttrs = entry.externalFileAttributes >> 16;
         const isSymlink = (unixAttrs & UNIX_FILE_TYPE_MASK) === UNIX_SYMLINK;
 
@@ -81,15 +95,42 @@ export async function unzipV2(
               reject(e);
               return;
             }
-            let target = '';
+            const chunks: Buffer[] = [];
+            let targetLength = 0;
+            let aborted = false;
             reader.on('data', (chunk: Buffer) => {
-              target += chunk.toString();
+              if (aborted) {
+                return;
+              }
+              targetLength += chunk.length;
+              if (targetLength > MaxSymlinkTargetBytes) {
+                aborted = true;
+                reader.destroy();
+                reject(
+                  new Error('Archive symlink target exceeds the maximum length')
+                );
+                return;
+              }
+              chunks.push(chunk);
             });
             reader.on('end', () => {
+              if (aborted) {
+                return;
+              }
               try {
+                const rawTarget = Buffer.concat(chunks).toString().trim();
                 const linkPath = path.join(baseDir, entry.fileName);
+                // The link's own location must stay inside the extraction root,
+                // and so must whatever the link resolves to, or a later entry
+                // could write through it to an arbitrary location.
+                assertInside(baseDir, linkPath);
+                const resolvedTarget = path.resolve(
+                  path.dirname(linkPath),
+                  rawTarget
+                );
+                assertInside(baseDir, resolvedTarget);
                 fs.mkdirSync(path.dirname(linkPath), { recursive: true });
-                fs.symlinkSync(target.trim(), linkPath);
+                fs.symlinkSync(rawTarget, linkPath);
               } catch (err) {
                 reject(err as Error);
                 return;
@@ -101,7 +142,13 @@ export async function unzipV2(
           return;
         }
 
-        const provider = streamProvider(entry);
+        let provider: StreamProviderResult;
+        try {
+          provider = streamProvider(entry);
+        } catch (err) {
+          reject(err as Error);
+          return;
+        }
         if (provider === null) {
           zipFile.readEntry();
           return;
