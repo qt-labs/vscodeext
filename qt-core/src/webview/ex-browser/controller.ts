@@ -34,6 +34,18 @@ export function registerOpenExBrowserCommand(context: Context) {
   );
 }
 
+export function registerExBrowserPageSerializer(context: Context) {
+  return vscode.window.registerWebviewPanelSerializer(
+    consts.WEBVIEW_PANEL_VIEW_TYPE,
+    {
+      async deserializeWebviewPanel(panel: Panel) {
+        ExBrowserController.restore(context, panel);
+        return Promise.resolve();
+      }
+    }
+  );
+}
+
 export class ExBrowserController {
   public static instance: ExBrowserController | undefined;
 
@@ -110,5 +122,14 @@ export class ExBrowserController {
     }
 
     ExBrowserController.instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+  }
+
+  public static restore(context: Context, panel: Panel) {
+    if (ExBrowserController.instance) {
+      panel.dispose();
+      return;
+    }
+
+    ExBrowserController.instance = new ExBrowserController(context, panel);
   }
 }

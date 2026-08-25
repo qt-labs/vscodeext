@@ -37,7 +37,10 @@ import {
   warnAboutMissingQtPath
 } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
-import { registerOpenExBrowserCommand } from '@/webview/ex-browser/controller';
+import {
+  registerOpenExBrowserCommand,
+  registerExBrowserPageSerializer
+} from '@/webview/ex-browser/controller';
 import { registerOpenCoursesBrowserCommand } from '@/webview/courses/controller';
 import {
   tryOpenWelcomePage,
@@ -80,6 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerRegisterQtByPathCommand(),
     registerOpenInLinguistCommand(),
     registerOpenExBrowserCommand(context),
+    registerExBrowserPageSerializer(context),
     registerOpenCoursesBrowserCommand(context),
     registerOpenWelcomePageCommand(context),
     registerWelcomePageSerializer(context),
