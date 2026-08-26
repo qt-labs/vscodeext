@@ -11,9 +11,11 @@ import { pipeline } from 'node:stream/promises';
 
 import { IsMacOS, IsLinux, IsWindows, Isx64, IsArm64 } from 'qt-lib';
 import { Progress, ProgressUpdater } from './helpers/progress.mts';
+import { createWrappedLogger } from './helpers/logger-wrapper.ts';
 import * as consts from './constants.mts';
 
 type WebStream = import('node:stream/web').ReadableStream;
+const logger = createWrappedLogger('traceviewer-downloader');
 
 export interface DownloadResult {
   result: 'downloaded' | 'up-to-date';
@@ -24,8 +26,9 @@ export interface DownloadResult {
 }
 
 export async function downloadWithProgress(latestId: string | undefined) {
-  const sourceUrl = resolvePackageUrl();
+  const sourceUrls = resolvePackageUrls();
   const downloadedFilePath = createDownloadFilePath();
+  let sourceUrl = '';
   let id = '';
   let isUpToDate = false;
 
@@ -42,7 +45,8 @@ export async function downloadWithProgress(latestId: string | undefined) {
       abortController.abort();
     });
 
-    const res = await fetchAndCheck(sourceUrl, abortOptions);
+    const { url, res } = await fetchFirstAvailable(sourceUrls, abortOptions);
+    sourceUrl = url;
     id = createIdFromHeaders(res.headers);
     if (latestId && latestId === id) {
       isUpToDate = true;
@@ -78,7 +82,7 @@ export async function downloadWithProgress(latestId: string | undefined) {
 }
 
 // helpers
-function resolvePackageUrl() {
+export function resolvePackageUrls() {
   const os_ = IsMacOS ? 'mac' : IsWindows ? 'windows' : IsLinux ? 'linux' : '';
   const arch = Isx64 || IsMacOS ? 'x64' : IsArm64 ? 'arm64' : '';
   if (!os_ || !arch) {
@@ -86,12 +90,44 @@ function resolvePackageUrl() {
   }
 
   const base = vscode.Uri.parse(consts.DOWNLOAD_HOST);
-  return vscode.Uri.joinPath(
-    base,
-    consts.DOWNLOAD_DIR_BASE,
-    `${os_}_${arch}`,
-    consts.DOWNLOAD_FILE
-  ).toString();
+  return consts.PACKAGE_CANDIDATES.map((candidate) =>
+    vscode.Uri.joinPath(
+      base,
+      consts.DOWNLOAD_DIR_BASE,
+      `${os_}_${arch}`,
+      candidate.file
+    ).toString()
+  );
+}
+
+export async function fetchFirstAvailable(
+  urls: string[],
+  init?: RequestInit,
+  fetchFn: (
+    url: string,
+    init?: RequestInit
+  ) => Promise<Response> = fetchAndCheck
+) {
+  const failures: string[] = [];
+  for (const url of urls) {
+    try {
+      return { url, res: await fetchFn(url, init) };
+    } catch (e) {
+      if (init?.signal?.aborted) {
+        throw e;
+      }
+
+      const message = e instanceof Error ? e.message : String(e);
+      failures.push(`${url}: ${message}`);
+      logger
+        .text('Package candidate is not available')
+        .data('url', url)
+        .data('error', message)
+        .warn();
+    }
+  }
+
+  throw new Error(`All download candidates failed: ${failures.join('; ')}`);
 }
 
 function createDownloadFilePath() {
@@ -102,21 +138,56 @@ function createDownloadFilePath() {
   return path.join(dir, fileName);
 }
 
+// download.qt.io redirects file downloads to a changing set of third-party
+// mirrors, so the hosts cannot be pinned here. Follow redirects manually
+// instead of letting fetch do it, so every hop can be forced to stay on
+// https and a redirect cannot downgrade the transfer to cleartext.
+const MaxRedirects = 10;
+
+async function fetchHttpsOnly(url: string, init?: RequestInit) {
+  let current = new URL(url);
+  for (let i = 0; i < MaxRedirects; ++i) {
+    if (current.protocol !== 'https:') {
+      throw new Error(`Refusing non-https download URL: ${current.toString()}`);
+    }
+
+    const res = await fetch(current, { ...init, redirect: 'manual' });
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get('location');
+      if (!location) {
+        throw new Error(`Redirect without a location: ${String(res.status)}`);
+      }
+      await res.body?.cancel();
+      current = new URL(location, current);
+      continue;
+    }
+
+    return res;
+  }
+
+  throw new Error('Download exceeded the maximum number of redirects');
+}
+
 async function fetchAndCheck(url: string, init?: RequestInit) {
-  const res = await fetch(url, init);
+  const res = await fetchHttpsOnly(url, init);
+  const fail = async (message: string) => {
+    await res.body?.cancel();
+    return new Error(message);
+  };
+
   if (!res.ok) {
-    throw new Error(`Invalid status code: ${res.statusText}`);
+    throw await fail(`Invalid status code: ${res.statusText}`);
   }
 
   const contentType = res.headers.get('content-type');
   if (contentType !== consts.DOWNLOAD_CONTENT_TYPE) {
-    throw new Error(`Invalid content type: ${contentType ?? '-'}`);
+    throw await fail(`Invalid content type: ${contentType ?? '-'}`);
   }
 
   const contentLength = res.headers.get('content-length');
   const maxBytes = Number.parseInt(contentLength ?? '0');
   if (maxBytes <= 0) {
-    throw new Error(`Invalid content length: ${String(maxBytes)}`);
+    throw await fail(`Invalid content length: ${String(maxBytes)}`);
   }
 
   return res;
