@@ -16,7 +16,7 @@ import {
 } from '../../qt-lib/src/test-constants.js';
 import {
   assertExtensionsInstalled,
-  assertVSCodeExecutable,
+  resolveVSCodeExecutable,
   debugListExtensions,
   getDebugLevel,
   getSharedVSCodeCachePath,
@@ -42,10 +42,10 @@ async function main() {
     }
 
     const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
-    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
       cachePath
-    });
-    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
+    );
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
