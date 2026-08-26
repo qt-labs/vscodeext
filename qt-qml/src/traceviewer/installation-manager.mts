@@ -104,7 +104,18 @@ export class InstalledRelease {
       throw new Error('Cannot determine binary path for the current platform');
     }
 
-    return candidates.find((exe) => fs.existsSync(exe)) ?? first;
+    const found = candidates.find((exe) => fs.existsSync(exe));
+    if (found) {
+      logger.text('Resolved executable').data('path', found).debug();
+      return found;
+    }
+
+    logger
+      .text('No executable on disk, defaulting to the newest layout')
+      .data('path', first)
+      .debug();
+
+    return first;
   }
 
   public async save(downloadSrc: string) {
