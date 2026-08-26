@@ -15,11 +15,13 @@ import {
   getQuietVSCodeArgs
 } from '../../qt-lib/src/test-constants.js';
 import {
-  parseVSCodeDirs,
-  installExtensionWithRetry,
-  debugListExtensions,
   assertExtensionsInstalled,
-  getDebugLevel
+  assertVSCodeExecutable,
+  debugListExtensions,
+  getDebugLevel,
+  getSharedVSCodeCachePath,
+  installExtensionWithRetry,
+  parseVSCodeDirs
 } from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
@@ -39,7 +41,11 @@ async function main() {
       process.exit(1); // Fail early
     }
 
-    const vscodeExecutablePath = await downloadAndUnzipVSCode();
+    const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
+    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+      cachePath
+    });
+    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
