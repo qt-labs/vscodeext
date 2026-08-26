@@ -110,10 +110,14 @@ export async function fetchFirstAvailable(
 ) {
   const failures: string[] = [];
   for (const url of urls) {
+    logger.text('Trying package candidate').data('url', url).info();
     try {
-      return { url, res: await fetchFn(url, init) };
+      const res = await fetchFn(url, init);
+      logger.text('Package candidate is available').data('url', url).info();
+      return { url, res };
     } catch (e) {
       if (init?.signal?.aborted) {
+        logger.text('Download cancelled').data('url', url).info();
         throw e;
       }
 
