@@ -14,7 +14,7 @@ import {
 } from './runTestHelper.mjs';
 import type { ExtensionInstallInfo } from 'qt-lib/src/test-vscode-install.ts';
 import {
-  assertVSCodeExecutable,
+  resolveVSCodeExecutable,
   getSharedVSCodeCachePath
 } from '../../qt-lib/src/test-vscode-install.js';
 
@@ -35,10 +35,10 @@ async function main() {
 
     // Download VS Code and resolve CLI/dirs using shared helper
     const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
-    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
       cachePath
-    });
-    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
+    );
     const { qtRoot, localQtCoreVsix, cli, args, userDataDir } =
       await setupTestInfrastructure(vscodeExecutablePath);
 
@@ -79,6 +79,7 @@ async function main() {
     // Run the integration tests
     try {
       await runTests({
+        vscodeExecutablePath,
         launchArgs: [tmpProject, '--disable-workspace-trust'],
         extensionDevelopmentPath,
         extensionTestsPath

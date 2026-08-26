@@ -16,7 +16,7 @@ import {
 } from '../../qt-lib/src/test-constants.js';
 import {
   assertExtensionsInstalled,
-  assertVSCodeExecutable,
+  resolveVSCodeExecutable,
   debugListExtensions,
   getDebugLevel,
   getSharedVSCodeCachePath,
@@ -42,10 +42,10 @@ async function main() {
     }
 
     const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
-    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
       cachePath
-    });
-    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
+    );
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
@@ -67,7 +67,11 @@ async function main() {
     assertExtensionsInstalled(cli as string, args, requiredIds);
 
     // Download VS Code, unzip it and run the integration test
-    await runTests({ extensionDevelopmentPath, extensionTestsPath });
+    await runTests({
+      vscodeExecutablePath,
+      extensionDevelopmentPath,
+      extensionTestsPath
+    });
   } catch (e: Error | unknown) {
     console.error('Failed to run tests');
     console.error(e);
