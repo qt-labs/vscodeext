@@ -2,6 +2,85 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as cp from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * Directory holding the VS Code build that the extension-host tests run
+ * against, shared by every package in the repository.
+ *
+ * @vscode/test-electron roots its default cache at process.cwd(), and the
+ * test scripts run from <package>/out/test, so each package otherwise
+ * downloads and extracts its own copy of VS Code. Pointing them all at one
+ * directory turns nine downloads into one, which is most of the wall-clock
+ * time and disk footprint of a CI test job.
+ *
+ * Only the VS Code build itself is shared. The extensions and user-data
+ * directories still come from the library's cwd-based default, so each
+ * package keeps its own profile and cannot see extensions installed by
+ * another package's run.
+ *
+ * Set VSCODE_TEST_CACHE_PATH to override, for example to a directory that CI
+ * restores from its own cache.
+ */
+export function getSharedVSCodeCachePath(extensionRoot: string): string {
+  const fromEnv = process.env.VSCODE_TEST_CACHE_PATH?.trim();
+  return fromEnv
+    ? path.resolve(fromEnv)
+    : path.resolve(extensionRoot, '..', '.vscode-test');
+}
+
+/**
+ * The macOS bundle executable was renamed from "Electron" to "Code", and
+ * @vscode/test-electron still resolves the old name, so the path it hands
+ * back can be missing even though the download is fine.
+ */
+const DARWIN_EXECUTABLE_NAMES = ['Electron', 'Code', 'Visual Studio Code'];
+
+/**
+ * The usable VS Code executable for the build in `cachePath`.
+ *
+ * Falls back to the other known macOS bundle executable names when the path
+ * @vscode/test-electron resolved does not exist. Throws with the contents of
+ * the directory when nothing usable is there, because the alternative is an
+ * opaque "spawn ... ENOENT" much later: runTests() only logs spawn errors and
+ * lets the run fail with code -2, naming neither the path nor the reason.
+ */
+export function resolveVSCodeExecutable(
+  executablePath: string,
+  cachePath: string
+): string {
+  if (fs.existsSync(executablePath)) {
+    return executablePath;
+  }
+
+  const executableDir = path.dirname(executablePath);
+  if (process.platform === 'darwin') {
+    for (const name of DARWIN_EXECUTABLE_NAMES) {
+      const candidate = path.join(executableDir, name);
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  throw new Error(
+    `The downloaded VS Code is unusable: "${executablePath}" does not exist. ` +
+      `${describeDirectory(executableDir)} Remove "${cachePath}" and run the ` +
+      `tests again.`
+  );
+}
+
+function describeDirectory(directory: string): string {
+  try {
+    const entries = fs.readdirSync(directory);
+    return entries.length > 0
+      ? `"${directory}" contains: ${entries.join(', ')}.`
+      : `"${directory}" is empty.`;
+  } catch (error) {
+    return `"${directory}" could not be read: ${String(error)}.`;
+  }
+}
 
 export interface ExtensionInstallInfo {
   idOrVsix: string;

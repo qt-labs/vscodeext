@@ -15,4 +15,5 @@ export * from './test-constants';
 export * from './file-finder';
 export * from './qrc-parser';
 export * from './qml-api';
+export * from './qtbridge-csharp-api';
 export * from './msvc';

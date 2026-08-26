@@ -25,7 +25,13 @@ import {
 } from '@/qmlls.mjs';
 import * as installer from '@/installer.mjs';
 import * as consts from '@/constants.js';
-import { QMLProjectManager, createQMLProject } from '@/project.mjs';
+import {
+  QMLProjectManager,
+  createQMLProject,
+  getQtBridgeProject,
+  getQtBridgeProjectForUri,
+  getQtBridgeProjects
+} from '@/project.mjs';
 import { registerResetCommand } from '@cmd/reset.mjs';
 import { registerQmlDebugAdapterFactory } from '@debug/debug-adapter.mjs';
 import {
@@ -37,6 +43,7 @@ import {
   registerClearQmlPreviewCacheCommand,
   disposePreviewManager
 } from '@/preview/preview.mjs';
+import { isQtBridgePreviewAvailable } from '@/preview/qtbridge-preview-project.mjs';
 import {
   registerStartQmlProfilerCommand,
   registerAttachQmlProfilerCommand,
@@ -64,6 +71,7 @@ export async function activate(context: vscode.ExtensionContext) {
   installer.initialize(context.globalStorageUri);
 
   projectManager = new QMLProjectManager(context);
+  await projectManager.initializeQtBridgeIntegration();
   coreAPI = await getCoreApi();
   if (!coreAPI) {
     const err = 'Failed to get CoreAPI';
@@ -75,6 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
     for (const folder of vscode.workspace.workspaceFolders) {
       const project = await createQMLProject(folder, context);
       projectManager.addProject(project);
+      await projectManager.initializeProject(project);
     }
   }
 
@@ -116,9 +125,11 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
   telemetry.sendEvent(`activated`);
-  projectManager.getConfigValues();
-  projectManager.updateQmllsParams();
-  startQmlls();
+
+  // Initial projects are created directly during activation, so they do not
+  // go through ProjectManager.onProjectAdded(...). Perform only the background
+  // qmlls release check here; project startup already happened above.
+  checkQmllsReleaseInBackground();
 
   const api = new QtQmlAPIImpl(context);
   context.subscriptions.push(api);
@@ -126,10 +137,7 @@ export async function activate(context: vscode.ExtensionContext) {
   return api;
 }
 
-function startQmlls() {
-  // Start qmlls immediately without waiting for the release check
-  void projectManager.startQmlls();
-
+function checkQmllsReleaseInBackground() {
   // Perform the release check asynchronously in the background
   const shouldCheck = !getDoNotAskForDownloadingQmlls();
   if (shouldCheck) {
@@ -148,7 +156,7 @@ export function deactivate() {
   }
 }
 
-function updatePreviewLaunchContext() {
+export function updatePreviewLaunchContext() {
   const activeUri = vscode.window.activeTextEditor?.document.uri;
   const folder = activeUri
     ? vscode.workspace.getWorkspaceFolder(activeUri)
@@ -156,14 +164,22 @@ function updatePreviewLaunchContext() {
 
   let launchEnabled = false;
   if (folder) {
+    const bridgeProject = activeUri
+      ? getQtBridgeProjectForUri(activeUri)
+      : getQtBridgeProject(folder);
+    const bridgeProjects = bridgeProject
+      ? [bridgeProject]
+      : getQtBridgeProjects(folder);
     const features = coreAPI?.getValue<QtWorkspaceFeatures>(
       folder,
       CoreKey.WORKSPACE_FEATURES
     );
-    // Enable preview launch for CMake and PySide projects.
+    // Enable preview launch for CMake, PySide, and Qt Bridge projects with
+    // usable build metadata.
     launchEnabled =
       features?.projectTypes.cmake === true ||
-      features?.projectTypes.pyside === true;
+      features?.projectTypes.pyside === true ||
+      bridgeProjects.some(isQtBridgePreviewAvailable);
   }
   logger.info(
     `Setting qmlPreviewLaunchEnabled to ${String(launchEnabled)} for folder "${String(folder?.name)}"`
@@ -226,6 +242,10 @@ function processMessage(message: QtWorkspaceConfigMessage) {
       }
     }
     if (updateQmlls) {
+      logger.info(
+        `Refreshing qmlls after CoreAPI change for ${project.folder.uri.fsPath}`
+      );
+      project.refreshQtBridgeProject();
       project.updateQmllsParams();
       void project.restartQmlls();
     }

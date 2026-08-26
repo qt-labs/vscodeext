@@ -10,13 +10,38 @@ import {
   createLogger,
   QtWorkspaceFeatures,
   getPySideApi,
-  PySideProject
+  PySideProject,
+  getQtBridgeCSharpApi,
+  type QtBridgeCSharpAPI,
+  type QtBridgeMetadataChangeEvent,
+  type QtBridgeProject
 } from 'qt-lib';
 import { Qmlls } from '@/qmlls.mjs';
-import { coreAPI } from '@/extension.mjs';
+import {
+  aggregateQtBridgeQmllsProjects,
+  chooseQtBridgeQmllsUpdate,
+  type QtBridgeQmllsAggregation,
+  type QtBridgeQmllsSignal
+} from '@/qtbridge-qmlls-update.mjs';
+import { coreAPI, updatePreviewLaunchContext } from '@/extension.mjs';
 import { QmllsOperationQueue, QmllsOperationType } from '@/qmlls-queue.mjs';
 
 const logger = createLogger('project');
+let qtBridgeApi: QtBridgeCSharpAPI | undefined;
+
+export function getQtBridgeProjectForUri(uri: vscode.Uri) {
+  return qtBridgeApi?.getProjectForUri(uri);
+}
+
+export function getQtBridgeProject(folder: vscode.WorkspaceFolder) {
+  return qtBridgeApi?.getProject(folder);
+}
+
+export function getQtBridgeProjects(folder: vscode.WorkspaceFolder) {
+  return (qtBridgeApi?.getProjects() ?? []).filter(
+    (project) => project.folder.uri.toString() === folder.uri.toString()
+  );
+}
 
 export async function createQMLProject(
   folder: vscode.WorkspaceFolder,
@@ -31,11 +56,55 @@ export class QMLProjectManager extends ProjectManager<QMLProject> {
   constructor(override readonly context: vscode.ExtensionContext) {
     super(context, createQMLProject);
     this.onProjectAdded((project) => {
-      logger.info('Adding project:', project.folder.uri.fsPath);
-      project.getConfigValues();
-      project.updateQmllsParams();
-      void this.startQmllsForProject(project);
+      void this.initializeProject(project);
     });
+  }
+
+  async initializeQtBridgeIntegration() {
+    qtBridgeApi = await getQtBridgeCSharpApi();
+    if (!qtBridgeApi) {
+      logger.info('Qt Bridge C# extension API is unavailable');
+      return;
+    }
+    this._disposables.push(
+      qtBridgeApi.onDidChangeProjects(() => {
+        void this.handleQtBridgeProjectsChanged('project');
+      }),
+      qtBridgeApi.onDidChangeMetadata((event) => {
+        void this.handleQtBridgeProjectsChanged('metadata', event);
+      })
+    );
+  }
+
+  private async handleQtBridgeProjectsChanged(
+    signal: QtBridgeQmllsSignal,
+    event?: QtBridgeMetadataChangeEvent
+  ) {
+    logger.info('Qt Bridge project state changed');
+    for (const project of this.getProjects()) {
+      if (
+        event &&
+        project.folder.uri.toString() !== event.project.folder.uri.toString()
+      ) {
+        continue;
+      }
+      try {
+        await project.handleQtBridgeProjectSignal(signal);
+      } catch (error) {
+        logger.error(
+          `Failed to update qmlls after Qt Bridge ${signal} state changed for ` +
+            `${project.folder.uri.fsPath}: ${String(error)}`
+        );
+      }
+    }
+  }
+
+  async initializeProject(project: QMLProject) {
+    logger.info('Initializing project:', project.folder.uri.fsPath);
+    project.getConfigValues();
+    project.refreshQtBridgeProject();
+    project.updateQmllsParams();
+    await this.startQmllsForProject(project);
   }
 
   /**
@@ -106,6 +175,9 @@ export class QMLProject implements Project {
   _kitPath: string | undefined;
   _buildDir: string | undefined;
   _pySideProject?: PySideProject | undefined;
+  _qtBridgeProjects: readonly QtBridgeProject[] = [];
+  private _qtBridgeQmllsAggregation: QtBridgeQmllsAggregation =
+    aggregateQtBridgeQmllsProjects([]);
   public constructor(
     readonly _folder: vscode.WorkspaceFolder,
     readonly _context: vscode.ExtensionContext
@@ -144,6 +216,50 @@ export class QMLProject implements Project {
     }
   }
 
+  refreshQtBridgeProject() {
+    const projects = (qtBridgeApi?.getProjects() ?? []).filter(
+      (project) => project.folder.uri.toString() === this.folder.uri.toString()
+    );
+    this._qtBridgeProjects = projects;
+    this._qtBridgeQmllsAggregation = aggregateQtBridgeQmllsProjects(projects);
+    logger.info(
+      `Qt Bridge project detection result for ${this.folder.uri.fsPath}: ` +
+        `projects=${String(projects.length)}; ` +
+        `readyQmllsProjects=${String(this._qtBridgeQmllsAggregation.sessionConfigs.length)}`
+    );
+    updatePreviewLaunchContext();
+  }
+
+  async handleQtBridgeProjectSignal(signal: QtBridgeQmllsSignal) {
+    const previousState = this._qtBridgeQmllsAggregation.stateKey;
+    this.refreshQtBridgeProject();
+    const currentState = this._qtBridgeQmllsAggregation.stateKey;
+    const update = chooseQtBridgeQmllsUpdate(
+      previousState,
+      currentState,
+      signal,
+      this._qtBridgeQmllsAggregation.sessionConfigs.length > 0
+    );
+    if (update === 'none') {
+      logger.info(
+        `Qt Bridge ${signal} signal did not change qmlls state for ${this.folder.uri.fsPath}`
+      );
+      return;
+    }
+    if (update === 'refresh') {
+      logger.info(
+        `Refreshing Qt Bridge build directories in qmlls for ${this.folder.uri.fsPath}`
+      );
+      await this.qmlls.refreshQtBridgeBuildDirs();
+      return;
+    }
+    logger.info(
+      `Restarting qmlls after Qt Bridge ${signal} state changed for ${this.folder.uri.fsPath}`
+    );
+    this.updateQmllsParams();
+    await this.restartQmlls();
+  }
+
   getConfigValues() {
     this.qtpathsExe = coreAPI?.getValue<string>(
       this.folder,
@@ -155,6 +271,12 @@ export class QMLProject implements Project {
       this.folder,
       CoreKey.WORKSPACE_FEATURES
     );
+    logger.info(
+      `Project config for ${this.folder.uri.fsPath}: ` +
+        `qtpathsExe=${this.qtpathsExe ?? '<none>'}; ` +
+        `buildDir=${this._buildDir ?? '<none>'}; ` +
+        `pyside=${String(features?.projectTypes.pyside === true)}`
+    );
     if (features?.projectTypes.pyside === true && !this._pySideProject) {
       void this.initPySideProject();
     }
@@ -163,6 +285,24 @@ export class QMLProject implements Project {
   updateQmllsParams() {
     this.qmlls.clearImportPaths();
     this.qmlls.docsPath = undefined;
+    this.qmlls.useNoCMakeCalls = false;
+    this.qmlls.buildDir = this._buildDir;
+    const aggregation = this._qtBridgeQmllsAggregation;
+    this.qmlls.qtBridgeSessionConfigs = aggregation.sessionConfigs;
+    this.qmlls.useNoCMakeCalls = aggregation.useNoCMakeCalls;
+    if (!this._buildDir && aggregation.startupBuildDir) {
+      this.qmlls.buildDir = aggregation.startupBuildDir;
+    }
+    for (const importPath of aggregation.importPaths) {
+      this.qmlls.addImportPath(importPath);
+    }
+    logger.info(
+      `Applying Qt Bridge qmlls aggregation for ${this.folder.uri.fsPath}: ` +
+        `projects=${String(this._qtBridgeProjects.length)}; ` +
+        `sessions=${String(aggregation.sessionConfigs.length)}; ` +
+        `imports=${String(aggregation.importPaths.length)}`
+    );
+
     if (this.qtpathsExe) {
       const info = coreAPI?.getQtInfoFromPath(this.qtpathsExe).info;
       if (!info) {
@@ -172,6 +312,10 @@ export class QMLProject implements Project {
       if (!qmlImportPath) {
         throw new Error('Cannot find QT_INSTALL_QML');
       }
+      logger.info(
+        `Adding Qt import root from selected Qt path for ${this.folder.uri.fsPath}: ` +
+          qmlImportPath
+      );
       this.qmlls.addImportPath(qmlImportPath);
       const docsPath = info.get('QT_INSTALL_DOCS');
       if (docsPath) {
