@@ -31,21 +31,54 @@ export function getSharedVSCodeCachePath(extensionRoot: string): string {
 }
 
 /**
- * A cached build is reused whenever its "is-complete" marker file is
- * present, so an extraction that was interrupted after the marker was
- * written hands back a path to a binary that is not there. That surfaces
- * much later as an opaque "spawn ... ENOENT" when the tests launch VS Code.
- * Fail here instead, where the cause and the remedy are obvious.
+ * The macOS bundle executable was renamed from "Electron" to "Code", and
+ * @vscode/test-electron still resolves the old name, so the path it hands
+ * back can be missing even though the download is fine.
  */
-export function assertVSCodeExecutable(
+const DARWIN_EXECUTABLE_NAMES = ['Electron', 'Code', 'Visual Studio Code'];
+
+/**
+ * The usable VS Code executable for the build in `cachePath`.
+ *
+ * Falls back to the other known macOS bundle executable names when the path
+ * @vscode/test-electron resolved does not exist. Throws with the contents of
+ * the directory when nothing usable is there, because the alternative is an
+ * opaque "spawn ... ENOENT" much later: runTests() only logs spawn errors and
+ * lets the run fail with code -2, naming neither the path nor the reason.
+ */
+export function resolveVSCodeExecutable(
   executablePath: string,
   cachePath: string
-): void {
-  if (!fs.existsSync(executablePath)) {
-    throw new Error(
-      `The downloaded VS Code is incomplete: "${executablePath}" does not ` +
-        `exist. Remove "${cachePath}" and run the tests again.`
-    );
+): string {
+  if (fs.existsSync(executablePath)) {
+    return executablePath;
+  }
+
+  const executableDir = path.dirname(executablePath);
+  if (process.platform === 'darwin') {
+    for (const name of DARWIN_EXECUTABLE_NAMES) {
+      const candidate = path.join(executableDir, name);
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  throw new Error(
+    `The downloaded VS Code is unusable: "${executablePath}" does not exist. ` +
+      `${describeDirectory(executableDir)} Remove "${cachePath}" and run the ` +
+      `tests again.`
+  );
+}
+
+function describeDirectory(directory: string): string {
+  try {
+    const entries = fs.readdirSync(directory);
+    return entries.length > 0
+      ? `"${directory}" contains: ${entries.join(', ')}.`
+      : `"${directory}" is empty.`;
+  } catch (error) {
+    return `"${directory}" could not be read: ${String(error)}.`;
   }
 }
 
