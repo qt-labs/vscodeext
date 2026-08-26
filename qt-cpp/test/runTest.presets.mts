@@ -13,6 +13,10 @@ import {
   installRequiredExtensions
 } from './runTestHelper.mjs';
 import { ExtensionInstallInfo } from 'qt-lib/src/test-vscode-install.ts';
+import {
+  assertVSCodeExecutable,
+  getSharedVSCodeCachePath
+} from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
   try {
@@ -24,7 +28,11 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index-presets');
 
-    const vscodeExecutablePath = await downloadAndUnzipVSCode();
+    const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
+    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+      cachePath
+    });
+    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
 
     const { qtRoot, localQtCoreVsix, cli, args, userDataDir } =
       await setupTestInfrastructure(vscodeExecutablePath);
