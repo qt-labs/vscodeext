@@ -14,6 +14,10 @@ import {
 } from './runTestHelper.mjs';
 
 import { installStdioFilter } from './util/stdioFilter.mts';
+import {
+  assertVSCodeExecutable,
+  getSharedVSCodeCachePath
+} from '../../qt-lib/src/test-vscode-install.js';
 const uninstallStdio = installStdioFilter();
 
 async function main() {
@@ -27,7 +31,11 @@ async function main() {
     const extensionTestsPath = path.resolve(__dirname, './suite/index-natvis');
 
     // Download VS Code and resolve CLI/dirs using shared helper
-    const vscodeExecutablePath = await downloadAndUnzipVSCode();
+    const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
+    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+      cachePath
+    });
+    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
     const { qtRoot, localQtCoreVsix, cli, args, userDataDir } =
       await setupTestInfrastructure(vscodeExecutablePath);
 
