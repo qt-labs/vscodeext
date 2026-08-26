@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { spawn } from 'child_process';
 
-import { IsMacOS, IsLinux, IsWindows, OSExeSuffix } from 'qt-lib';
 import { fsDir } from './helpers/fs-utils.ts';
 import { createWrappedLogger } from './helpers/logger-wrapper.ts';
 import * as consts from './constants.mts';
@@ -96,12 +95,16 @@ export class InstalledRelease {
   }
 
   get execPath() {
-    const subdir = findExeDir();
-    if (subdir === '') {
+    const candidates = consts.PACKAGE_CANDIDATES.map((candidate) =>
+      path.join(this.filesDir, candidate.exeRelPath)
+    );
+
+    const first = candidates[0];
+    if (!first) {
       throw new Error('Cannot determine binary path for the current platform');
     }
 
-    return path.join(this.filesDir, subdir, consts.EXE_NAME + OSExeSuffix);
+    return candidates.find((exe) => fs.existsSync(exe)) ?? first;
   }
 
   public async save(downloadSrc: string) {
@@ -123,7 +126,7 @@ export class InstalledRelease {
       path.dirname(execPath)
     );
 
-    // expected output: "QmlTraceViewer 19.0.82"
+    // expected output: "QmlTraceViewer 20.0.0" or "QtProfiler 21.0.0"
     const output = stdout.trim().split(' ');
     return output[1] ?? '';
   }
@@ -181,18 +184,6 @@ function resolveInstallBaseDir(context: Context) {
 
 function resolveInstallInfoFilePath(context: Context) {
   return path.join(resolveInstallBaseDir(context), consts.INSTALL_INFO_FILE);
-}
-
-function findExeDir() {
-  if (IsMacOS) {
-    return 'qmltraceviewer.app/Contents/MacOS';
-  }
-
-  if (IsLinux) {
-    return 'libexec/qtcreator';
-  }
-
-  return IsWindows ? 'bin' : '';
 }
 
 async function spawnAsync(
