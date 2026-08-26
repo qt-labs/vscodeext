@@ -15,7 +15,7 @@ import {
 
 import { installStdioFilter } from './util/stdioFilter.mts';
 import {
-  assertVSCodeExecutable,
+  resolveVSCodeExecutable,
   getSharedVSCodeCachePath
 } from '../../qt-lib/src/test-vscode-install.js';
 const uninstallStdio = installStdioFilter();
@@ -32,10 +32,10 @@ async function main() {
 
     // Download VS Code and resolve CLI/dirs using shared helper
     const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
-    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
       cachePath
-    });
-    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
+    );
     const { qtRoot, localQtCoreVsix, cli, args, userDataDir } =
       await setupTestInfrastructure(vscodeExecutablePath);
 
@@ -88,6 +88,7 @@ async function main() {
     // Run the integration tests (no need to pass launchArgs; we reused the same dirs)
     try {
       await runTests({
+        vscodeExecutablePath,
         launchArgs: [tmpProject, '--disable-workspace-trust'],
         extensionDevelopmentPath,
         extensionTestsPath

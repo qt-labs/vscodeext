@@ -12,7 +12,7 @@ import {
 } from '@vscode/test-electron';
 
 import {
-  assertVSCodeExecutable,
+  resolveVSCodeExecutable,
   getDebugLevel,
   getSharedVSCodeCachePath,
   parseVSCodeDirs
@@ -29,10 +29,10 @@ async function main() {
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
     const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
-    const vscodeExecutablePath = await downloadAndUnzipVSCode({
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
       cachePath
-    });
-    assertVSCodeExecutable(vscodeExecutablePath, cachePath);
+    );
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
@@ -56,6 +56,7 @@ async function main() {
 
     // Download VS Code, unzip it and run the integration test
     await runTests({
+      vscodeExecutablePath,
       launchArgs,
       extensionDevelopmentPath,
       extensionTestsPath
