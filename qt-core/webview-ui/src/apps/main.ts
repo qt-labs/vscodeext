@@ -11,6 +11,7 @@ const loaders: Record<string, Loader> = {
   'qml-trace': () => import('./qml-trace/QmlTraceApp.svelte'),
   'qrc-editor': () => import('./qrc-editor/QrcEditorApp.svelte'),
   'ex-browser': () => import('./ex-browser/ExBrowserApp.svelte'),
+  'ui-designer': () => import('./ui-designer/UiDesignerApp.svelte')
 };
 
 const appType = document.body.dataset.app ?? '';
