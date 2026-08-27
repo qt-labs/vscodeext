@@ -136,6 +136,23 @@
     },
     {
       "type": "shell",
+      "label": "npm qt-ui watch",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-ui"
+      }
+    },
+    {
+      "type": "shell",
       "label": "vite:start",
       "command": "npx ts-node ./scripts/run_vite.ts start --dir ../qt-core/webview-ui",
       "isBackground": true,
@@ -150,6 +167,23 @@
       "isBackground": true,
       "options": {
         "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "npm qt-ui watch and test",
+      "problemMatcher": "$tsc-watch",
+      "command": "npm run watch && npm run compile-test",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/qt-ui"
       }
     },
     {

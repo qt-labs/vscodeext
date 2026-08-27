@@ -28,6 +28,7 @@ on:
             - qt-core
             - qt-cpp
             - qt-qml
+            - qt-ui
             - qt-python
 
 jobs:
@@ -101,9 +102,10 @@ jobs:
       - name: Prepare NatVis files
         run: npm run prepareNatvisFiles
       # Compile other extensions once (runtime build)
-      - name: Compile qt-cpp / qt-qml / qt-python
+      - name: Compile qt-cpp / qt-ui / qt-qml / qt-python
         run: |
           npm --prefix qt-cpp run compile
+          npm --prefix qt-ui  run compile
           npm --prefix qt-qml run compile
           npm --prefix qt-python run compile
 
@@ -138,8 +140,8 @@ jobs:
           echo "Directory tree (maxdepth 3) under $QT_ROOT:"
           find "$QT_ROOT" -maxdepth 3 -type d -print
 
-      - name: Verify Designer is available qt-core only)
-        if: env.TEST_SUITE == 'all' || env.TEST_SUITE == 'qt-core'
+      - name: Verify Designer is available (qt-ui only)
+        if: env.TEST_SUITE == 'all' || env.TEST_SUITE == 'qt-ui'
         shell: bash
         run: |
           set -euo pipefail
@@ -152,7 +154,7 @@ jobs:
           if [[ -n "$DESIGNER" ]]; then
             echo "Found Designer at: $DESIGNER"
           else
-            echo "::error::Designer not found under $QT_ROOT after install, but qt-core tests were selected."
+            echo "::error::Designer not found under $QT_ROOT after install, but qt-ui tests were selected."
             exit 1
           fi
 
@@ -220,6 +222,10 @@ jobs:
               run_cmd "${XVFB[@]}" npm --prefix qt-qml run test:only
             fi
 
+            if should_run qt-ui; then
+              run_cmd "${XVFB[@]}" npm --prefix qt-ui run test:only
+            fi
+
             if should_run qt-python; then
               run_cmd "${XVFB[@]}" npm --prefix qt-python run test:only
             fi
@@ -234,6 +240,10 @@ jobs:
 
             if should_run qt-qml; then
               run_cmd npm --prefix qt-qml run test:only
+            fi
+
+            if should_run qt-ui; then
+              run_cmd npm --prefix qt-ui run test:only
             fi
 
             if should_run qt-python; then
