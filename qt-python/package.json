@@ -2,7 +2,7 @@
   "name": "qt-python",
   "displayName": "Qt Python",
   "description": "Qt Python Support",
-  "version": "1.15.2",
+  "version": "1.6.0",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qtforpython.png",
   "publisher": "theqtcompany",
