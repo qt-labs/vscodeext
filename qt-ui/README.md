@@ -1,5 +1,11 @@
 # Qt UI Extension for VS Code
 
+> ⚠️ **Deprecated:** This extension will be deprecated as of version `1.17.0`.
+> Its features are now part of the
+> [Qt Core](https://marketplace.visualstudio.com/items?itemName=theqtcompany.qt-core)
+> extension. This extension will not get new features or fixes.
+> Please uninstall it and use Qt Core instead.
+
 This extension provides support for designing widget-based UIs with
 [Qt Widgets Designer](https://doc.qt.io/qt-6/qtdesigner-manual.html)
 using `.ui` files.
