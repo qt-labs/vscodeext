@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.17.0 (Aug 28, 2026)
+
+⚠️ **Changed**
+
+- Disable the extension in untrusted workspaces
+
 ## 1.15.0 (May 20, 2026)
 
 🎉 **Added**

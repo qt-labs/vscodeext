@@ -1,5 +1,21 @@
 # Change Log
 
+## 1.17.0 (Aug 28, 2026)
+
+🎉 **Added**
+
+- Use the CMake and Ninja paths provided by the Qt Software Manager (`qt-sm`) extension when the tools are missing
+
+🐞 **Fixed**
+
+- Fix debugging failing silently when CMake Presets are used with `qtpaths`
+- Fix the debugger display of `QVariant`, `QBasicAtomicPointer`, and `QUrl`
+- Remove the duplicate warning popup when a `qtpaths` binary is missing
+
+⚠️ **Changed**
+
+- Disable the extension in untrusted workspaces
+
 ## 1.15.0 (May 20, 2026)
 
 The same as `1.14.0`

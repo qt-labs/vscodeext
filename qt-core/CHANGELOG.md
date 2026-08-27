@@ -1,5 +1,32 @@
 # Change Log
 
+## 1.17.0 (Aug 28, 2026)
+
+🐞 **Fixed**
+
+- Restore the Welcome page and the examples browser after a window reload
+- Fix the Welcome page layout on narrow windows
+- Fix Qt kit registration failing on slow machines by raising the `qtpaths` query timeout to 30 seconds
+- Fix wrong project lookup when project folder names share a common prefix
+
+⚠️ **Changed**
+
+- Migrate the `Qt UI` extension into `Qt Core`; the `Qt UI` extension is going to be deprecated
+- Remove the `Qt: Open Qt Widgets Designer` command
+- Disable the extension in untrusted workspaces
+
+### qtcli
+
+🎉 **Added**
+
+- Add an `importedcontent` subdirectory to Qt Quick projects for external content such as Figma exports
+
+⚠️ **Changed**
+
+- Update the Qt Quick application templates to match Qt Creator 20
+- Make the Qt Quick project template more interactive and visual
+- Drop Qt 6.2 support from the C++ template; supported versions are 6.5, 6.8, and 6.10
+
 ## 1.15.0 (May 20, 2026)
 
 🎉 **Added**

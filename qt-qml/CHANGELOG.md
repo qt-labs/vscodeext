@@ -1,5 +1,30 @@
 # Change Log
 
+## 1.17.0 (Aug 28, 2026)
+
+🎉 **Added**
+
+- Verify QML Language Server downloads against their SHA256 digest
+- Allow only trusted Qt hosts and HTTPS for download redirects
+- Add colored icons for the QML preview and profiler actions, with light and dark theme variants
+
+🐞 **Fixed**
+
+- Fix the QML Trace Viewer download failing when a new Qt Creator version is released
+- Fix missing QML Language Server updates when new builds are published under the same release tag
+- Fix `Stopping the server timed out` errors when restarting QML Language Server
+- Fix install failures caused by files that were still being written after extraction
+- Fix QML Language Server being re-downloaded when its first start was slow
+- Fix commands not being found when only `.qml` or `.qmlproject` files are open
+- Pass `127.0.0.1` instead of `localhost` to the QML debugger, so the debug server no longer listens on all interfaces
+
+⚠️ **Changed**
+
+- Install each QML Language Server version into its own directory
+  - Multiple VS Code windows no longer break each other's installations
+  - The running server keeps working during downloads and only restarts when the new version is ready
+- Disable the extension in untrusted workspaces
+
 ## 1.15.0 (May 20, 2026)
 
 🎉 **Added**
