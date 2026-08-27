@@ -27,6 +27,10 @@
 - Make the Qt Quick project template more interactive and visual
 - Drop Qt 6.2 support from the C++ template; supported versions are 6.5, 6.8, and 6.10
 
+## 1.16.0 (Aug 28, 2026)
+
+The same as `1.15.1`
+
 ## 1.15.1 (Jun 24, 2026)
 
 🎉 **Added**

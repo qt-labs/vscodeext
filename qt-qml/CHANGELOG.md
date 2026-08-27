@@ -25,6 +25,10 @@
   - The running server keeps working during downloads and only restarts when the new version is ready
 - Disable the extension in untrusted workspaces
 
+## 1.16.0 (Aug 28, 2026)
+
+The same as `1.15.1`
+
 ## 1.15.1 (Jun 24, 2026)
 
 🎉 **Added**
