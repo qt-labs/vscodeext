@@ -2,152 +2,118 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
+import * as process from 'process';
 import {
-  TelemetryEventMeasurements,
+  TelemetryReporter,
   TelemetryEventProperties,
-  TelemetryReporter
+  TelemetryEventMeasurements
 } from '@vscode/extension-telemetry';
 
-export type { TelemetryEventProperties };
-export { TelemetryReporter };
+type Props = TelemetryEventProperties;
+type Measures = TelemetryEventMeasurements;
 
 const globalConnectionString =
   'InstrumentationKey=09d5f9a1-0532-4146-b158-a653220b28b6;IngestionEndpoint=https://germanywestcentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://germanywestcentral.livediagnostics.monitor.azure.com/;ApplicationId=8758b8d8-22d0-459d-b1b4-1689a3a350d5';
-export let reporter: TelemetryReporter;
-
-enum EventTypes {
-  event = 'event',
-  rawEvent = 'rawEvent',
-  dangerousEvent = 'dangerousEvent',
-  errorEvent = 'error',
-  dangerousErrorEvent = 'dangerousError'
-}
 
 class Telemetry {
-  reporter: TelemetryReporter | undefined;
-  activate(context: vscode.ExtensionContext, connectionString?: string) {
-    this.reporter = new TelemetryReporter(
+  private _reporter: TelemetryReporter | undefined;
+  private _context: vscode.ExtensionContext | undefined;
+
+  public activate(context: vscode.ExtensionContext, connectionString?: string) {
+    this._reporter = new TelemetryReporter(
       connectionString ?? globalConnectionString,
       undefined,
       { ignoreUnhandledErrors: true }
     );
-    context.subscriptions.push(this.reporter);
+
+    this._context = context;
+    this._context.subscriptions.push(this._reporter);
   }
-  sendAction(
-    actionName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(
-      EventTypes.event,
-      `action.${actionName}.triggered`,
-      properties,
-      measurements
-    );
+
+  public dispose() {
+    if (this._reporter) {
+      void this._reporter.dispose();
+    }
   }
-  sendConfig(
-    configName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(
-      EventTypes.event,
-      `config.${configName}.triggered`,
-      properties,
-      measurements
-    );
+
+  public sendAction(actionName: string, p?: Props, m?: Measures) {
+    const name = `action.${actionName}.triggered`;
+    this._report('event', name, p, m);
   }
-  sendEvent(
-    eventName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(EventTypes.event, eventName, properties, measurements);
+
+  public sendConfig(configName: string, p?: Props, m?: Measures) {
+    const name = `config.${configName}.triggered`;
+    this._report('event', name, p, m);
   }
-  sendRawEvent(
-    eventName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(EventTypes.rawEvent, eventName, properties, measurements);
+
+  public sendEvent(name: string, p?: Props, m?: Measures) {
+    this._report('event', name, p, m);
   }
-  sendDangerousEvent(
-    eventName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(EventTypes.dangerousEvent, eventName, properties, measurements);
+
+  public sendRawEvent(name: string, p?: Props, m?: Measures) {
+    this._report('raw', name, p, m);
   }
-  sendErrorEvent(
-    eventName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(EventTypes.errorEvent, eventName, properties, measurements);
+
+  public sendDangerousEvent(name: string, p?: Props, m?: Measures) {
+    this._report('dangerous', name, p, m);
   }
-  sendDangerousErrorEvent(
-    eventName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
-  ) {
-    this.send(
-      EventTypes.dangerousErrorEvent,
-      eventName,
-      properties,
-      measurements
-    );
+
+  public sendDangerousErrorEvent(name: string, p?: Props, m?: Measures) {
+    this._report('dangerousError', name, p, m);
   }
-  private send(
-    eventType: EventTypes,
-    eventName: string,
-    properties?: TelemetryEventProperties,
-    measurements?: TelemetryEventMeasurements
+
+  private _report(
+    kind: 'event' | 'raw' | 'error' | 'dangerous' | 'dangerousError',
+    name: string,
+    props?: Props,
+    measures?: Measures
   ) {
-    if (!this.reporter) {
+    // Note:
+    // we ignore telemetry when the environment says so.
+    // This is useful when running tests or developing locally,
+    // to avoid tainting telemetry data with fake values.
+    if (process.env.QT_SUPPRESS_TELEMETRY === '1') {
+      if (process.env.QT_LOG_SUPPRESSED_TELEMETRY === '1') {
+        console.log(
+          'Telemetry suppressed:',
+          [
+            `extension = '${this._context?.extension.id ?? ''}'`,
+            `name = '${name}'`,
+            `kind = '${kind}'`
+          ].join(', ')
+        );
+      }
+      return;
+    }
+
+    if (!this._reporter) {
       throw new Error('Telemetry reporter not initialized');
     }
 
-    switch (eventType) {
-      case EventTypes.event:
-        this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+    switch (kind) {
+      case 'event':
+        this._reporter.sendTelemetryEvent(name, props, measures);
         break;
-      case EventTypes.rawEvent:
-        this.reporter.sendRawTelemetryEvent(
-          eventName,
-          properties,
-          measurements
-        );
+
+      case 'raw':
+        this._reporter.sendRawTelemetryEvent(name, props, measures);
         break;
-      case EventTypes.dangerousEvent:
-        this.reporter.sendDangerousTelemetryEvent(
-          eventName,
-          properties,
-          measurements
-        );
+
+      case 'error':
+        this._reporter.sendTelemetryErrorEvent(name, props, measures);
         break;
-      case EventTypes.errorEvent:
-        this.reporter.sendTelemetryErrorEvent(
-          eventName,
-          properties,
-          measurements
-        );
+
+      case 'dangerous':
+        this._reporter.sendDangerousTelemetryEvent(name, props, measures);
         break;
-      case EventTypes.dangerousErrorEvent:
-        this.reporter.sendDangerousTelemetryErrorEvent(
-          eventName,
-          properties,
-          measurements
-        );
+
+      case 'dangerousError':
+        this._reporter.sendDangerousTelemetryErrorEvent(name, props, measures);
         break;
-      default:
-        throw new Error('Invalid event type');
-    }
-  }
-  dispose() {
-    if (this.reporter) {
-      void this.reporter.dispose();
     }
   }
 }
 
-export const telemetry = new Telemetry();
+const telemetry = new Telemetry();
+
+export { telemetry, type TelemetryEventProperties };
