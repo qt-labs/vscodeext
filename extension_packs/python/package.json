@@ -35,6 +35,7 @@
     "theqtcompany.qt-python",
     "theqtcompany.qt-core",
     "theqtcompany.qt-qml",
+    "theqtcompany.qt-ui",
     "ms-vscode.python"
   ],
   "scripts": {

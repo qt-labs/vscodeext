@@ -38,6 +38,7 @@
     "theqtcompany.qt-cpp",
     "theqtcompany.qt-qml",
     "theqtcompany.qt-core",
+    "theqtcompany.qt-ui",
     "ms-vscode.cmake-tools",
     "ms-vscode.cpptools",
     "ms-vscode.wasm-dwarf-debugging",

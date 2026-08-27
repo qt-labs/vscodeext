@@ -93,6 +93,7 @@ export class WelcomePageDataManager {
 
     const extensions = [
       { name: 'Qt Core', id: 'theqtcompany.qt-core' },
+      { name: 'Qt UI', id: 'theqtcompany.qt-ui' },
       { name: 'Qt QML', id: 'theqtcompany.qt-qml' },
       { name: 'Qt C++', id: 'theqtcompany.qt-cpp' },
       { name: 'Qt Python', id: 'theqtcompany.qt-python' }

@@ -1,0 +1,189 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as child_process from 'child_process';
+/**
+ * Exposed reference for integration tests.
+ * Holds the last spawned Qt Designer process so tests can close it.
+ */
+export const lastSpawnedDesignerRef: { proc?: child_process.ChildProcess } = {};
+
+import {
+  findQtKits,
+  createLogger,
+  CoreKey,
+  CORE_EXTENSION_ID,
+  telemetry,
+  resolveConfiguration
+} from 'qt-lib';
+import { coreAPI, projectManager } from '@/extension';
+import { locateDesignerFromKit } from '@/util';
+import * as consts from '@/constants';
+
+const logger = createLogger('commands');
+
+export async function openWidgetDesigner() {
+  telemetry.sendAction('openWidgetDesigner');
+  logger.info('Opening Qt Designer');
+
+  // Check custom designer path first
+  const customDesignerPath = vscode.workspace
+    .getConfiguration(consts.EXTENSION_ID)
+    .get<string>(consts.CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH, '');
+
+  if (customDesignerPath) {
+    const resolvedPath = resolveConfiguration(customDesignerPath);
+    if (fs.existsSync(resolvedPath)) {
+      logger.info('Using custom designer path:', resolvedPath);
+      const process = child_process.spawn(resolvedPath, [], {
+        shell: true
+      });
+
+      lastSpawnedDesignerRef.proc = process;
+
+      process.on('error', (err) => {
+        void vscode.window.showErrorMessage(
+          `Error while opening Qt Designer: ${err.message}`
+        );
+      });
+
+      process.stderr.setEncoding('utf8');
+      process.stderr.on('data', (data) => {
+        void vscode.window.showErrorMessage(
+          `Qt Designer error: ${String(data)}`
+        );
+      });
+
+      return;
+    } else {
+      void vscode.window.showWarningMessage(
+        `Custom Qt Designer path not found: ${resolvedPath}`
+      );
+    }
+  }
+
+  // Find the latest Qt installation in both global and project settings
+  // and run the designer
+  const qtInsRoots: string[] = [];
+
+  const globalQtInstallationRoot = coreAPI?.getValue<string>(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.QT_INSTALLATION_ROOT
+  );
+  if (globalQtInstallationRoot) {
+    qtInsRoots.push(globalQtInstallationRoot);
+  }
+  for (const project of projectManager.getProjects()) {
+    const qtInsRoot = coreAPI?.getValue<string>(
+      project.folder,
+      CoreKey.QT_INSTALLATION_ROOT
+    );
+    if (qtInsRoot) {
+      qtInsRoots.push(qtInsRoot);
+    }
+  }
+
+  if (qtInsRoots.length === 0) {
+    void vscode.window
+      .showWarningMessage(
+        'No Qt installations root found. Please set an Qt installation root.',
+        'Set Qt installation root'
+      )
+      .then((selection) => {
+        if (selection === 'Set Qt installation root') {
+          void vscode.commands.executeCommand(
+            `${CORE_EXTENSION_ID}.registerQt`
+          );
+        }
+      });
+    return;
+  }
+  const tempQtInstallationsPromises: Promise<string[]>[] = [];
+  // remove duplicates
+  const uniqueQtInsRoots = Array.from(new Set(qtInsRoots.flat()));
+  for (const qtInsRoot of uniqueQtInsRoots) {
+    tempQtInstallationsPromises.push(findQtKits(qtInsRoot));
+  }
+  const qtInstallations = await Promise.all(tempQtInstallationsPromises);
+  // remove duplicates
+  const uniqueQtInstallations = Array.from(new Set(qtInstallations.flat()));
+  // Example path /home/orkun/Qt/6.7.2/android_armv7
+  // sort by version number
+  const getInstallationVersion = (installationPath: string) => {
+    return path.basename(path.dirname(installationPath));
+  };
+  uniqueQtInstallations.sort((a, b) => {
+    const aVersion = getInstallationVersion(a);
+    const bVersion = getInstallationVersion(b);
+    return aVersion.localeCompare(bVersion, undefined, { numeric: true });
+  });
+  // group by version number like 6.7.2 6.6.0
+  const groupedQtInstallations: Record<string, string[]> = {};
+  for (const qtInstallation of uniqueQtInstallations) {
+    const version = getInstallationVersion(qtInstallation);
+    if (!groupedQtInstallations[version]) {
+      groupedQtInstallations[version] = [];
+    }
+    groupedQtInstallations[version].push(qtInstallation);
+  }
+  // convert groupedQtInstallations to array<<version, locatedPath>>
+  const versions: { version: string; locatedPath: string }[] = [];
+  for (const version in groupedQtInstallations) {
+    if (!groupedQtInstallations[version]) {
+      continue;
+    }
+    // get the first path for each version
+    if (!groupedQtInstallations[version][0]) {
+      continue;
+    }
+    const locatedPath = await locateDesignerFromKit(
+      groupedQtInstallations[version][0]
+    );
+    if (!locatedPath) {
+      continue;
+    }
+    versions.push({ version, locatedPath });
+  }
+  if (versions.length === 0) {
+    const message = `No Qt Designer found in ${uniqueQtInstallations.join(', ')}`;
+    void vscode.window.showWarningMessage(message);
+    return;
+  }
+  // Each version has the same Qt Widget Designer even if they are different
+  // installations so we can just show the version number
+  const selectedQtDesigner = await vscode.window.showQuickPick(
+    versions.map((version) => {
+      return {
+        label: version.version,
+        description: version.locatedPath
+      };
+    }),
+    {
+      placeHolder: 'Select a Qt Widget Designer version'
+    }
+  );
+
+  if (!selectedQtDesigner) {
+    return;
+  }
+  logger.info('Designer exe path:', selectedQtDesigner.description);
+  if (selectedQtDesigner.description) {
+    const process = child_process.spawn(selectedQtDesigner.description, [], {
+      shell: true
+    });
+    lastSpawnedDesignerRef.proc = process;
+    process.on('error', (err) => {
+      void vscode.window.showErrorMessage(
+        `Error while opening Qt Designer: ${err.message}`
+      );
+    });
+    process.stderr.setEncoding('utf8');
+    process.stderr.on('data', (data) => {
+      void vscode.window.showErrorMessage(`Qt Designer error: ${String(data)}`);
+    });
+    return;
+  }
+}

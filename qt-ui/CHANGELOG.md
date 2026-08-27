@@ -1,0 +1,115 @@
+# Change Log
+
+## 1.15.0 (May 20, 2026)
+
+The same as `1.14.0`
+
+## 1.14.0 (May 20, 2026)
+
+The same as `1.13.0`
+
+## 1.13.0 (Feb 26, 2026)
+
+The same as `1.12.0`
+
+## 1.12.0 (Feb 26, 2026)
+
+⚠️ **Changed**
+
+- Use `qt-ui.customWidgetsDesignerExePath` in `Qt: Open Qt Widgets Designer`
+
+## 1.11.1 (Dec 22, 2025)
+
+The same as `1.11.0`
+
+## 1.11.0 (Nov 24, 2025)
+
+🎉 **Added**
+
+- Add support for opening Qt Widgets Designer from PySide6 installations
+
+## 1.10.0 (Nov 24, 2025)
+
+The same as `1.9.0`
+
+## 1.9.0 (Sep 11, 2025)
+
+🎉 **Added**
+
+- Introduce variable substitution in configuration paths
+- Supported variables for substitution:
+  - `${workspaceFolder}` for the workspace root directory
+  - `${userHome}` for the user's home directory
+
+## 1.8.0 (Sep 11, 2025)
+
+The same as `1.7.0`
+
+## 1.7.0 (Jul 2, 2025)
+
+🎉 **Added**
+
+- Improve error messages for missing UI editor
+- Add `Open with Text Editor` button
+- Use the built-in text editor with the following extensions for `.ui` files:
+  - [copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+  - [git-graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)
+  - [git-graph-3](https://marketplace.visualstudio.com/items?itemName=Gxl.git-graph-3)
+
+⚠️ **Changed**
+
+- Rename `Qt: Open Widget Designer` to `Qt: Open Qt Widgets Designer`
+
+## 1.6.0 (Jul 2, 2025)
+
+The same as `1.5.1`
+
+## 1.5.1 (Apr 16, 2025)
+
+The same as `1.5.0`
+
+## 1.5.0 (Apr 14, 2025)
+
+The same as `1.3.1`
+
+## 1.3.1 (Mar 5, 2025)
+
+🐞 **Fixed**
+
+- Switching between `qt-ui.customWidgetsDesignerExePath` and kit paths [VSCODEEXT-141](https://bugreports.qt.io/browse/VSCODEEXT-141)
+
+## 1.3.0 (Jan 9, 2025)
+
+The same as `1.2.0`
+
+## 1.2.1 (Jan 17, 2025)
+
+The same as `1.2.0`
+
+## 1.2.0 (Jan 8, 2025)
+
+🎉 **Added**
+
+- Check also for `qmake.bat` in the Qt installation directory
+- Wait until `qt-cpp` is activated
+
+## 1.1.0 (Dec 4, 2024)
+
+🎉 **Added**
+
+- Tilde support for configuration paths
+- Telemetry for collecting usage data
+- vcpkg support
+
+## 1.0.0 (Sep 10, 2024)
+
+- 🎉 Our initial release 🎉
+- Updated `README.md`
+
+## 0.9.2 (Aug 28, 2024)
+
+- Split from the `qt-official` extension
+- Disabled the `ui` editor in the git diff editor
+- Added the `Open Qt Widgets Designer` command
+- Improved `Qt Widgets Designer` detection by using `QT_HOST_BINS`
+- Updated `ui` file icons and added light and dark themes icons
