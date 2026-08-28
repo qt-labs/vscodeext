@@ -1,6 +1,6 @@
 {
   "name": "qt-lib",
-  "version": "1.17.0",
+  "version": "1.19.0",
   "main": "out/index.js",
   "types": "out/index.d.ts",
   "files": [
