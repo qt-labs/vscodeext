@@ -64,4 +64,4 @@ navigation.toctitles.inclusive = false
 
 buildversion = "Qt Extension for VS Code"
 
-codelanguages = Shell Python CMake XML JSON
+codelanguages = Shell Python CMake XML JSON "C#"

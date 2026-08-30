@@ -1,0 +1,337 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-tutorials-qt-csharp.html
+    \previouspage vscodeext-tutorials.html
+    \nextpage vscodeext-how-tos.html
+
+    \ingroup vscodeext-tutorials
+
+    \title Tutorial: Qt Bridge for C#
+
+    \brief Create a Qt Bridge for C# project with a project wizard that uses
+    Qt Quick Controls.
+
+    This tutorial illustrates how to build fluid animated user interfaces in QML
+    with \l{Qt Quick}, while keeping application logic, models, and domain code
+    in C#.
+
+    The Qt Quick module provides all the basic types necessary for creating user
+    interfaces with QML. It provides a visual canvas and includes types for
+    creating and animating visual components, receiving user input, and so on.
+
+    This tutorial describes the example application that the
+    \uicontrol {New project} wizard generates. It imports QML types from the
+    Qt Quick, \l{Qt Quick Controls}, and \l{Qt Quick Layouts} modules. It
+    also creates a C# entry point and .NET project file for building and running
+    the application the .NET way.
+
+    \image {vscodeext-tutorial-quick-csharp.webp} {Qt Quick C# application}
+
+    For more examples of creating Qt for C# applications, see
+    \l{Qt Bridge for C#}.
+
+    \section1 Before you start
+
+    Before you start, you have to:
+
+    \list
+        \li \l {Installation}{Install \QVSC}
+        \li \l {Register Qt installations}
+    \endlist
+
+    \section1 Create a Qt Quick C# application project
+
+    To create a Qt Quick application with C# code in Visual Studio Code:
+
+    \list 1
+        \li Go to \uicontrol {Welcome}, and then select \uicontrol {New project}.
+        \li In \uicontrol {Project}, select
+            \uicontrol {Qt Quick application (Qt for C#)}.
+            \image {vscodeext-create-new-project-quick-csharp.webp} {A Qt Quick C# application in the New item view}
+        \li In \uicontrol {Name}, enter the project name.
+        \li In \uicontrol {Create in}, enter the path for the project files.
+        \li Select \c {Sample code} to add a small \c {Counter} C# class that QML
+            can see, and to extend \c {Main.qml} with a labeled button. Use it to
+            explore how a C# object and a QML type connect. Remove the class once
+            you start building your own UI.
+        \li Select \uicontrol {Open in new window} to create the project files
+            and open them in a new VS Code window.
+    \endlist
+
+    You now have a small working Qt Quick application with Qt for C# code.
+
+    The wizard creates the following files:
+
+    \list
+        \li \c {MyQtApp.csproj}, which is a regular .NET project file. It
+            references the Qt Bridge for C# package for your platform and
+            includes \c {Program.cs} and \c {Main.qml} as project items.
+            You build and run it the same way you would any other .NET project,
+            with \c {dotnet build} and \c {dotnet run} or from your editor.
+        \li \c {Program.cs}, which is the C# entry point. It loads the QML code
+            and keeps the application running until the QML window closes.
+        \li \c {Main.qml}, which is the first QML file the application loads. It
+            describes the window and the UI that appear when the application
+            starts.
+    \endlist
+
+    \section1 Run the application
+
+    The main view of the application shows an application window with background
+    color, text, and a button. Selecting the button updates a counter for the
+    number of times the button was clicked.
+
+    To build and run the application, enter the following command in
+    \uicontrol Terminal:
+
+    \code [text]
+    dotnet run
+    \endcode
+
+    \note After you build the application once, the code completion offers more
+    complete suggestions for C# classes.
+
+    \note To preview a QML file without building the application, select
+    \inlineimage {preview-file.png} {Preview current QML file live} on
+    the editor toolbar
+
+    \section1 Inspect the QML code
+
+    Open \c Main.qml to inspect the generated QML code.
+
+    \section2 QML imports
+
+    The file has import statements for the Qt modules that contain the QML
+    types used in the application:
+
+    \code [text]
+    import QtQuick
+    import QtQuick.Controls
+    import QtQuick.Layouts
+    \endcode
+
+    \section2 Main window
+
+    The file contains an instance of the \l{ApplicationWindow} QML type, which
+    creates a main window. The window properties set an ID, initial and minimum
+    size, background color, and a window title. Also, they determine that the
+    window is visible on the screen.
+
+    \code [text]
+    ApplicationWindow {
+        id: win
+        visible: true
+        title: "Qt Bridge for C#"
+        width: 365; height: 510
+        color: "#121212"
+    \endcode
+
+    \section2 Qt Quick Layouts
+
+    The window contains an instance of the \l {ColumnLayout} QML type from the
+    Qt Quick Layouts module, which positions the window contents in a column.
+
+    \code [text]
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 20
+    \endcode
+
+    \section2 Qt Quick Controls
+
+    The Qt Quick Controls module provides a set of controls for building complete
+    user interfaces in Qt Quick. The application contains instaces of Label and
+    Button controls.
+
+    \section3 Label
+
+    The \l [QML] {Label} properties set the heading text, as well as its color
+    and its size in pixels. Also, they center the label text horizontally and
+    vertically within the element's width and height.
+
+    The Layout properties make the label fit the column cell with 24 pixel
+    margins and 20 pixel spacing.
+
+    \code [text]
+            Label {
+                text: "Hello, World!"
+                font.pixelSize: 40
+                color: "white"
+                horizontalAlignment: Text.AlignHCenter
+                Layout.alignment: Qt.AlignHCenter
+            }
+    \endcode
+
+    \section3 Button
+
+    The \l [QtQuickControls] {Button} \c text property sets the button text
+    and adds a counter for the button clicks.
+
+    The Layout properties make the button fit the column cell with 24 pixel
+    margins and 20 pixel spacing. They set the preferred button height at 48
+    pixels.
+
+    The font property sets the text size to 16 pixels.
+
+    \code [text]
+        Button {
+            id: counterBtn
+            text: Counter.clicks === 0 ? "Click me" : "Clicked " + Counter.clicks + " times"
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: 48
+            font.pixelSize: 16
+
+            hoverEnabled: false
+            focusPolicy: Qt.NoFocus
+        ...
+        }
+    \endcode
+
+    The custom \c color property sets the button color to Qt green.
+
+    The \c {background} item holds an instance of the \l [QML] {Rectangle} type.
+    The rectangle properties make the button corners round and set the button
+    background color to a darker shade of Qt green when it is clicked.
+
+    \code [text]
+            ...
+            readonly property color brandGreen: "#41cd52"
+
+            background: Rectangle {
+                radius: 12
+                border.width: 0
+                color: counterBtn.down
+                    ? Qt.darker(counterBtn.brandGreen, 1.2)
+                    : counterBtn.brandGreen
+            }
+    \endcode
+
+    The \l [QML] {Text} properties bind the button text, as well as its color and
+    font to the window mode.
+
+    \code [text]
+            contentItem: Text {
+                text: counterBtn.text
+                color: "white"
+                font: counterBtn.font
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+
+            onClicked: Counter.clicks += 1
+        }
+    \endcode
+
+    \section1 Inspect the C# entry point code
+
+    Open the \c {Program.cs} file to inspect the generated C# code.
+
+    The wizard adds the \c {CounterService} class, exposes it to QML, and
+    references it from \c {Main.qml}.
+
+    \code [C#]
+    using Qt.MetaObject;
+    using Qt.Quick;
+
+    using System.ComponentModel;
+    using System.Runtime.CompilerServices;
+
+    namespace MyQtApp;
+
+    [QObject]
+    [QmlElement(Name = "Counter", Singleton = true)]
+    public class CounterService : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private int _clicks = 0;
+        public int Clicks
+        {
+            get => _clicks;
+            set
+            {
+                if (_clicks == value)
+                    return;
+                _clicks = value;
+                OnPropertyChanged();
+            }
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+    \endcode
+
+    The \c {Program} class loads the the QML code and keeps the application
+    running until the QML window closes.
+
+    \c {Qml.LoadFromRootModule("Main")} loads \c {Main.qml} as the application's
+    root QML file and creates the window it describes.
+
+    \c {Qml.WaitForExit()} blocks \c {Main} until the QML side shuts down, so the
+    process stays alive while the UI runs.
+
+    \code [C#]
+    public class Program
+    {
+        internal static void Main(string[] args)
+        {
+            Qml.LoadFromRootModule("Main");
+            Qml.WaitForExit();
+        }
+    }
+    \endcode
+
+    Usually, you do not need to change either call for a project.
+
+    \section1 Inspect the .NET project file
+
+    Open the \c {MyQtApp.csproj} file to inspect the .NET project file. It
+    references the Qt Bridge for C# package for your platform and includes
+    \c {Program.cs} and \c {Main.qml} as project items.
+
+    \code [text]
+    <Project Sdk="Microsoft.NET.Sdk">
+
+      <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <QtBridgePackagePrefix>QtGroup.Qt.Bridge.CSharp</QtBridgePackagePrefix>
+        <QtBridgeTemplateArch Condition="'$(QtBridgeTemplateArch)' == ''"
+          >$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</QtBridgeTemplateArch>
+        <QtBridgeTemplateArch Condition="'$(QtBridgeTemplateArch)' == 'X64'">x64</QtBridgeTemplateArch>
+        <QtBridgeTemplateArch Condition="'$(QtBridgeTemplateArch)' == 'Arm64'">arm64</QtBridgeTemplateArch>
+        <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and '$(RuntimeIdentifier)' != ''"
+          >$(RuntimeIdentifier)</QtBridgeTemplateRid>
+        <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and $([MSBuild]::IsOSPlatform('Windows'))"
+          >win-x64</QtBridgeTemplateRid>
+        <QtBridgeTemplateRid Condition="'$(QtBridgeTemplateRid)' == '' and $([MSBuild]::IsOSPlatform('Linux'))"
+          >linux-$(QtBridgeTemplateArch)</QtBridgeTemplateRid>
+        <QtBridgePackageId>$(QtBridgePackagePrefix).$(QtBridgeTemplateRid)</QtBridgePackageId>
+      </PropertyGroup>
+
+      <ItemGroup Condition="'$(QtBridgeTemplateRid)' == 'win-x64' or '$(QtBridgeTemplateRid)' == 'linux-x64'">
+        <PackageReference Include="$(QtBridgePackageId)" Version="0.3.*-*" />
+      </ItemGroup>
+
+      <Target Name="EnsureSupportedQtBridgePlatform" BeforeTargets="Restore;Build"
+              Condition="'$(QtBridgeTemplateRid)' != 'win-x64' and '$(QtBridgeTemplateRid)' != 'linux-x64'">
+        <Error Text="Qt Bridge for C# currently supports win-x64 and linux-x64 only. Selected RID: '$(QtBridgeTemplateRid)'." />
+      </Target>
+
+      <ItemGroup>
+        <None Include="Main.qml"/>
+        <Compile Include="Program.cs" />
+      </ItemGroup>
+
+    </Project>
+    \endcode
+*/

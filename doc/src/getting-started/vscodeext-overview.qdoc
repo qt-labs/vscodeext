@@ -31,6 +31,19 @@
         \li Read \l {Qt Documentation}
     \endlist
 
+    \section1 C# development
+
+    With the Qt C# extension pack, you can develop C# applications with
+    VS Code and \l {Qt Bridge for C#}:
+
+    \list
+        \li Create C# applications with Qt Quick based UIs
+        \li Build, run, and debug Qt projects with .NET
+        \li Get QML syntax highlighting and code completion with
+            \l {\QMLLS}
+        \li Live preview QML applications
+    \endlist
+
     \section1 Qt Quick development
 
     With the Qt QML extension, you can:
@@ -40,6 +53,7 @@
         \li Get QML syntax highlighting and code completion with
             \l {\QMLLS}
         \li Verify the syntax of QML code with \l{qmllint Reference}{qmllint}
+        \li Live preview QML applications
         \li Find causes for typical performance problems in Qt Quick applications
             with QML Profiler
     \endlist
