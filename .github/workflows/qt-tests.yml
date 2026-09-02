@@ -58,6 +58,8 @@ jobs:
       DBUS_SESSION_BUS_ADDRESS: "disabled:"
       NO_AT_BRIDGE: "1"
       TEST_SUITE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_suite || 'all' }}
+      QT_SUPPRESS_TELEMETRY: "1"
+      QT_LOG_SUPPRESSED_TELEMETRY: "1"
 
     steps:
       # Check out your branch code into the runner
