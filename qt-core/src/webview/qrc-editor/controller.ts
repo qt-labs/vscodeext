@@ -193,7 +193,7 @@ export class QrcEditorController {
       return;
     }
 
-   this.channel.replyDone(cmd);
+    this.channel.replyDone(cmd);
   };
 
   private readonly _onRunClipboardAction = async (cmd: Command) => {

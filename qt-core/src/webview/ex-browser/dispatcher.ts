@@ -44,11 +44,11 @@ export class ExBrowserDispatcher extends WebviewDispatcher {
       [CommandId.ExBrowserSelectPackage, this._onSelectPackage],
       [CommandId.ExBrowserResolveImageUrl, this._onResolveImageUrl],
       [CommandId.ExBrowserRunActionOnExample, this._onRunActionOnExample],
-      [CommandId.CommonOpenFolder, this._onOpenFolder],
-      [CommandId.UiSelectWorkingDir, this._onSelectWorkingDir],
-      [CommandId.UiValidateInputs, this._onUiValidateInputs],
-      [CommandId.UiGetConfigs, this._onUiGetConfigs],
-      [CommandId.UiSaveOpenInPreference, this._onUiSaveOpenInPreference]
+      [CommandId.ExBrowserSelectWorkingDir, this._onSelectWorkingDir],
+      [CommandId.ExBrowserValidateInputs, this._onValidateInputs],
+      [CommandId.ExBrowserGetConfigs, this._onGetConfigs],
+      [CommandId.ExBrowserSaveOpenInPreference, this._onSaveOpenInPreference],
+      [CommandId.CommonRevealFolder, this._onRevealFolder]
     ]);
 
     this._qtcliRest = new QtcliRestClient(qtcliSocketName);
@@ -173,15 +173,6 @@ export class ExBrowserDispatcher extends WebviewDispatcher {
     this.channel.replyDone(cmd);
   };
 
-  private readonly _onOpenFolder = (cmd: Command) => {
-    const folder = String(_.get(cmd.payload, 'folder', '')).trim();
-    if (folder) {
-      void fsDir(folder).revealInFileManager();
-    }
-
-    this.channel.replyDone(cmd);
-  };
-
   private readonly _onSelectWorkingDir = async (cmd: Command) => {
     const dir = cmd.payload?.toString() ?? getNewProjectBaseDir();
     const options: vscode.OpenDialogOptions = {
@@ -201,7 +192,7 @@ export class ExBrowserDispatcher extends WebviewDispatcher {
     }
   };
 
-  private readonly _onUiValidateInputs = async (cmd: Command) => {
+  private readonly _onValidateInputs = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.post('/items/validate', cmd.payload);
       this.channel.replyData(cmd, data);
@@ -212,15 +203,24 @@ export class ExBrowserDispatcher extends WebviewDispatcher {
     }
   };
 
-  private readonly _onUiGetConfigs = (cmd: Command) => {
+  private readonly _onGetConfigs = (cmd: Command) => {
     this.channel.replyData(cmd, this._viewConfig);
   };
 
-  private readonly _onUiSaveOpenInPreference = async (cmd: Command) => {
+  private readonly _onSaveOpenInPreference = async (cmd: Command) => {
     await helpers.saveOpenInArg(
       String(cmd.payload) as 'addToWorkspace' | 'newWindow',
       this._extensionContext
     );
+
+    this.channel.replyDone(cmd);
+  };
+
+  private readonly _onRevealFolder = (cmd: Command) => {
+    const folder = String(_.get(cmd.payload, 'folder', '')).trim();
+    if (folder) {
+      void fsDir(folder).revealInFileManager();
+    }
 
     this.channel.replyDone(cmd);
   };
