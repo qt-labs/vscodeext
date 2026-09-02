@@ -4,66 +4,24 @@
 import _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
-import { WebviewChannel } from '@/webview/channel';
 import { DataType } from '@/webview/shared/welcome';
-import {
-  Command,
-  CommandId,
-  CommandHandler,
-  IsCommand
-} from '@/webview/shared/message';
+import { WebviewDispatcher } from '@/webview/dispatcher';
+import { Command, CommandId } from '@/webview/shared/message';
 import { WelcomePageDataManager } from './data-manager';
 import { isWalkthroughAvailable } from './walkthrough';
 import * as consts from './constants';
 
-const logger = createLogger('tutorial-dispatcher');
-
-export class WelcomePageDispatcher {
-  private readonly _comm: WebviewChannel;
-  private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
-  private readonly _disposables: vscode.Disposable[] = [];
-
+export class WelcomePageDispatcher extends WebviewDispatcher {
   public constructor(
     private readonly _data: WelcomePageDataManager,
     panel: vscode.WebviewPanel
   ) {
-    this._comm = new WebviewChannel(panel.webview);
-    this._handlers = new Map<CommandId, CommandHandler>([
+    super('welcome', panel);
+    this.setHandlers([
       [CommandId.WelcomeGetData, this._onGetData],
       [CommandId.WelcomeHandleConfig, this._onHandleConfig],
       [CommandId.WelcomeRunAction, this._onRunAction]
     ]);
-
-    this._disposables = [
-      this._comm,
-      this._comm.onDidReceiveMessage((m) => {
-        void this.dispatch(m);
-      })
-    ];
-  }
-
-  public dispose() {
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
-  }
-
-  public async dispatch(cmd: unknown) {
-    if (!IsCommand(cmd)) {
-      return;
-    }
-
-    const handler = this._handlers?.get(cmd.id);
-    if (!handler) {
-      logger.warn(`unhandled command: id = ${CommandId[cmd.id]}`);
-      return;
-    }
-
-    try {
-      await handler(cmd);
-    } catch (e) {
-      logger.error(`Cannot handle command '${String(cmd.id)}': ${String(e)}`);
-    }
   }
 
   private readonly _onGetData = async (cmd: Command) => {
@@ -71,7 +29,7 @@ export class WelcomePageDispatcher {
     await this._data.ensureBlogLoaded();
     await this._data.ensureVideoLoaded();
 
-    this._comm.postDataReply(cmd, {
+    this.channel.replyData(cmd, {
       extInfo: this._data.extInfo,
       blogArticles: this._data.blogArticles,
       videoEntries: this._data.videoEntries,
@@ -90,11 +48,11 @@ export class WelcomePageDispatcher {
     if (access === 'set') {
       const v = _.get(cmd.payload, 'showOnActivation', true);
       await config.update(key, v, vscode.ConfigurationTarget.Global);
-      this._comm.postDataReply(cmd, { status: 'done' });
+      this.channel.replyDone(cmd);
     }
 
     if (access === 'get') {
-      this._comm.postDataReply(cmd, {
+      this.channel.replyData(cmd, {
         showOnActivation: config.get<boolean>(key) ?? true
       });
     }
@@ -165,7 +123,7 @@ export class WelcomePageDispatcher {
         return;
     }
 
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this.channel.replyDone(cmd);
   };
 }
 

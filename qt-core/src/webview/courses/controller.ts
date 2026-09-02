@@ -4,13 +4,7 @@
 import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
-import {
-  WebviewAppConfig,
-  createWebviewHtml,
-  createWebviewOptions,
-  basicWebviewAppConfig,
-  createWebviewPanelIcons
-} from '@/webview/utils';
+import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
 import * as texts from '@/texts';
 import { CoursesDispatcher } from './dispatcher';
 import { CoursesDataManager } from './data-manager';
@@ -38,16 +32,12 @@ export class CoursesController {
   private readonly _disposables: vscode.Disposable[] = [];
 
   private constructor(context: Context, panel: Panel) {
-    const config: WebviewAppConfig = {
-      app: 'courses',
+    configWebviewPanel(panel, {
+      appId: 'courses',
       title: texts.Courses.tabText,
       context,
       ...basicWebviewAppConfig
-    };
-
-    panel.iconPath = createWebviewPanelIcons(context);
-    panel.webview.html = createWebviewHtml(panel.webview, config);
-    panel.webview.options = createWebviewOptions(config);
+    });
 
     this._panel = panel;
     this._data = new CoursesDataManager();

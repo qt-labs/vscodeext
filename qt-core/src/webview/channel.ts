@@ -35,32 +35,36 @@ export class WebviewChannel {
     return this._onDidReceiveMessage.event;
   }
 
-  public post(
-    id: CommandId,
-    payload: unknown,
-    tag: string | undefined = undefined
-  ) {
-    void this._view.postMessage({ id, payload, tag });
+  public notify(id: CommandId, payload: unknown) {
+    this._post(id, payload);
   }
 
-  public postDataReply(cmd: Command, data: unknown) {
-    this.post(cmd.id, { data }, cmd.tag);
+  public replyData(cmd: Command, data: unknown) {
+    this._post(cmd.id, { data }, cmd.tag);
   }
 
-  public postStatusReply(cmd: Command, status: string) {
-    this.post(cmd.id, { status }, cmd.tag);
+  public replyError(cmd: Command, error: unknown) {
+    this._post(cmd.id, { error }, cmd.tag);
   }
 
-  public postErrorReply(cmd: Command, error: unknown) {
-    this.post(cmd.id, { error }, cmd.tag);
+  public replyDone(cmd: Command) {
+    this._post(cmd.id, { data: { status: 'done' }}, cmd.tag);
   }
 
-  public postErrorReplyFrom(cmd: Command, msg: string, details: Issue[]) {
+  public replyErrorFrom(cmd: Command, msg: string, details: Issue[]) {
     const e: ErrorResponse = {
       error: msg,
       details
     };
 
-    this.postErrorReply(cmd, e);
+    this._post(cmd.id, { error: e }, cmd.tag);
+  }
+
+  private _post(
+    id: CommandId,
+    payload: unknown,
+    tag: string | undefined = undefined
+  ) {
+    void this._view.postMessage({ id, payload, tag });
   }
 }
