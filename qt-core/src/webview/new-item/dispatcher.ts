@@ -11,24 +11,23 @@ import { QtcliRestClient, QtcliRestError } from '@/qtcli/rest';
 import { openFilesUnder, openUri } from '@/qtcli/common';
 import { getNewProjectBaseDir, setDefaultProjectDir } from '@/qtcli/commands';
 import { generateProjectConfigs } from '@/project-config-generator';
-import { WebviewChannel } from '@/webview/channel';
-import { Command, CommandId, IsCommand } from '@/webview/shared/message';
+import { WebviewDispatcher } from '@/webview/dispatcher';
+import { Command, CommandId } from '@/webview/shared/message';
 import { GlobalStateManager } from '@/state';
-import type { NewItemPanel } from './panel';
 
 const logger = createLogger('new-item-handler');
-type CommandHandler = (command: Command) => void | Promise<void>;
 
-export class NewItemDispatcher {
+export class NewItemDispatcher extends WebviewDispatcher {
   private readonly _qtcliRest: QtcliRestClient;
-  private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
-  private _comm: WebviewChannel | undefined;
-  private _panel: NewItemPanel | undefined = undefined;
   private _uiConfigs: unknown = {};
-  private _context: vscode.ExtensionContext | undefined;
 
-  public constructor(qtcliSocketName: string) {
-    this._handlers = new Map<CommandId, CommandHandler>([
+  public constructor(
+    qtcliSocketName: string,
+    panel: vscode.WebviewPanel,
+    private readonly _extensionContext: vscode.ExtensionContext
+  ) {
+    super('new-item', panel);
+    this.setHandlers([
       [CommandId.UiClosed, this.onUiClosed],
       [CommandId.UiItemCreationRequested, this.onUiItemCreationRequested],
       [CommandId.UiHasError, this.onUiHasError],
@@ -45,48 +44,17 @@ export class NewItemDispatcher {
     this._qtcliRest = new QtcliRestClient(qtcliSocketName);
   }
 
-  public dispose() {
+  public override dispose() {
     this._qtcliRest.dispose();
-  }
-
-  public setPanel(p: NewItemPanel) {
-    this._panel = p;
-  }
-
-  public setComm(c: WebviewChannel) {
-    this._comm = c;
+    super.dispose();
   }
 
   public setUiConfigs(c: unknown) {
     this._uiConfigs = c;
   }
 
-  public setContext(context: vscode.ExtensionContext) {
-    this._context = context;
-  }
-
-  public async dispatch(cmd: unknown) {
-    if (!this._panel || !IsCommand(cmd)) {
-      return;
-    }
-
-    const handler = this._handlers?.get(cmd.id);
-    if (!handler) {
-      logger.warn(`unhandled command: id = ${String(cmd.id)}`);
-      return;
-    }
-
-    try {
-      await handler(cmd);
-    } catch (e) {
-      logger.error(
-        `Error while handling command '${String(cmd.id)}': ${String(e)}`
-      );
-    }
-  }
-
   private readonly onUiClosed = () => {
-    this._panel?.close();
+    this.context.panel.dispose();
   };
 
   private readonly onUiItemCreationRequested = async (cmd: Command) => {
@@ -111,8 +79,8 @@ export class NewItemDispatcher {
       }
 
       // Save the openIn preference for projects
-      if (type === 'project' && this._context) {
-        const globalState = new GlobalStateManager(this._context);
+      if (type === 'project') {
+        const globalState = new GlobalStateManager(this._extensionContext);
         await globalState.setNewProjectOpenIn(openIn);
       }
 
@@ -121,7 +89,7 @@ export class NewItemDispatcher {
         template: String(_.get(cmd.payload, 'template', '')).trim()
       });
 
-      this._panel?.close();
+      this.context.panel.dispose();
     } catch (e) {
       if (e instanceof QtcliRestError) {
         await vscode.window.showErrorMessage(e.toString());
@@ -141,25 +109,25 @@ export class NewItemDispatcher {
         method: 'get',
         url: '/ready'
       });
-      this._comm?.postDataReply(cmd, data);
+      this.channel.replyData(cmd, data);
     } catch {
       await vscode.window.showErrorMessage(texts.newItem.errorQtCliNotReady);
     }
   };
 
   private readonly onUiGetConfigs = (cmd: Command) => {
-    this._comm?.postDataReply(cmd, this._uiConfigs);
+    this.channel.replyData(cmd, this._uiConfigs);
   };
 
   private readonly onUiGetAllPresets = async (cmd: Command) => {
     const data = await this._qtcliRest.get('/presets', { type: cmd.payload });
-    this._comm?.postDataReply(cmd, data);
+    this.channel.replyData(cmd, data);
   };
 
   private readonly onUiGetPresetById = async (cmd: Command) => {
     const id = _.toString(cmd.payload);
     const data = await this._qtcliRest.get(`/presets/${id}`);
-    this._comm?.postDataReply(cmd, data);
+    this.channel.replyData(cmd, data);
   };
 
   private readonly onUiManageCustomPreset = async (cmd: Command) => {
@@ -173,33 +141,33 @@ export class NewItemDispatcher {
       switch (action) {
         case 'create': {
           const data = await this._qtcliRest.post('/presets', cmd.payload);
-          this._comm?.postDataReply(cmd, data);
+          this.channel.replyData(cmd, data);
           break;
         }
 
         case 'rename': {
           await this._qtcliRest.post('/presets', cmd.payload);
           await this._qtcliRest.delete(`/presets/${presetId}`);
-          this._comm?.postDataReply(cmd, cmd.payload);
+          this.channel.replyData(cmd, cmd.payload);
           break;
         }
 
         case 'update': {
           await this._qtcliRest.patch(`/presets/${presetId}`, cmd.payload);
-          this._comm?.postDataReply(cmd, cmd.payload);
+          this.channel.replyData(cmd, cmd.payload);
           break;
         }
 
         case 'delete': {
           const data = await this._qtcliRest.delete(`/presets/${presetId}`);
-          this._comm?.postDataReply(cmd, data);
+          this.channel.replyData(cmd, data);
           break;
         }
       }
     } catch (e) {
       if (e instanceof QtcliRestError) {
         await vscode.window.showErrorMessage(e.toString());
-        this._comm?.postErrorReplyFrom(cmd, e.message, e.details);
+        this.channel.replyErrorFrom(cmd, e.message, e.details);
       }
     }
   };
@@ -207,10 +175,10 @@ export class NewItemDispatcher {
   private readonly onUiValidateInputs = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.post('/items/validate', cmd.payload);
-      this._comm?.postDataReply(cmd, data);
+      this.channel.replyData(cmd, data);
     } catch (e) {
       if (e instanceof QtcliRestError) {
-        this._comm?.postErrorReplyFrom(cmd, e.message, e.details);
+        this.channel.replyErrorFrom(cmd, e.message, e.details);
       }
     }
   };
@@ -228,16 +196,14 @@ export class NewItemDispatcher {
     const folderUri = await vscode.window.showOpenDialog(options);
     if (folderUri && folderUri.length > 0) {
       const folder = normalizeDriveLetter(folderUri[0]?.fsPath ?? '');
-      this._comm?.postDataReply(cmd, folder);
+      this.channel.replyData(cmd, folder);
     }
   };
 
   private readonly onUiSaveOpenInPreference = async (cmd: Command) => {
     const value = cmd.payload as 'addToWorkspace' | 'newWindow';
-    if (this._context) {
-      const globalState = new GlobalStateManager(this._context);
-      await globalState.setNewProjectOpenIn(value);
-    }
+    const globalState = new GlobalStateManager(this._extensionContext);
+    await globalState.setNewProjectOpenIn(value);
   };
 }
 

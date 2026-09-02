@@ -4,13 +4,7 @@
 import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
-import {
-  WebviewAppConfig,
-  createWebviewHtml,
-  createWebviewOptions,
-  basicWebviewAppConfig,
-  createWebviewPanelIcons
-} from '@/webview/utils';
+import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
 import * as texts from '@/texts';
 import { WelcomePageDispatcher as WelcomeScreenDispatcher } from './dispatcher';
 import { WelcomePageDataManager } from './data-manager';
@@ -75,19 +69,15 @@ export class WelcomePageController {
   private readonly _disposables: vscode.Disposable[] = [];
 
   private constructor(context: Context, panel: Panel) {
-    const config: WebviewAppConfig = {
-      app: 'welcome',
+    configWebviewPanel(panel, {
+      appId: 'welcome',
       title: texts.WelcomePage.tabText,
       context,
       additionalResourceRoots: [
         vscode.Uri.joinPath(context.extensionUri, 'res', 'icons')
       ],
       ...basicWebviewAppConfig
-    };
-
-    panel.iconPath = createWebviewPanelIcons(context);
-    panel.webview.html = createWebviewHtml(panel.webview, config);
-    panel.webview.options = createWebviewOptions(config);
+    });
 
     this._panel = panel;
     this._data = new WelcomePageDataManager(panel.webview, context);

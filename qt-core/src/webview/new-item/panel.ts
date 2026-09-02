@@ -5,15 +5,9 @@ import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
 import { getNewFileBaseDir, getNewProjectBaseDir } from '@/qtcli/commands';
-import { WebviewChannel } from '@/webview/channel';
 import { NewItemDispatcher } from './dispatcher';
 import * as texts from '@/texts';
-import {
-  createWebviewHtml,
-  createWebviewOptions,
-  basicWebviewAppConfig,
-  createWebviewPanelIcons
-} from '@/webview/utils';
+import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { GlobalStateManager } from '@/state';
@@ -35,7 +29,6 @@ export function registerCreateNewItemPanelCommand(
 }
 export class NewItemPanel {
   public static instance: NewItemPanel | undefined;
-  private readonly _comm: WebviewChannel;
   private readonly _panel: vscode.WebviewPanel;
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _dispatcher: NewItemDispatcher;
@@ -45,32 +38,16 @@ export class NewItemPanel {
     qtcliSocketName: string,
     context: vscode.ExtensionContext
   ) {
-    const config = {
-      app: 'new-item',
+    configWebviewPanel(panel, {
+      appId: 'new-item',
       title: texts.newItem.tabText,
       context,
       ...basicWebviewAppConfig
-    };
+    });
 
-    panel.iconPath = createWebviewPanelIcons(context);
-    panel.webview.html = createWebviewHtml(panel.webview, config);
-    panel.webview.options = createWebviewOptions(config);
-
-    this._comm = new WebviewChannel(panel.webview);
     this._panel = panel;
-
-    this._dispatcher = new NewItemDispatcher(qtcliSocketName);
-    this._dispatcher.setPanel(this);
-    this._dispatcher.setComm(this._comm);
-    this._dispatcher.setContext(context);
-
-    this._disposables = [
-      panel.onDidDispose(this.dispose.bind(this)),
-      this._comm,
-      this._comm.onDidReceiveMessage((m) => {
-        void this._dispatcher.dispatch(m);
-      })
-    ];
+    this._dispatcher = new NewItemDispatcher(qtcliSocketName, panel, context);
+    this._disposables = [panel.onDidDispose(this.dispose.bind(this))];
   }
 
   public dispose() {
@@ -83,10 +60,6 @@ export class NewItemPanel {
         item.dispose();
       }
     }
-  }
-
-  public close() {
-    this._panel.dispose();
   }
 
   public static async render(context: vscode.ExtensionContext) {

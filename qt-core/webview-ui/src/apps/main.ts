@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import { mount, type Component } from 'svelte';
+import { type AppId } from '@shared/types';
 
 type Loader = () => Promise<{ default: Component }>;
-const loaders: Record<string, Loader> = {
+const loaders: Record<AppId, Loader> = {
   'welcome': () => import('./welcome/WelcomeApp.svelte'),
   'courses': () => import('./courses/CoursesApp.svelte'),
   'new-item': () => import('./new-item/NewItemApp.svelte'),
@@ -14,11 +15,21 @@ const loaders: Record<string, Loader> = {
   'ui-designer': () => import('./ui-designer/UiDesignerApp.svelte')
 };
 
-const appType = document.body.dataset.app ?? '';
-const loader = loaders[appType] ?? loaders['new-item'];
+function main() {
+  const appId = document.body.dataset.appId ?? '';
+  const loader = loaders[appId as AppId];
+  const targetEl = document.getElementById('app')!;
 
-loader().then(({ default: App }) => {
-  mount(App, {
-    target: document.getElementById('app')!
+  if (!loader) {
+    const message = `Unknown appId: "${appId}"`;
+    console.error(message);
+    targetEl.innerHTML = `<p>${message}</p>`;
+    return;
+  }
+
+  loader().then(({ default: App }) => {
+    mount(App, { target: targetEl });
   });
-});
+}
+
+main();

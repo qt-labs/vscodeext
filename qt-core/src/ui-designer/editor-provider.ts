@@ -4,12 +4,7 @@
 import * as vscode from 'vscode';
 
 import { telemetry } from 'qt-lib';
-import {
-  createWebviewHtml,
-  createWebviewOptions,
-  basicWebviewAppConfig,
-  createWebviewPanelIcons
-} from '@/webview/utils';
+import { configWebviewPanel, basicWebviewAppConfig } from '@/webview/utils';
 import * as consts from './constants';
 import { UiFileEditorController } from './editor-controller';
 
@@ -41,16 +36,13 @@ class UiFileEditorProvider implements vscode.CustomTextEditorProvider {
     void token;
 
     // view
-    const config = {
-      app: 'ui-designer',
+    configWebviewPanel(panel, {
+      appId: 'ui-designer',
       title: 'UI file',
+      iconName: 'qt-ui',
       context: this._context,
       ...basicWebviewAppConfig
-    };
-
-    panel.iconPath = createWebviewPanelIcons(this._context, 'qt-ui');
-    panel.webview.html = createWebviewHtml(panel.webview, config);
-    panel.webview.options = createWebviewOptions(config);
+    });
 
     // doc
     await ensureDocumentNotEmpty(doc);
