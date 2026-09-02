@@ -9,6 +9,7 @@ import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
 import { CommandId, isErrorResponse } from '@shared/message';
 import { isPreset, isPresetArray } from './types.svelte';
 import { data, input, ui } from './states.svelte';
+import { isOpenInPreference } from '@shared/types';
 
 type ManageCustomPresetArgs =
   | { action: 'create'; name: string }
@@ -211,7 +212,7 @@ async function loadConfigsAndInitInputs() {
       // Load the saved openIn preference if it exists
       if ('openIn' in data.configs && data.configs.openIn) {
         const savedValue = data.configs.openIn;
-        if (savedValue === 'addToWorkspace' || savedValue === 'newWindow') {
+        if (isOpenInPreference(savedValue)) {
           input.states.openIn = savedValue;
         }
       }

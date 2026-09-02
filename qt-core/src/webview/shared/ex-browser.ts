@@ -1,6 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import { isOpenInPreference, OpenInPreference } from './types';
+
 // example
 export interface ExEntry {
   name: string;
@@ -164,7 +166,7 @@ export interface ExNewProjectArgs {
   name: string;
   workingDir: string;
   saveProjectDir: boolean;
-  openIn: 'addToWorkspace' | 'newWindow';
+  openIn: OpenInPreference;
 }
 
 export function isExNewProjectArgs(x: unknown): x is ExNewProjectArgs {
@@ -178,7 +180,7 @@ export function isExNewProjectArgs(x: unknown): x is ExNewProjectArgs {
     typeof o.workingDir === 'string' &&
     typeof o.saveProjectDir === 'boolean' &&
     typeof o.openIn === 'string' &&
-    (o.openIn === 'addToWorkspace' || o.openIn === 'newWindow')
+    isOpenInPreference(o.openIn)
   );
 }
 

@@ -22,6 +22,7 @@ import { fsDir, fsFile } from '@/fs-utils';
 import * as helpers from './helpers';
 import { ExDataManager } from './data-manager';
 import { ExImageUriResolver } from './resolvers';
+import { isOpenInPreference } from '../shared/types';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
@@ -208,10 +209,9 @@ export class ExBrowserDispatcher extends WebviewDispatcher {
   };
 
   private readonly _onSaveOpenInPreference = async (cmd: Command) => {
-    await helpers.saveOpenInArg(
-      String(cmd.payload) as 'addToWorkspace' | 'newWindow',
-      this._extensionContext
-    );
+    if (isOpenInPreference(cmd.payload)) {
+      await helpers.saveOpenInArg(cmd.payload, this._extensionContext);
+    }
 
     this.channel.replyDone(cmd);
   };
