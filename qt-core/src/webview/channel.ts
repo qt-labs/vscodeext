@@ -48,7 +48,7 @@ export class WebviewChannel {
   }
 
   public replyDone(cmd: Command) {
-    this._post(cmd.id, { data: { status: 'done' }}, cmd.tag);
+    this._post(cmd.id, { data: { status: 'done' } }, cmd.tag);
   }
 
   public replyErrorFrom(cmd: Command, msg: string, details: Issue[]) {

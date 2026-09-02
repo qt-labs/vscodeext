@@ -141,8 +141,8 @@ export async function runExAction(action: ExActionTypes, args: object = {}) {
   });
 }
 
-export async function openFolder(folder: string) {
-  await vscode.post(CommandId.CommonOpenFolder, { folder });
+export async function revealFolder(folder: string) {
+  await vscode.post(CommandId.CommonRevealFolder, { folder });
 }
 
 export async function resolveImageUrl(example: ExEntry) {
@@ -176,12 +176,12 @@ export async function onNewProjectFormEvent(
       break;
 
     case 'openInChanged':
-      await vscode.post(CommandId.UiSaveOpenInPreference, String(args));
+      await vscode.post(CommandId.ExBrowserSaveOpenInPreference, String(args));
       break;
 
     case 'browseClicked':
       void vscode
-        .post(CommandId.UiSelectWorkingDir, controller.states.workingDir, -1)
+        .post(CommandId.ExBrowserSelectWorkingDir, controller.states.workingDir, -1)
         .then((data) => {
           if (typeof data === 'string') {
             controller.states.workingDir = data;
@@ -212,7 +212,7 @@ export async function validateNewProjectForm() {
   };
 
   try {
-    await vscode.post(CommandId.UiValidateInputs, payload);
+    await vscode.post(CommandId.ExBrowserValidateInputs, payload);
     input.clearIssues();
   } catch (e) {
     input.applyValidationResult(isErrorResponse(e) ? e : undefined);
@@ -221,7 +221,7 @@ export async function validateNewProjectForm() {
 
 // helpers
 async function loadConfigs() {
-  const r = await vscode.post(CommandId.UiGetConfigs);
+  const r = await vscode.post(CommandId.ExBrowserGetConfigs);
   if (isExBrowserViewConfig(r)) {
     const all = r.newProject;
     const input = ui.sidebar.newProject.input;
