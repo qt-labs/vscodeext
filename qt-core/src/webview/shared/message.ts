@@ -100,7 +100,7 @@ export interface Issue {
 export type CommandHandler = (command: Command) => void | Promise<void>;
 
 // type guard functions
-export function IsCommand(x: unknown): x is Command {
+export function isCommand(x: unknown): x is Command {
   return (
     typeof x === 'object' &&
     x !== null &&

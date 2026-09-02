@@ -4,70 +4,28 @@
 import _ from 'lodash';
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
-import { WebviewChannel } from '@/webview/channel';
-import {
-  Command,
-  CommandId,
-  CommandHandler,
-  IsCommand
-} from '@/webview/shared/message';
 import { isCourseType } from '@/webview/shared/courses';
+import { WebviewDispatcher } from '@/webview/dispatcher';
+import { Command, CommandId } from '@/webview/shared/message';
 import { CoursesDataManager } from './data-manager';
 import * as consts from './constants';
 
-const logger = createLogger('course-dispatcher');
-
-export class CoursesDispatcher {
-  private readonly _comm: WebviewChannel;
-  private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
-  private readonly _disposables: vscode.Disposable[] = [];
-
+export class CoursesDispatcher extends WebviewDispatcher {
   public constructor(
     private readonly _data: CoursesDataManager,
     panel: vscode.WebviewPanel
   ) {
-    this._comm = new WebviewChannel(panel.webview);
-    this._handlers = new Map<CommandId, CommandHandler>([
+    super('courses', panel);
+    this.setHandlers([
       [CommandId.CoursesGetCourses, this._onGetCourses],
       [CommandId.CoursesRunAction, this._onRunAction]
     ]);
-
-    this._disposables = [
-      this._comm,
-      this._comm.onDidReceiveMessage((m) => {
-        void this.dispatch(m);
-      })
-    ];
-  }
-
-  public dispose() {
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
-  }
-
-  public async dispatch(cmd: unknown) {
-    if (!IsCommand(cmd)) {
-      return;
-    }
-
-    const handler = this._handlers?.get(cmd.id);
-    if (!handler) {
-      logger.warn(`unhandled command: id = ${CommandId[cmd.id]}`);
-      return;
-    }
-
-    try {
-      await handler(cmd);
-    } catch (e) {
-      logger.error(`Cannot handle command '${String(cmd.id)}': ${String(e)}`);
-    }
   }
 
   // handlers
   private readonly _onGetCourses = async (cmd: Command) => {
     await this._data.ensureLoaded();
-    this._comm.postDataReply(cmd, this._data.courses);
+    this.channel.replyData(cmd, this._data.courses);
   };
 
   private readonly _onRunAction = (cmd: Command) => {
@@ -86,13 +44,13 @@ export class CoursesDispatcher {
 
           const fullUri = vscode.Uri.joinPath(base, String(id));
           void vscode.env.openExternal(fullUri);
-          this._comm.postDataReply(cmd, { status: 'done' });
+          this.channel.replyDone(cmd);
         }
         break;
 
       case 'open-academy-home':
         void vscode.env.openExternal(vscode.Uri.parse(consts.QT_ACADEMY_URL));
-        this._comm.postDataReply(cmd, { status: 'done' });
+        this.channel.replyDone(cmd);
         break;
 
       default:

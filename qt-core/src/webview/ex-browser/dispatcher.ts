@@ -5,14 +5,9 @@ import _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger, normalizeDriveLetter } from 'qt-lib';
-import { WebviewChannel } from '@/webview/channel';
-import {
-  Command,
-  CommandId,
-  CommandHandler,
-  IsCommand
-} from '@/webview/shared/message';
+import { normalizeDriveLetter } from 'qt-lib';
+import { WebviewDispatcher } from '@/webview/dispatcher';
+import { Command, CommandId } from '@/webview/shared/message';
 import {
   isExEntry,
   isExPackage,
@@ -31,24 +26,19 @@ import { ExImageUriResolver } from './resolvers';
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
 
-const logger = createLogger('ex-browser-dispatcher');
-
-export class ExBrowserDispatcher {
-  private readonly _comm: WebviewChannel;
-  private readonly _handlers: Map<CommandId, CommandHandler> | undefined;
+export class ExBrowserDispatcher extends WebviewDispatcher {
   private readonly _qtcliRest: QtcliRestClient;
   private readonly _viewConfig: ExBrowserViewConfig;
   private readonly _imageUriResolver: ExImageUriResolver;
-  private readonly _disposables: vscode.Disposable[] = [];
 
   public constructor(
     private readonly _data: ExDataManager,
-    private readonly _context: Context,
+    private readonly _extensionContext: Context,
     panel: Panel,
     qtcliSocketName: string
   ) {
-    this._comm = new WebviewChannel(panel.webview);
-    this._handlers = new Map<CommandId, CommandHandler>([
+    super('ex-browser', panel);
+    this.setHandlers([
       [CommandId.ExBrowserGetPackages, this._onGetPackages],
       [CommandId.ExBrowserGetExamples, this._onGetExamples],
       [CommandId.ExBrowserSelectPackage, this._onSelectPackage],
@@ -62,48 +52,21 @@ export class ExBrowserDispatcher {
     ]);
 
     this._qtcliRest = new QtcliRestClient(qtcliSocketName);
-    this._viewConfig = helpers.createViewConfig(this._context);
+    this._viewConfig = helpers.createViewConfig(this._extensionContext);
     this._imageUriResolver = new ExImageUriResolver(
       panel.webview,
-      this._context
+      this._extensionContext
     );
-
-    this._disposables = [
-      this._comm,
-      this._comm.onDidReceiveMessage((m) => {
-        void this.dispatch(m);
-      })
-    ];
   }
 
-  public dispose() {
+  public override dispose() {
     void this._qtcliRest.delete('/server');
-
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
-  }
-
-  public async dispatch(cmd: unknown) {
-    if (!IsCommand(cmd)) {
-      return;
-    }
-
-    const handler = this._handlers?.get(cmd.id);
-    if (!handler) {
-      logger.warn(`unhandled command: id = ${CommandId[cmd.id]}`);
-      return;
-    }
-
-    try {
-      await handler(cmd);
-    } catch (e) {
-      logger.error(`Cannot handle command '${String(cmd.id)}': ${String(e)}`);
-    }
+    super.dispose();
   }
 
   // handlers
   private readonly _onGetPackages = (cmd: Command) => {
-    this._comm.postDataReply(cmd, this._data.packages);
+    this.channel.replyData(cmd, this._data.packages);
   };
 
   private readonly _onGetExamples = (cmd: Command) => {
@@ -114,7 +77,7 @@ export class ExBrowserDispatcher {
     }
 
     const r = this._data.search(category, query);
-    this._comm.postDataReply(cmd, r);
+    this.channel.replyData(cmd, r);
   };
 
   private readonly _onSelectPackage = async (cmd: Command) => {
@@ -124,7 +87,7 @@ export class ExBrowserDispatcher {
     }
 
     await this._data.selectPackage(p);
-    this._comm.postDataReply(cmd, {
+    this.channel.replyData(cmd, {
       info: p,
       categories: this._data.categories,
       resolvedPaths: this._data.resolvedPaths
@@ -146,7 +109,7 @@ export class ExBrowserDispatcher {
       .resolveWebUri(example, resolvedPaths)
       .toString();
 
-    this._comm.postDataReply(cmd, { webviewUrl });
+    this.channel.replyData(cmd, { webviewUrl });
   };
 
   private readonly _onRunActionOnExample = async (cmd: Command) => {
@@ -191,7 +154,7 @@ export class ExBrowserDispatcher {
             originalName,
             this._data.qtInstallation
           );
-          await helpers.saveNewProjectArgs(args, this._context);
+          await helpers.saveNewProjectArgs(args, this._extensionContext);
         }
       }
     }
@@ -207,7 +170,7 @@ export class ExBrowserDispatcher {
       }
     }
 
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this.channel.replyDone(cmd);
   };
 
   private readonly _onOpenFolder = (cmd: Command) => {
@@ -216,7 +179,7 @@ export class ExBrowserDispatcher {
       void fsDir(folder).revealInFileManager();
     }
 
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this.channel.replyDone(cmd);
   };
 
   private readonly _onSelectWorkingDir = async (cmd: Command) => {
@@ -231,7 +194,7 @@ export class ExBrowserDispatcher {
 
     const folderUri = await vscode.window.showOpenDialog(options);
     if (folderUri && folderUri.length > 0) {
-      this._comm.postDataReply(
+      this.channel.replyData(
         cmd,
         normalizeDriveLetter(folderUri[0]?.fsPath ?? '')
       );
@@ -241,24 +204,24 @@ export class ExBrowserDispatcher {
   private readonly _onUiValidateInputs = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.post('/items/validate', cmd.payload);
-      this._comm.postDataReply(cmd, data);
+      this.channel.replyData(cmd, data);
     } catch (e) {
       if (e instanceof QtcliRestError) {
-        this._comm.postErrorReplyFrom(cmd, e.message, e.details);
+        this.channel.replyErrorFrom(cmd, e.message, e.details);
       }
     }
   };
 
   private readonly _onUiGetConfigs = (cmd: Command) => {
-    this._comm.postDataReply(cmd, this._viewConfig);
+    this.channel.replyData(cmd, this._viewConfig);
   };
 
   private readonly _onUiSaveOpenInPreference = async (cmd: Command) => {
     await helpers.saveOpenInArg(
       String(cmd.payload) as 'addToWorkspace' | 'newWindow',
-      this._context
+      this._extensionContext
     );
 
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this.channel.replyDone(cmd);
   };
 }
