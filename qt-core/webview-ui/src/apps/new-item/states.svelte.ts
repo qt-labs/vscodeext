@@ -1,6 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import { OpenInDefault } from '@shared/types';
 import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
 import { type Preset, PresetWrapper } from './types.svelte';
 
@@ -9,7 +10,7 @@ export const data = $state({
   configs: {
     newFileBaseDir: '',
     newProjectBaseDir: '',
-    openIn: 'addToWorkspace' as 'addToWorkspace' | 'newWindow'
+    openIn: OpenInDefault
   },
   presets: [] as Preset[],
   selected: {

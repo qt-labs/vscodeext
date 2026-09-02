@@ -8,6 +8,7 @@ import {
   AdditionalQtPathsName,
   QtAdditionalPath
 } from 'qt-lib';
+import { OpenInPreference } from './webview/shared/types';
 
 export class WorkspaceStateManager extends BaseWorkspaceStateManager {
   public getQtInstallationRoot(): string {
@@ -42,15 +43,10 @@ export class GlobalStateManager extends BaseGlobalStateManager {
     return this._update(AdditionalQtPathsName, paths);
   }
 
-  public getNewProjectOpenIn(): 'addToWorkspace' | 'newWindow' {
-    return this._get<'addToWorkspace' | 'newWindow'>(
-      'newProjectOpenIn',
-      'newWindow'
-    );
+  public getNewProjectOpenIn(): OpenInPreference {
+    return this._get<OpenInPreference>('newProjectOpenIn', 'newWindow');
   }
-  public setNewProjectOpenIn(
-    value: 'addToWorkspace' | 'newWindow'
-  ): Thenable<void> {
+  public setNewProjectOpenIn(value: OpenInPreference): Thenable<void> {
     return this._update('newProjectOpenIn', value);
   }
 

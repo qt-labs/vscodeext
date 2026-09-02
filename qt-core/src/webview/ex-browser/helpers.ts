@@ -31,6 +31,7 @@ import {
 } from '@/webview/shared/ex-browser';
 import { fsDir } from '@/fs-utils';
 import { generateProjectConfigs } from '@/project-config-generator';
+import { OpenInPreference } from '../shared/types';
 
 type Context = vscode.ExtensionContext;
 
@@ -114,12 +115,9 @@ export async function saveNewProjectArgs(args: ExNewProjectArgs, c: Context) {
   await saveOpenInArg(args.openIn, c);
 }
 
-export async function saveOpenInArg(
-  value: 'addToWorkspace' | 'newWindow',
-  c: Context
-) {
+export async function saveOpenInArg(pref: OpenInPreference, c: Context) {
   const globalState = new GlobalStateManager(c);
-  await globalState.setNewProjectOpenIn(value);
+  await globalState.setNewProjectOpenIn(pref);
 }
 
 export function fallbackImageDir(c: Context) {

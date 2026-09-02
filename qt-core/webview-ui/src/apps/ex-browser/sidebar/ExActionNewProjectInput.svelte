@@ -8,13 +8,14 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { Check } from '@lucide/svelte';
 
   import { icons, glyphs } from '@/symbols';
+  import { type OpenInPreference } from '@shared/types';
   import { clickOutside, portal, placeNear } from '@/utils/actions';
   import { exBrowser } from '@/apps/texts';
 
   import { ui } from '../states.svelte';
   import ExCheckBox from '../others/ExCheckBox.svelte';
   import ExValidationInput from '../others/ExValidationInput.svelte';
-    import ExSeparator from '../others/ExSeparator.svelte';
+  import ExSeparator from '../others/ExSeparator.svelte';
 
   let compNameInput: ExValidationInput;
   const controller = $derived(ui.sidebar.newProject.input);
@@ -137,7 +138,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   </div>
 {/snippet}
 
-{#snippet createMenuItem(text: string, openIn: 'newWindow' | 'addToWorkspace')}
+{#snippet createMenuItem(text: string, openIn: OpenInPreference)}
   <button
     data-role="menu-item"
     class="flex flex-row items-center"

@@ -9,3 +9,10 @@ export type AppId =
   | 'qrc-editor'
   | 'ex-browser'
   | 'ui-designer';
+
+export type OpenInPreference = 'newWindow' | 'addToWorkspace';
+export const OpenInDefault: OpenInPreference = 'addToWorkspace';
+
+export function isOpenInPreference(v: unknown): v is OpenInPreference {
+  return v === 'newWindow' || v === 'addToWorkspace';
+}
