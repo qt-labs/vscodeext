@@ -14,6 +14,7 @@ import { generateProjectConfigs } from '@/project-config-generator';
 import { WebviewDispatcher } from '@/webview/dispatcher';
 import { Command, CommandId } from '@/webview/shared/message';
 import { GlobalStateManager } from '@/state';
+import { OpenInDefault, OpenInPreference } from '../shared/types';
 
 const logger = createLogger('new-item-handler');
 
@@ -65,10 +66,8 @@ export class NewItemDispatcher extends WebviewDispatcher {
         data: cmd.payload
       });
 
-      const openIn = _.get(cmd.payload, 'openIn', 'addToWorkspace') as
-        | 'addToWorkspace'
-        | 'newWindow';
-      openItemsFromQtcliResponseData(data, openIn);
+      const openIn = _.get(cmd.payload, 'openIn', OpenInDefault);
+      openItemsFromQtcliResponse(data, openIn);
 
       const type = _.get(cmd.payload, 'type', '') as string;
       const save = _.get(cmd.payload, 'saveProjectDir', false) as boolean;
@@ -201,17 +200,14 @@ export class NewItemDispatcher extends WebviewDispatcher {
   };
 
   private readonly onSaveOpenInPreference = async (cmd: Command) => {
-    const value = cmd.payload as 'addToWorkspace' | 'newWindow';
+    const value = cmd.payload as OpenInPreference;
     const globalState = new GlobalStateManager(this._extensionContext);
     await globalState.setNewProjectOpenIn(value);
   };
 }
 
 // helpers
-function openItemsFromQtcliResponseData(
-  data: unknown,
-  openIn = 'addToWorkspace'
-) {
+function openItemsFromQtcliResponse(data: unknown, openIn = OpenInDefault) {
   const type = _.get(data, 'type', '') as string;
   const files = _.get(data, 'files', []) as string[];
   const filesDir = _.get(data, 'filesDir', '') as string;
