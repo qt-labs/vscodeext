@@ -28,17 +28,17 @@ export class NewItemDispatcher extends WebviewDispatcher {
   ) {
     super('new-item', panel);
     this.setHandlers([
-      [CommandId.UiClosed, this.onUiClosed],
-      [CommandId.UiItemCreationRequested, this.onUiItemCreationRequested],
-      [CommandId.UiHasError, this.onUiHasError],
-      [CommandId.UiCheckIfQtcliReady, this.onUiCheckIfQtcliReady],
-      [CommandId.UiGetConfigs, this.onUiGetConfigs],
-      [CommandId.UiGetAllPresets, this.onUiGetAllPresets],
-      [CommandId.UiGetPresetById, this.onUiGetPresetById],
-      [CommandId.UiValidateInputs, this.onUiValidateInputs],
-      [CommandId.UiManageCustomPreset, this.onUiManageCustomPreset],
-      [CommandId.UiSelectWorkingDir, this.onUiSelectWorkingDir],
-      [CommandId.UiSaveOpenInPreference, this.onUiSaveOpenInPreference]
+      [CommandId.CommonViewClosed, this.onClosed],
+      [CommandId.NewItemCreationRequested, this.onCreationRequested],
+      [CommandId.NewItemHasError, this.onError],
+      [CommandId.NewItemCheckIfQtcliReady, this.onCheckIfQtcliReady],
+      [CommandId.NewItemGetConfigs, this.onGetConfigs],
+      [CommandId.NewItemGetAllPresets, this.onGetAllPresets],
+      [CommandId.NewItemGetPresetById, this.onGetPresetById],
+      [CommandId.NewItemValidateInputs, this.onValidateInputs],
+      [CommandId.NewItemManageCustomPreset, this.onManageCustomPreset],
+      [CommandId.NewItemSelectWorkingDir, this.onSelectWorkingDir],
+      [CommandId.NewItemSaveOpenInPreference, this.onSaveOpenInPreference]
     ]);
 
     this._qtcliRest = new QtcliRestClient(qtcliSocketName);
@@ -53,11 +53,11 @@ export class NewItemDispatcher extends WebviewDispatcher {
     this._uiConfigs = c;
   }
 
-  private readonly onUiClosed = () => {
+  private readonly onClosed = () => {
     this.context.panel.dispose();
   };
 
-  private readonly onUiItemCreationRequested = async (cmd: Command) => {
+  private readonly onCreationRequested = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.call({
         method: 'post',
@@ -98,12 +98,12 @@ export class NewItemDispatcher extends WebviewDispatcher {
   };
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  private readonly onUiHasError = (cmd: Command) => {
+  private readonly onError = (cmd: Command) => {
     const msg = _.toString(cmd.payload);
     logger.error(`UI Error: ${msg}`);
   };
 
-  private readonly onUiCheckIfQtcliReady = async (cmd: Command) => {
+  private readonly onCheckIfQtcliReady = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.retryCall({
         method: 'get',
@@ -115,22 +115,22 @@ export class NewItemDispatcher extends WebviewDispatcher {
     }
   };
 
-  private readonly onUiGetConfigs = (cmd: Command) => {
+  private readonly onGetConfigs = (cmd: Command) => {
     this.channel.replyData(cmd, this._uiConfigs);
   };
 
-  private readonly onUiGetAllPresets = async (cmd: Command) => {
+  private readonly onGetAllPresets = async (cmd: Command) => {
     const data = await this._qtcliRest.get('/presets', { type: cmd.payload });
     this.channel.replyData(cmd, data);
   };
 
-  private readonly onUiGetPresetById = async (cmd: Command) => {
+  private readonly onGetPresetById = async (cmd: Command) => {
     const id = _.toString(cmd.payload);
     const data = await this._qtcliRest.get(`/presets/${id}`);
     this.channel.replyData(cmd, data);
   };
 
-  private readonly onUiManageCustomPreset = async (cmd: Command) => {
+  private readonly onManageCustomPreset = async (cmd: Command) => {
     const action = _.get(cmd.payload, 'action', '') as string;
     const presetId = _.get(cmd.payload, 'presetId', '') as string;
     if (presetId.length === 0) {
@@ -172,7 +172,7 @@ export class NewItemDispatcher extends WebviewDispatcher {
     }
   };
 
-  private readonly onUiValidateInputs = async (cmd: Command) => {
+  private readonly onValidateInputs = async (cmd: Command) => {
     try {
       const data = await this._qtcliRest.post('/items/validate', cmd.payload);
       this.channel.replyData(cmd, data);
@@ -183,7 +183,7 @@ export class NewItemDispatcher extends WebviewDispatcher {
     }
   };
 
-  private readonly onUiSelectWorkingDir = async (cmd: Command) => {
+  private readonly onSelectWorkingDir = async (cmd: Command) => {
     const dir = cmd.payload?.toString() ?? getNewProjectBaseDir();
     const options: vscode.OpenDialogOptions = {
       canSelectMany: false,
@@ -200,7 +200,7 @@ export class NewItemDispatcher extends WebviewDispatcher {
     }
   };
 
-  private readonly onUiSaveOpenInPreference = async (cmd: Command) => {
+  private readonly onSaveOpenInPreference = async (cmd: Command) => {
     const value = cmd.payload as 'addToWorkspace' | 'newWindow';
     const globalState = new GlobalStateManager(this._extensionContext);
     await globalState.setNewProjectOpenIn(value);
