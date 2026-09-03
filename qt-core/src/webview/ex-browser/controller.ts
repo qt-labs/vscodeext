@@ -4,7 +4,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { telemetry } from 'qt-lib';
+import { telemetry, DisposableStore } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
@@ -49,7 +49,7 @@ export class ExBrowserController {
   private readonly _qtcliServer: QtcliRestServer;
   private readonly _dispatcher: ExBrowserDispatcher;
   private readonly _coreWatcher: ExCoreWatcher;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
 
   private constructor(context: Context, panel: Panel) {
     const sources = helpers.findAllPackagePools();
@@ -80,18 +80,17 @@ export class ExBrowserController {
     this._coreWatcher = new ExCoreWatcher(panel, context);
     void this._qtcliServer.start(context);
 
-    this._disposables = [
+    this._disposables.push(
       this._data,
       this._dispatcher,
       this._coreWatcher,
       panel.onDidDispose(this.dispose.bind(this))
-    ];
+    );
   }
 
   public dispose() {
     ExBrowserController.instance = undefined;
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
+    this._disposables.dispose();
   }
 
   public static render(context: Context) {

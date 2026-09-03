@@ -3,41 +3,41 @@
 
 import * as vscode from 'vscode';
 
-import { createWrappedLogger } from 'qt-lib';
+import { createWrappedLogger, DisposableStore } from 'qt-lib';
 import { WebviewChannel } from '@/webview/channel';
+import { type AppId } from './shared/types';
 import { isCommand, CommandId, CommandHandler } from '@/webview/shared/message';
 
 interface DispatcherContext {
-  name: string;
+  id: AppId;
   panel: vscode.WebviewPanel;
-  logger: ReturnType<typeof createWrappedLogger>;
 }
 
-export class WebviewDispatcher {
+export class WebviewDispatcher implements vscode.Disposable {
   private readonly _context: DispatcherContext;
   private readonly _channel: WebviewChannel;
+  private readonly _logger: ReturnType<typeof createWrappedLogger>;
   private readonly _handlers = new Map<CommandId, CommandHandler>();
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
 
-  public constructor(name: string, panel: vscode.WebviewPanel) {
+  public constructor(id: AppId, panel: vscode.WebviewPanel) {
     this._context = {
-      name,
-      panel,
-      logger: createWrappedLogger(`${name}-dispatcher`)
+      id,
+      panel
     };
 
     this._channel = new WebviewChannel(panel.webview);
-    this._disposables = [
-      this._channel,
+    this._logger = createWrappedLogger(`${id}-dispatcher`);
+
+    this._disposables.push(
       this._channel.onDidReceiveMessage((m) => {
         void this._dispatch(m);
       })
-    ];
+    );
   }
 
   public dispose() {
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
+    this._disposables.dispose();
   }
 
   public get context() {
@@ -61,9 +61,10 @@ export class WebviewDispatcher {
 
     const handler = this._handlers.get(cmd.id);
     if (!handler) {
-      this._context.logger
-        .text('unhandled command')
-        .data('id', CommandId[cmd.id])
+      this._logger
+        .text('Cannot find command handler')
+        .data('id', cmd.id)
+        .data('name', CommandId[cmd.id])
         .warn();
       return;
     }
@@ -71,9 +72,10 @@ export class WebviewDispatcher {
     try {
       await handler(cmd);
     } catch (e) {
-      this._context.logger
+      this._logger
         .text('Cannot handle command')
-        .data('id', CommandId[cmd.id])
+        .data('id', cmd.id)
+        .data('name', CommandId[cmd.id])
         .data('error', String(e))
         .error();
     }

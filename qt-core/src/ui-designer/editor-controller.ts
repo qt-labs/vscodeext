@@ -7,16 +7,22 @@ import { WebviewDispatcher } from '@/webview/dispatcher';
 import { Command, CommandId } from '@/webview/shared/message';
 import { findUiDesignerSession } from '@/ui-designer/session';
 
-export class UiFileEditorController extends WebviewDispatcher {
+export class UiFileEditorController implements vscode.Disposable {
+  private readonly _dispatcher: WebviewDispatcher;
+
   public constructor(
     panel: vscode.WebviewPanel,
     private readonly _docUri: vscode.Uri
   ) {
-    super('ui-designer', panel);
-    this.setHandlers([
+    this._dispatcher = new WebviewDispatcher('ui-designer', panel);
+    this._dispatcher.setHandlers([
       [CommandId.UiFileOpenInDesigner, this._onOpenInDesigner],
       [CommandId.UiFileOpenInTextEditor, this._onOpenFileInTextEditor]
     ]);
+  }
+
+  public dispose() {
+    this._dispatcher.dispose();
   }
 
   private readonly _onOpenInDesigner = (cmd: Command) => {
@@ -25,11 +31,11 @@ export class UiFileEditorController extends WebviewDispatcher {
       void session.open(this._docUri);
     }
 
-    this.channel.replyDone(cmd);
+    this._dispatcher.channel.replyDone(cmd);
   };
 
   private readonly _onOpenFileInTextEditor = (cmd: Command) => {
     void vscode.window.showTextDocument(this._docUri);
-    this.channel.replyDone(cmd);
+    this._dispatcher.channel.replyDone(cmd);
   };
 }
