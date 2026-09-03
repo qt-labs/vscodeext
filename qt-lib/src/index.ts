@@ -16,3 +16,4 @@ export * from './file-finder';
 export * from './qrc-parser';
 export * from './qml-api';
 export * from './msvc';
+export * from './disposable';

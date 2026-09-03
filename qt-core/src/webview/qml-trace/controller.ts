@@ -5,7 +5,7 @@ import _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { getQtQmlApi, normalizeDriveLetter } from 'qt-lib';
+import { getQtQmlApi, normalizeDriveLetter, DisposableStore } from 'qt-lib';
 import { Command, CommandId } from '@/webview/shared/message';
 import { WebviewDispatcher } from '@/webview/dispatcher';
 import { QmlTraceCommandReply } from '@/webview/shared/qml-trace';
@@ -14,7 +14,7 @@ import * as texts from '@/texts';
 
 export class QmlTraceController {
   private readonly _dispatcher: WebviewDispatcher;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
 
   public constructor(
     private readonly _doc: QmlTraceDoc,
@@ -34,8 +34,7 @@ export class QmlTraceController {
   }
 
   public dispose() {
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
+    this._disposables.dispose();
   }
 
   private readonly _onGetConfigs = async (cmd: Command) => {

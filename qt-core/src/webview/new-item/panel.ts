@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { telemetry } from 'qt-lib';
+import { telemetry, DisposableStore } from 'qt-lib';
 import { getNewFileBaseDir, getNewProjectBaseDir } from '@/qtcli/commands';
 import { NewItemDispatcher } from './dispatcher';
 import * as texts from '@/texts';
@@ -30,7 +30,7 @@ export function registerCreateNewItemPanelCommand(
 export class NewItemPanel {
   public static instance: NewItemPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
   private readonly _dispatcher: NewItemDispatcher;
 
   private constructor(
@@ -47,19 +47,12 @@ export class NewItemPanel {
 
     this._panel = panel;
     this._dispatcher = new NewItemDispatcher(qtcliSocketName, panel, context);
-    this._disposables = [panel.onDidDispose(this.dispose.bind(this))];
+    this._disposables.push(panel.onDidDispose(this.dispose.bind(this)));
   }
 
   public dispose() {
     NewItemPanel.instance = undefined;
     this._dispatcher.dispose();
-
-    while (this._disposables.length) {
-      const item = this._disposables.pop();
-      if (item) {
-        item.dispose();
-      }
-    }
   }
 
   public static async render(context: vscode.ExtensionContext) {
