@@ -7,6 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+import { DisposableStore } from 'qt-lib';
 import { WebviewDispatcher } from '@/webview/dispatcher';
 import { Command, CommandId } from '@/webview/shared/message';
 import {
@@ -24,7 +25,7 @@ export class QrcEditorController {
   private readonly _docPath: string;
   private readonly _docManager: QrcDocsManager;
   private readonly _dispatcher: WebviewDispatcher;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
 
   public constructor(
     panel: vscode.WebviewPanel,
@@ -54,8 +55,7 @@ export class QrcEditorController {
   }
 
   public dispose() {
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
+    this._disposables.dispose();
   }
 
   private readonly _onDocChange = (e: QrcDocChangeEvent) => {
