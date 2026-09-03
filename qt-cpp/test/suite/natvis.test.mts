@@ -22,7 +22,8 @@ import {
   getLocals,
   getQtCppSnippetDebugConfiguration,
   getFlattenedLocals,
-  warmUpNatvisDisplay
+  warmUpNatvisDisplay,
+  offscreenPlatformEnvironment
 } from '../debug-helper.mts';
 import type { DebugVariable } from '../debug-helper.mts';
 import {
@@ -103,7 +104,7 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
       // --- Set breakpoints in source file (same as golden test) --------
       const { doc, breakpoints } = await prepareBreakpointsFromMarkers(
         projectDir,
-        'main.cpp',
+        'natvis_main.cpp',
         'BREAK_HERE'
       );
       removeBps = addBreakpoints(breakpoints);
@@ -163,7 +164,14 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
         // snippet-specific fields (MIMode, environment, sourceFileMap, etc.)
         program: program!,
         cwd: cwd!,
-        visualizerFile: nvPath!
+        visualizerFile: nvPath!,
+        // The shipped snippet deliberately does not pin a platform plugin —
+        // a user debugging their own app wants a real window. The fixture is
+        // a QGuiApplication run on headless CI, so add offscreen here only.
+        environment: offscreenPlatformEnvironment(
+          (platformCfg as { environment?: { name: string; value: string }[] })
+            .environment ?? []
+        )
       };
 
       if (process.env.QT_TEST_DEBUG === '1') {
@@ -283,7 +291,7 @@ describe('natvis: minimal Qt project debug (index-natvis)', function () {
       // Set breakpoints in source file ---
       const { doc, breakpoints } = await prepareBreakpointsFromMarkers(
         projectDir,
-        'main.cpp',
+        'natvis_main.cpp',
         'BREAK_HERE'
       );
       removeBps = addBreakpoints(breakpoints);
