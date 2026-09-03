@@ -65,7 +65,7 @@ inline GuiTypes::GuiTypes()
     qImageArgb32.setPixelColor(0, 0, QColor(255, 0, 0, 255));
     qImageArgb32.setPixelColor(1, 0, QColor(0, 255, 0, 255));
 
-    // Pixmap: now safe when main.cpp uses QGuiApplication.
+    // Pixmap: requires the QGuiApplication in main.cpp.
     qPixmap = QPixmap::fromImage(qImageArgb32);
 
     // Polygons.
