@@ -822,6 +822,21 @@ async function fetchChildrenForHash(
  * The resulting list is later converted into a snapshot used for NatVis
  * comparison against the golden expectations.
  */
+/**
+ * Frame locals the snapshot throws away, so there is no point expanding them.
+ *
+ * `app` is the QGuiApplication. With Qt's debug info installed it expands into
+ * the whole QGuiApplicationPrivate graph, which took the walk below from a
+ * handful of nodes to several hundred and, on the Linux runner, long enough
+ * that the debug adapter died mid-read ("Unexpected SIGPIPE") and the test hit
+ * its 150 s timeout. materializeLocalSnapshot drops these by name anyway.
+ */
+const NON_FIXTURE_LOCALS: ReadonlySet<string> = new Set([
+  'app',
+  'argc',
+  'argv'
+]);
+
 export async function getFlattenedLocals(
   session: vscode.DebugSession | undefined,
   frameId: number,
@@ -832,7 +847,9 @@ export async function getFlattenedLocals(
   }
   const s: vscode.DebugSession = session;
 
-  const roots = await getLocals(s, frameId);
+  const roots = (await getLocals(s, frameId)).filter(
+    (v: { name: string }) => !NON_FIXTURE_LOCALS.has(v.name)
+  );
   const acc: DebugVariable[] = [];
 
   async function walkVar(v: any, prefix: string, depth: number): Promise<void> {
