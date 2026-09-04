@@ -1551,16 +1551,43 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'guiTypes.qPixmap',
     type: 'QPixmap',
-    value: 'empty',
+    value: '{ 4x3 }',
     children: [
       {
-        // [type] is a <Synthetic> that hardcodes "UINT8" without reading any memory,
-        // so it always succeeds even when the backing QRasterPlatformPixmap is inaccessible.
-        // All other QImage children (width/height/data/stride/channels) use p()->field reads
-        // through the chained d()->image pointer; when d() fails those reads produce
-        // "Unable to read memory" and are not tested.
+        name: '[width]',
+        value: '4',
+        knownProblem: {
+          darwin: 'QPixmap NatVis children are not materialized under LLDB.',
+          linux: 'QPixmap NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[height]',
+        value: '3',
+        knownProblem: {
+          darwin: 'QPixmap NatVis children are not materialized under LLDB.',
+          linux: 'QPixmap NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[stride]',
+        value: '16',
+        knownProblem: {
+          darwin: 'QPixmap NatVis children are not materialized under LLDB.',
+          linux: 'QPixmap NatVis children are not materialized under GDB.'
+        }
+      },
+      {
         name: '[type]',
         value: 'UINT8',
+        knownProblem: {
+          darwin: 'QPixmap NatVis children are not materialized under LLDB.',
+          linux: 'QPixmap NatVis children are not materialized under GDB.'
+        }
+      },
+      {
+        name: '[channels]',
+        value: '4',
         knownProblem: {
           darwin: 'QPixmap NatVis children are not materialized under LLDB.',
           linux: 'QPixmap NatVis children are not materialized under GDB.'
