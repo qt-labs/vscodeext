@@ -120,7 +120,13 @@ jobs:
           target: desktop
           arch:   ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' ||
                     matrix.os == 'macos-latest'   && 'clang_64'          || 'linux_gcc_64' }}
-          modules: ${{ matrix.os == 'windows-latest' && 'debug_info' || '' }}
+          # debug_info on every runner, not just Windows. Many NatVis rules
+          # read Qt private types (QDirPrivate, QFileInfoPrivate,
+          # QPlatformPixmap, QImageData) that Qt only forward-declares in its
+          # public headers, so without Qt's own debug info those types stay
+          # incomplete and the rules cannot evaluate. That is what a good part
+          # of the darwin and linux known-problem annotations records.
+          modules: debug_info
           dir: ${{ github.workspace }}
           cache: true
 

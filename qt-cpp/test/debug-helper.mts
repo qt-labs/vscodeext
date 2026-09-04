@@ -96,6 +96,30 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
 }
 
 /**
+ * Environment entries that let the debuggee run without a display.
+ *
+ * The fixture is a QGuiApplication, so it needs a platform plugin, and the
+ * suite runs headless. The value is a `;`-separated candidate list rather
+ * than a bare "offscreen" because Qt aborts on a missing plugin instead of
+ * falling back, and a static Qt links only the native one. An explicit
+ * QT_QPA_PLATFORM from the outer environment wins, so a developer can still
+ * watch the debuggee on a real desktop.
+ */
+export function offscreenPlatformEnvironment(
+  existing: readonly { name: string; value: string }[] = []
+): { name: string; value: string }[] {
+  const nativePlatform = IsWindows ? 'windows' : IsMacOS ? 'cocoa' : 'xcb';
+  const merged = [...existing];
+  if (!merged.some((e) => e.name === 'QT_QPA_PLATFORM')) {
+    merged.push({
+      name: 'QT_QPA_PLATFORM',
+      value: process.env.QT_QPA_PLATFORM || `offscreen;${nativePlatform}`
+    });
+  }
+  return merged;
+}
+
+/**
  * Create a fully-resolved C++ debug configuration for NatVis tests.
  *
  * This helper constructs a concrete `DebugConfiguration` equivalent to what
@@ -161,7 +185,8 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
     stopAtEntry: true,
     console: 'internalConsole',
     externalConsole: false,
-    showDisplayString: true
+    showDisplayString: true,
+    environment: offscreenPlatformEnvironment()
   };
 
   // Non-Windows: set MI mode, and on Linux also force the debugger path.
@@ -797,6 +822,21 @@ async function fetchChildrenForHash(
  * The resulting list is later converted into a snapshot used for NatVis
  * comparison against the golden expectations.
  */
+/**
+ * Frame locals the snapshot throws away, so there is no point expanding them.
+ *
+ * `app` is the QGuiApplication. With Qt's debug info installed it expands into
+ * the whole QGuiApplicationPrivate graph, which took the walk below from a
+ * handful of nodes to several hundred and, on the Linux runner, long enough
+ * that the debug adapter died mid-read ("Unexpected SIGPIPE") and the test hit
+ * its 150 s timeout. materializeLocalSnapshot drops these by name anyway.
+ */
+const NON_FIXTURE_LOCALS: ReadonlySet<string> = new Set([
+  'app',
+  'argc',
+  'argv'
+]);
+
 export async function getFlattenedLocals(
   session: vscode.DebugSession | undefined,
   frameId: number,
@@ -807,7 +847,9 @@ export async function getFlattenedLocals(
   }
   const s: vscode.DebugSession = session;
 
-  const roots = await getLocals(s, frameId);
+  const roots = (await getLocals(s, frameId)).filter(
+    (v: { name: string }) => !NON_FIXTURE_LOCALS.has(v.name)
+  );
   const acc: DebugVariable[] = [];
 
   async function walkVar(v: any, prefix: string, depth: number): Promise<void> {
