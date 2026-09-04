@@ -232,12 +232,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'coreTypes.qDir',
     type: 'QDir',
     value: 'qt-cpp/res/natvis',
-    knownProblem: {
-      darwin:
-        'natvis expressions reference Windows-only modules (Qt6Cored.dll), so LLDB cannot resolve the intrinsic d().',
-      linux:
-        'natvis expressions reference Windows-only modules (Qt6Cored.dll), so GDB cannot resolve the intrinsic d().'
-    }
   },
   {
     name: 'coreTypes.qFile',
@@ -245,21 +239,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: 'qt-cpp/res/natvis/qt6.natvis',
     knownProblem: {
       darwin:
-        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so LLDB cannot evaluate d().',
-      linux:
-        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so GDB cannot evaluate d().'
+        'natvis expressions depend on Windows-only Qt6Cored.dll symbols, so LLDB cannot evaluate d().'
     }
   },
   {
     name: 'coreTypes.qFileInfo',
     type: 'QFileInfo',
     value: 'qt-cpp/res/natvis/qt6.natvis',
-    knownProblem: {
-      darwin:
-        'natvis rules reference Windows-only Qt6Cored.dll symbols, so LLDB cannot compute the d() intrinsic.',
-      linux:
-        'natvis rules reference Windows-only Qt6Cored.dll symbols, so GDB cannot compute the d() intrinsic.'
-    }
   },
   {
     name: 'coreTypes.qFlags',
@@ -1066,10 +1052,6 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'containerTypes.qCborMapEmpty',
     type: 'QCborMap',
     value: 'empty',
-    knownProblem: {
-      linux:
-        'QCborMap NatVis relies on Qt6Cored.dll intrinsics; cbor() cannot be evaluated, so the "empty" DisplayString is not shown.'
-    },
     children: [{ name: '[expect_none]', value: '' }]
   },
   {
@@ -1389,9 +1371,9 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '7',
     knownProblem: {
       darwin:
-        'QBasicAtomicInteger<*> NatVis is not applied under LLDB; value falls back to {...} instead of the numeric DisplayString.',
+        'QBasicAtomicInteger<*> DisplayString is {_q_value}; LLDB cannot summarize the nested std::atomic<int> and renders "??" instead of the number.',
       linux:
-        'QBasicAtomicInteger<*> NatVis is not applied under GDB; value falls back to {...} instead of the numeric DisplayString.'
+        'QBasicAtomicInteger<*> DisplayString is {_q_value}; GDB cannot summarize the nested std::atomic<int> and renders a struct instead of the number.'
     },
     children: [
       {
@@ -1453,10 +1435,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qHostAddressIpv6',
     type: 'QHostAddress',
-    value: '0000:0000:0000:0000:0000:0000:0000:0001',
+    value: {
+      all: '0000:0000:0000:0000:0000:0000:0000:0001',
+      darwin: '0:0:0:0:0:0:0:1'
+    },
     knownProblem: {
-      darwin:
-        'QHostAddress NatVis uses raw memory offsets; LLDB cannot evaluate the intrinsics so the DisplayString is not shown.',
       linux:
         'QHostAddress NatVis uses raw memory offsets; GDB cannot evaluate the intrinsics so the DisplayString is not shown.'
     },
@@ -1487,13 +1470,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     value: '{ 4x3 }',
     knownProblem: {
       darwin:
-        'LLDB does not reliably apply the QImage NatVis DisplayString on macOS; ' +
-        'it often falls back to an opaque "{...}" representation instead of the ' +
-        'expected "{ WxH }" summary.',
-      linux:
-        'GDB does not reliably apply the QImage NatVis DisplayString on Linux; ' +
-        'the value may remain empty instead of showing the expected ' +
-        '"{ WxH }" summary.'
+        'The QImage fields are read one slot too early on a dynamically ' +
+        'linked Qt: [width] returns QImageData::ref and [height] returns the ' +
+        'width, so the fixture QImage(4, 3) renders as "{ 1x4 }" instead of ' +
+        '"{ 4x3 }". A static build reads the same source correctly, so this ' +
+        'is about how the debugger binds QImageData, not about the rule.'
     },
     children: [
       {
@@ -1501,9 +1482,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: '4',
         knownProblem: {
           darwin:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+            'Reads QImageData::ref instead of width; renders 1 for QImage(4, 3).'
         }
       },
       {
@@ -1511,29 +1490,21 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: '3',
         knownProblem: {
           darwin:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+            'Reads the width instead of the height; renders 4 for QImage(4, 3).'
         }
       },
       {
         name: '[stride]',
-        value: '16',
-        knownProblem: {
-          darwin:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
-        }
+        value: '16'
       },
       {
         name: '[type]',
         value: 'UINT8',
         knownProblem: {
           darwin:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
+            'The only child that does not materialize under LLDB; width, height, data, stride and channels all do.',
           linux:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+            'The only child that does not materialize under GDB; width, height, data, stride and channels all do.'
         }
       },
       {
@@ -1541,9 +1512,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
         value: '4',
         knownProblem: {
           darwin:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; LLDB cannot resolve these so children do not materialize.',
-          linux:
-            'QImage NatVis Expand uses Qt6Guid.dll intrinsics; GDB cannot resolve these so children do not materialize.'
+            'Computed as bytes_per_line / width, and width reads ref (1), so it renders 16 instead of 4.'
         }
       }
     ]
