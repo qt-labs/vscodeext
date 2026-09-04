@@ -5,17 +5,16 @@ export enum CommandId {
   Invalid = -1,
 
   // new-item wizard
-  UiClosed,
-  UiItemCreationRequested,
-  UiHasError,
-  UiCheckIfQtcliReady,
-  UiGetConfigs,
-  UiGetAllPresets,
-  UiGetPresetById,
-  UiValidateInputs,
-  UiManageCustomPreset,
-  UiSelectWorkingDir,
-  UiSaveOpenInPreference,
+  NewItemCreationRequested,
+  NewItemHasError,
+  NewItemCheckIfQtcliReady,
+  NewItemGetConfigs,
+  NewItemGetAllPresets,
+  NewItemGetPresetById,
+  NewItemValidateInputs,
+  NewItemManageCustomPreset,
+  NewItemSelectWorkingDir,
+  NewItemSaveOpenInPreference,
 
   // qrc editor
   QrcDocChanged,
@@ -30,7 +29,7 @@ export enum CommandId {
   QrcRunVscodeUiAction,
   QrcRunClipboardAction,
 
-  // qml trace
+  // qml trace file (.qtd, .qzt)
   QmlTraceGetConfigs,
   QmlTraceOpenFileInTextEditor,
   QmlTraceOpenFileInTraceViewer,
@@ -38,14 +37,18 @@ export enum CommandId {
   QmlTraceSelectFolder,
   QmlTraceGetWorkspaceFolders,
 
-  // examples browser
+  // qt examples
   ExBrowserGetPackages,
   ExBrowserGetExamples,
   ExBrowserSelectPackage,
   ExBrowserResolveImageUrl,
   ExBrowserRunActionOnExample,
+  ExBrowserSelectWorkingDir,
+  ExBrowserValidateInputs,
+  ExBrowserGetConfigs,
+  ExBrowserSaveOpenInPreference,
 
-  // courses
+  // qt academy courses
   CoursesGetCourses,
   CoursesRunAction,
 
@@ -54,20 +57,21 @@ export enum CommandId {
   WelcomeHandleConfig,
   WelcomeRunAction,
 
-  // UI file
+  // ui file
   UiFileOpenInDesigner,
   UiFileOpenInTextEditor,
 
   // common
-  CommonOpenFolder,
+  CommonViewClosed,
+  CommonRevealFolder,
   CommonVscodeThemeChanged
 }
 
 export const OneWayCommandIds = [
-  CommandId.UiClosed,
-  CommandId.UiItemCreationRequested,
-  CommandId.UiHasError,
+  CommandId.NewItemHasError,
+  CommandId.NewItemCreationRequested,
   CommandId.QrcDocChanged,
+  CommandId.CommonViewClosed,
   CommandId.CommonVscodeThemeChanged
 ];
 
@@ -100,7 +104,7 @@ export interface Issue {
 export type CommandHandler = (command: Command) => void | Promise<void>;
 
 // type guard functions
-export function IsCommand(x: unknown): x is Command {
+export function isCommand(x: unknown): x is Command {
   return (
     typeof x === 'object' &&
     x !== null &&

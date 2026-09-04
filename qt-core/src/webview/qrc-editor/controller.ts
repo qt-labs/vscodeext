@@ -7,14 +7,9 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger } from 'qt-lib';
-import { WebviewChannel } from '@/webview/channel';
-import {
-  Command,
-  CommandId,
-  CommandHandler,
-  IsCommand
-} from '@/webview/shared/message';
+import { DisposableStore } from 'qt-lib';
+import { WebviewDispatcher } from '@/webview/dispatcher';
+import { Command, CommandId } from '@/webview/shared/message';
 import {
   RccTag,
   QResourceTag,
@@ -26,31 +21,21 @@ import { QrcNode } from './node';
 import { makeUniqueName } from './utils';
 import { QrcDocsManager } from './docs-manager';
 
-const logger = createLogger('qrc-editor-controller');
-
 export class QrcEditorController {
-  private readonly _comm: WebviewChannel;
-  private readonly _routes: Map<CommandId, CommandHandler>;
   private readonly _docPath: string;
   private readonly _docManager: QrcDocsManager;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _dispatcher: WebviewDispatcher;
+  private readonly _disposables = new DisposableStore();
 
   public constructor(
-    view: vscode.Webview,
+    panel: vscode.WebviewPanel,
     docManager: QrcDocsManager,
     docPath: string
   ) {
-    this._comm = new WebviewChannel(view);
     this._docPath = docPath;
     this._docManager = docManager;
-
-    this._disposables.push(
-      this._comm,
-      this._comm.onDidReceiveMessage(this._dispatch),
-      this._docManager.onChange(this._onDocChange)
-    );
-
-    this._routes = new Map<CommandId, CommandHandler>([
+    this._dispatcher = new WebviewDispatcher('qrc-editor', panel);
+    this._dispatcher.setHandlers([
       [CommandId.QrcAddFiles, this._onAddFiles],
       [CommandId.QrcAddNewGroup, this._onAddNewGroup],
       [CommandId.QrcGetRccTag, this._onGetRccTag],
@@ -62,38 +47,20 @@ export class QrcEditorController {
       [CommandId.QrcRunVscodeUiAction, this._onRunActionInVscode],
       [CommandId.QrcRunClipboardAction, this._onRunClipboardAction]
     ]);
+
+    this._disposables.push(
+      this._dispatcher,
+      this._docManager.onChange(this._onDocChange)
+    );
   }
 
   public dispose() {
-    this._disposables.forEach((d) => {
-      d.dispose();
-    });
-    this._disposables.length = 0;
+    this._disposables.dispose();
   }
-
-  private readonly _dispatch = async (cmd: unknown) => {
-    if (!IsCommand(cmd)) {
-      return;
-    }
-
-    const handler = this._routes.get(cmd.id);
-    if (!handler) {
-      logger.warn(`unhandled command: id = ${String(cmd.id)}`);
-      return;
-    }
-
-    try {
-      await handler(cmd);
-    } catch (e) {
-      logger.error(
-        `Error while handling command '${String(cmd.id)}': ${String(e)}`
-      );
-    }
-  };
 
   private readonly _onDocChange = (e: QrcDocChangeEvent) => {
     if (this._docPath === e.key) {
-      this._comm.post(CommandId.QrcDocChanged, e);
+      this.channel.notify(CommandId.QrcDocChanged, e);
     }
   };
 
@@ -136,7 +103,7 @@ export class QrcEditorController {
   private readonly _onGetRccTag = (cmd: Command) => {
     const doc = this._docManager.find(this._docPath);
     if (doc?.rccTag) {
-      this._comm.postDataReply(cmd, doc.rccTag);
+      this.channel.replyData(cmd, doc.rccTag);
     }
   };
 
@@ -146,7 +113,7 @@ export class QrcEditorController {
     const size = _.get(cmd.payload, 'thumbnailSize', 24) as number;
     const info = await createFileInfo(fsPath, size);
 
-    this._comm.postDataReply(cmd, info);
+    this.channel.replyData(cmd, info);
   };
 
   private readonly _onClean = async (cmd: Command) => {
@@ -202,7 +169,7 @@ export class QrcEditorController {
 
     if (action === 'openQrcInTextEditor') {
       void vscode.window.showTextDocument(vscode.Uri.file(this._docPath));
-      this._comm.postDataReply(cmd, { status: 'done' });
+      this.channel.replyDone(cmd);
       return;
     }
 
@@ -226,7 +193,7 @@ export class QrcEditorController {
       return;
     }
 
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this.channel.replyDone(cmd);
   };
 
   private readonly _onRunClipboardAction = async (cmd: Command) => {
@@ -260,7 +227,7 @@ export class QrcEditorController {
         const text = node.formatResourceString(type).trim();
         if (text.length !== 0) {
           void vscode.env.clipboard.writeText(text);
-          this._comm.postDataReply(cmd, { status: 'done' });
+          this.channel.replyDone(cmd);
         }
         break;
       }
@@ -272,7 +239,7 @@ export class QrcEditorController {
     if (doc) {
       this._docManager.setRecentCommandId(this._docPath, cmd.id);
       await doc.updateXmlVsdoc();
-      this._comm.postDataReply(cmd, data);
+      this.channel.replyData(cmd, data);
     }
   }
 
@@ -285,6 +252,10 @@ export class QrcEditorController {
     const g = _.get(data, 'groupKey', '') as string;
     const f = toInteger(_.get(data, 'fileIndex', -1), -1);
     return new QrcNode(doc, g, f);
+  }
+
+  private get channel() {
+    return this._dispatcher.channel;
   }
 }
 

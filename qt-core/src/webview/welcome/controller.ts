@@ -3,14 +3,8 @@
 
 import * as vscode from 'vscode';
 
-import { telemetry } from 'qt-lib';
-import {
-  WebviewAppConfig,
-  createWebviewHtml,
-  createWebviewOptions,
-  basicWebviewAppConfig,
-  createWebviewPanelIcons
-} from '@/webview/utils';
+import { telemetry, DisposableStore } from 'qt-lib';
+import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
 import * as texts from '@/texts';
 import { WelcomePageDispatcher as WelcomeScreenDispatcher } from './dispatcher';
 import { WelcomePageDataManager } from './data-manager';
@@ -72,37 +66,32 @@ export class WelcomePageController {
   private readonly _panel: Panel;
   private readonly _data: WelcomePageDataManager;
   private readonly _dispatcher: WelcomeScreenDispatcher;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
 
   private constructor(context: Context, panel: Panel) {
-    const config: WebviewAppConfig = {
-      app: 'welcome',
+    configWebviewPanel(panel, {
+      appId: 'welcome',
       title: texts.WelcomePage.tabText,
       context,
       additionalResourceRoots: [
         vscode.Uri.joinPath(context.extensionUri, 'res', 'icons')
       ],
       ...basicWebviewAppConfig
-    };
-
-    panel.iconPath = createWebviewPanelIcons(context);
-    panel.webview.html = createWebviewHtml(panel.webview, config);
-    panel.webview.options = createWebviewOptions(config);
+    });
 
     this._panel = panel;
     this._data = new WelcomePageDataManager(panel.webview, context);
     this._dispatcher = new WelcomeScreenDispatcher(this._data, panel);
 
-    this._disposables = [
+    this._disposables.push(
       this._dispatcher,
       panel.onDidDispose(this.dispose.bind(this))
-    ];
+    );
   }
 
   public dispose() {
     WelcomePageController.instance = undefined;
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
+    this._disposables.dispose();
   }
 
   public static render(context: Context) {

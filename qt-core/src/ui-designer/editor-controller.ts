@@ -3,66 +3,27 @@
 
 import * as vscode from 'vscode';
 
-import { createWrappedLogger } from 'qt-lib';
-import {
-  Command,
-  CommandId,
-  CommandHandler,
-  IsCommand
-} from '@/webview/shared/message';
-import { WebviewChannel } from '@/webview/channel';
+import { WebviewDispatcher } from '@/webview/dispatcher';
+import { Command, CommandId } from '@/webview/shared/message';
 import { findUiDesignerSession } from '@/ui-designer/session';
 
-const logger = createWrappedLogger('ui-designer-controller');
-
-export class UiFileEditorController {
-  private readonly _comm: WebviewChannel;
-  private readonly _routes: Map<CommandId, CommandHandler>;
-  private readonly _disposables: vscode.Disposable[] = [];
+export class UiFileEditorController implements vscode.Disposable {
+  private readonly _dispatcher: WebviewDispatcher;
 
   public constructor(
-    private readonly _panel: vscode.WebviewPanel,
+    panel: vscode.WebviewPanel,
     private readonly _docUri: vscode.Uri
   ) {
-    this._comm = new WebviewChannel(this._panel.webview);
-    this._disposables.push(
-      this._comm,
-      this._comm.onDidReceiveMessage(this._dispatch)
-    );
-
-    this._routes = new Map<CommandId, CommandHandler>([
+    this._dispatcher = new WebviewDispatcher('ui-designer', panel);
+    this._dispatcher.setHandlers([
       [CommandId.UiFileOpenInDesigner, this._onOpenInDesigner],
       [CommandId.UiFileOpenInTextEditor, this._onOpenFileInTextEditor]
     ]);
   }
 
   public dispose() {
-    this._disposables.forEach((d) => {
-      d.dispose();
-    });
-    this._disposables.length = 0;
+    this._dispatcher.dispose();
   }
-
-  private readonly _dispatch = async (cmd: unknown) => {
-    if (!IsCommand(cmd)) {
-      return;
-    }
-
-    const handler = this._routes.get(cmd.id);
-    if (!handler) {
-      logger.text('Unhandled command').data('id', String(cmd.id)).warn();
-      return;
-    }
-
-    try {
-      await handler(cmd);
-    } catch (e) {
-      logger
-        .text('Error while handling command')
-        .data(String(cmd.id), String(e))
-        .error();
-    }
-  };
 
   private readonly _onOpenInDesigner = (cmd: Command) => {
     const session = findUiDesignerSession(this._docUri);
@@ -70,11 +31,11 @@ export class UiFileEditorController {
       void session.open(this._docUri);
     }
 
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this._dispatcher.channel.replyDone(cmd);
   };
 
   private readonly _onOpenFileInTextEditor = (cmd: Command) => {
     void vscode.window.showTextDocument(this._docUri);
-    this._comm.postDataReply(cmd, { status: 'done' });
+    this._dispatcher.channel.replyDone(cmd);
   };
 }

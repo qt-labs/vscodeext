@@ -4,16 +4,19 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as dotenv from 'dotenv';
+import { type AppId } from './shared/types';
 import {
   Uri,
   Webview,
+  WebviewPanel,
   ExtensionMode as Mode,
   ExtensionContext as Context
 } from 'vscode';
 
 export interface WebviewAppConfig {
-  app: string;
+  appId: AppId;
   title: string;
+  iconName?: string;
   srcDir: string;
   distDir: string;
   jsFile: string;
@@ -29,7 +32,13 @@ export const basicWebviewAppConfig = {
   cssFile: 'index.css'
 };
 
-export function createWebviewHtml(view: Webview, config: WebviewAppConfig) {
+export function configWebviewPanel(p: WebviewPanel, c: WebviewAppConfig) {
+  p.iconPath = createWebviewTabIcons(c.context, c.iconName);
+  p.webview.html = createWebviewHtml(p.webview, c);
+  p.webview.options = createWebviewOptions(c);
+}
+
+function createWebviewHtml(view: Webview, config: WebviewAppConfig) {
   const root = config.distDir.split('/');
   const baseUri = config.context.extensionUri;
   const js = getUri(view, baseUri, [...root, config.jsFile]);
@@ -69,14 +78,14 @@ export function createWebviewHtml(view: Webview, config: WebviewAppConfig) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         ${html}
       </head>
-      <body data-app=${config.app}>
+      <body data-app-id=${config.appId}>
         <div id="app"></div>
       </body>
     </html>
   `;
 }
 
-export function createWebviewOptions(config: WebviewAppConfig) {
+function createWebviewOptions(config: WebviewAppConfig) {
   return {
     enableScripts: true,
     retainContextWhenHidden: true,
@@ -87,11 +96,12 @@ export function createWebviewOptions(config: WebviewAppConfig) {
   };
 }
 
-export function createWebviewPanelIcons(c: Context, iconName = 'qt-webview') {
+function createWebviewTabIcons(c: Context, iconName = '') {
   const sub = 'res/icons/';
+  const iconBase = iconName || 'qt-webview';
   return {
-    dark: vscode.Uri.joinPath(c.extensionUri, sub, iconName + '-dark.svg'),
-    light: vscode.Uri.joinPath(c.extensionUri, sub, iconName + '-light.svg')
+    dark: vscode.Uri.joinPath(c.extensionUri, sub, iconBase + '-dark.svg'),
+    light: vscode.Uri.joinPath(c.extensionUri, sub, iconBase + '-light.svg')
   };
 }
 
