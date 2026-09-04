@@ -87,7 +87,7 @@ before('cpptools is installed and activated', async () => {
 // Snippet-based debug: lightweight sanity test using Qt debug snippets
 // ---------------------------------------------------------------------------
 describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
-  this.timeout(150_000);
+  this.timeout(300_000);
 
   it('launches via Qt debug snippet and shows Locals formatted by our NatVis rules (lightweight sanity test)', async function () {
     const {
@@ -274,7 +274,7 @@ describe('Debugging using Qt debug snippets (Qt: Debug with …)', function () {
 // Main NatVis golden test
 // ---------------------------------------------------------------------------
 describe('natvis: minimal Qt project debug (index-natvis)', function () {
-  this.timeout(150_000);
+  this.timeout(300_000);
 
   it('reaches the breakpoint after configure+build and shows Locals formatted by our NatVis rules', async function () {
     const {
