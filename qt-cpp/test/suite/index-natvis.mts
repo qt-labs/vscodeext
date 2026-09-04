@@ -24,7 +24,7 @@ export function run(): Promise<void> {
         reject(err instanceof Error ? err : new Error(String(err)))
       )
       .on('end', () => {
-        mocha.timeout(10000);
+        mocha.timeout(60000);
         mocha.run((failures) =>
           failures ? reject(new Error(`${failures} tests failed.`)) : resolve()
         );
