@@ -262,11 +262,13 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qJsonDocument',
     type: 'QJsonDocument',
-    value: {
-      darwin: '{...}',
-      win32:
-        '{[0]= "JSON Test Pattern pass1" [1]= {["object with 1 member"]= {[0]= "array with 1 element" } } [2]=...}',
-      linux: ''
+    value:
+      '{[0]= "JSON Test Pattern pass1" [1]= {["object with 1 member"]= {[0]= "array with 1 element" } } [2]=...}',
+    knownProblem: {
+      darwin:
+        'QJsonDocument DisplayString depends on Qt6Cored.dll intrinsics / MSVC-only internals; LLDB cannot evaluate them and falls back to "{...}".',
+      linux:
+        'QJsonDocument DisplayString depends on Qt6Cored.dll intrinsics / MSVC-only internals; GDB cannot evaluate them and leaves the value empty.'
     },
     children: [
       {
@@ -988,10 +990,10 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'containerTypes.qJsonValueNull',
     type: 'QJsonValue',
-    value: {
-      darwin: '{...}',
-      linux: 'null',
-      win32: 'null'
+    value: 'null',
+    knownProblem: {
+      darwin:
+        'QJsonValue NatVis formatting is currently unreliable under LLDB; value collapses to {...}.'
     },
     children: [{ name: '[expect_none]', value: '' }]
   },
@@ -1830,7 +1832,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qPropertyInt',
     type: 'QProperty<int>',
-    value: { darwin: '{...}', linux: '123', win32: '123' },
+    value: '123',
+    knownProblem: {
+      darwin:
+        'QProperty<*> DisplayString is not applied under LLDB; the value falls back to "{...}".'
+    },
     children: [
       {
         name: 'QPropertyData<int>',
@@ -1851,7 +1857,11 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
   {
     name: 'coreTypes.qPropertyString',
     type: 'QProperty<QString>',
-    value: { darwin: '{...}', linux: 'prop', win32: 'prop' },
+    value: 'prop',
+    knownProblem: {
+      darwin:
+        'QProperty<*> DisplayString is not applied under LLDB; the value falls back to "{...}".'
+    },
     children: [
       {
         name: 'QPropertyData<QString>',
