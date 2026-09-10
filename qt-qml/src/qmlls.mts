@@ -10,7 +10,7 @@ import {
   ServerOptions,
   LanguageClient,
   LanguageClientOptions
-} from 'vscode-languageclient/node.js';
+} from 'vscode-languageclient/node';
 
 import {
   createLogger,
@@ -213,7 +213,7 @@ export class Qmlls {
   private readonly _disposables: vscode.Disposable[] = [];
   private readonly _importPaths = new Set<string>();
   private _client: LanguageClient | undefined;
-  private _channel: vscode.OutputChannel | undefined;
+  private _channel: vscode.LogOutputChannel | undefined;
   private _buildDir: string | undefined;
 
   constructor(readonly _folder: vscode.WorkspaceFolder) {
@@ -406,7 +406,8 @@ export class Qmlls {
 
     if (!this._channel) {
       this._channel = vscode.window.createOutputChannel(
-        `QML Language Server - ${this._folder.name}`
+        `QML Language Server - ${this._folder.name}`,
+        { log: true }
       );
     }
     let args: string[] = [];
