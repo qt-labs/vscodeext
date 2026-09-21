@@ -7,8 +7,8 @@ import * as vscode from 'vscode';
 import { telemetry, DisposableStore } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
-import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
-import * as texts from '@/texts';
+import { WebAppId } from '@/webview/shared/types';
+import { setupWebApp, createPanel, exposeDirs } from '@/webview/utils';
 import { ExDataManager } from './data-manager';
 import { ExCoreWatcher } from './core-watcher';
 import { ExBrowserDispatcher } from './dispatcher';
@@ -18,6 +18,9 @@ import { ExPackagePoolDir } from '../shared/ex-browser';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
+
+const appId: WebAppId = 'ex-browser';
+let instance: ExBrowserController | undefined;
 
 export function registerOpenExBrowserCommand(context: Context) {
   return vscode.commands.registerCommand(
@@ -42,86 +45,70 @@ export function registerExBrowserPageSerializer(context: Context) {
 }
 
 export class ExBrowserController {
-  public static instance: ExBrowserController | undefined;
-
-  private readonly _panel: Panel;
   private readonly _data: ExDataManager;
   private readonly _qtcliServer: QtcliRestServer;
   private readonly _dispatcher: ExBrowserDispatcher;
   private readonly _coreWatcher: ExCoreWatcher;
   private readonly _disposables = new DisposableStore();
 
-  private constructor(context: Context, panel: Panel) {
+  private constructor(
+    context: Context,
+    private readonly _panel: Panel
+  ) {
     const sources = helpers.findAllPackagePools();
 
-    configWebviewPanel(panel, {
-      appId: 'ex-browser',
-      title: texts.exBrowser.tabText,
-      context,
-      ...basicWebviewAppConfig,
-      additionalResourceRoots: [
-        helpers.fallbackImageDir(context),
-        ...sources.flatMap((s) => {
-          return dirUrisToExpose(s);
-        })
-      ]
-    });
+    setupWebApp(appId, context, this._panel);
+    exposeDirs(this._panel, findDocAndExDirs(sources));
+    exposeDirs(this._panel, [helpers.fallbackImageDir(context)]);
 
-    this._panel = panel;
     this._data = new ExDataManager(sources);
     this._qtcliServer = new QtcliRestServer(generateSocketId('ex-browser'));
     this._dispatcher = new ExBrowserDispatcher(
       this._data,
       context,
-      panel,
+      this._panel,
       this._qtcliServer.socketName
     );
 
-    this._coreWatcher = new ExCoreWatcher(panel, context);
+    this._coreWatcher = new ExCoreWatcher(this._panel, context);
     void this._qtcliServer.start(context);
 
     this._disposables.push(
       this._data,
       this._dispatcher,
       this._coreWatcher,
-      panel.onDidDispose(this.dispose.bind(this))
+      this._panel.onDidDispose(this.dispose.bind(this))
     );
   }
 
   public dispose() {
-    ExBrowserController.instance = undefined;
+    instance = undefined;
     this._disposables.dispose();
   }
 
   public static render(context: Context) {
-    if (!ExBrowserController.instance) {
-      ExBrowserController.instance = new ExBrowserController(
-        context,
-        vscode.window.createWebviewPanel(
-          consts.WEBVIEW_PANEL_VIEW_TYPE,
-          texts.exBrowser.tabText,
-          consts.WEBVIEW_PANEL_COLUMN
-        )
-      );
-    }
-
-    ExBrowserController.instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+    instance ??= new ExBrowserController(context, createPanel(appId));
+    instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
   }
 
   public static restore(context: Context, panel: Panel) {
-    if (ExBrowserController.instance) {
+    if (instance) {
       panel.dispose();
       return;
     }
 
-    ExBrowserController.instance = new ExBrowserController(context, panel);
+    instance = new ExBrowserController(context, panel);
   }
 }
 
 // helper
-function dirUrisToExpose(s: ExPackagePoolDir) {
-  return [
-    vscode.Uri.file(s.examplesPath ?? path.join(s.fsPath, consts.EX_DIR_NAME)),
-    vscode.Uri.file(s.docsPath ?? path.join(s.fsPath, consts.DOCS_DIR_NAME))
-  ];
+function findDocAndExDirs(roots: ExPackagePoolDir[]) {
+  function findDirsToExpose(s: ExPackagePoolDir) {
+    return [
+      vscode.Uri.file(s.docsPath ?? path.join(s.fsPath, consts.DOCS_DIR_NAME)),
+      vscode.Uri.file(s.examplesPath ?? path.join(s.fsPath, consts.EX_DIR_NAME))
+    ];
+  }
+
+  return roots.flatMap((s) => findDirsToExpose(s));
 }

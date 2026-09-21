@@ -4,9 +4,9 @@
 import * as vscode from 'vscode';
 
 import { telemetry, DisposableStore } from 'qt-lib';
-import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
-import * as texts from '@/texts';
-import { WelcomePageDispatcher as WelcomeScreenDispatcher } from './dispatcher';
+import { WebAppId } from '@/webview/shared/types';
+import { setupWebApp, createPanel } from '@/webview/utils';
+import { WelcomePageDispatcher } from './dispatcher';
 import { WelcomePageDataManager } from './data-manager';
 import {
   isWalkthroughAvailable,
@@ -14,12 +14,15 @@ import {
   openWalkthrough
 } from './walkthrough';
 import * as consts from './constants';
-import { createLogger } from 'qt-lib';
+import { createWrappedLogger } from 'qt-lib';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
 
-const logger = createLogger('welcome-controller');
+let instance: WelcomePageController | undefined;
+
+const appId: WebAppId = 'welcome';
+const logger = createWrappedLogger(`${appId}-controller`);
 
 export function registerOpenWelcomePageCommand(context: Context) {
   const name = 'openWelcomePage';
@@ -35,7 +38,12 @@ export async function tryOpenWelcomePage(context: Context) {
   // While the qt-sm "Get Started" walkthrough is available but not yet
   // completed, guide the user through it instead of the welcome page.
   if (isWalkthroughAvailable() && !isGetStartedDone()) {
-    logger.info('Opening the qt-sm walkthrough; get started not done yet');
+    logger
+      .text('Opening the qt-sm walkthrough; get started not done yet')
+      .data('isWalkthroughAvailable', isWalkthroughAvailable())
+      .data('isGetStartedDone', isGetStartedDone())
+      .info();
+
     await openWalkthrough();
     return;
   }
@@ -61,60 +69,40 @@ export function registerWelcomePageSerializer(context: Context) {
 }
 
 export class WelcomePageController {
-  public static instance: WelcomePageController | undefined;
-
-  private readonly _panel: Panel;
   private readonly _data: WelcomePageDataManager;
-  private readonly _dispatcher: WelcomeScreenDispatcher;
+  private readonly _dispatcher: WelcomePageDispatcher;
   private readonly _disposables = new DisposableStore();
 
-  private constructor(context: Context, panel: Panel) {
-    configWebviewPanel(panel, {
-      appId: 'welcome',
-      title: texts.WelcomePage.tabText,
-      context,
-      additionalResourceRoots: [
-        vscode.Uri.joinPath(context.extensionUri, 'res', 'icons')
-      ],
-      ...basicWebviewAppConfig
-    });
+  private constructor(
+    context: Context,
+    private readonly _panel: Panel
+  ) {
+    setupWebApp(appId, context, this._panel);
 
-    this._panel = panel;
-    this._data = new WelcomePageDataManager(panel.webview, context);
-    this._dispatcher = new WelcomeScreenDispatcher(this._data, panel);
-
+    this._data = new WelcomePageDataManager(this._panel.webview, context);
+    this._dispatcher = new WelcomePageDispatcher(this._data, this._panel);
     this._disposables.push(
       this._dispatcher,
-      panel.onDidDispose(this.dispose.bind(this))
+      this._panel.onDidDispose(this.dispose.bind(this))
     );
   }
 
   public dispose() {
-    WelcomePageController.instance = undefined;
+    instance = undefined;
     this._disposables.dispose();
   }
 
   public static render(context: Context) {
-    if (!WelcomePageController.instance) {
-      WelcomePageController.instance = new WelcomePageController(
-        context,
-        vscode.window.createWebviewPanel(
-          consts.WEBVIEW_PANEL_VIEW_TYPE,
-          texts.WelcomePage.tabText,
-          consts.WEBVIEW_PANEL_COLUMN
-        )
-      );
-    }
-
-    WelcomePageController.instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+    instance ??= new WelcomePageController(context, createPanel(appId));
+    instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
   }
 
   public static restore(context: Context, panel: Panel) {
-    if (WelcomePageController.instance) {
+    if (instance) {
       panel.dispose();
       return;
     }
 
-    WelcomePageController.instance = new WelcomePageController(context, panel);
+    instance = new WelcomePageController(context, panel);
   }
 }

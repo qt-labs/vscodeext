@@ -12,11 +12,10 @@ import {
 } from 'vscode';
 
 import { getQtQmlApi } from 'qt-lib';
-import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
+import { setupWebApp } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
 import { QmlTraceDoc } from './doc';
 import { QmlTraceController } from './controller';
-import * as texts from '@/texts';
 
 export function registerQmlTraceProvider(context: ExtensionContext) {
   const type = `${EXTENSION_ID}.qmlTrace`;
@@ -55,15 +54,7 @@ class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
   ): Promise<void> {
     void token;
 
-    // view
-    configWebviewPanel(panel, {
-      appId: 'qml-trace',
-      title: texts.qmlTrace.tabText,
-      context: this._context,
-      ...basicWebviewAppConfig
-    });
-
-    // controller
+    setupWebApp('qml-trace', this._context, panel);
     const controller = new QmlTraceController(doc, panel);
     this._controllers.set(panel, controller);
 
