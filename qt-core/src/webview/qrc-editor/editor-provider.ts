@@ -4,56 +4,40 @@
 import {
   window,
   workspace,
-  Disposable,
-  WebviewPanel,
-  TextDocument,
-  ExtensionContext,
-  CancellationToken,
-  CustomTextEditorProvider
+  TextDocument as Doc,
+  WebviewPanel as Panel,
+  ExtensionContext as Context,
+  CancellationToken as Token,
+  CustomTextEditorProvider as EditorProvider
 } from 'vscode';
 
-import { telemetry } from 'qt-lib';
+import { telemetry, DisposableStore } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { setupWebApp } from '@/webview/utils';
 import { QrcDocsManager } from './docs-manager';
-import { QrcEditorController } from './controller';
+import { QrcEditorController as Controller } from './controller';
 
-function updateEditorAssociation(enableQrcEditor: boolean) {
-  const type = `${EXTENSION_ID}.qrcEditor`;
-  const editorAssociations = workspace
-    .getConfiguration('workbench')
-    .get<Record<string, string>>('editorAssociations', {});
-  const qrcAssociation = enableQrcEditor ? type : 'default';
+const editorType = `${EXTENSION_ID}.qrcEditor`;
 
-  if (editorAssociations['*.qrc'] !== qrcAssociation) {
-    void workspace.getConfiguration('workbench').update(
-      'editorAssociations',
-      { ...editorAssociations, '*.qrc': qrcAssociation },
-      true // global configuration
-    );
-  }
-}
-
-export function registerQrcEditorProvider(context: ExtensionContext) {
-  const type = `${EXTENSION_ID}.qrcEditor`;
+export function addQrcFileSupport(context: Context) {
   const provider = new QrcEditorProvider(context);
-  const reg = window.registerCustomEditorProvider(type, provider);
 
-  context.subscriptions.push(...[provider, reg]);
+  context.subscriptions.push(
+    provider,
+    window.registerCustomEditorProvider(editorType, provider)
+  );
 
   // Set initial editor association based on the setting
+  const configKey = 'enableQrcEditor';
+  const configKeyFull = `${EXTENSION_ID}.${configKey}`;
   const config = workspace.getConfiguration(EXTENSION_ID);
-  const enableQrcEditor = config.get<boolean>('enableQrcEditor', true);
-  updateEditorAssociation(enableQrcEditor);
+  updateEditorAssociation(config.get<boolean>(configKey, true));
 
   // Listen for configuration changes
   const configListener = workspace.onDidChangeConfiguration((e) => {
-    if (e.affectsConfiguration(`${EXTENSION_ID}.enableQrcEditor`)) {
+    if (e.affectsConfiguration(configKeyFull)) {
       const newConfig = workspace.getConfiguration(EXTENSION_ID);
-      const newEnableQrcEditor = newConfig.get<boolean>(
-        'enableQrcEditor',
-        true
-      );
+      const newEnableQrcEditor = newConfig.get<boolean>(configKey, true);
       updateEditorAssociation(newEnableQrcEditor);
     }
   });
@@ -61,40 +45,30 @@ export function registerQrcEditorProvider(context: ExtensionContext) {
   context.subscriptions.push(configListener);
 }
 
-class QrcEditorProvider implements CustomTextEditorProvider {
-  private readonly _context: ExtensionContext;
+class QrcEditorProvider implements EditorProvider {
+  private readonly _context: Context;
   private readonly _docsManager = new QrcDocsManager();
-  private readonly _controllers = new Map<WebviewPanel, QrcEditorController>();
-  private readonly _disposables: Disposable[] = [];
+  private readonly _controllers = new Map<Panel, Controller>();
+  private readonly _disposables = new DisposableStore();
 
-  constructor(context: ExtensionContext) {
+  constructor(context: Context) {
     this._context = context;
     this._disposables.push(this._docsManager);
   }
 
   public dispose() {
-    this._disposables.forEach((e) => {
-      e.dispose();
-    });
+    this._disposables.dispose();
   }
 
-  public async resolveCustomTextEditor(
-    doc: TextDocument,
-    panel: WebviewPanel,
-    token: CancellationToken
-  ): Promise<void> {
+  public async resolveCustomTextEditor(doc: Doc, panel: Panel, token: Token) {
     void token;
 
     setupWebApp('qrc-editor', this._context, panel);
 
     this._docsManager.add(doc);
-    const controller = new QrcEditorController(
-      panel,
-      this._docsManager,
-      doc.uri.fsPath
-    );
-
+    const controller = new Controller(panel, this._docsManager, doc.uri.fsPath);
     this._controllers.set(panel, controller);
+
     panel.onDidDispose(() => {
       controller.dispose();
       this._controllers.delete(panel);
@@ -103,5 +77,23 @@ class QrcEditorProvider implements CustomTextEditorProvider {
     telemetry.sendEvent('QRCEditor:resolveCustomTextEditor');
 
     return Promise.resolve();
+  }
+}
+
+function updateEditorAssociation(enable: boolean) {
+  const section = 'workbench';
+  const key = 'editorAssociations';
+
+  const qrcAssociation = enable ? editorType : 'default';
+  const allAssociations = workspace
+    .getConfiguration(section)
+    .get<Record<string, string>>(key, {});
+
+  if (allAssociations['*.qrc'] !== qrcAssociation) {
+    void workspace.getConfiguration(section).update(
+      key,
+      { ...allAssociations, '*.qrc': qrcAssociation },
+      true // global configuration
+    );
   }
 }
