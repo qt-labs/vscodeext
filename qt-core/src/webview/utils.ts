@@ -21,8 +21,8 @@ const WebAppDirs = {
 };
 
 export function createPanel(id: WebAppId) {
-  const meta = getWebAppInfo(id);
-  return window.createWebviewPanel(meta.viewType, meta.title, meta.viewColumn);
+  const info = getWebAppInfo(id);
+  return window.createWebviewPanel(info.viewType, info.title, info.viewColumn);
 }
 
 export function setupWebApp(id: WebAppId, context: Context, panel: Panel) {

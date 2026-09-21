@@ -15,17 +15,18 @@ import { GlobalStateManager } from '@/state';
 const appId: WebAppId = 'new-item';
 let instance: NewItemController | undefined;
 
-export function registerCreateNewItemPanelCommand(
-  context: vscode.ExtensionContext
-) {
-  return vscode.commands.registerCommand(
-    `${EXTENSION_ID}.createNewItem`,
-    async () => {
-      telemetry.sendAction('createNewItem');
+export function addNewItem(context: vscode.ExtensionContext) {
+  const openCmd = 'createNewItem';
+  const openCmdFull = `${EXTENSION_ID}.${openCmd}`;
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(openCmdFull, async () => {
+      telemetry.sendAction(openCmd);
       await NewItemController.render(context);
-    }
+    })
   );
 }
+
 export class NewItemController {
   private readonly _dispatcher: NewItemDispatcher;
   private readonly _disposables = new DisposableStore();

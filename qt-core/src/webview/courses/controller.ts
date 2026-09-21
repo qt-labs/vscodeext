@@ -16,14 +16,16 @@ type Context = vscode.ExtensionContext;
 const appId: WebAppId = 'courses-browser';
 let instance: CoursesBrowserController | undefined;
 
-export function registerOpenCoursesBrowserCommand(context: Context) {
-  const name = 'openCoursesBrowser';
-  const cmd = `${consts.EXTENSION_ID}.${name}`;
+export function addCoursesBrowser(context: Context) {
+  const openCmd = 'openCoursesBrowser';
+  const openCmdFull = `${consts.EXTENSION_ID}.${openCmd}`;
 
-  return vscode.commands.registerCommand(cmd, () => {
-    telemetry.sendAction(name);
-    CoursesBrowserController.render(context);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand(openCmdFull, () => {
+      telemetry.sendAction(openCmd);
+      CoursesBrowserController.render(context);
+    })
+  );
 }
 
 export class CoursesBrowserController implements vscode.Disposable {
