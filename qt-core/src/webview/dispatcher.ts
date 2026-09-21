@@ -5,11 +5,11 @@ import * as vscode from 'vscode';
 
 import { createWrappedLogger, DisposableStore } from 'qt-lib';
 import { WebviewChannel } from '@/webview/channel';
-import { type AppId } from './shared/types';
+import { type WebAppId } from './shared/types';
 import { isCommand, CommandId, CommandHandler } from '@/webview/shared/message';
 
 interface DispatcherContext {
-  id: AppId;
+  id: WebAppId;
   panel: vscode.WebviewPanel;
 }
 
@@ -20,7 +20,7 @@ export class WebviewDispatcher implements vscode.Disposable {
   private readonly _handlers = new Map<CommandId, CommandHandler>();
   private readonly _disposables = new DisposableStore();
 
-  public constructor(id: AppId, panel: vscode.WebviewPanel) {
+  public constructor(id: WebAppId, panel: vscode.WebviewPanel) {
     this._context = {
       id,
       panel

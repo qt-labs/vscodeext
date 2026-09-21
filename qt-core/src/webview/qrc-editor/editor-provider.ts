@@ -14,7 +14,7 @@ import {
 
 import { telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
+import { setupWebApp } from '@/webview/utils';
 import { QrcDocsManager } from './docs-manager';
 import { QrcEditorController } from './controller';
 
@@ -85,18 +85,9 @@ class QrcEditorProvider implements CustomTextEditorProvider {
   ): Promise<void> {
     void token;
 
-    // view
-    configWebviewPanel(panel, {
-      appId: 'qrc-editor',
-      title: 'QRC editor',
-      context: this._context,
-      ...basicWebviewAppConfig
-    });
+    setupWebApp('qrc-editor', this._context, panel);
 
-    // doc
     this._docsManager.add(doc);
-
-    // controller
     const controller = new QrcEditorController(
       panel,
       this._docsManager,

@@ -5,16 +5,15 @@ import * as vscode from 'vscode';
 
 import { telemetry, DisposableStore } from 'qt-lib';
 import { getNewFileBaseDir, getNewProjectBaseDir } from '@/qtcli/commands';
+import { WebAppId } from '@/webview/shared/types';
+import { setupWebApp, createPanel } from '@/webview/utils';
 import { NewItemDispatcher } from './dispatcher';
-import * as texts from '@/texts';
-import { basicWebviewAppConfig, configWebviewPanel } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { GlobalStateManager } from '@/state';
 
-// definitions for webview-panel
-const PanelColumn = vscode.ViewColumn.One;
-const PanelViewType = 'ViewTypeWizard';
+const appId: WebAppId = 'new-item';
+let instance: NewItemPanel | undefined;
 
 export function registerCreateNewItemPanelCommand(
   context: vscode.ExtensionContext
@@ -28,60 +27,46 @@ export function registerCreateNewItemPanelCommand(
   );
 }
 export class NewItemPanel {
-  public static instance: NewItemPanel | undefined;
-  private readonly _panel: vscode.WebviewPanel;
-  private readonly _disposables = new DisposableStore();
   private readonly _dispatcher: NewItemDispatcher;
+  private readonly _disposables = new DisposableStore();
 
   private constructor(
-    panel: vscode.WebviewPanel,
+    private readonly _panel: vscode.WebviewPanel,
     qtcliSocketName: string,
     context: vscode.ExtensionContext
   ) {
-    configWebviewPanel(panel, {
-      appId: 'new-item',
-      title: texts.newItem.tabText,
-      context,
-      ...basicWebviewAppConfig
-    });
-
-    this._panel = panel;
-    this._dispatcher = new NewItemDispatcher(qtcliSocketName, panel, context);
-    this._disposables.push(panel.onDidDispose(this.dispose.bind(this)));
+    setupWebApp(appId, context, this._panel);
+    this._dispatcher = new NewItemDispatcher(
+      qtcliSocketName,
+      this._panel,
+      context
+    );
+    this._disposables.push(this._panel.onDidDispose(this.dispose.bind(this)));
   }
 
   public dispose() {
-    NewItemPanel.instance = undefined;
+    instance = undefined;
     this._dispatcher.dispose();
   }
 
   public static async render(context: vscode.ExtensionContext) {
-    if (!NewItemPanel.instance) {
-      const panel = vscode.window.createWebviewPanel(
-        PanelViewType,
-        texts.newItem.tabText,
-        PanelColumn
-      );
-
+    if (!instance) {
+      const panel = createPanel(appId);
       const socketId = generateSocketId('new-item');
       const qtcliServer = new QtcliRestServer(socketId);
       await qtcliServer.start(context);
 
-      NewItemPanel.instance = new NewItemPanel(
-        panel,
-        qtcliServer.socketName,
-        context
-      );
+      instance = new NewItemPanel(panel, qtcliServer.socketName, context);
     }
 
     const globalState = new GlobalStateManager(context);
     const savedOpenIn = globalState.getNewProjectOpenIn();
 
-    NewItemPanel.instance._dispatcher.setUiConfigs({
+    instance._dispatcher.setUiConfigs({
       newFileBaseDir: getNewFileBaseDir(),
       newProjectBaseDir: getNewProjectBaseDir(),
       openIn: savedOpenIn
     });
-    NewItemPanel.instance._panel.reveal(PanelColumn);
+    instance._panel.reveal();
   }
 }
