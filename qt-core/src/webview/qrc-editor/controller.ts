@@ -16,7 +16,7 @@ import {
   FileTag,
   QrcDocChangeEvent,
   QrcCommandReplyType
-} from '@/webview/shared/qrc-types';
+} from '@/webview/shared/qrc-editor';
 import { QrcNode } from './node';
 import { makeUniqueName } from './utils';
 import { QrcDocsManager } from './docs-manager';

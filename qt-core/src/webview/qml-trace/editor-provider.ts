@@ -19,13 +19,15 @@ import { QmlTraceController } from './controller';
 
 export function registerQmlTraceProvider(context: ExtensionContext) {
   const type = `${EXTENSION_ID}.qmlTrace`;
-  const provider = new QmlTraceProvider(context);
+  const provider = new QmlTraceEditorProvider(context);
   const reg = window.registerCustomEditorProvider(type, provider);
 
   context.subscriptions.push(...[provider, reg]);
 }
 
-class QmlTraceProvider implements CustomReadonlyEditorProvider<QmlTraceDoc> {
+class QmlTraceEditorProvider
+  implements CustomReadonlyEditorProvider<QmlTraceDoc>
+{
   private readonly _context: ExtensionContext;
   private readonly _controllers = new Map<WebviewPanel, QmlTraceController>();
 

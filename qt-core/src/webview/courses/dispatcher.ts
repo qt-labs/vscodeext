@@ -15,7 +15,7 @@ export class CoursesDispatcher extends WebviewDispatcher {
     private readonly _data: CoursesDataManager,
     panel: vscode.WebviewPanel
   ) {
-    super('courses', panel);
+    super('courses-browser', panel);
     this.setHandlers([
       [CommandId.CoursesGetCourses, this._onGetCourses],
       [CommandId.CoursesRunAction, this._onRunAction]

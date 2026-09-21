@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import { telemetry, DisposableStore } from 'qt-lib';
 import { WebAppId } from '@/webview/shared/types';
+import { getWebAppInfo } from '@/webview/info';
 import { setupWebApp, createPanel } from '@/webview/utils';
 import { WelcomePageDispatcher } from './dispatcher';
 import { WelcomePageDataManager } from './data-manager';
@@ -19,10 +20,9 @@ import { createWrappedLogger } from 'qt-lib';
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
 
-let instance: WelcomePageController | undefined;
-
-const appId: WebAppId = 'welcome';
+const appId: WebAppId = 'welcome-page';
 const logger = createWrappedLogger(`${appId}-controller`);
+let instance: WelcomePageController | undefined;
 
 export function registerOpenWelcomePageCommand(context: Context) {
   const name = 'openWelcomePage';
@@ -57,15 +57,14 @@ export async function tryOpenWelcomePage(context: Context) {
 }
 
 export function registerWelcomePageSerializer(context: Context) {
-  return vscode.window.registerWebviewPanelSerializer(
-    consts.WEBVIEW_PANEL_VIEW_TYPE,
-    {
-      async deserializeWebviewPanel(panel: Panel) {
-        WelcomePageController.restore(context, panel);
-        return Promise.resolve();
-      }
+  const info = getWebAppInfo(appId);
+
+  return vscode.window.registerWebviewPanelSerializer(info.viewType, {
+    async deserializeWebviewPanel(panel: Panel) {
+      WelcomePageController.restore(context, panel);
+      return Promise.resolve();
     }
-  );
+  });
 }
 
 export class WelcomePageController {
@@ -94,7 +93,7 @@ export class WelcomePageController {
 
   public static render(context: Context) {
     instance ??= new WelcomePageController(context, createPanel(appId));
-    instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+    instance._panel.reveal();
   }
 
   public static restore(context: Context, panel: Panel) {

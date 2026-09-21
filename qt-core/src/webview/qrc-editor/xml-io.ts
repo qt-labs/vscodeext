@@ -12,7 +12,7 @@ import {
   FileTag,
   isRccTag,
   isAttributes
-} from '@/webview/shared/qrc-types';
+} from '@/webview/shared/qrc-editor';
 import { cleanTagDeep } from './utils';
 
 const xmlOptions = {

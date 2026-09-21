@@ -6,13 +6,13 @@ import { type WebAppId } from '@shared/types';
 
 type Loader = () => Promise<{ default: Component }>;
 const loaders: Record<WebAppId, Loader> = {
-  'welcome': () => import('./welcome/WelcomeApp.svelte'),
-  'courses': () => import('./courses/CoursesApp.svelte'),
   'new-item': () => import('./new-item/NewItemApp.svelte'),
-  'qml-trace': () => import('./qml-trace/QmlTraceApp.svelte'),
-  'qrc-editor': () => import('./qrc-editor/QrcEditorApp.svelte'),
   'ex-browser': () => import('./ex-browser/ExBrowserApp.svelte'),
-  'ui-designer': () => import('./ui-designer/UiDesignerApp.svelte')
+  'welcome-page': () => import('./welcome/WelcomePageApp.svelte'),
+  'courses-browser': () => import('./courses/CoursesBrowserApp.svelte'),
+  'ui-file': () => import('./ui-file/UiFileApp.svelte'),
+  'qml-trace': () => import('./qml-trace/QmlTraceApp.svelte'),
+  'qrc-editor': () => import('./qrc-editor/QrcEditorApp.svelte')
 };
 
 function main() {

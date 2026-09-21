@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import { createWrappedLogger } from 'qt-lib';
-import { findUiDesignerSession } from '@/ui-designer/session';
+import { findUiDesignerSession } from '@/ui-file/session';
 import * as consts from './constants';
 
 const logger = createWrappedLogger('ui-designer-commands');

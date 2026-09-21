@@ -8,7 +8,7 @@ import {
   type QResourceTag,
   type FileTag,
   QrcNodePos
-} from '@shared/qrc-types';
+} from '@shared/qrc-editor';
 import * as texts from '@/apps/texts';
 
 export type QrcPropName =  'alias' | 'prefix' | 'lang';
