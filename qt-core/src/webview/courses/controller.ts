@@ -13,8 +13,8 @@ import * as consts from './constants';
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
 
-const appId: WebAppId = 'courses';
-let instance: CoursesController | undefined;
+const appId: WebAppId = 'courses-browser';
+let instance: CoursesBrowserController | undefined;
 
 export function registerOpenCoursesBrowserCommand(context: Context) {
   const name = 'openCoursesBrowser';
@@ -22,11 +22,11 @@ export function registerOpenCoursesBrowserCommand(context: Context) {
 
   return vscode.commands.registerCommand(cmd, () => {
     telemetry.sendAction(name);
-    CoursesController.render(context);
+    CoursesBrowserController.render(context);
   });
 }
 
-export class CoursesController implements vscode.Disposable {
+export class CoursesBrowserController implements vscode.Disposable {
   private readonly _data: CoursesDataManager;
   private readonly _dispatcher: CoursesDispatcher;
   private readonly _disposables = new DisposableStore();
@@ -51,7 +51,7 @@ export class CoursesController implements vscode.Disposable {
   }
 
   public static render(context: Context) {
-    instance ??= new CoursesController(context, createPanel(appId));
+    instance ??= new CoursesBrowserController(context, createPanel(appId));
     instance._panel.reveal();
   }
 }

@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import { telemetry } from 'qt-lib';
 import { setupWebApp } from '@/webview/utils';
 import * as consts from './constants';
-import { UiFileEditorController } from './editor-controller';
+import { UiFileController } from './controller';
 
 type Context = vscode.ExtensionContext;
 type WebviewPanel = vscode.WebviewPanel;
@@ -21,10 +21,7 @@ export function registerUiFileEditorProvider(context: Context) {
 }
 
 class UiFileEditorProvider implements vscode.CustomTextEditorProvider {
-  private readonly _controllers = new Map<
-    WebviewPanel,
-    UiFileEditorController
-  >();
+  private readonly _controllers = new Map<WebviewPanel, UiFileController>();
 
   constructor(private readonly _context: Context) {}
 
@@ -35,10 +32,10 @@ class UiFileEditorProvider implements vscode.CustomTextEditorProvider {
   ): Promise<void> {
     void token;
 
-    setupWebApp('ui-designer', this._context, panel);
+    setupWebApp('ui-file', this._context, panel);
 
     await ensureDocumentNotEmpty(doc);
-    const controller = new UiFileEditorController(panel, doc.uri);
+    const controller = new UiFileController(panel, doc.uri);
     this._controllers.set(panel, controller);
 
     panel.onDidDispose(() => {

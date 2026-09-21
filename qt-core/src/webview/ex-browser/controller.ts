@@ -8,6 +8,7 @@ import { telemetry, DisposableStore } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { WebAppId } from '@/webview/shared/types';
+import { getWebAppInfo } from '@/webview/info';
 import { setupWebApp, createPanel, exposeDirs } from '@/webview/utils';
 import { ExDataManager } from './data-manager';
 import { ExCoreWatcher } from './core-watcher';
@@ -33,15 +34,14 @@ export function registerOpenExBrowserCommand(context: Context) {
 }
 
 export function registerExBrowserPageSerializer(context: Context) {
-  return vscode.window.registerWebviewPanelSerializer(
-    consts.WEBVIEW_PANEL_VIEW_TYPE,
-    {
-      async deserializeWebviewPanel(panel: Panel) {
-        ExBrowserController.restore(context, panel);
-        return Promise.resolve();
-      }
+  const info = getWebAppInfo(appId);
+
+  return vscode.window.registerWebviewPanelSerializer(info.viewType, {
+    async deserializeWebviewPanel(panel: Panel) {
+      ExBrowserController.restore(context, panel);
+      return Promise.resolve();
     }
-  );
+  });
 }
 
 export class ExBrowserController {
@@ -88,7 +88,7 @@ export class ExBrowserController {
 
   public static render(context: Context) {
     instance ??= new ExBrowserController(context, createPanel(appId));
-    instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+    instance._panel.reveal();
   }
 
   public static restore(context: Context, panel: Panel) {

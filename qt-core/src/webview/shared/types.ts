@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 export type WebAppId =
-  | 'welcome'
-  | 'courses'
   | 'new-item'
-  | 'qml-trace'
-  | 'qrc-editor'
   | 'ex-browser'
-  | 'ui-designer';
+  | 'welcome-page'
+  | 'courses-browser'
+  | 'ui-file'
+  | 'qml-trace'
+  | 'qrc-editor';
 
 export type OpenInPreference = 'newWindow' | 'addToWorkspace';
 export const OpenInDefault: OpenInPreference = 'addToWorkspace';

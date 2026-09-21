@@ -18,11 +18,11 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
   const iconPathPrefix = 'res/icons/qt-webview';
 
   switch (appId) {
-    case 'welcome':
+    case 'new-item':
       return {
         appId,
-        title: texts.WelcomePage.tabText,
-        viewType: 'ViewTypeWelcomePage',
+        title: texts.newItem.tabText,
+        viewType: 'ViewTypeNewItem',
         viewColumn,
         iconPathPrefix
       };
@@ -36,28 +36,28 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         iconPathPrefix
       };
 
-    case 'courses':
+    case 'welcome-page':
       return {
         appId,
-        title: texts.Courses.tabText,
+        title: texts.welcomePage.tabText,
+        viewType: 'ViewTypeWelcomePage',
+        viewColumn,
+        iconPathPrefix
+      };
+
+    case 'courses-browser':
+      return {
+        appId,
+        title: texts.coursesBrowser.tabText,
         viewType: 'ViewTypeCoursesBrowser',
         viewColumn,
         iconPathPrefix
       };
 
-    case 'new-item':
+    case 'ui-file':
       return {
         appId,
-        title: texts.newItem.tabText,
-        viewType: 'ViewTypeWizard',
-        viewColumn,
-        iconPathPrefix
-      };
-
-    case 'ui-designer':
-      return {
-        appId,
-        title: 'UI file',
+        title: texts.uiFile.tabText,
         viewType: '',
         viewColumn,
         iconPathPrefix: 'res/icons/qt-ui'
@@ -75,7 +75,7 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
     case 'qrc-editor':
       return {
         appId,
-        title: 'QRC editor',
+        title: texts.qrcEditor.tabText,
         viewType: '',
         viewColumn,
         iconPathPrefix: 'res/icons/qrc'

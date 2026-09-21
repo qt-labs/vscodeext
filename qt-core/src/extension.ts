@@ -47,11 +47,11 @@ import {
   registerOpenWelcomePageCommand,
   registerWelcomePageSerializer
 } from '@/webview/welcome/controller';
-import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
+import { registerCreateNewItemPanelCommand } from '@/webview/new-item/controller';
 import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
 import { registerQmlTraceProvider } from '@/webview/qml-trace/editor-provider';
-import { registerUiDesignerCommands } from '@/ui-designer/commands';
-import { registerUiFileEditorProvider } from '@/ui-designer/editor-provider';
+import { registerUiDesignerCommands } from '@/ui-file/commands';
+import { registerUiFileEditorProvider } from '@/ui-file/editor-provider';
 import { registerOpenInLinguistCommand } from '@/translation';
 
 const logger = createLogger('extension');

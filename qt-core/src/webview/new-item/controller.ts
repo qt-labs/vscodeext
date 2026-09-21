@@ -13,7 +13,7 @@ import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { GlobalStateManager } from '@/state';
 
 const appId: WebAppId = 'new-item';
-let instance: NewItemPanel | undefined;
+let instance: NewItemController | undefined;
 
 export function registerCreateNewItemPanelCommand(
   context: vscode.ExtensionContext
@@ -22,11 +22,11 @@ export function registerCreateNewItemPanelCommand(
     `${EXTENSION_ID}.createNewItem`,
     async () => {
       telemetry.sendAction('createNewItem');
-      await NewItemPanel.render(context);
+      await NewItemController.render(context);
     }
   );
 }
-export class NewItemPanel {
+export class NewItemController {
   private readonly _dispatcher: NewItemDispatcher;
   private readonly _disposables = new DisposableStore();
 
@@ -56,7 +56,7 @@ export class NewItemPanel {
       const qtcliServer = new QtcliRestServer(socketId);
       await qtcliServer.start(context);
 
-      instance = new NewItemPanel(panel, qtcliServer.socketName, context);
+      instance = new NewItemController(panel, qtcliServer.socketName, context);
     }
 
     const globalState = new GlobalStateManager(context);

@@ -26,7 +26,7 @@ import {
 } from '@/installation-root';
 import { coreAPI } from '@/extension';
 import { warnAboutMissingQtPath } from '@/qtpaths';
-import { UiDesignerSession } from '@/ui-designer/session';
+import { UiDesignerSession } from '@/ui-file/session';
 
 const logger = createLogger('project');
 
