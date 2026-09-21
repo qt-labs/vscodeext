@@ -9,13 +9,13 @@ import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
 import { WebAppId } from '@/webview/shared/types';
 import { getWebAppInfo } from '@/webview/info';
+import { ExPackagePoolDir } from '@/webview/shared/ex-browser';
 import { setupWebApp, createPanel, exposeDirs } from '@/webview/utils';
 import { ExDataManager } from './data-manager';
 import { ExCoreWatcher } from './core-watcher';
 import { ExBrowserDispatcher } from './dispatcher';
 import * as helpers from './helpers';
 import * as consts from './constants';
-import { ExPackagePoolDir } from '../shared/ex-browser';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
@@ -23,25 +23,24 @@ type Context = vscode.ExtensionContext;
 const appId: WebAppId = 'ex-browser';
 let instance: ExBrowserController | undefined;
 
-export function registerOpenExBrowserCommand(context: Context) {
-  return vscode.commands.registerCommand(
-    `${EXTENSION_ID}.openExamplesBrowser`,
-    () => {
-      telemetry.sendAction('openExamplesBrowser');
-      ExBrowserController.render(context);
-    }
-  );
-}
-
-export function registerExBrowserPageSerializer(context: Context) {
+export function addExBrowser(context: Context) {
+  const openCmd = 'openExamplesBrowser';
+  const openCmdFull = `${EXTENSION_ID}.${openCmd}`;
   const info = getWebAppInfo(appId);
 
-  return vscode.window.registerWebviewPanelSerializer(info.viewType, {
-    async deserializeWebviewPanel(panel: Panel) {
-      ExBrowserController.restore(context, panel);
-      return Promise.resolve();
-    }
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand(openCmdFull, () => {
+      telemetry.sendAction(openCmd);
+      ExBrowserController.render(context);
+    }),
+
+    vscode.window.registerWebviewPanelSerializer(info.viewType, {
+      async deserializeWebviewPanel(panel: Panel) {
+        ExBrowserController.restore(context, panel);
+        return Promise.resolve();
+      }
+    })
+  );
 }
 
 export class ExBrowserController {

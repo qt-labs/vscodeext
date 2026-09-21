@@ -24,17 +24,27 @@ const appId: WebAppId = 'welcome-page';
 const logger = createWrappedLogger(`${appId}-controller`);
 let instance: WelcomePageController | undefined;
 
-export function registerOpenWelcomePageCommand(context: Context) {
-  const name = 'openWelcomePage';
-  const cmd = `${consts.EXTENSION_ID}.${name}`;
+export function addWelcomePage(context: Context) {
+  const openCmd = 'openWelcomePage';
+  const openCmdFull = `${consts.EXTENSION_ID}.${openCmd}`;
+  const info = getWebAppInfo(appId);
 
-  return vscode.commands.registerCommand(cmd, () => {
-    telemetry.sendAction(name);
-    WelcomePageController.render(context);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand(openCmdFull, () => {
+      telemetry.sendAction(openCmd);
+      WelcomePageController.render(context);
+    }),
+
+    vscode.window.registerWebviewPanelSerializer(info.viewType, {
+      async deserializeWebviewPanel(panel: Panel) {
+        WelcomePageController.restore(context, panel);
+        return Promise.resolve();
+      }
+    })
+  );
 }
 
-export async function tryOpenWelcomePage(context: Context) {
+export async function showEntryPage(context: Context) {
   // While the qt-sm "Get Started" walkthrough is available but not yet
   // completed, guide the user through it instead of the welcome page.
   if (isWalkthroughAvailable() && !isGetStartedDone()) {

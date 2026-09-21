@@ -4,60 +4,49 @@
 import {
   Uri,
   window,
-  WebviewPanel,
-  ExtensionContext,
-  CancellationToken,
-  CustomReadonlyEditorProvider,
-  CustomDocumentOpenContext
+  WebviewPanel as Panel,
+  ExtensionContext as Context,
+  CancellationToken as Token,
+  CustomDocumentOpenContext as DocContext,
+  CustomReadonlyEditorProvider as EditorProvider
 } from 'vscode';
 
 import { getQtQmlApi } from 'qt-lib';
 import { setupWebApp } from '@/webview/utils';
 import { EXTENSION_ID } from '@/constants';
-import { QmlTraceDoc } from './doc';
-import { QmlTraceController } from './controller';
+import { QmlTraceDoc as Doc } from './doc';
+import { QmlTraceController as Controller } from './controller';
 
-export function registerQmlTraceProvider(context: ExtensionContext) {
+export function addQmlTraceFileSupport(context: Context) {
   const type = `${EXTENSION_ID}.qmlTrace`;
   const provider = new QmlTraceEditorProvider(context);
-  const reg = window.registerCustomEditorProvider(type, provider);
 
-  context.subscriptions.push(...[provider, reg]);
+  context.subscriptions.push(
+    provider,
+    window.registerCustomEditorProvider(type, provider)
+  );
 }
 
-class QmlTraceEditorProvider
-  implements CustomReadonlyEditorProvider<QmlTraceDoc>
-{
-  private readonly _context: ExtensionContext;
-  private readonly _controllers = new Map<WebviewPanel, QmlTraceController>();
+class QmlTraceEditorProvider implements EditorProvider<Doc> {
+  private readonly _controllers = new Map<Panel, Controller>();
 
-  constructor(context: ExtensionContext) {
-    this._context = context;
-  }
+  constructor(private readonly _context: Context) {}
 
   // eslint-disable-next-line
   public dispose() {}
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  public openCustomDocument(
-    uri: Uri,
-    openContext: CustomDocumentOpenContext,
-    token: CancellationToken
-  ): QmlTraceDoc | Thenable<QmlTraceDoc> {
+  public openCustomDocument(uri: Uri, openContext: DocContext, token: Token) {
     void openContext;
     void token;
-    return new QmlTraceDoc(uri);
+    return new Doc(uri);
   }
 
-  public async resolveCustomEditor(
-    doc: QmlTraceDoc,
-    panel: WebviewPanel,
-    token: CancellationToken
-  ): Promise<void> {
+  public async resolveCustomEditor(doc: Doc, panel: Panel, token: Token) {
     void token;
 
     setupWebApp('qml-trace', this._context, panel);
-    const controller = new QmlTraceController(doc, panel);
+    const controller = new Controller(doc, panel);
     this._controllers.set(panel, controller);
 
     panel.onDidDispose(async () => {

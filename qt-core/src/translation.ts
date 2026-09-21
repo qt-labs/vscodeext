@@ -22,11 +22,18 @@ import { EXTENSION_ID } from '@/constants';
 
 const logger = createLogger('translation');
 
-export function registerOpenInLinguistCommand() {
-  return vscode.commands.registerCommand(
-    `${EXTENSION_ID}.openInLinguist`,
-    openInLinguistCommand
+export function addQtTsSupport(context: vscode.ExtensionContext) {
+  const openCmd = `${EXTENSION_ID}.openInLinguist`;
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(openCmd, openInLinguistCommand),
+    vscode.workspace.onDidOpenTextDocument(markIfQtTs),
+    vscode.workspace.onDidSaveTextDocument(markIfQtTs)
   );
+
+  for (const doc of vscode.workspace.textDocuments) {
+    void markIfQtTs(doc);
+  }
 }
 
 async function openInLinguistCommand() {
@@ -155,4 +162,28 @@ function openInLinguist(linguistPath: string, file: string) {
     logger.error(err);
     void vscode.window.showErrorMessage(err);
   });
+}
+
+async function markIfQtTs(doc: vscode.TextDocument) {
+  // <?xml version="1.0" encoding="utf-8"?>
+  // <!DOCTYPE TS>
+  // <TS version="2.1" language="en_US">
+  //   <context> ...
+  //   </context>
+  // </TS>
+
+  const languageId = 'qt-ts'; // contributes > languages
+  const maxLinesToCheck = 3;
+  const rootTagOpening = '<TS ';
+
+  if (!doc.fileName.endsWith('.ts') || doc.languageId === languageId) {
+    return;
+  }
+
+  for (let i = 0; i < Math.min(maxLinesToCheck, doc.lineCount); i++) {
+    if (doc.lineAt(i).text.startsWith(rootTagOpening)) {
+      await vscode.languages.setTextDocumentLanguage(doc, languageId);
+      break;
+    }
+  }
 }
