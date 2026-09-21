@@ -5,16 +5,16 @@ import * as vscode from 'vscode';
 
 import { WebviewDispatcher } from '@/webview/dispatcher';
 import { Command, CommandId } from '@/webview/shared/message';
-import { findUiDesignerSession } from '@/ui-designer/session';
+import { findUiDesignerSession } from '@/ui-file/session';
 
-export class UiFileEditorController implements vscode.Disposable {
+export class UiFileController implements vscode.Disposable {
   private readonly _dispatcher: WebviewDispatcher;
 
   public constructor(
     panel: vscode.WebviewPanel,
     private readonly _docUri: vscode.Uri
   ) {
-    this._dispatcher = new WebviewDispatcher('ui-designer', panel);
+    this._dispatcher = new WebviewDispatcher('ui-file', panel);
     this._dispatcher.setHandlers([
       [CommandId.UiFileOpenInDesigner, this._onOpenInDesigner],
       [CommandId.UiFileOpenInTextEditor, this._onOpenFileInTextEditor]

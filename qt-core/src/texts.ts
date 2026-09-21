@@ -11,22 +11,28 @@ export const newItem = {
 
 export const exBrowser = {
   tabText: 'Qt examples',
-
   specialCategory: {
-    all: 'All',
-    featured: 'Featured'
+    all: 'All'
   }
 };
 
-export const Courses = {
+export const welcomePage = {
+  tabText: 'Welcome'
+};
+
+export const coursesBrowser = {
   tabText: 'Qt Academy courses'
 };
 
-export const WelcomePage = {
-  tabText: 'Welcome'
+export const uiFile = {
+  tabText: 'UI file'
 };
 
 export const qmlTrace = {
   tabText: 'QML trace',
   folderSelectTitle: 'Select directory'
+};
+
+export const qrcEditor = {
+  tabText: 'QRC editor'
 };

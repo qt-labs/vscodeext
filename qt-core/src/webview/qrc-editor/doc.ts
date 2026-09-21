@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { type RccTag, QResourceTag } from '@/webview/shared/qrc-types';
+import { type RccTag, QResourceTag } from '@/webview/shared/qrc-editor';
 import { parseXml, generateXml } from './xml-io';
 import { updateGroupHashes, generateKey } from './utils';
 

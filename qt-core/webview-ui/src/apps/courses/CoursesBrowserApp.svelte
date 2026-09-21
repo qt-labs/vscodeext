@@ -11,7 +11,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import LoadingMask from '@/comps/LoadingMask.svelte';
 
   import CoursesGridView from './CoursesGridView.svelte';
-  import CoursesAppHeader from './CoursesAppHeader.svelte';
+  import CoursesHeader from './CoursesHeader.svelte';
   import CoursesDetailsOverlay from './CoursesDetailsOverlay.svelte';
   import CoursesEmptyDataInfo from './CoursesEmptyDataInfo.svelte';
   import { data, ui } from './states.svelte';
@@ -21,7 +21,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 </script>
 
 <div class='w-screen h-screen p-2 flex flex-col gap-2 relative'>
-  <CoursesAppHeader />
+  <CoursesHeader />
 
   <div class='grow min-h-0 h-full relative'>
     {#if data.refined.length !== 0}

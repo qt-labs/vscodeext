@@ -16,7 +16,7 @@ export class WelcomePageDispatcher extends WebviewDispatcher {
     private readonly _data: WelcomePageDataManager,
     panel: vscode.WebviewPanel
   ) {
-    super('welcome', panel);
+    super('welcome-page', panel);
     this.setHandlers([
       [CommandId.WelcomeGetData, this._onGetData],
       [CommandId.WelcomeHandleConfig, this._onHandleConfig],

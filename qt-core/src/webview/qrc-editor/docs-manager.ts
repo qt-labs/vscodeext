@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { QrcDocChangeEvent } from '@/webview/shared/qrc-types';
+import { QrcDocChangeEvent } from '@/webview/shared/qrc-editor';
 import { defaultQrcLines } from './xml-io';
 import { QrcDoc } from './doc';
 import { CommandId } from '../shared/message';

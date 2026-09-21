@@ -10,7 +10,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import { welcome as texts } from '@/apps/texts';
   import { portal, placeNear, clickOutside } from '@/utils/actions';
 
-  import WelcomeAppView from './WelcomeAppView.svelte';
+  import WelcomeMainView from './WelcomeMainView.svelte';
   import WelcomeExtInfoOverlay from './WelcomeExtInfoOverlay.svelte';
   import * as viewlogic from './viewlogic.svelte';
   import { ui } from './states.svelte';
@@ -20,7 +20,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <div class='w-screen h-screen flex flex-col gap-2 relative select-none'>
   <div class='grow min-h-0 h-full p-20 pt-15 relative overflow-y-auto'>
-    <WelcomeAppView />
+    <WelcomeMainView />
   </div>
 
   {@render Footer()}
