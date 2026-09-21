@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import { mount, type Component } from 'svelte';
-import { type AppId } from '@shared/types';
+import { type WebAppId } from '@shared/types';
 
 type Loader = () => Promise<{ default: Component }>;
-const loaders: Record<AppId, Loader> = {
+const loaders: Record<WebAppId, Loader> = {
   'welcome': () => import('./welcome/WelcomeApp.svelte'),
   'courses': () => import('./courses/CoursesApp.svelte'),
   'new-item': () => import('./new-item/NewItemApp.svelte'),
@@ -17,7 +17,7 @@ const loaders: Record<AppId, Loader> = {
 
 function main() {
   const appId = document.body.dataset.appId ?? '';
-  const loader = loaders[appId as AppId];
+  const loader = loaders[appId as WebAppId];
   const targetEl = document.getElementById('app')!;
 
   if (!loader) {
