@@ -8,6 +8,39 @@ import { createLogger, IsWindows, IsLinux } from 'qt-lib';
 
 const logger = createLogger('utils');
 
+export function normalizePathForComparison(filePath: string) {
+  const normalized = filePath.replace(/\\/g, '/');
+  return IsWindows ? normalized.toLowerCase() : normalized;
+}
+
+export function prependPathEntries(
+  environment: NodeJS.ProcessEnv,
+  pathEntries: readonly string[],
+  platform: NodeJS.Platform = process.platform
+) {
+  if (pathEntries.length === 0) {
+    return;
+  }
+
+  const delimiter = platform === 'win32' ? ';' : ':';
+  const pathKeys = Object.keys(environment).filter(
+    (name) => name.toLowerCase() === 'path'
+  );
+  const pathKey =
+    platform === 'win32'
+      ? (pathKeys.find((name) => name === 'PATH') ?? pathKeys[0] ?? 'PATH')
+      : 'PATH';
+  const inheritedPath = environment[pathKey] ?? '';
+
+  for (const duplicatePathKey of pathKeys) {
+    if (duplicatePathKey !== pathKey) {
+      Reflect.deleteProperty(environment, duplicatePathKey);
+    }
+  }
+  environment[pathKey] =
+    `${pathEntries.join(delimiter)}${delimiter}${inheritedPath}`;
+}
+
 export class QtProcess extends ChildProcess {
   override kill(signal?: NodeJS.Signals | number): boolean {
     if (!this.pid) {
@@ -38,6 +71,13 @@ export class QtProcess extends ChildProcess {
   }
 }
 
+interface SpawnProgramOptions {
+  pathEntries?: readonly string[];
+  cwd?: string;
+  env?: NodeJS.ProcessEnv;
+  sanitizeVsCodeEnv?: boolean;
+}
+
 export async function spawnProcessForTool(
   command: string,
   additionalArgs: string[] = []
@@ -51,29 +91,96 @@ export async function spawnProcessForTool(
     command += ` ${additionalArgs.map(quoteArg).join(' ')}`;
   }
   logger.info('Starting program:', command);
-  let options: SpawnOptions = {
-    shell: true
-  };
+  const options = await createSpawnOptions(true);
+  const childProcess = spawn(command, options);
+  return createQtProcess(childProcess);
+}
+
+export async function spawnProgramForTool(
+  program: string,
+  args: string[] = [],
+  optionsOverrides?: SpawnProgramOptions
+): Promise<QtProcess> {
+  logger.info('Starting program:', [program, ...args].join(' '));
+  const options = await createSpawnOptions(false, optionsOverrides);
+  const childProcess = spawn(program, args, options);
+  return createQtProcess(childProcess);
+}
+
+async function createSpawnOptions(
+  shell: boolean,
+  optionsOverrides?: SpawnProgramOptions
+): Promise<SpawnOptions> {
+  let options: SpawnOptions = { shell: shell };
+
+  if (optionsOverrides?.cwd) {
+    options = {
+      ...options,
+      cwd: optionsOverrides.cwd
+    };
+  }
+
   if (IsLinux) {
     options = {
       ...options,
       detached: true
     };
   }
-  if (IsWindows) {
-    const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
-    if (dllDirs !== undefined) {
-      const env = { ...process.env };
-      env.PATH = `${dllDirs as string};${env.PATH ?? ''}`;
-      options = {
-        ...options,
-        env: env
-      };
+
+  const env = { ...process.env, ...optionsOverrides?.env };
+
+  const pathEntries: string[] = [];
+
+  if (optionsOverrides?.pathEntries) {
+    pathEntries.push(...optionsOverrides.pathEntries);
+  }
+
+  if (optionsOverrides?.sanitizeVsCodeEnv) {
+    // Do not leak VS Code/Electron launch variables into preview applications.
+    // In particular, ELECTRON_RUN_AS_NODE can make a spawned app-host behave
+    // like a Node/Electron helper instead of a normal Qt Bridge executable.
+    const removedNames = Object.keys(env).filter((name) => {
+      const upperName = name.toUpperCase();
+      return (
+        upperName.startsWith('ELECTRON_') ||
+        upperName.startsWith('VSCODE_') ||
+        upperName === 'NODE_OPTIONS' ||
+        upperName === 'NODE_CHANNEL_FD' ||
+        upperName === 'NODE_UNIQUE_ID'
+      );
+    });
+    for (const name of removedNames) {
+      Reflect.deleteProperty(env, name);
     }
   }
-  const childProcess = spawn(command, options);
 
-  // Handle spawn errors
+  if (IsWindows) {
+    try {
+      const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
+      if (typeof dllDirs === 'string' && dllDirs.length > 0) {
+        pathEntries.push(dllDirs);
+      }
+    } catch {
+      // The Qt C++ extension is optional.
+    }
+  }
+
+  if (pathEntries.length > 0) {
+    prependPathEntries(env, pathEntries);
+  }
+
+  if (
+    optionsOverrides?.env ||
+    optionsOverrides?.sanitizeVsCodeEnv ||
+    pathEntries.length > 0
+  ) {
+    options = { ...options, env: env };
+  }
+
+  return options;
+}
+
+function createQtProcess(childProcess: ChildProcess): QtProcess {
   childProcess.on('error', (error) => {
     logger.error('Failed to spawn process:', String(error));
   });

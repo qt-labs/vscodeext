@@ -1,0 +1,20 @@
+version: "1"
+
+meta:
+  type: project
+  title: Qt Bridge for C# application
+  description: >-
+    Creates a Qt Bridge for C# application with a C# backend and QML user interface.
+
+files:
+  - in: NewProject.csproj
+    out: '{{ .name }}.csproj'
+  - in: Program.cs
+  - in: Main.qml
+
+  - in: git.ignore
+    out: .gitignore
+    bypass: true
+
+fields:
+  - namespace: '{{ (Qt.CSharpNamespace .name) }}'

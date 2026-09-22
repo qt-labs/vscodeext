@@ -1,0 +1,15 @@
+version: "1"
+
+steps:
+  - id: Framework
+    type: picker
+    question: "Target framework:"
+    default: "net8.0"
+    items:
+      - text: "net8.0"
+      - text: "net9.0"
+      - text: "net10.0"
+  - id: SampleCode
+    type: confirm
+    question: "Add sample code to project?"
+    default: false

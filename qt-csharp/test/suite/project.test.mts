@@ -1,0 +1,664 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+import { expect } from 'chai';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import {
+  collectPreviewStagingGarbage,
+  defaultQtRid,
+  findDotNetPathEntry,
+  inspectQtBridgeProject,
+  resolveQtBridgeQtDir,
+  QtBridgeProjectSnapshot
+} from '@/project.mjs';
+import { QtBridgeProjectManager } from '@/project-manager.mjs';
+import type { QtBridgeQmlMetadata } from 'qt-lib';
+
+function normalizedPath(filePath: string | undefined) {
+  return process.platform === 'win32' ? filePath?.toLowerCase() : filePath;
+}
+
+describe('Qt Bridge project discovery', () => {
+  let testDirectory: string;
+
+  beforeEach(async () => {
+    testDirectory = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'qt-csharp-project-')
+    );
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(testDirectory, { recursive: true, force: true });
+  });
+
+  async function inspect(projectXml: string) {
+    const projectFile = path.join(testDirectory, 'Application.csproj');
+    await fs.promises.writeFile(projectFile, projectXml, 'utf8');
+    return inspectQtBridgeProject(vscode.Uri.file(projectFile));
+  }
+
+  it('maps macOS architectures to Qt Bridge package RIDs', () => {
+    expect(defaultQtRid('darwin', 'arm64')).to.equal('osx-arm64');
+    expect(defaultQtRid('darwin', 'x64')).to.equal('osx-x64');
+  });
+
+  it('preserves PATH when dotnet is already available', async () => {
+    const pathDirectory = path.join(testDirectory, 'path');
+    await fs.promises.mkdir(pathDirectory);
+    await fs.promises.writeFile(
+      path.join(pathDirectory, 'dotnet.exe'),
+      '',
+      'utf8'
+    );
+
+    expect(
+      findDotNetPathEntry(
+        {
+          PATH: pathDirectory,
+          DOTNET_ROOT_X64: path.join(testDirectory, 'fallback')
+        },
+        'win32',
+        'x64'
+      )
+    ).to.be.undefined;
+  });
+
+  it('uses DOTNET_HOST_PATH when PATH does not contain dotnet', async () => {
+    const dotNetDirectory = path.join(testDirectory, 'host');
+    const dotNetHostPath = path.join(dotNetDirectory, 'dotnet');
+    await fs.promises.mkdir(dotNetDirectory);
+    await fs.promises.writeFile(dotNetHostPath, '', 'utf8');
+
+    expect(
+      findDotNetPathEntry(
+        {
+          PATH: '',
+          DOTNET_HOST_PATH: dotNetHostPath
+        },
+        'darwin',
+        'arm64'
+      )
+    ).to.equal(path.resolve(dotNetDirectory));
+  });
+
+  for (const scenario of [
+    {
+      name: 'Windows x64',
+      platform: 'win32' as NodeJS.Platform,
+      architecture: 'x64',
+      variable: 'DOTNET_ROOT_X64',
+      executable: 'dotnet.exe'
+    },
+    {
+      name: 'Linux x64',
+      platform: 'linux' as NodeJS.Platform,
+      architecture: 'x64',
+      variable: 'DOTNET_ROOT_X64',
+      executable: 'dotnet'
+    },
+    {
+      name: 'macOS ARM64',
+      platform: 'darwin' as NodeJS.Platform,
+      architecture: 'arm64',
+      variable: 'DOTNET_ROOT_ARM64',
+      executable: 'dotnet'
+    }
+  ] as const) {
+    it(`resolves ${scenario.name} architecture-specific DOTNET_ROOT`, async () => {
+      const dotNetRoot = path.join(
+        testDirectory,
+        scenario.platform,
+        scenario.architecture
+      );
+      await fs.promises.mkdir(dotNetRoot, { recursive: true });
+      await fs.promises.writeFile(
+        path.join(dotNetRoot, scenario.executable),
+        '',
+        'utf8'
+      );
+
+      expect(
+        findDotNetPathEntry(
+          {
+            PATH: '',
+            [scenario.variable]: dotNetRoot,
+            DOTNET_ROOT: path.join(testDirectory, 'generic')
+          },
+          scenario.platform,
+          scenario.architecture
+        )
+      ).to.equal(path.resolve(dotNetRoot));
+    });
+  }
+
+  it('detects a literal package reference and explicit QtDir', async () => {
+    const qtDir = path.join(testDirectory, 'Qt');
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup><QtDir>${qtDir}</QtDir></PropertyGroup>
+        <ItemGroup>
+          <PackageReference Include="QtGroup.Qt.Bridge.CSharp.win-x64"
+            Version="1.2.3" />
+        </ItemGroup>
+      </Project>`);
+
+    expect(project?.packageId).to.equal('QtGroup.Qt.Bridge.CSharp.win-x64');
+    expect(project?.packageVersion).to.equal('1.2.3');
+    expect(project?.qtDir).to.equal(qtDir);
+  });
+
+  it('accepts single-quoted package attributes in any order', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <ItemGroup>
+          <PackageReference Version='1.2.3'
+            Include='QtGroup.Qt.Bridge.CSharp.win-x64' />
+        </ItemGroup>
+      </Project>`);
+
+    expect(project?.packageId).to.equal('QtGroup.Qt.Bridge.CSharp.win-x64');
+    expect(project?.packageVersion).to.equal('1.2.3');
+  });
+
+  it('accepts case-insensitive package IDs and nested versions', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <ItemGroup>
+          <PackageReference Include="qtgroup.qt.bridge.csharp.linux-x64">
+            <Version>2.3.4</Version>
+          </PackageReference>
+        </ItemGroup>
+      </Project>`);
+
+    expect(project?.packageId).to.equal('qtgroup.qt.bridge.csharp.linux-x64');
+    expect(project?.packageVersion).to.equal('2.3.4');
+  });
+
+  it('ignores commented Qt Bridge package references', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <ItemGroup>
+          <!-- <PackageReference
+            Include="QtGroup.Qt.Bridge.CSharp.win-x64" Version="1.2.3" /> -->
+        </ItemGroup>
+      </Project>`);
+
+    expect(project).to.be.undefined;
+  });
+
+  it('does not treat QtDir alone as proof of a Qt Bridge project', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+          <QtDir>/opt/Qt</QtDir>
+        </PropertyGroup>
+      </Project>`);
+
+    expect(project).to.be.undefined;
+  });
+
+  it('does not treat QtInstallRoot alone as proof of a Qt Bridge project', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+          <QtInstallRoot>/opt/Qt</QtInstallRoot>
+        </PropertyGroup>
+      </Project>`);
+
+    expect(project).to.be.undefined;
+  });
+
+  it('resolves QtDir fallbacks by precedence', () => {
+    const fallbacks = {
+      configuredQtDir: '/settings/Qt',
+      selectedQtDir: '/qt-core/Qt'
+    };
+
+    expect(
+      resolveQtBridgeQtDir('/project/Qt', fallbacks, '/environment/Qt')
+    ).to.equal('/project/Qt');
+    expect(
+      resolveQtBridgeQtDir(undefined, fallbacks, '/environment/Qt')
+    ).to.equal('/settings/Qt');
+    expect(
+      resolveQtBridgeQtDir(
+        undefined,
+        { selectedQtDir: fallbacks.selectedQtDir },
+        '/environment/Qt'
+      )
+    ).to.equal('/environment/Qt');
+    expect(
+      resolveQtBridgeQtDir(
+        undefined,
+        { selectedQtDir: fallbacks.selectedQtDir },
+        ''
+      )
+    ).to.equal('/qt-core/Qt');
+  });
+
+  it('resolves a templated package reference', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+          <QtBridgePackageId>QtGroup.Qt.Bridge.CSharp.linux-x64</QtBridgePackageId>
+          <QtBridgeTemplateRid>linux-x64</QtBridgeTemplateRid>
+          <BridgeVersion>2.0.0</BridgeVersion>
+        </PropertyGroup>
+        <ItemGroup>
+          <PackageReference Include="$(QtBridgePackageId)"
+            Version="$(BridgeVersion)" />
+        </ItemGroup>
+      </Project>`);
+
+    expect(project?.packageId).to.equal('QtGroup.Qt.Bridge.CSharp.linux-x64');
+    expect(project?.packageVersion).to.equal('2.0.0');
+  });
+
+  it('does not infer a package RID from conditional properties', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup>
+          <QtBridgeTemplateArch Condition="'$(Platform)' == 'x64'">x64</QtBridgeTemplateArch>
+          <QtBridgeTemplateArch Condition="'$(Platform)' == 'arm64'">arm64</QtBridgeTemplateArch>
+          <QtBridgeTemplateRid Condition="$([MSBuild]::IsOSPlatform('Windows'))">win-x64</QtBridgeTemplateRid>
+          <QtBridgeTemplateRid Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux-$(QtBridgeTemplateArch)</QtBridgeTemplateRid>
+          <QtBridgePackageId>QtGroup.Qt.Bridge.CSharp.$(QtBridgeTemplateRid)</QtBridgePackageId>
+        </PropertyGroup>
+        <ItemGroup>
+          <PackageReference Include="$(QtBridgePackageId)" />
+        </ItemGroup>
+      </Project>`);
+
+    expect(project?.packageId).to.equal(
+      `QtGroup.Qt.Bridge.CSharp.${defaultQtRid()}`
+    );
+  });
+
+  it('detects imported Qt Bridge targets', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <Import Project="build/Qt.Bridge.targets" />
+      </Project>`);
+
+    expect(project).not.to.be.undefined;
+    expect(project?.packageId).to.be.undefined;
+  });
+
+  it('ignores unrelated C# projects', async () => {
+    const project = await inspect(`
+      <Project Sdk="Microsoft.NET.Sdk">
+        <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+      </Project>`);
+
+    expect(project).to.be.undefined;
+  });
+
+  it('keeps multiple projects and resolves the closest containing project', async () => {
+    const firstDirectory = path.join(testDirectory, 'First');
+    const secondDirectory = path.join(testDirectory, 'Second');
+    await fs.promises.mkdir(firstDirectory);
+    await fs.promises.mkdir(secondDirectory);
+    await Promise.all(
+      [firstDirectory, secondDirectory].map((directory) =>
+        fs.promises.writeFile(
+          path.join(directory, `${path.basename(directory)}.csproj`),
+          '<Project><Import Project="Qt.Bridge.targets" /></Project>',
+          'utf8'
+        )
+      )
+    );
+    const folder: vscode.WorkspaceFolder = {
+      uri: vscode.Uri.file(testDirectory),
+      name: 'workspace',
+      index: 0
+    };
+    const manager = new QtBridgeProjectManager();
+
+    try {
+      await manager.refreshFolder(folder, false);
+
+      expect(manager.getProjects()).to.have.length(2);
+      expect(manager.getProject(folder)).to.be.undefined;
+      const resolvedProject = manager.getProjectForUri(
+        vscode.Uri.file(path.join(firstDirectory, 'Main.qml'))
+      );
+      const expectedProject = path.join(firstDirectory, 'First.csproj');
+      expect(
+        process.platform === 'win32'
+          ? resolvedProject?.projectFile.fsPath.toLowerCase()
+          : resolvedProject?.projectFile.fsPath
+      ).to.equal(
+        process.platform === 'win32'
+          ? expectedProject.toLowerCase()
+          : expectedProject
+      );
+    } finally {
+      manager.dispose();
+    }
+  });
+
+  it('serializes concurrent refreshes for the same folder', async () => {
+    const folder: vscode.WorkspaceFolder = {
+      uri: vscode.Uri.file(testDirectory),
+      name: 'workspace',
+      index: 0
+    };
+    const manager = new QtBridgeProjectManager();
+    const testManager = manager as unknown as {
+      refreshFolderImpl(
+        folder: vscode.WorkspaceFolder,
+        notify: boolean
+      ): Promise<void>;
+    };
+    const started: number[] = [];
+    let releaseFirstRefresh: (() => void) | undefined;
+    const firstRefreshStarted = new Promise<void>((resolve) => {
+      releaseFirstRefresh = resolve;
+    });
+    const firstRefreshComplete = new Promise<void>((resolve) => {
+      testManager.refreshFolderImpl = async () => {
+        started.push(started.length + 1);
+        if (started.length === 1) {
+          resolve();
+          await firstRefreshStarted;
+        }
+      };
+    });
+
+    try {
+      const firstRefresh = manager.refreshFolder(folder, false);
+      await firstRefreshComplete;
+      const secondRefresh = manager.refreshFolder(folder, false);
+
+      await Promise.resolve();
+      expect(started).to.deep.equal([1]);
+      releaseFirstRefresh?.();
+      await Promise.all([firstRefresh, secondRefresh]);
+
+      expect(started).to.deep.equal([1, 2]);
+    } finally {
+      manager.dispose();
+    }
+  });
+
+  it('prepares and disposes a staged QML Preview launch', async () => {
+    const projectFile = path.join(testDirectory, 'Application.csproj');
+    const managedOutputDir = path.join(testDirectory, 'bin', 'Debug');
+    const nativeOutputDir = path.join(testDirectory, 'obj', 'native');
+    const nativeHostPath = path.join(nativeOutputDir, 'Application.exe');
+    const qtDir = path.join(testDirectory, 'Qt');
+    await Promise.all([
+      fs.promises.mkdir(managedOutputDir, { recursive: true }),
+      fs.promises.mkdir(nativeOutputDir, { recursive: true }),
+      fs.promises.mkdir(path.join(qtDir, 'qml'), { recursive: true })
+    ]);
+    await Promise.all([
+      fs.promises.writeFile(projectFile, '<Project />', 'utf8'),
+      fs.promises.writeFile(
+        path.join(managedOutputDir, 'Application.dll'),
+        'managed',
+        'utf8'
+      ),
+      fs.promises.writeFile(nativeHostPath, 'native', 'utf8')
+    ]);
+
+    const folder: vscode.WorkspaceFolder = {
+      uri: vscode.Uri.file(testDirectory),
+      name: 'workspace',
+      index: 0
+    };
+    const project = new QtBridgeProjectSnapshot(folder, {
+      projectFile,
+      packageId: 'QtGroup.Qt.Bridge.CSharp.win-x64',
+      packageVersion: '1.0.0',
+      qtDir,
+      qtInstallRoot: undefined
+    });
+    const metadata: QtBridgeQmlMetadata = {
+      metadataFile: path.join(testDirectory, 'obj', 'qtbridge-qml.ide.json'),
+      version: 1,
+      projectFile,
+      configuration: 'Debug',
+      targetFramework: 'net10.0',
+      application: {
+        assemblyName: 'Application',
+        executableName: 'Application.exe',
+        managedOutputDir,
+        managedHostPath: path.join(managedOutputDir, 'Application.exe'),
+        nativeHostPath
+      },
+      qml: {
+        sourceDir: path.join(testDirectory, 'obj', 'native', 'source'),
+        projectSourceDir: testDirectory,
+        buildDirs: [path.join(testDirectory, 'obj', 'native', 'build')],
+        importPaths: [path.join(testDirectory, 'imports')],
+        files: []
+      },
+      qmlLanguageServer: undefined
+    };
+    project.updateMetadata(metadata, true);
+
+    const firstLaunch = await project.prepareQmlPreview();
+    const secondLaunch = await project.prepareQmlPreview();
+    expect(firstLaunch).not.to.be.undefined;
+    expect(secondLaunch).not.to.be.undefined;
+    if (!firstLaunch || !secondLaunch) {
+      throw new Error('Expected a QML Preview launch');
+    }
+
+    expect(firstLaunch.executable).not.to.equal(secondLaunch.executable);
+    expect(await fs.promises.readFile(firstLaunch.executable, 'utf8')).to.equal(
+      'native'
+    );
+    expect(normalizedPath(firstLaunch.cwd)).to.equal(
+      normalizedPath(testDirectory)
+    );
+    expect(normalizedPath(firstLaunch.pathEntries[0])).to.equal(
+      normalizedPath(path.join(qtDir, 'bin'))
+    );
+    expect(firstLaunch.environment.QML_IMPORT_PATH).to.include(
+      path.join(path.dirname(firstLaunch.executable), 'qml')
+    );
+    expect(firstLaunch.environment.QML_IMPORT_PATH).to.include(
+      path.join(testDirectory, 'imports')
+    );
+
+    const firstStagingDirectory = path.dirname(firstLaunch.executable);
+    const secondStagingDirectory = path.dirname(secondLaunch.executable);
+    const firstOwner = JSON.parse(
+      await fs.promises.readFile(
+        path.join(firstStagingDirectory, '.qt-qml-preview-owner.json'),
+        'utf8'
+      )
+    ) as { pid: number };
+    expect(firstOwner.pid).to.equal(process.pid);
+    firstLaunch.dispose();
+    for (
+      let attempt = 0;
+      attempt < 20 && fs.existsSync(firstStagingDirectory);
+      ++attempt
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(fs.existsSync(firstStagingDirectory)).to.equal(false);
+    expect(fs.existsSync(secondStagingDirectory)).to.equal(true);
+    secondLaunch.dispose();
+    for (
+      let attempt = 0;
+      attempt < 20 && fs.existsSync(secondStagingDirectory);
+      ++attempt
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(fs.existsSync(secondStagingDirectory)).to.equal(false);
+  });
+});
+
+describe('Qt Bridge preview staging cleanup', () => {
+  let stagingRoot: string;
+
+  beforeEach(async () => {
+    stagingRoot = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'qt-csharp-staging-')
+    );
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(stagingRoot, { recursive: true, force: true });
+  });
+
+  async function createLaunchDirectory(
+    assembly: string,
+    key: string,
+    name: string,
+    ageMs = 0,
+    ownerPid?: number
+  ) {
+    const launchDirectory = path.join(stagingRoot, assembly, key, name);
+    await fs.promises.mkdir(launchDirectory, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(launchDirectory, 'Application.dll'),
+      'managed',
+      'utf8'
+    );
+    if (ownerPid !== undefined) {
+      await fs.promises.writeFile(
+        path.join(launchDirectory, '.qt-qml-preview-owner.json'),
+        JSON.stringify({ pid: ownerPid, createdAt: Date.now() - ageMs }),
+        'utf8'
+      );
+    }
+    if (ageMs > 0) {
+      const modified = new Date(Date.now() - ageMs);
+      await fs.promises.utimes(launchDirectory, modified, modified);
+    }
+    return launchDirectory;
+  }
+
+  it('removes stale directories owned by exited hosts and keeps live ones', async () => {
+    const stale = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-stale',
+      60 * 60 * 1000,
+      1
+    );
+    const live = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-live',
+      60 * 60 * 1000,
+      2
+    );
+
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: (pid) => pid === 2
+    });
+
+    expect(result.removed).to.deep.equal([stale]);
+    expect(result.skipped).to.deep.equal([]);
+    expect(fs.existsSync(stale)).to.equal(false);
+    expect(fs.existsSync(live)).to.equal(true);
+  });
+
+  it('keeps unmarked legacy directories', async () => {
+    const legacy = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-legacy',
+      60 * 60 * 1000
+    );
+
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000
+    });
+
+    expect(result.removed).to.deep.equal([]);
+    expect(fs.existsSync(legacy)).to.equal(true);
+  });
+
+  it('keeps directories with malformed owner markers', async () => {
+    const launchDirectory = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-invalid',
+      60 * 60 * 1000
+    );
+    await fs.promises.writeFile(
+      path.join(launchDirectory, '.qt-qml-preview-owner.json'),
+      'not json',
+      'utf8'
+    );
+
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: () => false
+    });
+
+    expect(result.removed).to.deep.equal([]);
+    expect(fs.existsSync(launchDirectory)).to.equal(true);
+  });
+
+  it('prunes directories left empty by the sweep', async () => {
+    await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-stale',
+      60 * 60 * 1000,
+      1
+    );
+
+    await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: () => false
+    });
+
+    expect(fs.existsSync(path.join(stagingRoot, 'Application'))).to.equal(
+      false
+    );
+    expect(fs.existsSync(stagingRoot)).to.equal(true);
+  });
+
+  it('keeps parent directories that still hold a live launch', async () => {
+    await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-stale',
+      60 * 60 * 1000,
+      1
+    );
+    const recent = await createLaunchDirectory(
+      'Application',
+      'key',
+      'launch-recent',
+      0,
+      2
+    );
+
+    await collectPreviewStagingGarbage({
+      stagingRoot,
+      maxAgeMs: 30 * 60 * 1000,
+      isProcessAlive: (pid) => pid === 2
+    });
+
+    expect(fs.existsSync(recent)).to.equal(true);
+  });
+
+  it('reports nothing when the staging root does not exist', async () => {
+    const result = await collectPreviewStagingGarbage({
+      stagingRoot: path.join(stagingRoot, 'missing'),
+      maxAgeMs: 0
+    });
+
+    expect(result.removed).to.deep.equal([]);
+    expect(result.skipped).to.deep.equal([]);
+  });
+});

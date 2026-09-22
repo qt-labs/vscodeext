@@ -12,27 +12,44 @@ import {
   PySideProject,
   QtWorkspaceFeatures,
   CoreKey,
-  getQtQmlApi
+  getQtQmlApi,
+  type QtBridgePreviewLaunch,
+  type QtBridgeProject
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
 import { QmlProfilerConnectionManager } from './profiler-connection-manager.mjs';
 import { ServerScheme } from '@debug/debug-connection.mjs';
-import { QtProcess, spawnProcessForTool } from '@/utils.mts';
+import {
+  QtProcess,
+  spawnProcessForTool,
+  spawnProgramForTool
+} from '@/utils.mts';
 import { QmlProfilerUI } from './ui.js';
-import { QMLProject } from '@/project.mjs';
+import { getQtBridgeProjects, QMLProject } from '@/project.mjs';
+import {
+  getQtBridgePreviewProjects,
+  isQtBridgePreviewAvailable,
+  selectQtBridgePreviewProject
+} from '@/preview/qtbridge-preview-project.mjs';
 
 const logger = createLogger('qml-profiler');
 const ui = new QmlProfilerUI();
 
 let profilerManager: QmlProfilerConnectionManager | undefined;
 let profilerProcess: QtProcess | undefined;
+let profilerLaunch: QtBridgePreviewLaunch | undefined;
 let profilerOutputChannel: vscode.OutputChannel | undefined;
+let profilerStartPromise: Promise<void> | undefined;
 
 // ─────────────────────────────── state ───────────────────────────────────────
 
-function isConnected() {
-  return profilerManager?.isConnected() ?? false;
+function isProfilerStartingOrRunning() {
+  return (
+    profilerStartPromise !== undefined ||
+    profilerManager !== undefined ||
+    profilerProcess !== undefined
+  );
 }
 
 function cleanupSession() {
@@ -40,6 +57,8 @@ function cleanupSession() {
   profilerManager = undefined;
   profilerProcess?.kill();
   profilerProcess = undefined;
+  profilerLaunch?.dispose();
+  profilerLaunch = undefined;
   ui.setProfilerStopped();
 }
 
@@ -87,8 +106,9 @@ async function resolveCMakeProgram() {
 
 /** Determine the project type for the given workspace folder. */
 function getProjectType(
-  folder: vscode.WorkspaceFolder
-): 'cmake' | 'pyside' | undefined {
+  folder: vscode.WorkspaceFolder,
+  bridgeProject?: QtBridgeProject
+): 'bridge' | 'cmake' | 'pyside' | undefined {
   const project = projectManager.getProject(folder);
   if (project?.pySideProject) {
     return 'pyside';
@@ -102,6 +122,9 @@ function getProjectType(
   }
   if (features?.projectTypes.pyside) {
     return 'pyside';
+  }
+  if (isQtBridgePreviewAvailable(bridgeProject)) {
+    return 'bridge';
   }
   return undefined;
 }
@@ -401,6 +424,78 @@ async function launchPySideProfiler(
   }
 }
 
+async function launchQtBridgeProfiler(
+  folder: vscode.WorkspaceFolder,
+  bridgeProject: QtBridgeProject
+): Promise<boolean> {
+  const metadata = bridgeProject.metadata;
+  if (!metadata || !bridgeProject.isMetadataReady || !metadata.application) {
+    logger.error(
+      `Qt Bridge profiling is unavailable for folder: ${folder.uri.fsPath}`
+    );
+    ui.showFailedToStart(
+      new Error('Qt Bridge build metadata is not available yet')
+    );
+    return false;
+  }
+
+  const host = '127.0.0.1';
+  const port = await getPort();
+  if (!port) {
+    logger.error('Failed to obtain a free port');
+    ui.showFailedToStart(new Error('Failed to obtain a free port'));
+    return false;
+  }
+
+  const manager = createProfilerManager();
+  let launch: QtBridgePreviewLaunch | undefined;
+  try {
+    launch = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Preparing Qt Bridge QML Profiler...'
+      },
+      async () => bridgeProject.prepareQmlPreview()
+    );
+    if (!launch) {
+      throw new Error('Could not resolve Qt Bridge host executable');
+    }
+
+    const profilerArgs = buildProfilerArgs(host, port);
+    const additionalArgs = getProfilerConfig().get<string[]>('args', []);
+    const processArgs = [profilerArgs, ...additionalArgs];
+    logger.info(`Command: ${launch.executable} ${processArgs.join(' ')}`);
+
+    const process = await spawnProgramForTool(launch.executable, processArgs, {
+      pathEntries: launch.pathEntries,
+      cwd: launch.cwd,
+      env: { ...launch.environment },
+      sanitizeVsCodeEnv: true
+    });
+    if (process.killed || process.pid === undefined) {
+      throw new Error('Process failed to start');
+    }
+
+    logger.info(`Qt Bridge profiler process PID: ${String(process.pid)}`);
+    profilerLaunch = launch;
+    setupProcessForProfiler(
+      process,
+      manager,
+      host,
+      port,
+      metadata.application.assemblyName,
+      folder
+    );
+    return true;
+  } catch (err) {
+    logger.error(`Failed to start Qt Bridge QML Profiler: ${String(err)}`);
+    manager.dispose();
+    launch?.dispose();
+    ui.showFailedToStart(err instanceof Error ? err : new Error(String(err)));
+    return false;
+  }
+}
+
 // ─────────────────────────── attach ──────────────────────────────────────────
 
 function attachProfiler(host: string, port: number) {
@@ -451,11 +546,6 @@ function attachProfiler(host: string, port: number) {
 // ─────────────────────────── start impl ──────────────────────────────────────
 
 async function startQmlProfilerImpl() {
-  if (isConnected()) {
-    ui.showAlreadyRunning();
-    return;
-  }
-
   const folder = await resolveWorkspaceFolder(false);
   if (!folder) {
     void vscode.window.showWarningMessage(
@@ -464,13 +554,59 @@ async function startQmlProfilerImpl() {
     return;
   }
 
-  const projectType = getProjectType(folder);
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  let bridgeProject: QtBridgeProject | undefined;
+  let projectType = getProjectType(folder);
+  if (!projectType) {
+    const bridgeProjects = getQtBridgePreviewProjects(
+      getQtBridgeProjects(folder)
+    );
+    bridgeProject = await selectQtBridgePreviewProject(
+      folder,
+      activeUri,
+      undefined,
+      'QML Profiler - select Qt Bridge project'
+    );
+    if (bridgeProjects.length > 1 && !bridgeProject) {
+      logger.info('Qt Bridge project selection was cancelled');
+      return;
+    }
+    projectType = getProjectType(folder, bridgeProject);
+  }
   logger.info(`Project type for "${folder.name}": ${projectType ?? 'unknown'}`);
 
   if (projectType === 'pyside') {
     await launchPySideProfiler(folder);
+  } else if (projectType === 'bridge') {
+    if (!bridgeProject) {
+      logger.error(
+        `No Qt Bridge project found for folder: ${folder.uri.fsPath}`
+      );
+      return;
+    }
+    await launchQtBridgeProfiler(folder, bridgeProject);
   } else {
     await launchCMakeProfiler(folder);
+  }
+}
+
+async function startQmlProfiler() {
+  if (isProfilerStartingOrRunning()) {
+    logger.info(
+      'Ignoring QML Profiler start request: a session is already active'
+    );
+    ui.showAlreadyRunning();
+    return;
+  }
+
+  const startPromise = startQmlProfilerImpl();
+  profilerStartPromise = startPromise;
+  try {
+    await startPromise;
+  } finally {
+    if (profilerStartPromise === startPromise) {
+      profilerStartPromise = undefined;
+    }
   }
 }
 
@@ -482,7 +618,7 @@ export function registerStartQmlProfilerCommand() {
     async () => {
       logger.info('startQmlProfiler command invoked');
       telemetry.sendAction('startQmlProfiler');
-      await startQmlProfilerImpl();
+      await startQmlProfiler();
     }
   );
 }
@@ -494,7 +630,7 @@ export function registerAttachQmlProfilerCommand() {
       logger.info('attachQmlProfiler command invoked');
       telemetry.sendAction('attachQmlProfiler');
 
-      if (isConnected()) {
+      if (isProfilerStartingOrRunning()) {
         ui.showAlreadyRunning();
         return;
       }
