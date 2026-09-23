@@ -30,7 +30,14 @@ async function main() {
       await setupTestInfrastructure(vscodeExecutablePath);
 
     setupVSCodeSettings(userDataDir, qtRoot, {
-      'cmake.configureOnOpen': false
+      'cmake.configureOnOpen': false,
+      // The test runs against a fresh user-data dir, so no kit is active when
+      // qt-cpp activates. Since CMake Tools 1.24.42 substitution commands such
+      // as cmake.buildKit prompt for a kit in that state, and nobody can answer
+      // a picker on CI. With automatic kit scanning disabled CMake Tools
+      // silently falls back to the unspecified kit; the test selects the real
+      // kit itself via selectAndApplyKit().
+      'cmake.enableAutomaticKitScan': false
     });
     const extensions = [
       { idOrVsix: 'ms-vscode.cmake-tools' },
