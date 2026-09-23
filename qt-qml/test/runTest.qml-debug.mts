@@ -10,7 +10,8 @@ import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron';
 import {
   setupVSCodeSettings,
   setupTestInfrastructure,
-  installRequiredExtensions
+  installRequiredExtensions,
+  verifyQtCppVsix
 } from './runTestHelper.mjs';
 import type { ExtensionInstallInfo } from 'qt-lib/src/test-vscode-install.ts';
 
@@ -40,6 +41,12 @@ async function main() {
       'cmake.configureOnOpen': false,
       'cmake.buildBeforeRun': true,
       'cmake.saveBeforeConfiguration': false,
+      // No kit is active in the fresh user-data dir. Since CMake Tools 1.24.42
+      // substitution commands such as cmake.buildKit prompt for a kit in that
+      // state, and nobody can answer a picker on CI. With automatic kit
+      // scanning disabled CMake Tools silently falls back to the unspecified
+      // kit; the test switches to CMake Presets itself.
+      'cmake.enableAutomaticKitScan': false,
       // Disable QML language server to prevent it from crashing during build
       'qt-qml.qmlls.enabled': false
     });
@@ -50,8 +57,10 @@ async function main() {
       { idOrVsix: localQtCoreVsix }
     ];
     if (IsWindows) {
-      // On Windows, we also need qt-cpp for qt-cpp.qtDir for DLLs
-      extensions.push({ idOrVsix: 'theqtcompany.qt-cpp' });
+      // On Windows, we also need qt-cpp for qt-cpp.qtDir for DLLs. Use the
+      // locally built package so the tests run against this checkout rather
+      // than whatever version is published on the Marketplace.
+      extensions.push({ idOrVsix: verifyQtCppVsix() });
     }
     installRequiredExtensions(cli, args, extensions);
 

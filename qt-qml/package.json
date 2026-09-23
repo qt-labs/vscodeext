@@ -585,7 +585,7 @@
     "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
-    "prepare-vsix": "npm --prefix ../qt-core run package",
+    "prepare-vsix": "npm --prefix ../qt-core run package && npm --prefix .. run prepareNatvisFiles && npm --prefix ../qt-cpp run package",
     "run-test": "cd ./out/test/ && node runTest.js",
     "run-test-qml-debug": "cd ./out/test/ && node runTest.qml-debug.js",
     "test:only:qml-debug": "npm run compile-test && npm run run-test-qml-debug --",

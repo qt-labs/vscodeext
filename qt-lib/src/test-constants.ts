@@ -24,6 +24,15 @@ export function getLocalQtCore(): string {
   }
   return `../../../qt-core/out/qt-core-${packageVersion}.vsix`;
 }
+
+export function getLocalQtCpp(): string {
+  const qtcppExtensionRoot = '../../../qt-cpp';
+  const packageVersion = getExtensionVersion(qtcppExtensionRoot);
+  if (!packageVersion) {
+    throw new Error('Failed to get package version');
+  }
+  return `../../../qt-cpp/out/qt-cpp-${packageVersion}.vsix`;
+}
 /**
  * Returns additional CLI args to quiet VS Code test runs.
  *
