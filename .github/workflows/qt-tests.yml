@@ -105,6 +105,10 @@ jobs:
       # Prepare NatVis files (run from repo root — generates qt-cpp/res/natvis/qt6.natvis)
       - name: Prepare NatVis files
         run: npm run prepareNatvisFiles
+      # Package qt-cpp so qt-qml tests can install its .vsix via getLocalQtCpp().
+      # Must run after the NatVis step because the package bundles those files.
+      - name: Package qt-cpp (.vsix)
+        run: npm run package:qt-cpp
       # Compile other extensions once (runtime build)
       - name: Compile qt-cpp / qt-ui / qt-qml / qt-python
         run: |
