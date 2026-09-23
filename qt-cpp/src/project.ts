@@ -29,7 +29,7 @@ import {
   getQtPathsExe,
   getSelectedKit
 } from '@cmd/register-qt-path';
-import { analyzeKit } from '@/kit-manager';
+import { analyzeKit, Kit as CMakeKit } from '@/kit-manager';
 import * as cmakeFileApi from '@/cmake-file-api';
 import { getMajorQtVersion, isValidAndString } from '@/util/util';
 
@@ -303,7 +303,7 @@ export class CppProject implements Project {
     }
     const message = new QtWorkspaceConfigMessage(this.folder);
 
-    const selectedQtPaths = await this.getQtPaths();
+    const selectedQtPaths = await this.getQtPaths(kit);
     coreAPI?.setValue(this.folder, CoreKey.SELECTED_QT_PATHS, selectedQtPaths);
     message.config.add(CoreKey.SELECTED_QT_PATHS);
     logger.info(`Notifying coreAPI with message: ${message.toString()}`);
@@ -546,9 +546,8 @@ export class CppProject implements Project {
       return [];
     }
   }
-  async getInstallationPathFromKit() {
-    const folder = this.folder;
-    const kit = await getSelectedKit(folder, true);
+  async getInstallationPathFromKit(kit?: CMakeKit) {
+    kit ??= await getSelectedKit(this.folder, true);
     if (!kit) {
       return undefined;
     }
@@ -577,9 +576,8 @@ export class CppProject implements Project {
     const versionDir = path.dirname(installationPath);
     return path.join(versionDir, 'Src');
   }
-  async getQtPathsExeFromKit() {
-    const folder = this.folder;
-    const kit = await getSelectedKit(folder, true);
+  async getQtPathsExeFromKit(kit?: CMakeKit) {
+    kit ??= await getSelectedKit(this.folder, true);
     if (!kit) {
       return undefined;
     }
@@ -653,13 +651,25 @@ export class CppProject implements Project {
     }
     return undefined;
   }
-  async getQtPaths() {
+  /**
+   * Resolve the `qtpaths` executable for this project.
+   *
+   * For kit-based projects the selected kit can be passed in to avoid
+   * resolving it again. Each resolution goes through `cmake.buildKit`, which
+   * may prompt the user when no kit is active, so callers that already hold
+   * the kit should hand it over instead of triggering another lookup.
+   */
+  async getQtPaths(kit?: CMakeKit) {
     if (this._type === CppProjectType.Kit) {
-      const qtPathsExe = await this.getQtPathsExeFromKit();
+      kit ??= await getSelectedKit(this.folder, true);
+      if (!kit) {
+        return undefined;
+      }
+      const qtPathsExe = await this.getQtPathsExeFromKit(kit);
       if (qtPathsExe) {
         return qtPathsExe;
       }
-      const installationPath = await this.getInstallationPathFromKit();
+      const installationPath = await this.getInstallationPathFromKit(kit);
       if (installationPath) {
         const qtpaths = findQtPathsInInstallationPath(installationPath);
         if (qtpaths) {

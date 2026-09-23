@@ -94,8 +94,18 @@ export async function activate(context: vscode.ExtensionContext) {
     await kitManager.checkForAllQtInstallations();
   }
 
-  await initConfigValues();
-  logger.info('Config values initialized');
+  // Do not block activation on this. For kit-based projects it resolves the
+  // active kit through the `cmake.buildKit` substitution command, which since
+  // CMake Tools 1.24.42 prompts the user to select a kit when none is active
+  // and only resolves once that picker is answered. Consumers receive the
+  // values through `coreAPI.notify` whenever they become available.
+  void initConfigValues()
+    .then(() => {
+      logger.info('Config values initialized');
+    })
+    .catch((error: unknown) => {
+      logger.error('Failed to initialize config values:', String(error));
+    });
 }
 
 export function deactivate() {
