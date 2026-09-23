@@ -37,6 +37,10 @@ jobs:
     name: tests (${{ matrix.os }}, Qt ${{ github.event_name == 'workflow_dispatch' && inputs.qt_version_for_test || '6.9.2' }}, suite ${{ github.event_name == 'workflow_dispatch' && inputs.test_suite || 'all' }})
     # Run this job on Linux, macOS, and Windows
     runs-on: ${{ matrix.os }}
+    # A full run takes 15-20 minutes. Without this, a hung VS Code test
+    # instance (e.g. an extension blocked on a QuickPick nobody can answer)
+    # keeps the job alive until GitHub's 6-hour default.
+    timeout-minutes: 45
     # Default shell for all `run:` commands in this job
     defaults:
       run:
