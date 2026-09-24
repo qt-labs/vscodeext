@@ -10,7 +10,7 @@ import {
   isRccTag,
   isQrcDocChangeEvent,
   type QrcDocChangeEvent
-} from '@shared/qrc-types';
+} from '@shared/qrc-editor';
 import {
   GroupNodeWrapper,
   FileNodeWrapper,

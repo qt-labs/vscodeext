@@ -2,100 +2,114 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
-import * as vscode from 'vscode';
 import * as dotenv from 'dotenv';
 import {
+  window,
   Uri,
-  Webview,
+  Webview as View,
+  WebviewPanel as Panel,
   ExtensionMode as Mode,
   ExtensionContext as Context
 } from 'vscode';
 
-export interface WebviewAppConfig {
-  app: string;
-  title: string;
-  srcDir: string;
-  distDir: string;
-  jsFile: string;
-  cssFile: string;
-  context: Context;
-  additionalResourceRoots?: vscode.Uri[];
-}
+import { getWebAppInfo } from './info';
+import { type WebAppId } from './shared/types';
 
-export const basicWebviewAppConfig = {
-  srcDir: 'webview-ui',
-  distDir: 'webview-ui/dist',
-  jsFile: 'index.js',
-  cssFile: 'index.css'
+const WebAppDirs = {
+  src: 'webview-ui',
+  dist: 'webview-ui/dist'
 };
 
-export function createWebviewHtml(view: Webview, config: WebviewAppConfig) {
-  const root = config.distDir.split('/');
-  const baseUri = config.context.extensionUri;
-  const js = getUri(view, baseUri, [...root, config.jsFile]);
-  const css = getUri(view, baseUri, [...root, config.cssFile]);
+export function createPanel(id: WebAppId) {
+  const info = getWebAppInfo(id);
+  return window.createWebviewPanel(info.viewType, info.title, info.viewColumn);
+}
 
-  let html = `
-    <link rel="stylesheet" type="text/css" href="${css.toString()}">
-    <script defer nonce="${getNonce()}" src="${js.toString()}"></script>
-    `;
+export function setupWebApp(id: WebAppId, context: Context, panel: Panel) {
+  const info = getWebAppInfo(id);
+  const baseUri = context.extensionUri;
 
-  if (config.context.extensionMode === Mode.Development) {
-    const dotenvFile = path.resolve(__dirname, `../${config.srcDir}/.env`);
-    dotenv.config({ path: dotenvFile });
+  panel.webview.html = createHtml(id, context, panel);
+  panel.webview.options = {
+    enableScripts: true,
+    localResourceRoots: [
+      Uri.joinPath(baseUri, WebAppDirs.dist),
+      Uri.joinPath(baseUri, 'res', 'icons')
+    ]
+  };
 
-    const devPort = process.env.VITE_DEV_PORT ?? '5173';
-    const devHost = `localhost:${devPort}`;
-    const devModuleUri = `http://${devHost}/src/apps/main.ts`;
+  panel.iconPath = {
+    dark: Uri.joinPath(baseUri, info.iconPathPrefix + '-dark.svg'),
+    light: Uri.joinPath(baseUri, info.iconPathPrefix + '-light.svg')
+  };
+}
 
-    html = `
-      <meta http-equiv="Content-Security-Policy" content="
-          default-src 'none';
-          img-src https: data: blob:;
-          style-src 'unsafe-inline' http://${devHost};
-          script-src http://${devHost} 'unsafe-eval';
-          connect-src ws://${devHost} http://${devHost};
-        ">
-      <script type="module" src="${devModuleUri}"></script>
-      `;
-  }
+export function exposeDirs(panel: Panel, dirs: Uri[]) {
+  const view = panel.webview;
+  const options = view.options;
+
+  view.options = {
+    ...options,
+    localResourceRoots: [...(options.localResourceRoots ?? []), ...dirs]
+  };
+}
+
+function createHtml(id: WebAppId, context: Context, panel: Panel) {
+  const meta = getWebAppInfo(id);
+  const extraHeaders =
+    context.extensionMode === Mode.Development
+      ? createDevHeaders()
+      : createProductionHeaders(panel.webview, context.extensionUri);
 
   return /*html*/ `
     <!DOCTYPE html>
     <html lang="en">
       <head>
-        <title>${config.title}</title>
+        <title>${meta.title}</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        ${html}
+        ${extraHeaders}
       </head>
-      <body data-app=${config.app}>
+      <body data-app-id=${meta.appId}>
         <div id="app"></div>
       </body>
     </html>
   `;
 }
 
-export function createWebviewOptions(config: WebviewAppConfig) {
-  return {
-    enableScripts: true,
-    retainContextWhenHidden: true,
-    localResourceRoots: [
-      Uri.joinPath(config.context.extensionUri, config.distDir),
-      ...(config.additionalResourceRoots ?? [])
-    ]
-  };
+function createDevHeaders() {
+  dotenv.config({
+    path: path.resolve(__dirname, `../${WebAppDirs.src}/.env`)
+  });
+
+  const port = process.env.VITE_DEV_PORT ?? '5173';
+  const host = `localhost:${port}`;
+  const moduleUri = `http://${host}/src/apps/main.ts`;
+
+  return `
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'none';
+        img-src https: data: blob:;
+        style-src 'unsafe-inline' http://${host};
+        script-src http://${host} 'unsafe-eval';
+        connect-src ws://${host} http://${host};
+      ">
+    <script type="module" src="${moduleUri}"></script>
+  `;
 }
 
-export function createWebviewPanelIcons(c: Context, iconName = 'qt-webview') {
-  const sub = 'res/icons/';
-  return {
-    dark: vscode.Uri.joinPath(c.extensionUri, sub, iconName + '-dark.svg'),
-    light: vscode.Uri.joinPath(c.extensionUri, sub, iconName + '-light.svg')
-  };
+function createProductionHeaders(view: View, baseUri: Uri) {
+  const distDirs = WebAppDirs.dist.split('/');
+  const js = getUri(view, baseUri, [...distDirs, 'index.js']);
+  const css = getUri(view, baseUri, [...distDirs, 'index.css']);
+
+  return `
+    <link rel="stylesheet" type="text/css" href="${css.toString()}">
+    <script defer nonce="${getNonce()}" src="${js.toString()}"></script>
+  `;
 }
 
-function getUri(webview: Webview, baseUri: Uri, pathList: string[]) {
+function getUri(webview: View, baseUri: Uri, pathList: string[]) {
   return webview.asWebviewUri(Uri.joinPath(baseUri, ...pathList));
 }
 

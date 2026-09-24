@@ -37,22 +37,15 @@ import {
   warnAboutMissingQtPath
 } from '@/qtpaths';
 import { checkVcpkg } from '@/vcpkg';
-import {
-  registerOpenExBrowserCommand,
-  registerExBrowserPageSerializer
-} from '@/webview/ex-browser/controller';
-import { registerOpenCoursesBrowserCommand } from '@/webview/courses/controller';
-import {
-  tryOpenWelcomePage,
-  registerOpenWelcomePageCommand,
-  registerWelcomePageSerializer
-} from '@/webview/welcome/controller';
-import { registerCreateNewItemPanelCommand } from '@/webview/new-item/panel';
-import { registerQrcEditorProvider } from '@/webview/qrc-editor/editor-provider';
-import { registerQmlTraceProvider } from '@/webview/qml-trace/editor-provider';
-import { registerUiDesignerCommands } from '@/ui-designer/commands';
-import { registerUiFileEditorProvider } from '@/ui-designer/editor-provider';
-import { registerOpenInLinguistCommand } from '@/translation';
+
+import { addNewItem } from '@/webview/new-item/controller';
+import { addExBrowser } from '@/webview/ex-browser/controller';
+import { addWelcomePage, showEntryPage } from '@/webview/welcome/controller';
+import { addCoursesBrowser } from '@/webview/courses/controller';
+import { addQtTsSupport } from '@/translation';
+import { addUiFileSupport } from '@/ui-file/editor-provider';
+import { addQrcFileSupport } from '@/webview/qrc-editor/editor-provider';
+import { addQmlTraceFileSupport } from '@/webview/qml-trace/editor-provider';
 
 const logger = createLogger('extension');
 
@@ -81,26 +74,14 @@ export async function activate(context: vscode.ExtensionContext) {
     registerOpenSettingsCommand(),
     registerRegisterQtCommand(),
     registerRegisterQtByPathCommand(),
-    registerOpenInLinguistCommand(),
-    registerOpenExBrowserCommand(context),
-    registerExBrowserPageSerializer(context),
-    registerOpenCoursesBrowserCommand(context),
-    registerOpenWelcomePageCommand(context),
-    registerWelcomePageSerializer(context),
-    registerCreateNewItemPanelCommand(context),
-    vscode.languages.registerColorProvider('qss', createColorProvider()),
     reportIssueCommand(),
     registerShowLogCommand()
   );
 
   registerQtDocsCommands(context);
   registerQtDocsHoverProvider(context);
-  registerQrcEditorProvider(context);
-  registerQmlTraceProvider(context);
-  registerUiDesignerCommands(context);
-  registerUiFileEditorProvider(context);
-
-  await enableQtTsFileSupport(context);
+  registerWebApps(context);
+  registerQtFilesSupport(context);
 
   telemetry.sendEvent(`activated`);
 
@@ -110,7 +91,8 @@ export async function activate(context: vscode.ExtensionContext) {
   checkVcpkg();
   checkQtpathsInEnvPath();
   initCoreValues();
-  void tryOpenWelcomePage(context);
+
+  void showEntryPage(context);
 
   return coreAPI;
 }
@@ -151,37 +133,20 @@ export function initCoreValues() {
   }
 }
 
-async function enableQtTsFileSupport(context: vscode.ExtensionContext) {
-  const checker = async (doc: vscode.TextDocument) => {
-    // <?xml version="1.0" encoding="utf-8"?>
-    // <!DOCTYPE TS>
-    // <TS version="2.1" language="en_US">
-    //   <context> ...
-    //   </context>
-    // </TS>
+function registerWebApps(context: vscode.ExtensionContext) {
+  addNewItem(context);
+  addExBrowser(context);
+  addWelcomePage(context);
+  addCoursesBrowser(context);
+}
 
-    const languageId = 'qt-ts'; // contributes > languages
-    const maxLinesToCheck = 3;
-    const rootTagOpening = '<TS ';
-
-    if (!doc.fileName.endsWith('.ts') || doc.languageId === languageId) {
-      return;
-    }
-
-    for (let i = 0; i < Math.min(maxLinesToCheck, doc.lineCount); i++) {
-      if (doc.lineAt(i).text.startsWith(rootTagOpening)) {
-        await vscode.languages.setTextDocumentLanguage(doc, languageId);
-        break;
-      }
-    }
-  };
-
-  for (const doc of vscode.workspace.textDocuments) {
-    await checker(doc);
-  }
+function registerQtFilesSupport(context: vscode.ExtensionContext) {
+  addQtTsSupport(context);
+  addUiFileSupport(context);
+  addQrcFileSupport(context);
+  addQmlTraceFileSupport(context);
 
   context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument(checker),
-    vscode.workspace.onDidSaveTextDocument(checker)
+    vscode.languages.registerColorProvider('qss', createColorProvider())
   );
 }

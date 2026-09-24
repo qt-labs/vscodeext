@@ -671,7 +671,7 @@ describe('command: createNewItem', () => {
   // -- Helper for the current description------------------------
   // definitions for webview-panel
   const PanelColumn = vscode.ViewColumn.One;
-  const PanelViewType = 'ViewTypeWizard';
+  const PanelViewType = 'ViewTypeNewItem';
   // Function to run the command and wait for VS Code to be idle
   async function runCreateNewItem(): Promise<void> {
     await vscode.commands.executeCommand('qt-core.createNewItem');

@@ -4,17 +4,13 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { telemetry } from 'qt-lib';
+import { telemetry, DisposableStore } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { QtcliRestServer, generateSocketId } from '@/qtcli/rest';
-import {
-  WebviewAppConfig,
-  createWebviewHtml,
-  createWebviewOptions,
-  basicWebviewAppConfig,
-  createWebviewPanelIcons
-} from '@/webview/utils';
-import * as texts from '@/texts';
+import { WebAppId } from '@/webview/shared/types';
+import { getWebAppInfo } from '@/webview/info';
+import { ExPackagePoolDir } from '@/webview/shared/ex-browser';
+import { setupWebApp, createPanel, exposeDirs } from '@/webview/utils';
 import { ExDataManager } from './data-manager';
 import { ExCoreWatcher } from './core-watcher';
 import { ExBrowserDispatcher } from './dispatcher';
@@ -24,112 +20,94 @@ import * as consts from './constants';
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
 
-export function registerOpenExBrowserCommand(context: Context) {
-  return vscode.commands.registerCommand(
-    `${EXTENSION_ID}.openExamplesBrowser`,
-    () => {
-      telemetry.sendAction('openExamplesBrowser');
-      ExBrowserController.render(context);
-    }
-  );
-}
+const appId: WebAppId = 'ex-browser';
+let instance: ExBrowserController | undefined;
 
-export function registerExBrowserPageSerializer(context: Context) {
-  return vscode.window.registerWebviewPanelSerializer(
-    consts.WEBVIEW_PANEL_VIEW_TYPE,
-    {
+export function addExBrowser(context: Context) {
+  const openCmd = 'openExamplesBrowser';
+  const openCmdFull = `${EXTENSION_ID}.${openCmd}`;
+  const info = getWebAppInfo(appId);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(openCmdFull, () => {
+      telemetry.sendAction(openCmd);
+      ExBrowserController.render(context);
+    }),
+
+    vscode.window.registerWebviewPanelSerializer(info.viewType, {
       async deserializeWebviewPanel(panel: Panel) {
         ExBrowserController.restore(context, panel);
         return Promise.resolve();
       }
-    }
+    })
   );
 }
 
 export class ExBrowserController {
-  public static instance: ExBrowserController | undefined;
-
-  private readonly _panel: Panel;
   private readonly _data: ExDataManager;
   private readonly _qtcliServer: QtcliRestServer;
   private readonly _dispatcher: ExBrowserDispatcher;
   private readonly _coreWatcher: ExCoreWatcher;
-  private readonly _disposables: vscode.Disposable[] = [];
+  private readonly _disposables = new DisposableStore();
 
-  private constructor(context: Context, panel: Panel) {
+  private constructor(
+    context: Context,
+    private readonly _panel: Panel
+  ) {
     const sources = helpers.findAllPackagePools();
-    const config: WebviewAppConfig = {
-      app: 'ex-browser',
-      title: texts.exBrowser.tabText,
-      context,
-      ...basicWebviewAppConfig,
-      additionalResourceRoots: [
-        helpers.fallbackImageDir(context),
-        ...sources.flatMap((s) => {
-          return [
-            vscode.Uri.file(
-              s.examplesPath ?? path.join(s.fsPath, consts.EX_DIR_NAME)
-            ),
-            vscode.Uri.file(
-              s.docsPath ?? path.join(s.fsPath, consts.DOCS_DIR_NAME)
-            )
-          ];
-        })
-      ]
-    };
 
-    panel.iconPath = createWebviewPanelIcons(context);
-    panel.webview.html = createWebviewHtml(panel.webview, config);
-    panel.webview.options = createWebviewOptions(config);
+    setupWebApp(appId, context, this._panel);
+    exposeDirs(this._panel, findDocAndExDirs(sources));
+    exposeDirs(this._panel, [helpers.fallbackImageDir(context)]);
 
-    this._panel = panel;
     this._data = new ExDataManager(sources);
     this._qtcliServer = new QtcliRestServer(generateSocketId('ex-browser'));
     this._dispatcher = new ExBrowserDispatcher(
       this._data,
       context,
-      panel,
+      this._panel,
       this._qtcliServer.socketName
     );
 
-    this._coreWatcher = new ExCoreWatcher(panel, context);
+    this._coreWatcher = new ExCoreWatcher(this._panel, context);
     void this._qtcliServer.start(context);
 
-    this._disposables = [
+    this._disposables.push(
       this._data,
       this._dispatcher,
       this._coreWatcher,
-      panel.onDidDispose(this.dispose.bind(this))
-    ];
+      this._panel.onDidDispose(this.dispose.bind(this))
+    );
   }
 
   public dispose() {
-    ExBrowserController.instance = undefined;
-    this._disposables.forEach((d) => void d.dispose());
-    this._disposables.length = 0;
+    instance = undefined;
+    this._disposables.dispose();
   }
 
   public static render(context: Context) {
-    if (!ExBrowserController.instance) {
-      ExBrowserController.instance = new ExBrowserController(
-        context,
-        vscode.window.createWebviewPanel(
-          consts.WEBVIEW_PANEL_VIEW_TYPE,
-          texts.exBrowser.tabText,
-          consts.WEBVIEW_PANEL_COLUMN
-        )
-      );
-    }
-
-    ExBrowserController.instance._panel.reveal(consts.WEBVIEW_PANEL_COLUMN);
+    instance ??= new ExBrowserController(context, createPanel(appId));
+    instance._panel.reveal();
   }
 
   public static restore(context: Context, panel: Panel) {
-    if (ExBrowserController.instance) {
+    if (instance) {
       panel.dispose();
       return;
     }
 
-    ExBrowserController.instance = new ExBrowserController(context, panel);
+    instance = new ExBrowserController(context, panel);
   }
+}
+
+// helper
+function findDocAndExDirs(roots: ExPackagePoolDir[]) {
+  function findDirsToExpose(s: ExPackagePoolDir) {
+    return [
+      vscode.Uri.file(s.docsPath ?? path.join(s.fsPath, consts.DOCS_DIR_NAME)),
+      vscode.Uri.file(s.examplesPath ?? path.join(s.fsPath, consts.EX_DIR_NAME))
+    ];
+  }
+
+  return roots.flatMap((s) => findDirsToExpose(s));
 }

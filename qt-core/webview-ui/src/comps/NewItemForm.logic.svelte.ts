@@ -3,6 +3,7 @@
 
 import { InputIssue } from '@/comps/types.svelte';
 import { type ErrorResponse } from '@shared/message';
+import type { OpenInPreference } from '@shared/types';
 
 export type EventType =
   | 'inputChanged'
@@ -17,7 +18,7 @@ export function createController() {
     name: 'untitled',
     workingDir: '',
     saveProjectDir: false,
-    openIn: 'newWindow' as 'addToWorkspace' | 'newWindow' ,
+    openIn: 'newWindow' as OpenInPreference,
     acceptable: true,
     issues: {
       name: new InputIssue(),

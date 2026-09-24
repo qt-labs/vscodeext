@@ -4,22 +4,11 @@
 import * as vscode from 'vscode';
 
 import { createWrappedLogger } from 'qt-lib';
-import { findUiDesignerSession } from '@/ui-designer/session';
-import * as consts from './constants';
+import { findUiDesignerSession } from '@/ui-file/session';
 
 const logger = createWrappedLogger('ui-designer-commands');
 
-export function registerUiDesignerCommands(context: vscode.ExtensionContext) {
-  function register(c: string, callback: (...args: unknown[]) => unknown) {
-    context.subscriptions.push(
-      vscode.commands.registerCommand(`${consts.COMMAND_PREFIX}.${c}`, callback)
-    );
-  }
-
-  register(consts.COMMAND_OPEN_IN_WIDGETS_DESIGNER, openInUiDesigner);
-}
-
-async function openInUiDesigner() {
+export async function openInUiDesigner() {
   const doc = vscode.window.activeTextEditor?.document.uri;
   if (doc?.fsPath.endsWith('.ui') === false) {
     return;

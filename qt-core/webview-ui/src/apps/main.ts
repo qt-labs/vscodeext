@@ -2,23 +2,34 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import { mount, type Component } from 'svelte';
+import { type WebAppId } from '@shared/types';
 
 type Loader = () => Promise<{ default: Component }>;
-const loaders: Record<string, Loader> = {
-  'welcome': () => import('./welcome/WelcomeApp.svelte'),
-  'courses': () => import('./courses/CoursesApp.svelte'),
+const loaders: Record<WebAppId, Loader> = {
   'new-item': () => import('./new-item/NewItemApp.svelte'),
-  'qml-trace': () => import('./qml-trace/QmlTraceApp.svelte'),
-  'qrc-editor': () => import('./qrc-editor/QrcEditorApp.svelte'),
   'ex-browser': () => import('./ex-browser/ExBrowserApp.svelte'),
-  'ui-designer': () => import('./ui-designer/UiDesignerApp.svelte')
+  'welcome-page': () => import('./welcome/WelcomePageApp.svelte'),
+  'courses-browser': () => import('./courses/CoursesBrowserApp.svelte'),
+  'ui-file': () => import('./ui-file/UiFileApp.svelte'),
+  'qml-trace': () => import('./qml-trace/QmlTraceApp.svelte'),
+  'qrc-editor': () => import('./qrc-editor/QrcEditorApp.svelte')
 };
 
-const appType = document.body.dataset.app ?? '';
-const loader = loaders[appType] ?? loaders['new-item'];
+function main() {
+  const appId = document.body.dataset.appId ?? '';
+  const loader = loaders[appId as WebAppId];
+  const targetEl = document.getElementById('app')!;
 
-loader().then(({ default: App }) => {
-  mount(App, {
-    target: document.getElementById('app')!
+  if (!loader) {
+    const message = `Unknown appId: "${appId}"`;
+    console.error(message);
+    targetEl.innerHTML = `<p>${message}</p>`;
+    return;
+  }
+
+  loader().then(({ default: App }) => {
+    mount(App, { target: targetEl });
   });
-});
+}
+
+main();

@@ -9,6 +9,7 @@ import * as NewItemForm from '@/comps/NewItemForm.logic.svelte';
 import { CommandId, isErrorResponse } from '@shared/message';
 import { isPreset, isPresetArray } from './types.svelte';
 import { data, input, ui } from './states.svelte';
+import { isOpenInPreference } from '@shared/types';
 
 type ManageCustomPresetArgs =
   | { action: 'create'; name: string }
@@ -23,7 +24,7 @@ export async function onAppMount() {
 
     startLoading();
 
-    await vscode.post(CommandId.UiCheckIfQtcliReady);
+    await vscode.post(CommandId.NewItemCheckIfQtcliReady);
     data.serverReady = true;
 
     await loadConfigsAndInitInputs();
@@ -37,7 +38,7 @@ export async function onAppMount() {
 }
 
 export function onModalClosed() {
-  void vscode.post(CommandId.UiClosed);
+  void vscode.post(CommandId.CommonViewClosed);
 }
 
 export async function setPresetType(type: string) {
@@ -89,7 +90,7 @@ async function refreshPresetDetails() {
       return;
     }
 
-    const r = await vscode.post(CommandId.UiGetPresetById, id);
+    const r = await vscode.post(CommandId.NewItemGetPresetById, id);
     if (isPreset(r)) {
       data.selected.preset.setData(r);
     }
@@ -102,7 +103,7 @@ export async function validateInput() {
   if (!data.serverReady) return;
 
   try {
-    await vscode.post(CommandId.UiValidateInputs, {
+    await vscode.post(CommandId.NewItemValidateInputs, {
       type: data.selected.type,
       name: input.states.name,
       workingDir: input.states.workingDir,
@@ -130,7 +131,7 @@ export async function manageCustomPreset(args: ManageCustomPresetArgs) {
       const name = args.name.trim();
       if (isDefault && name.length !== 0) {
         const payload = { action, presetId, name, options };
-        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await vscode.post(CommandId.NewItemManageCustomPreset, payload);
         await loadPresets();
         await setSelectedPresetByName(name);
       }
@@ -141,7 +142,7 @@ export async function manageCustomPreset(args: ManageCustomPresetArgs) {
       const name = args.name.trim();
       if (isCustom && name.length !== 0 && name !== data.selected.preset.name) {
         const payload = { action, presetId, name };
-        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await vscode.post(CommandId.NewItemManageCustomPreset, payload);
         await loadPresets();
         await setSelectedPresetByName(name);
       }
@@ -151,7 +152,7 @@ export async function manageCustomPreset(args: ManageCustomPresetArgs) {
     case 'update':
       if (isCustom && Object.keys(options).length !== 0) {
         const payload = { action, presetId, options };
-        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await vscode.post(CommandId.NewItemManageCustomPreset, payload);
         await setSelectedPresetAt(data.selected.presetIndex);
       }
       break;
@@ -159,7 +160,7 @@ export async function manageCustomPreset(args: ManageCustomPresetArgs) {
     case 'delete':
       if (isCustom) {
         const payload = { action, presetId };
-        await vscode.post(CommandId.UiManageCustomPreset, payload);
+        await vscode.post(CommandId.NewItemManageCustomPreset, payload);
         await loadPresets();
         await setSelectedPresetAt(Math.max(0, data.selected.presetIndex - 1));
       }
@@ -196,7 +197,7 @@ export function validatePresetName(name: string): string | undefined {
 // helpers
 async function loadConfigsAndInitInputs() {
   try {
-    const r = await vscode.post(CommandId.UiGetConfigs);
+    const r = await vscode.post(CommandId.NewItemGetConfigs);
     if (r && typeof r === "object") {
       data.configs = {
         ...data.configs,
@@ -211,7 +212,7 @@ async function loadConfigsAndInitInputs() {
       // Load the saved openIn preference if it exists
       if ('openIn' in data.configs && data.configs.openIn) {
         const savedValue = data.configs.openIn;
-        if (savedValue === 'addToWorkspace' || savedValue === 'newWindow') {
+        if (isOpenInPreference(savedValue)) {
           input.states.openIn = savedValue;
         }
       }
@@ -225,7 +226,11 @@ async function loadPresets() {
   if (!data.serverReady) return;
 
   try {
-    const r = await vscode.post(CommandId.UiGetAllPresets, data.selected.type);
+    const r = await vscode.post(
+      CommandId.NewItemGetAllPresets,
+      data.selected.type
+    );
+
     if (isPresetArray(r)) {
       data.presets = r;
     }
@@ -253,7 +258,7 @@ async function selectAnyPresetAndValidate() {
 
 function reportUiError(msg: string, e?: unknown) {
   const detail = e instanceof Error ? e.message : String(e);
-  void vscode.post(CommandId.UiHasError, `${msg}: ${detail}`);
+  void vscode.post(CommandId.NewItemHasError, `${msg}: ${detail}`);
 }
 
 
@@ -265,7 +270,7 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
 
     case 'openInChanged':
       try {
-        await vscode.post(CommandId.UiSaveOpenInPreference, String(args));
+        await vscode.post(CommandId.NewItemSaveOpenInPreference, String(args));
       } catch (e) {
         reportUiError('Cannot save openIn preference', e);
       }
@@ -273,7 +278,7 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
 
     case 'browseClicked':
       void vscode
-        .post(CommandId.UiSelectWorkingDir, input.states.workingDir, -1)
+        .post(CommandId.NewItemSelectWorkingDir, input.states.workingDir, -1)
         .then((data) => {
           if (typeof data === 'string') {
             input.states.workingDir = data;
@@ -289,7 +294,7 @@ export async function onInputFormEvent(type: NewItemForm.EventType, args?: unkno
       if (!data.selected.preset) return;
 
       try {
-        await vscode.post(CommandId.UiItemCreationRequested, {
+        await vscode.post(CommandId.NewItemCreationRequested, {
           type: data.selected.type,
           name: input.states.name,
           workingDir: input.states.workingDir,
