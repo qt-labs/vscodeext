@@ -1470,30 +1470,14 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     name: 'guiTypes.qImageArgb32',
     type: 'QImage',
     value: '{ 4x3 }',
-    knownProblem: {
-      darwin:
-        'The QImage fields are read one slot too early on a dynamically ' +
-        'linked Qt: [width] returns QImageData::ref and [height] returns the ' +
-        'width, so the fixture QImage(4, 3) renders as "{ 1x4 }" instead of ' +
-        '"{ 4x3 }". A static build reads the same source correctly, so this ' +
-        'is about how the debugger binds QImageData, not about the rule.'
-    },
     children: [
       {
         name: '[width]',
-        value: '4',
-        knownProblem: {
-          darwin:
-            'Reads QImageData::ref instead of width; renders 1 for QImage(4, 3).'
-        }
+        value: '4'
       },
       {
         name: '[height]',
-        value: '3',
-        knownProblem: {
-          darwin:
-            'Reads the width instead of the height; renders 4 for QImage(4, 3).'
-        }
+        value: '3'
       },
       {
         name: '[stride]',
@@ -1511,11 +1495,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
       },
       {
         name: '[channels]',
-        value: '4',
-        knownProblem: {
-          darwin:
-            'Computed as bytes_per_line / width, and width reads ref (1), so it renders 16 instead of 4.'
-        }
+        value: '4'
       }
     ]
   },
