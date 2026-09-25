@@ -11,7 +11,11 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-core"],
       "outFiles": ["${workspaceFolder}/qt-core/out/**/*.js"],
-      "preLaunchTask": "npm qt-core watch + vite:start"
+      "preLaunchTask": "npm qt-core watch + vite:start",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run qt-cpp",
@@ -19,7 +23,11 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-cpp"],
       "outFiles": ["${workspaceFolder}/qt-cpp/out/**/*.js"],
-      "preLaunchTask": "npm qt-cpp watch"
+      "preLaunchTask": "npm qt-cpp watch",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run qt-qml",
@@ -27,7 +35,11 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-qml"],
       "outFiles": ["${workspaceFolder}/qt-qml/out/**/*.js"],
-      "preLaunchTask": "npm qt-qml watch"
+      "preLaunchTask": "npm qt-qml watch",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run qt-ui",
@@ -44,7 +56,11 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/qt-python"],
       "outFiles": ["${workspaceFolder}/qt-python/out/**/*.js"],
-      "preLaunchTask": "npm qt-python watch"
+      "preLaunchTask": "npm qt-python watch",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run Extension Tests qt-core",
@@ -52,11 +68,15 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
-              "--extensionTestsPath=${workspaceFolder}/qt-core/out/test/suite/index.js"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-core",
+        "--extensionTestsPath=${workspaceFolder}/qt-core/out/test/suite/index.js"
       ],
       "outFiles": ["${workspaceFolder}/qt-core/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-core watch and test"
+      "preLaunchTask": "npm qt-core watch and test",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run Extension Tests qt-cpp",
@@ -64,11 +84,15 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
-              "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-cpp",
+        "--extensionTestsPath=${workspaceFolder}/qt-cpp/out/test/suite/index"
       ],
       "outFiles": ["${workspaceFolder}/qt-cpp/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-cpp watch and test"
+      "preLaunchTask": "npm qt-cpp watch and test",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run Extension Tests qt-python",
@@ -76,18 +100,24 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              "--extensionDevelopmentPath=${workspaceFolder}/qt-python",
-              "--extensionTestsPath=${workspaceFolder}/qt-python/out/test/suite/index"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-python",
+        "--extensionTestsPath=${workspaceFolder}/qt-python/out/test/suite/index"
       ],
       "outFiles": ["${workspaceFolder}/qt-python/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-python watch and test"
+      "preLaunchTask": "npm qt-python watch and test",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run Extension Tests qt-cpp build",
       "type": "extensionHost",
       "request": "launch",
       "env": {
-        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
+        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}",
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
       },
       "runtimeExecutable": "${execPath}",
       "args": [
@@ -107,6 +137,8 @@
       "request": "launch",
       "env": {
         "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}",
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
       },
       "runtimeExecutable": "${execPath}",
       "args": [
@@ -132,7 +164,9 @@
       "outputCapture": "std",
       "console": "integratedTerminal",
       "env": {
-        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}"
+        "QT_TEST_QT_ROOT": "${config:qt-core.qtInstallationRoot}",
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
       }
     },
     {
@@ -141,11 +175,15 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              "--extensionDevelopmentPath=${workspaceFolder}/qt-qml",
-              "--extensionTestsPath=${workspaceFolder}/qt-qml/out/test/suite/index"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-qml",
+        "--extensionTestsPath=${workspaceFolder}/qt-qml/out/test/suite/index"
       ],
       "outFiles": ["${workspaceFolder}/qt-qml/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-qml watch and test"
+      "preLaunchTask": "npm qt-qml watch and test",
+      "env": {
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
+      }
     },
     {
       "name": "Run Extension Tests qt-ui",
@@ -153,14 +191,16 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-              "--extensionDevelopmentPath=${workspaceFolder}/qt-ui",
-              "--extensionTestsPath=${workspaceFolder}/qt-ui/out/test/suite/index"
+        "--extensionDevelopmentPath=${workspaceFolder}/qt-ui",
+        "--extensionTestsPath=${workspaceFolder}/qt-ui/out/test/suite/index"
       ],
       "env": {
-        "QT_TESTING": "1"
+        "QT_TESTING": "1",
+        "QT_SUPPRESS_TELEMETRY": "1",
+        "QT_LOG_SUPPRESSED_TELEMETRY": "1"
       },
       "outFiles": ["${workspaceFolder}/qt-ui/out/test/**/*.js"],
-      "preLaunchTask": "npm qt-ui watch and test"
+      "preLaunchTask": "npm qt-ui watch and test",
     }
   ]
 }

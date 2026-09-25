@@ -37,6 +37,10 @@ jobs:
     name: tests (${{ matrix.os }}, Qt ${{ github.event_name == 'workflow_dispatch' && inputs.qt_version_for_test || '6.9.2' }}, suite ${{ github.event_name == 'workflow_dispatch' && inputs.test_suite || 'all' }})
     # Run this job on Linux, macOS, and Windows
     runs-on: ${{ matrix.os }}
+    # A full run takes 15-20 minutes. Without this, a hung VS Code test
+    # instance (e.g. an extension blocked on a QuickPick nobody can answer)
+    # keeps the job alive until GitHub's 6-hour default.
+    timeout-minutes: 45
     # Default shell for all `run:` commands in this job
     defaults:
       run:
@@ -58,6 +62,8 @@ jobs:
       DBUS_SESSION_BUS_ADDRESS: "disabled:"
       NO_AT_BRIDGE: "1"
       TEST_SUITE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_suite || 'all' }}
+      QT_SUPPRESS_TELEMETRY: "1"
+      QT_LOG_SUPPRESSED_TELEMETRY: "1"
 
     steps:
       # Check out your branch code into the runner
@@ -101,6 +107,10 @@ jobs:
       # Prepare NatVis files (run from repo root — generates qt-cpp/res/natvis/qt6.natvis)
       - name: Prepare NatVis files
         run: npm run prepareNatvisFiles
+      # Package qt-cpp so qt-qml tests can install its .vsix via getLocalQtCpp().
+      # Must run after the NatVis step because the package bundles those files.
+      - name: Package qt-cpp (.vsix)
+        run: npm run package:qt-cpp
       # Compile other extensions once (runtime build)
       - name: Compile qt-cpp / qt-ui / qt-qml / qt-python
         run: |
@@ -120,7 +130,13 @@ jobs:
           target: desktop
           arch:   ${{ matrix.os == 'windows-latest' && 'win64_msvc2022_64' ||
                     matrix.os == 'macos-latest'   && 'clang_64'          || 'linux_gcc_64' }}
-          modules: ${{ matrix.os == 'windows-latest' && 'debug_info' || '' }}
+          # debug_info on every runner, not just Windows. Many NatVis rules
+          # read Qt private types (QDirPrivate, QFileInfoPrivate,
+          # QPlatformPixmap, QImageData) that Qt only forward-declares in its
+          # public headers, so without Qt's own debug info those types stay
+          # incomplete and the rules cannot evaluate. That is what a good part
+          # of the darwin and linux known-problem annotations records.
+          modules: debug_info
           dir: ${{ github.workspace }}
           cache: true
 

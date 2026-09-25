@@ -2,7 +2,7 @@
   "name": "qt-ui",
   "displayName": "Qt UI (Deprecated)",
   "description": "Deprecated: Qt UI support is now part of the Qt Core extension",
-  "version": "1.17.0",
+  "version": "1.19.0",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
