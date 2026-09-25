@@ -1230,7 +1230,7 @@ const GOLDEN_ENTRY_DEFS: readonly GoldenEntryInput[] = [
     type: 'QPair<QString, int>',
     value: {
       win32: '(pair-key, 42)',
-      darwin: '(0xADDR u"pair-key", 42)',
+      darwin: '(pair-key, 42)',
       linux: '(pair-key, 42)'
     },
     children: [

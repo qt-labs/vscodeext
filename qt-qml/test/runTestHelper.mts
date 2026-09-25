@@ -6,6 +6,7 @@ import * as path from 'path';
 import { resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 import {
   getLocalQtCore,
+  getLocalQtCpp,
   getQuietVSCodeArgs
 } from '../../qt-lib/src/test-constants.js';
 import {
@@ -79,6 +80,22 @@ export function verifyQtCoreVsix(): string {
   }
 
   return localQtCoreVsix;
+}
+
+/**
+ * Verify that the locally built qt-cpp .vsix file exists
+ */
+export function verifyQtCppVsix(): string {
+  const localQtCppVsix = path.normalize(
+    path.resolve(__dirname, getLocalQtCpp())
+  );
+
+  if (!fs.existsSync(localQtCppVsix)) {
+    console.error(`Required extension not found: ${localQtCppVsix}`);
+    process.exit(1);
+  }
+
+  return localQtCppVsix;
 }
 
 /**
