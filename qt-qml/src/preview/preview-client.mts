@@ -200,12 +200,15 @@ export class QmlPreviewClient
   /**
    * Set animation speed factor
    * Maps to QmlPreview::QmlPreviewClient::setAnimationSpeed()
+   *
+   * QDataStream serializes float with double precision (big-endian) for
+   * the stream versions negotiated by the debug connection.
    */
   setAnimationSpeed(factor: number) {
     logger.info('Sending AnimationSpeed command:', String(factor));
     const packet = new Packet();
     packet.writeInt8(QmlPreviewCommand.AnimationSpeed);
-    packet.writeFloatLE(factor);
+    packet.writeDoubleBE(factor);
     void this.sendMessage(packet);
   }
 
