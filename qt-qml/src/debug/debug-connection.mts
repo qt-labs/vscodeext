@@ -518,15 +518,15 @@ export class QmlDebugConnection {
     if (!this.gotHello) {
       return;
     }
+    // Matches QQmlDebugConnectionPrivate::advertisePlugins():
+    // server id | op (1) | plugin names (QStringList)
     const packet = new Packet();
     packet.writeStringUTF16(serverId);
-    packet.writeInt32BE(1); // Version
+    packet.writeInt32BE(1); // OP
     const plugins = Array.from(this._plugins.keys());
-    for (const plugin of plugins) {
+    packet.writeArray(plugins, (plugin) => {
       packet.writeStringUTF16(plugin);
-    }
-    packet.writeInt32BE(QmlDebugConnection.minStreamVersion);
-    packet.writeBoolean(true);
+    });
     await this._protocol?.send(packet.data);
   }
   getClient(name: string) {
