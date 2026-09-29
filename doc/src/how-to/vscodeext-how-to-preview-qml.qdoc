@@ -17,6 +17,21 @@
     \image {vscodeext-qml-preview.gif} {Previewing a Qt Quick application}
     \caption Previewing a Qt Quick application.
 
+    \section1 Hot reload
+
+    When the application runs with Qt 6.12 or later, the preview uses hot
+    reload: the components you change are updated in place and the
+    application keeps its state. If a change cannot be applied in place,
+    the application restarts.
+
+    To turn off hot reload, set the \c QMLPREVIEW_HOTRELOAD environment
+    variable to \c 0 for the application. Then every change reloads the
+    whole application, and the input events, such as mouse clicks and key
+    presses, are replayed after the reload to restore the application
+    state.
+
+    Older Qt versions reload the whole application on every change.
+
     \section1 Preview the whole application
 
     To launch and preview a Qt Quick application:
@@ -60,7 +75,7 @@
         \li In the \uicontrol Terminal, start the application with the following
             arguments:
             \badcode
-            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:QmlPreview,DebugTranslation
+            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:QmlPreview,DebugTranslation,CanvasFrameRate,EventReplay
             \endcode
             Where \e IP_address is the IP address of the host where the
             application is running and \e port_number is the debugging port.
