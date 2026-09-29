@@ -19,6 +19,7 @@ import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
 import { QmlPreviewConnectionManager } from '@/preview/preview-connection-manager.mjs';
 import { FpsInfo } from '@/preview/preview-client.mjs';
+import { RecordedInputEvent } from '@/preview/preview-event-replay-client.mjs';
 import { ServerScheme } from '@debug/debug-connection.mjs';
 import {
   QtProcess,
@@ -43,6 +44,13 @@ let previewManager: QmlPreviewConnectionManager | undefined;
 let previewProcess: QtProcess | undefined;
 let previewLaunch: QtBridgePreviewLaunch | undefined;
 let previewStartPromise: Promise<void> | undefined;
+// Relaunches the current preview session with the parameters of its last
+// start. Used to restart the application after a hot reload failure.
+let relaunchCurrentPreview: (() => Promise<boolean>) | undefined;
+// Input events preserved across a preview restart. They are seeded into the
+// next connection manager and replayed to restore the UI state.
+// Maps to the event storage in Qt Creator's QmlPreviewPlugin.
+let pendingReplayEvents: RecordedInputEvent[] | undefined;
 
 function isPreviewStartingOrRunning() {
   return (
@@ -59,6 +67,7 @@ function cleanupSession() {
   previewProcess = undefined;
   previewLaunch?.dispose();
   previewLaunch = undefined;
+  relaunchCurrentPreview = undefined;
   ui.setPreviewStopped();
 }
 
@@ -76,6 +85,11 @@ function createPreviewManagerForBuildDirs(projectBuildDirs: readonly string[]) {
   );
   manager.buildDirs = [...projectBuildDirs, ...additionalBuildDirs];
 
+  if (pendingReplayEvents && pendingReplayEvents.length > 0) {
+    manager.seedRecordedEvents(pendingReplayEvents);
+  }
+  pendingReplayEvents = undefined;
+
   return manager;
 }
 
@@ -85,7 +99,12 @@ async function resolveCMakeProgram() {
 }
 
 function buildPreviewArgs(host: string, port: number) {
-  return `-qmljsdebugger=host:${host},port:${port.toString()},block,services:QmlPreview,DebugTranslation`;
+  // The same services as Qt Creator's QmlPreviewServices. CanvasFrameRate
+  // (QML Profiler) records the input events and EventReplay (Qt 6.12+)
+  // re-injects them to restore the UI state after a full reload or a
+  // restart. Older Qt versions ignore unknown services.
+  const services = 'QmlPreview,DebugTranslation,CanvasFrameRate,EventReplay';
+  return `-qmljsdebugger=host:${host},port:${port.toString()},block,services:${services}`;
 }
 
 function getPreviewConfig() {
@@ -192,6 +211,7 @@ async function launchCMakePreview(qmlFile?: string) {
     );
 
     setupProcessForPreview(process, manager, qmlFile, host, port);
+    relaunchCurrentPreview = async () => launchCMakePreview(qmlFile);
     return true;
   } catch (err) {
     logger.error(`Failed to start QML Preview: ${String(err)}`);
@@ -320,6 +340,8 @@ async function launchQtBridgePreview(
 
     previewLaunch = launch;
     setupProcessForPreview(process, manager, undefined, host, port);
+    relaunchCurrentPreview = async () =>
+      launchQtBridgePreview(folder, bridgeProject, qmlFile);
     return true;
   } catch (err) {
     logger.error(`Failed to start Qt Bridge preview: ${String(err)}`);
@@ -456,6 +478,7 @@ async function launchPySidePreview(
     );
 
     setupProcessForPreview(previewProcess, manager, qmlFile, host, port);
+    relaunchCurrentPreview = async () => launchPySidePreview(folder, qmlFile);
     return true;
   } catch (err) {
     logger.error(`Failed to start PySide preview: ${String(err)}`);
@@ -509,7 +532,32 @@ function setupProcessForPreview(
         `signal ${String(signal)}, ` +
         `elapsed ${String(elapsedMs)} ms`
     );
+    if (previewProcess !== proc) {
+      // The session was already cleaned up or replaced, e.g. by a restart
+      // after a hot reload failure. Don't tear down the new session.
+      logger.info('Ignoring exit of a superseded QML Preview process');
+      return;
+    }
     cleanupSession();
+  });
+
+  manager.onHotReloadStateChanged((settings) => {
+    qmlPreviewOutputChannel?.appendLine(
+      `QML Preview hot reload is ${settings.enableInPlaceUpdates ? 'active' : 'inactive'}.`
+    );
+  });
+
+  manager.onHotReloadFailure((reason) => {
+    qmlPreviewOutputChannel?.appendLine(
+      `QML Preview hot reload failed: ${reason}. Restarting the application...`
+    );
+    ui.showHotReloadFailed(reason);
+    void restartPreviewSession(manager);
+  });
+
+  manager.onRestart(() => {
+    logger.info('A changed file requires restarting the QML Preview');
+    void restartPreviewSession(manager);
   });
 
   previewManager = manager;
@@ -560,6 +608,64 @@ function setupProcessForPreview(
   ui.setPreviewRunning();
 }
 
+/**
+ * Restart the preview session, preserving the recorded input events so that
+ * the UI state can be restored after the application is up again.
+ * Maps to Qt Creator's restart() handling in the QML Preview plugin.
+ */
+async function restartPreviewSessionImpl(manager: QmlPreviewConnectionManager) {
+  if (previewManager !== manager) {
+    logger.info('Ignoring restart request from a stale preview session');
+    return;
+  }
+
+  const relaunch = relaunchCurrentPreview;
+  if (!relaunch) {
+    // Attached sessions have no process to restart. A rerun (full reload)
+    // is the best recovery available.
+    logger.warn(
+      'Cannot restart the QML Preview application automatically, ' +
+        'triggering a full reload instead'
+    );
+    manager.rerun();
+    return;
+  }
+
+  const events = manager.recordedEvents;
+  logger.info(
+    `Restarting QML Preview, preserving ${String(events.length)} recorded input events`
+  );
+  cleanupSession();
+  pendingReplayEvents = events;
+
+  try {
+    if (!(await relaunch())) {
+      pendingReplayEvents = undefined;
+      logger.error('Failed to restart the QML Preview application');
+    }
+  } catch (err) {
+    pendingReplayEvents = undefined;
+    logger.error(`Failed to restart QML Preview: ${String(err)}`);
+    ui.showFailedToStart(err instanceof Error ? err : new Error(String(err)));
+  }
+}
+
+async function restartPreviewSession(manager: QmlPreviewConnectionManager) {
+  if (previewStartPromise) {
+    logger.info('Ignoring restart request: a preview start is in progress');
+    return;
+  }
+  const restartPromise = restartPreviewSessionImpl(manager);
+  previewStartPromise = restartPromise;
+  try {
+    await restartPromise;
+  } finally {
+    if (previewStartPromise === restartPromise) {
+      previewStartPromise = undefined;
+    }
+  }
+}
+
 function attachPreview(host: string, port: number) {
   logger.info(`Attaching to ${host}:${port.toString()}...`);
 
@@ -582,6 +688,19 @@ function attachPreview(host: string, port: number) {
   manager.onDebugServiceUnavailable(() => {
     logger.info('QML Preview debug service unavailable in attach mode');
     cleanupSession();
+  });
+  // There is no process to restart in attach mode. A rerun (full reload) is
+  // the best recovery available; the user has to restart the application to
+  // fully recover from a hot reload failure.
+  manager.onHotReloadFailure((reason) => {
+    ui.showHotReloadFailedAttached(reason);
+    manager.rerun();
+  });
+  manager.onRestart(() => {
+    logger.info(
+      'A changed file requires a restart, triggering a full reload instead'
+    );
+    manager.rerun();
   });
 
   try {

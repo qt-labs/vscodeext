@@ -19,6 +19,7 @@ await runEsbuild({
     './test/suite/traceviewer.test.mts',
     './test/suite/qtbridge-qmlls-update.test.mts',
     './test/suite/qtbridge-preview.test.mts',
+    './test/suite/preview-client.test.mts',
     './test/runTest.qml-debug.mts',
     './test/runTestHelper.mts',
     './test/suite/index-qml-debug.mts',
