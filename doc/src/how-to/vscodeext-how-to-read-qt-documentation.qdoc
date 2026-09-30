@@ -7,10 +7,21 @@
     \nextpage vscodeext-reference.html
 
     \ingroup vscodeext-how-to-cpp
+    \ingroup vscodeext-how-to-python
     \ingroup vscodeext-how-to-qml
     \ingroup vscodeext-how-to-wasm
 
     \title Read Qt documentation
+
+    To open documentation for Qt classes and global functions and C++ macros,
+    hover them in the editor and select the link to the documentation page.
+
+    \image {vscodeext-get-help.webp} {Selecting a documentation link to read documentation.}
+
+    This works in the following types of files: \c {.h}, \c {.cpp}, \c {.ui}
+    (in Text Editor), \c {CMakeLists.txt}, \c {.py}.
+
+    \section1 Go to documentation site
 
     To open \l {Qt Documentation}{Qt} or \l {Qt for Python} documentation
     (depending on the type of the file open in the editor), go to
