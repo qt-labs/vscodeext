@@ -35,7 +35,7 @@
             \uicontrol {Qt versions} is not empty.
         \li Select an example in the list of examples.
 
-            You can also use tags to filter examples.
+            You can also select categories and tags to filter examples.
         \li Select \uicontrol {New project} to create a new project based on the
             example project.
             \image {vscodeext-qt-examples-new-project.webp} {Creating a new project based on a Qt example}

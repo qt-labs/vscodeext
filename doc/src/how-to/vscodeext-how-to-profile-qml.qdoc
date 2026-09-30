@@ -10,24 +10,24 @@
 
     \title Profile QML code
 
-    With QML Profiler, you can find causes for typical performance problems
+    With \QP, you can find causes for typical performance problems
     in Qt Quick applications, such as slowness and unresponsive, stuttering user
     interfaces.
 
-    You can launch QML Profiler from \QVSC to profile a running QML application
+    You can launch \QP from \QVSC to profile a running QML application
     and to analyze profiling data.
 
-    \section1 Install QML profiler
+    \section1 Install profiling tools
 
-    To profile QML applications, you need to install QML Profiler. Go to
-    \uicontrol {Command Palette} and select
-    \uicontrol {Qt: Install the most recent QML trace viewer}.
+    To profile QML applications, you need to install profiling tools.
+    Go to \uicontrol {Command Palette} and select
+    \uicontrol {Qt: Download the most recent QML trace viewer}.
 
-    If you do not install QML Profiler, \QVSC offers to install it the first time
-    you start profiling a application.
+    If you do not install the profiling tools, \QVSC offers to install them the
+    first time you start profiling a application.
 
-    To use a particular QML Profiler executable, set the path to it in the
-    \l {QML Profiler settings}.
+    To use a particular QML trace viewer executable, set the path to it in the
+    \l {\QP settings}.
 
     \section1 Collect profiling data
 
@@ -41,23 +41,22 @@
         \li Use the application to collect profiling data.
         \li Close the application or select
             \inlineimage {profiler-stop.png} {Profile QML application}
-            (\uicontrol {Stop QML profiler}) on the toolbar.
+            (\uicontrol {Stop \QP}) on the toolbar.
     \endlist
 
-    Use the QML Profiler to collect data and analyze the results.
+    Use \QP to collect data, and analyze the results in the trace viewer.
 
-    \image {qml-profiler.webp} {QML Profiler}
+    \image {qml-profiler.webp} {QML Profiler Trace Viewer}
 
     For more information, see \l {\QC: Profiling QML applications}
     {Profiling QML applications} in the \QC documentation.
 
-    You can set arguments to pass to the application when you start QML Profiler
-    in the QML Profiler settings.
+    You can set arguments to pass to the application when you start \QP
+    in the \QP settings.
 
-    \section1 Attach QML Profiler to running applications
+    \section1 Attach to running applications for profiling
 
-    To attach the QML Profiler to a running application for collecting profiling
-    data:
+    To attach to a running application for collecting profiling data:
 
     \list 1
         \li In the \uicontrol Terminal, start the application with the following

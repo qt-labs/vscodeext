@@ -53,6 +53,7 @@ macro.function                  = "\\fn"
 # Product name macros
 
 macro.QVSC                     = "Qt Extension for VS Code"
+macro.QP                       = "QML Profiler"
 
 outputdir                       = ../doc/html
 

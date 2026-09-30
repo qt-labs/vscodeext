@@ -83,7 +83,7 @@
 
     \list 1
         \li In VS Code \uicontrol {Explorer}, select \c addressbook.ui, and then
-            select \uicontrol {Open this file with \QD} to open it in \QD.
+            select \uicontrol {Open with \QD} to open it in \QD.
             \image {vscodeext-open-ui-file.webp} {Opening addressbook.ui in the Explorer}
         \li In \QD's \uicontrol {Widget Box}, select \uicontrol {List Widget} and
             Drag it to the form to add a \l QListWidget.
