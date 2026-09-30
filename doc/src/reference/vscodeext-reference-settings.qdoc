@@ -77,38 +77,48 @@
     \header
         \li Setting
         \li Description
+        \li Learn more
     \row
         \li \uicontrol {Additional Qt Paths}
         \li Adds paths to the \c qtpaths or \c qmake executable to find Qt
-            installations. For more information, see \l {Other installations}.
+            installations.
+        \li \l {Other installations}
+    \row
+        \li \uicontrol {Custom Widgets Designer Exe Path}
+        \li Path to the folder where you installed \QD.
+        \li \l {Design widgets-based UIs}
     \row
         \li \uicontrol {Default Project Directory}
         \li Sets the path to the folder that is shown by default when you create
-            new projects. For more information, see \l {Create Qt projects}.
+            new projects.
+        \li \l {Create Qt projects}
     \row
         \li \uicontrol {Do Not Ask for Default Qt Installation Root}
         \li Hides the prompt about setting the value of
             \uicontrol {Qt Installation Root}.
+        \li \l {Register Qt installations}
     \row
         \li \uicontrol {Do Not Ask for VCPKG}
-        \li Hides the prompt about creating a CMake kit for \c vcpkg. For more
-            information, see \l {Automatic registration}.
+        \li Hides the prompt about creating a CMake kit for \c vcpkg.
+        \li \l {Automatic registration}
     \row
         \li \uicontrol {Enable QRC Editor}
         \li Whether to use the QRC editor or default text editor to edit QRC
-            files. For more information, see \l {Edit QRC files}.
+            files.
+        \li \l {Edit QRC files}
     \row
         \li \uicontrol {Open Online Documentation in External Browser}
-        \li Opens Qt documentation in the default browser. For more information,
-            see \l {Read Qt documentation}.
+        \li Opens Qt documentation in the default browser.
+        \li \l {Read Qt documentation}
     \row
         \li \uicontrol {Qt Installation Root}
-        \li Path to the folder where you installed Qt. For more information, see
-            \l {Automatic registration}.
+        \li Path to the folder where you installed Qt.
+        \li \l {Automatic registration}
     \row
         \li \uicontrol {Show Welcome Page On Activation}
         \li Whether to show the \QVSC \uicontrol Welcome page when the extension
-            starts. For more information, see \l {Getting started}.
+            starts.
+        \li \l {Getting started}
     \endtable
 
     \section1 QML settings
@@ -137,11 +147,11 @@
             start it from the command palette.
     \endtable
 
-    \section2 QML Profiler settings
+    \section2 \QP settings
 
     \image {vscodeext-qt-settings-qml-profiler.webp} {Qt QML Configuration}
 
-    Settings for QML Profiler. For more information, see \l {Profile QML code}.
+    Settings for \QP. For more information, see \l {Profile QML code}.
 
     \table
     \header
@@ -150,10 +160,10 @@
     \row
         \li \uicontrol {Args}
         \li Additional command-line arguments to pass to the application when you
-            start QML Profiler.
+            start \QP.
     \row
         \li \uicontrol {Custom Trace Viewer Exe Path}
-        \li Path to the folder where you installed QML Profiler.
+        \li Path to the folder where you installed the trace viewer.
     \endtable
 
     \section2 \QMLLS settings
@@ -221,21 +231,9 @@
             instead of \c pyproject.toml files in your projects. TOML-based
             configuration files are recommended for new projects. For more
             information, see \l{Qt for Python: pyside6-project}.
-    \endtable
-
-    \section1 Qt UI settings
-
-    \image {vscodeext-qt-settings-ui.webp} {Qt UI Configuration}
-
-    Settings for handling \e {.ui} files. For more information, see
-    \l{Design widgets-based UIs}.
-
-    \table
-    \header
-        \li Setting
-        \li Description
     \row
-        \li \uicontrol {Custom Widgets Designer Exe Path}
-        \li Path to the folder where you installed \QD.
+        \li \uicontrol {Prefer uv}
+        \li Use \c uv for creating virtual configurations when it is available
+            on \c PATH.
     \endtable
 */

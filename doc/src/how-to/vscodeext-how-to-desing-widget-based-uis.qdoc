@@ -14,7 +14,7 @@
 
     \list 1
         \li Go to \uicontrol {Explorer}, and select a \e {.ui} file.
-        \li Select \uicontrol {Open this file with \QD}.
+        \li Select \uicontrol {Open with \QD}.
             \image {vscodeext-open-ui-file.webp} {Opening an .ui file in the Explorer}
         \li Use \l {\QD} to design a UI.
     \endlist
@@ -28,7 +28,7 @@
             \uicontrol {Qt: Open Qt Extension settings}.
         \li In \uicontrol {Custom Widgets Designer Exe Path}, set the path to the
             folder where you installed \QD.
-            \image {vscodeext-qt-settings-ui.webp} {Qt UI Settings}
+            \image {vscodeext-qt-settings-core.webp} {Qt Core Configuration}
     \endlist
 
     \section1 Open UI files in Text Editor
@@ -37,7 +37,7 @@
 
     \list 1
         \li Go to \uicontrol {Explorer}, and select a \e {.ui} file.
-        \li Select \uicontrol {Open this file with Text Editor}.
+        \li Select \uicontrol {Open as text}.
         \li Use Text Editor to change the UI file.
     \endlist
 
