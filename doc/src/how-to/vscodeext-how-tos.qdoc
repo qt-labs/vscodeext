@@ -1,24 +1,115 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \page vscodeext-how-tos.html
+    \page vscodeext-how-to-cpp.html
     \previouspage vscodeext-tutorials.html
     \nextpage vscodeext-reference.html
 
-    \title How to
+    \title Develop Qt applications
 
-    The following topics describe how to use \QVSC to perform a particular task.
+    With the Qt C++ extension pack, you can:
 
-    \section1 Develop Qt applications
+    \list
+        \li Create Qt applications with Qt Widgets based UIs
+        \li Use Qt in your CMake project by selecting a generated Qt kit
+        \li Get syntax highlighting and code completion for Qt-specific
+            file formats
+        \li Design Qt widgets-based UIs with \l{\QD}
+        \li Build Qt projects with \l{Build with CMake}{CMake}
+        \li Debug Qt's C++ types
+        \li Read \l {Qt Documentation}
+    \endlist
+
+    \section1 How to develop Qt applications
 
     \generatelist vscodeext-how-to-cpp
+*/
 
-    \section1 Develop Qt Quick applications
+/*!
+    \page vscodeext-how-to-qtquick.html
+    \previouspage vscodeext-how-to-cpp.html
+    \nextpage vscodeext-how-to-python.html
+
+    \title Develop Qt Quick applications
+
+    With the Qt QML extension, you can:
+
+    \list
+        \li Create Qt Quick applications
+        \li Get QML syntax highlighting and code completion with
+            \l {\QMLLS}
+        \li Verify the syntax of QML code with \l{qmllint Reference}{qmllint}
+        \li Find causes for typical performance problems in Qt Quick applications
+            with QML Profiler
+    \endlist
+
+    \section1 How to develop Qt Quick applications
 
     \generatelist vscodeext-how-to-qml
+*/
 
-    \section1 Develop for the web
+/*!
+    \page vscodeext-how-to-csharp.html
+    \previouspage vscodeext-how-to-qtquick.html
+    \nextpage vscodeext-how-to-python.html
+
+    \title Develop with C#
+
+    With the Qt C# extension pack, you can develop C# applications with
+    VS Code and \l {Qt Bridge for C#}:
+
+    \list
+        \li Create C# applications with Qt Quick based UIs
+        \li Build, run, and debug Qt projects with .NET
+        \li Get QML syntax highlighting and code completion with
+            \l {\QMLLS}
+        \li Live preview QML applications
+    \endlist
+*/
+
+/*!
+    \page vscodeext-how-to-python.html
+    \previouspage vscodeext-how-to-csharp.html
+    \nextpage vscodeext-how-to-web.html
+
+    \title Develop with Python
+
+    With the Qt Python extension pack, you can develop \l {Qt for Python}
+    applications with VS Code and Python:
+
+    \list
+        \li Install PySide6 packages
+        \li Create Qt for Python applications with Qt Quick or Qt Widgets based UIs
+        \li Build, run, and clean the applications
+        \li Debug the applications with \c debugpy and QML debugger
+        \li Read Qt for Python documentation
+    \endlist
+
+    \section1 How to develop with Python
+
+    \generatelist vscodeext-how-to-python
+*/
+
+/*!
+    \page vscodeext-how-to-web.html
+    \previouspage vscodeext-how-to-python.html
+    \nextpage vscodeext-reference.html
+
+    \title Develop for the web
+
+    With the \l {Qt for WebAssembly} extension pack, you can:
+
+    \list
+        \li Use Qt in your CMake project by selecting a generated Qt kit
+        \li Get syntax highlighting and code completion for Qt-specific
+            file formats
+        \li Build Qt projects with CMake
+        \li Debug Qt for WebAssembly code
+        \li Read Qt documentation
+    \endlist
+
+    \section1 How to develop for WebAssembly
 
     \generatelist vscodeext-how-to-wasm
 */

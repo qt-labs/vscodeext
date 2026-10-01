@@ -8,6 +8,7 @@
 
     \ingroup vscodeext-how-to-cpp
     \ingroup vscodeext-how-to-qml
+    \ingroup vscodeext-how-to-python
 
     \title Debug Qt for Python applications
 

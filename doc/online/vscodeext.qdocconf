@@ -18,4 +18,4 @@ HTML.footer = \
     "   of their respective owners. </p>\n"
 
 # Add an .html file with sidebar content, used in the online style
-HTML.stylesheets               += ../config/style/qt5-sidebar.html
+HTML.stylesheets               += ../config/style/tree_config.xml

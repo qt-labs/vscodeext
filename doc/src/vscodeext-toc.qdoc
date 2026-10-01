@@ -1,4 +1,4 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
@@ -17,19 +17,17 @@
             \list
                 \li \l{Overview}
                 \li \l{Installation}
-                \li \l{Set up Python development environment}
             \endlist
         \li \l{Tutorials}
             \generatelist vscodeext-tutorials
-        \li \l{How to}
-            \list
-            \li Develop Qt applications
-                \generatelist vscodeext-how-to-cpp
-            \li Develop Qt Quick applications
-                \generatelist vscodeext-how-to-qml
-            \li Develop for the web
-                \generatelist vscodeext-how-to-wasm
-            \endlist
+        \li \l {Develop Qt applications}
+            \generatelist vscodeext-how-to-cpp
+        \li \l {Develop Qt Quick applications}
+            \generatelist vscodeext-how-to-qml
+        \li \l {Develop with Python}
+            \generatelist vscodeext-how-to-python
+        \li \l {Develop for the web}
+            \generatelist vscodeext-how-to-wasm
         \li \l{Reference}
             \generatelist vscodeext-reference
     \endlist

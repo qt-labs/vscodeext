@@ -16,77 +16,13 @@
     You can install Qt extension packs and individual extensions depending on
     what kind of applications you develop.
 
-    \section1 C++ development
-
-    With the Qt C++ extension pack, you can:
-
     \list
-        \li Create Qt applications with Qt Widgets based UIs
-        \li Use Qt in your CMake project by selecting a generated Qt kit
-        \li Get syntax highlighting and code completion for Qt-specific
-            file formats
-        \li Design Qt widgets-based UIs with \l{\QD}
-        \li Build Qt projects with \l{Build with CMake}{CMake}
-        \li Debug Qt's C++ types
-        \li Read \l {Qt Documentation}
+        \li \l {Develop Qt applications}
+        \li \l {Develop Qt Quick applications}
+        \li \l {Develop with C#}
+        \li \l {Develop with Python}
+        \li \l {Develop for the web}
     \endlist
-
-    \section1 C# development
-
-    With the Qt C# extension pack, you can develop C# applications with
-    VS Code and \l {Qt Bridge for C#}:
-
-    \list
-        \li Create C# applications with Qt Quick based UIs
-        \li Build, run, and debug Qt projects with .NET
-        \li Get QML syntax highlighting and code completion with
-            \l {\QMLLS}
-        \li Live preview QML applications
-    \endlist
-
-    \section1 Qt Quick development
-
-    With the Qt QML extension, you can:
-
-    \list
-        \li Create Qt Quick applications
-        \li Get QML syntax highlighting and code completion with
-            \l {\QMLLS}
-        \li Verify the syntax of QML code with \l{qmllint Reference}{qmllint}
-        \li Live preview QML applications
-        \li Find causes for typical performance problems in Qt Quick applications
-            with QML Profiler
-    \endlist
-
-    \section1 Web development
-
-    With the \l {Qt for WebAssembly} extension pack, you can:
-
-    \list
-        \li Use Qt in your CMake project by selecting a generated Qt kit
-        \li Get syntax highlighting and code completion for Qt-specific
-            file formats
-        \li Build Qt projects with CMake
-        \li Debug Qt for WebAssembly code
-        \li Read Qt documentation
-    \endlist
-
-    \section1 Python development
-
-    //! [python-extension-overview]
-
-    With the Qt Python extension pack, you can develop \l {Qt for Python}
-    applications with VS Code and Python:
-
-    \list
-        \li Install PySide6 packages
-        \li Create Qt for Python applications with Qt Quick or Qt Widgets based UIs
-        \li Build, run, and clean the applications
-        \li Debug the applications with \c debugpy and QML debugger
-        \li Read Qt for Python documentation
-    \endlist
-
-    //! [python-extension-overview]
 
     \section1 Usage data collection
 
@@ -119,5 +55,5 @@
         \li Build output
     \endlist
 
-    \sa {Installation}, {Set up Python development environment}
+    \sa {Installation}
 */
