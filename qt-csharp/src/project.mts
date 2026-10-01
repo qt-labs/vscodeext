@@ -42,7 +42,6 @@ export interface QtBridgeProjectInfo {
   readonly packageId: string | undefined;
   readonly packageVersion: string | undefined;
   readonly qtDir: string | undefined;
-  readonly qtInstallRoot: string | undefined;
 }
 
 export interface QtBridgeQtDirFallbacks {
@@ -371,21 +370,13 @@ function inferProjectQtDir(
     return configuredQtDir;
   }
 
-  const configuredQtInstallRoot = resolvePropertyExpression(
-    getMsBuildProperty(properties, 'QtInstallRoot'),
-    properties
-  );
-  if (configuredQtInstallRoot) {
-    return configuredQtInstallRoot;
-  }
-
   return undefined;
 }
 
 export function resolveQtBridgeQtDir(
   projectQtDir: string | undefined,
   fallbacks: QtBridgeQtDirFallbacks = {},
-  environmentQtDir = getEnvironmentVariable(['QTDIR', 'QtDir', 'QtInstallRoot'])
+  environmentQtDir = getEnvironmentVariable(['QTDIR', 'QtDir'])
 ): string | undefined {
   return (
     normalizeQtDir(projectQtDir) ??
@@ -483,11 +474,7 @@ export function inspectQtBridgeProject(
           ) ??
           getPackageReferenceVersion(packageReferences, packageId, properties))
         : undefined,
-      qtDir: resolveQtBridgeQtDir(projectQtDir, qtDirFallbacks),
-      qtInstallRoot: resolvePropertyExpression(
-        getMsBuildProperty(properties, 'QtInstallRoot'),
-        properties
-      )
+      qtDir: resolveQtBridgeQtDir(projectQtDir, qtDirFallbacks)
     };
     logger.info(
       `Detected Qt Bridge project: ${projectInfo.projectFile}; ` +
@@ -512,9 +499,8 @@ export function resolveQtBridgeQmlImportPath(
     return undefined;
   }
 
-  const explicitQtDir = project.qtDir ?? project.qtInstallRoot;
-  if (explicitQtDir) {
-    const qmlDir = path.join(explicitQtDir, 'qml');
+  if (project.qtDir) {
+    const qmlDir = path.join(project.qtDir, 'qml');
     if (fs.existsSync(qmlDir)) {
       logger.info(`Using explicit Qt Bridge Qt import root: ${qmlDir}`);
       return qmlDir;

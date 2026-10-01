@@ -211,6 +211,32 @@ describe('Qt Bridge project discovery', () => {
     expect(project).to.be.undefined;
   });
 
+  it('does not use QtInstallRoot as the Qt directory', async () => {
+    const qtInstallRoot = path.join(testDirectory, 'QtInstallRoot');
+    const previousQtInstallRoot = process.env.QtInstallRoot;
+    process.env.QtInstallRoot = qtInstallRoot;
+    try {
+      const project = await inspect(`
+        <Project Sdk="Microsoft.NET.Sdk">
+          <PropertyGroup><QtInstallRoot>${qtInstallRoot}</QtInstallRoot></PropertyGroup>
+          <ItemGroup>
+            <PackageReference Include="QtGroup.Qt.Bridge.CSharp.win-arm64"
+              Version="1.2.3" />
+          </ItemGroup>
+        </Project>`);
+
+      expect(project).to.not.be.undefined;
+      expect(project?.qtDir).to.not.equal(qtInstallRoot);
+      expect(resolveQtBridgeQtDir(undefined)).to.not.equal(qtInstallRoot);
+    } finally {
+      if (previousQtInstallRoot === undefined) {
+        delete process.env.QtInstallRoot;
+      } else {
+        process.env.QtInstallRoot = previousQtInstallRoot;
+      }
+    }
+  });
+
   it('resolves QtDir fallbacks by precedence', () => {
     const fallbacks = {
       configuredQtDir: '/settings/Qt',
@@ -414,8 +440,7 @@ describe('Qt Bridge project discovery', () => {
       projectFile,
       packageId: 'QtGroup.Qt.Bridge.CSharp.win-x64',
       packageVersion: '1.0.0',
-      qtDir,
-      qtInstallRoot: undefined
+      qtDir
     });
     const metadata: QtBridgeQmlMetadata = {
       metadataFile: path.join(testDirectory, 'obj', 'qtbridge-qml.ide.json'),
