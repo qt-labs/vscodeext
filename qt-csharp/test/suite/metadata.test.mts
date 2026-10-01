@@ -117,12 +117,7 @@ describe('Qt Bridge build metadata', () => {
         },
         qmlLanguageServer: {
           disableCMakeCalls: true,
-          readyFile,
-          buildIni: path.join(dotQtDirectory, '.qmlls.build.ini'),
-          projectSourcesQrc: path.join(
-            dotQtDirectory,
-            'qtbridge_project_sources.qrc'
-          )
+          readyFile
         }
       }),
       'utf8'

@@ -257,15 +257,10 @@ function parseMetadata(
   const qmlLanguageServer =
     languageServer &&
     typeof languageServer.disableCMakeCalls === 'boolean' &&
-    isNonEmptyString(languageServer.readyFile) &&
-    isNonEmptyString(languageServer.buildIni)
+    isNonEmptyString(languageServer.readyFile)
       ? {
           disableCMakeCalls: languageServer.disableCMakeCalls,
-          readyFile: languageServer.readyFile,
-          buildIni: languageServer.buildIni,
-          projectSourcesQrc: isNonEmptyString(languageServer.projectSourcesQrc)
-            ? languageServer.projectSourcesQrc
-            : undefined
+          readyFile: languageServer.readyFile
         }
       : undefined;
 

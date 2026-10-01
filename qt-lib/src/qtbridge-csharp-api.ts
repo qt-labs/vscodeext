@@ -65,8 +65,6 @@ export interface QtBridgeQmlFile {
 export interface QtBridgeQmlLanguageServerMetadata {
   readonly disableCMakeCalls: boolean;
   readonly readyFile: string;
-  readonly buildIni: string;
-  readonly projectSourcesQrc: string | undefined;
 }
 
 export interface QtBridgeMetadataChangeEvent {
