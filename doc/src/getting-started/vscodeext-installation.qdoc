@@ -4,7 +4,7 @@
 /*!
     \page vscodeext-how-to-install.html
     \previouspage vscodeext-getting-started.html
-    \nextpage vscodeext-how-tos.html
+    \nextpage vscodeext-tutorials.html
 
     \title Installation
 
@@ -58,9 +58,12 @@
     \previouspage vscodeext-getting-started.html
     \nextpage vscodeext-how-tos.html
 
+    \ingroup vscodeext-how-to-python
+
     \title Set up Python development environment
 
-    \include {vscodeext-overview.qdoc} {python-extension-overview}
+    To develop \l {Qt for Python} applications with VS Code and Python, install
+    PySide6 for each project.
 
     \section1 Install PySide6 for the project
 
