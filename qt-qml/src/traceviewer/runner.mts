@@ -120,11 +120,8 @@ export class QmlTraceViewerRunner {
       }
     });
 
-    const out = await outPromise;
-    const err = await errPromise;
-    void err;
-
-    return out;
+    await outPromise;
+    await errPromise;
   }
 
   private _clearProcAndFire() {
@@ -247,31 +244,46 @@ async function parseJsonOutput(uri: vscode.Uri, text: string) {
 type Stream = NodeJS.ReadableStream;
 type Callback = ((line: string) => void) | undefined;
 
+// A single JSON-RPC line from the viewer is small. A runaway or compromised
+// viewer process could emit one endless line and grow the leftover buffer
+// without bound, so cap it and drop the oversized line instead of keeping it.
+const MaxLineBytes = 1024 * 1024; // 1 MiB
+
 async function streamToLines(stream: Stream | null, callback: Callback) {
   if (stream === null) {
     return;
   }
 
   let leftover = '';
-  const lines: string[] = [];
+  let discardingLongLine = false;
 
   for await (const chunk of stream) {
     const text = leftover + chunk.toString();
     const parts = text.split('\n');
     leftover = parts.pop() ?? '';
 
+    if (discardingLongLine) {
+      if (parts.length === 0) {
+        // Still inside the oversized line; keep dropping it.
+        leftover = '';
+        continue;
+      }
+      // The first newline ends the oversized line; drop what belongs to it.
+      parts.shift();
+      discardingLongLine = false;
+    }
+
     for (const line of parts) {
-      const trimmed = line.trim();
-      lines.push(trimmed);
-      callback?.(trimmed);
+      callback?.(line.trim());
+    }
+
+    if (leftover.length > MaxLineBytes) {
+      leftover = '';
+      discardingLongLine = true;
     }
   }
 
   if (leftover.trim()) {
-    const trimmed = leftover.trim();
-    lines.push(trimmed);
-    callback?.(trimmed);
+    callback?.(leftover.trim());
   }
-
-  return lines;
 }

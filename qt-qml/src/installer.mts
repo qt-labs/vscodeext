@@ -16,7 +16,8 @@ import {
   IsWindows,
   IsMacOS,
   IsLinux,
-  IsArm64
+  IsArm64,
+  assertInside
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
@@ -502,6 +503,7 @@ async function unzipWithProgress(zipPath: string, destDir: string) {
     const unzipStreamProvider = (entry: unzipper.Entry) => {
       const name = entry.fileName;
       const dest = path.join(destDir, name);
+      assertInside(destDir, dest);
 
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       progress.report({ message: name });
