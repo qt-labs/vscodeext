@@ -14,12 +14,13 @@ export class Logger {
   }
 
   private log(level: keyof winston.Logger, ...message: string[]) {
+    const text = `[${this.tag}] ${message.join('')}`;
     if (logger) {
-      (logger[level] as (message: string) => void)(
-        `[${this.tag}] ${message.join('')}`
-      );
-    } else {
-      console.error('Logger not initialized');
+      (logger[level] as (message: string) => void)(text);
+    }
+    // Lets CI show logs that otherwise only reach an output channel
+    if (process.env.QT_LOG_TO_CONSOLE === '1') {
+      console.log(`[${String(level)}] ${text}`);
     }
   }
 
