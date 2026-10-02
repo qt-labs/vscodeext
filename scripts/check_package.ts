@@ -57,6 +57,10 @@ function main() {
   console.log('Checking for missing dependencies...');
   try {
     execSync('npm ls');
+
+    const jqCommand = 'npx --no-install node-jq empty';
+    execSync(`${jqCommand} package.json`);
+    execSync(`${jqCommand} package-lock.json`);
   } catch (error) {
     const errorMessage =
       "Missing dependencies found. Please run 'npm install' to install missing dependencies.";
