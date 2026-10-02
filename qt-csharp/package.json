@@ -91,8 +91,7 @@
   },
   "dependencies": {
     "fast-xml-parser": "^5.3.4",
-    "qt-lib": "file:../qt-lib",
-    "typescript": "^5.6.3"
+    "qt-lib": "file:../qt-lib"
   },
   "overrides": {
     "mocha": {

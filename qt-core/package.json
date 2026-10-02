@@ -451,7 +451,6 @@
     "module-alias": "^2.2.3",
     "qt-lib": "file:../qt-lib",
     "rss-parser": "^3.13.0",
-    "typescript": "^5.6.3",
     "which": "^5.0.0"
   },
   "overrides": {

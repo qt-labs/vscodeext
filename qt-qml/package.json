@@ -629,7 +629,6 @@
     "module-alias": "^2.2.3",
     "promise-socket": "^8.0.0",
     "qt-lib": "file:../qt-lib",
-    "typescript": "^5.6.3",
     "vscode-languageclient": "^10.1.1",
     "yauzl": "^3.1.3"
   },

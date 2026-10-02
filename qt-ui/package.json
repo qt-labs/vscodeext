@@ -141,8 +141,7 @@
   "dependencies": {
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "module-alias": "^2.2.3",
-    "qt-lib": "file:../qt-lib",
-    "typescript": "^5.6.3"
+    "qt-lib": "file:../qt-lib"
   },
   "overrides": {
     "mocha": {
