@@ -1,0 +1,1018 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "qt-qml",
+      "version": "1.19.0",
+      "bom-ref": "qt-qml@1.19.0",
+      "description": "Qt QML Support",
+      "purl": "pkg:npm/qt-qml@1.19.0?vcs_url=git%2Bhttps%3A%2F%2Fgithub.com%2Fqt-labs%2Fvscodeext.git",
+      "externalReferences": [
+        {
+          "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/qt-labs/vscodeext.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.qt.io/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:vscode",
+          "value": "^1.94.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "debugadapter",
+      "group": "@vscode",
+      "version": "1.68.0",
+      "bom-ref": "qt-qml@1.19.0|@vscode/debugadapter@1.68.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vscode/debugadapter@1.68.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vscode/debugadapter/-/debugadapter-1.68.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0fa824e45c36cb8155f2862696da17a63f950197b1c49168a4dfe6719e98720cd013d760ab62f8e408f718bc52709383e8678b20b731248680f25defd757ac1a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vscode/debugadapter"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debugprotocol",
+      "group": "@vscode",
+      "version": "1.68.0",
+      "bom-ref": "qt-qml@1.19.0|@vscode/debugprotocol@1.68.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vscode/debugprotocol@1.68.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vscode/debugprotocol/-/debugprotocol-1.68.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d89dbb772b1a5e6be77ee8451a17debb17c7457ba7a8d3f1b41a11de4a224ce03daddc563434dad732052c214c48727d30f4cf28570179b96cc9a089088950c6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vscode/debugprotocol"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "async-mutex",
+      "version": "0.5.0",
+      "bom-ref": "qt-qml@1.19.0|async-mutex@0.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/async-mutex@0.5.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/async-mutex/-/async-mutex-0.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d40f78075f23909dc362adbce2884fc685db7d30391ec43bfcc7f80c485cc8bc77073dbb461e7d89271b07a10f88ff81fa3a2e7ba602c5c31749b142d6d64ac0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/async-mutex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "buffer-crc32",
+      "version": "0.2.13",
+      "bom-ref": "qt-qml@1.19.0|buffer-crc32@0.2.13",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/buffer-crc32@0.2.13",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/buffer-crc32/-/buffer-crc32-0.2.13.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "54ef47b7ffa9dd237b48a5aa72b804ce319b4522584f1f90d694d00b4c2b5aa1f1d2fa49ada43a1ad1f1f2dbdc835ae52b56f2854e6071cc603a08fb0744c391"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/buffer-crc32"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-port",
+      "version": "7.1.0",
+      "bom-ref": "qt-qml@1.19.0|get-port@7.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-port@7.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-port/-/get-port-7.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "401f4d284783837c71570082c0943dfb1c9c6b3ea9041ea243beb0896325d7ddbb9f42a2afa6a53e23fecae88808b2d4e23a4c7b4f1d5dfa5e6ee429a45036cf"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-port"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "module-alias",
+      "version": "2.2.3",
+      "bom-ref": "qt-qml@1.19.0|module-alias@2.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/module-alias@2.2.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/module-alias/-/module-alias-2.2.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "db78390458f8cdd40bfdbeada2bec98be418e2911f347efce0132c958f506f4527256440b7e95018b62645a334283070206db77df10110b8590cfdab862f5ffd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/module-alias"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pend",
+      "version": "1.2.0",
+      "bom-ref": "qt-qml@1.19.0|pend@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pend@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pend/-/pend-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1776acbf8d94b97721773b7ec57a9f5b538695505efa6c5ada6a88d29839c801d93ef16663763a76b49ffc643503ce9681610df4ace1fd6ae029aea219c1d72e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pend"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "promise-duplex",
+      "version": "8.0.0",
+      "bom-ref": "qt-qml@1.19.0|promise-duplex@8.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/promise-duplex@8.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/promise-duplex/-/promise-duplex-8.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "265ae74fa2993110feb787313fb821fdd9463f6a65d35fe34cf837a532ef14b0537474db4d375cfa0db9ab4aacc02df388ef5102bdcbd5bda7ffefb8cb6dc642"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/promise-duplex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "promise-readable",
+      "version": "8.0.1",
+      "bom-ref": "qt-qml@1.19.0|promise-readable@8.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/promise-readable@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/promise-readable/-/promise-readable-8.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a5e540cfee3dc51a281753a6db06123a5b8aa4e0299e988954e2a043a211fd9016a35e6d05ae19b5c28a493032b5188d255964be297d368161aa2858e1297517"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/promise-readable"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "promise-socket",
+      "version": "8.0.0",
+      "bom-ref": "qt-qml@1.19.0|promise-socket@8.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/promise-socket@8.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/promise-socket/-/promise-socket-8.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e506f9ef5f5070e9b7ff3aedd032e202c257badbf6bdbe074710a2395ae8d5ec8038c6a4eaf17681322807a7f43359a728c0ac5d6d520bf3bee06dcfea9ee46f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/promise-socket"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "promise-writable",
+      "version": "8.0.0",
+      "bom-ref": "qt-qml@1.19.0|promise-writable@8.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/promise-writable@8.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/promise-writable/-/promise-writable-8.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "427effe6d138d9f8cb5167af3e6fd2166573dbab517619b198f5e038949e2302e7908d95e2ed3fb7e0ab4576fc89cd49cbdaaabce1d5626fac00881e97ef9e54"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/promise-writable"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qt-lib",
+      "version": "1.19.0",
+      "bom-ref": "qt-qml@1.19.0|qt-lib@1.19.0",
+      "purl": "pkg:npm/qt-lib@1.19.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/qt-lib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "semver",
+      "version": "7.8.5",
+      "bom-ref": "qt-qml@1.19.0|semver@7.8.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/semver@7.8.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/semver/-/semver-7.8.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "63bfca0ec6fc2e3a28669c1aa86cae94ee8342592c8029dc7211c693eb19218e1206f52870c044147e54af57c8e1d57e26f974c3a723bee71a222e34a6e462a0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/semver"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tslib",
+      "version": "2.8.0",
+      "bom-ref": "qt-qml@1.19.0|tslib@2.8.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "0BSD",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tslib@2.8.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tslib/-/tslib-2.8.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8d657304ba659c29a8693af5dd5f5d61b890f7dc2f651774bcd59a0d183e6956117230c5de70e4b3114313ff9f9179ca8699d45249b1e692bfbfc982b4b56a64"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tslib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vscode-jsonrpc",
+      "version": "9.0.2",
+      "bom-ref": "qt-qml@1.19.0|vscode-jsonrpc@9.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vscode-jsonrpc@9.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vscode-jsonrpc/-/vscode-jsonrpc-9.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "49b41257dc917a6011c5e5f0e8b539b12e99ab47bdfc3802097e727a51f6eb76505ae91b4e4f0417c7e34ebaf577389ab1fe06c2525bbd3c059d3ae74055995d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vscode-jsonrpc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vscode-languageclient",
+      "version": "10.1.1",
+      "bom-ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vscode-languageclient@10.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vscode-languageclient/-/vscode-languageclient-10.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "11bc0817e2946f0c43e63ba640da62042bfb0493374627abbf885c6f0fe9e6376c9f0145a51fc1d959b0a9f1f8a795ec2b8ea7907dee800dd6b7025e9071c913"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vscode-languageclient"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "balanced-match",
+          "version": "4.0.4",
+          "bom-ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1|balanced-match@4.0.4",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/balanced-match@4.0.4",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "04bae011c453c17da8ea01b118e08dc8cbc64a9df96287ee633c3d87520c4d198aaadb40659554ebb6dd6fd3ebdaf50703cfa3de2dad25f8cee82ebee26c864c"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/vscode-languageclient/node_modules/balanced-match"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "brace-expansion",
+          "version": "5.0.9",
+          "bom-ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1|brace-expansion@5.0.9",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/brace-expansion@5.0.9",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.9.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "49c43822ebc8105d533253fb66dfaf8c9ffff7394f6f64837315b13376e4f2ceade8619d27b28ed5d09c4e274e3c929e3d6df42c4ff6713ef00b23e1a3dfd6c6"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/vscode-languageclient/node_modules/brace-expansion"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "minimatch",
+          "version": "10.2.6",
+          "bom-ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1|minimatch@10.2.6",
+          "licenses": [
+            {
+              "license": {
+                "id": "BlueOak-1.0.0",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/minimatch@10.2.6",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "be92d012cf952c2af59d4d015d2d3b99a628170943007d209e042ebadb71230bad0c510c1ead9b957fbcbe98310dd2b72753f08c22627a9efb3a2b536782e5d4"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/vscode-languageclient/node_modules/minimatch"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vscode-languageserver-protocol",
+      "version": "3.18.3",
+      "bom-ref": "qt-qml@1.19.0|vscode-languageserver-protocol@3.18.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vscode-languageserver-protocol@3.18.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.18.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0c5e3df96795e69cb8ccee618686e9eb48e3b0348ad2502a0343ae2812c1be9e36dc73d641c09b859cf7260c9f21ec2c133d9ff14f97ef9c4d2051dd897666db"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vscode-languageserver-protocol"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vscode-languageserver-textdocument",
+      "version": "1.0.14",
+      "bom-ref": "qt-qml@1.19.0|vscode-languageserver-textdocument@1.0.14",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vscode-languageserver-textdocument@1.0.14",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vscode-languageserver-textdocument/-/vscode-languageserver-textdocument-1.0.14.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "110caa24c8b9e761386537f8ea2cd0e058fa5eabaac42c924772796520f54a2b0c7fa45fa5e3961f118113c1abe95d3fdc61c819d0330e7f05f3ed674c60a7a1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vscode-languageserver-textdocument"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vscode-languageserver-types",
+      "version": "3.18.3",
+      "bom-ref": "qt-qml@1.19.0|vscode-languageserver-types@3.18.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vscode-languageserver-types@3.18.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vscode-languageserver-types/-/vscode-languageserver-types-3.18.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5c897327b429fe3cd223576ceff1703c05ab3de4d903ba40b655b885d27527ac575892fa751f506270e124e74bcdd2a1510e4c9ba9af50cc3edc370e4106ac3f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vscode-languageserver-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "yauzl",
+      "version": "3.3.0",
+      "bom-ref": "qt-qml@1.19.0|yauzl@3.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/yauzl@3.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/yauzl/-/yauzl-3.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3ed184bc43f7d29eec6c8049294063527aa04d53b231445ce1d2e8f623720099cd204cfda66f3c7025c5db5c3de0a83793a45791e661e431ce192d2a10e36f35"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/yauzl"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "qt-qml@1.19.0",
+      "dependsOn": [
+        "qt-qml@1.19.0|@vscode/debugadapter@1.68.0",
+        "qt-qml@1.19.0|@vscode/debugprotocol@1.68.0",
+        "qt-qml@1.19.0|async-mutex@0.5.0",
+        "qt-qml@1.19.0|get-port@7.1.0",
+        "qt-qml@1.19.0|module-alias@2.2.3",
+        "qt-qml@1.19.0|promise-socket@8.0.0",
+        "qt-qml@1.19.0|qt-lib@1.19.0",
+        "qt-qml@1.19.0|vscode-languageclient@10.1.1",
+        "qt-qml@1.19.0|yauzl@3.3.0"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|@vscode/debugadapter@1.68.0",
+      "dependsOn": [
+        "qt-qml@1.19.0|@vscode/debugprotocol@1.68.0"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|@vscode/debugprotocol@1.68.0"
+    },
+    {
+      "ref": "qt-qml@1.19.0|async-mutex@0.5.0",
+      "dependsOn": [
+        "qt-qml@1.19.0|tslib@2.8.0"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|buffer-crc32@0.2.13"
+    },
+    {
+      "ref": "qt-qml@1.19.0|get-port@7.1.0"
+    },
+    {
+      "ref": "qt-qml@1.19.0|module-alias@2.2.3"
+    },
+    {
+      "ref": "qt-qml@1.19.0|pend@1.2.0"
+    },
+    {
+      "ref": "qt-qml@1.19.0|promise-duplex@8.0.0",
+      "dependsOn": [
+        "qt-qml@1.19.0|promise-readable@8.0.1",
+        "qt-qml@1.19.0|promise-writable@8.0.0"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|promise-readable@8.0.1"
+    },
+    {
+      "ref": "qt-qml@1.19.0|promise-socket@8.0.0",
+      "dependsOn": [
+        "qt-qml@1.19.0|promise-duplex@8.0.0"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|promise-writable@8.0.0"
+    },
+    {
+      "ref": "qt-qml@1.19.0|qt-lib@1.19.0"
+    },
+    {
+      "ref": "qt-qml@1.19.0|semver@7.8.5"
+    },
+    {
+      "ref": "qt-qml@1.19.0|tslib@2.8.0"
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-jsonrpc@9.0.2"
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1",
+      "dependsOn": [
+        "qt-qml@1.19.0|semver@7.8.5",
+        "qt-qml@1.19.0|vscode-languageclient@10.1.1|minimatch@10.2.6",
+        "qt-qml@1.19.0|vscode-languageserver-protocol@3.18.3",
+        "qt-qml@1.19.0|vscode-languageserver-textdocument@1.0.14"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1|balanced-match@4.0.4"
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1|brace-expansion@5.0.9",
+      "dependsOn": [
+        "qt-qml@1.19.0|vscode-languageclient@10.1.1|balanced-match@4.0.4"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageclient@10.1.1|minimatch@10.2.6",
+      "dependsOn": [
+        "qt-qml@1.19.0|vscode-languageclient@10.1.1|brace-expansion@5.0.9"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageserver-protocol@3.18.3",
+      "dependsOn": [
+        "qt-qml@1.19.0|vscode-jsonrpc@9.0.2",
+        "qt-qml@1.19.0|vscode-languageserver-types@3.18.3"
+      ]
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageserver-textdocument@1.0.14"
+    },
+    {
+      "ref": "qt-qml@1.19.0|vscode-languageserver-types@3.18.3"
+    },
+    {
+      "ref": "qt-qml@1.19.0|yauzl@3.3.0",
+      "dependsOn": [
+        "qt-qml@1.19.0|buffer-crc32@0.2.13",
+        "qt-qml@1.19.0|pend@1.2.0"
+      ]
+    }
+  ]
+}

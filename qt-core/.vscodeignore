@@ -28,3 +28,4 @@ extension_packs/**
 webview-ui/**
 !webview-ui/dist/**
 !webview-ui/ThirdPartyNotices.txt
+!webview-ui/sbom.cdx.json

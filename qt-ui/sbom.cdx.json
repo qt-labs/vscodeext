@@ -1,0 +1,676 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "qt-ui",
+      "version": "1.19.0",
+      "bom-ref": "qt-ui@1.19.0",
+      "description": "Deprecated: Qt UI support is now part of the Qt Core extension",
+      "purl": "pkg:npm/qt-ui@1.19.0?vcs_url=git%2Bhttps%3A%2F%2Fgithub.com%2Fqt-labs%2Fvscodeext.git",
+      "externalReferences": [
+        {
+          "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/qt-labs/vscodeext.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.qt.io/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:vscode",
+          "value": "^1.94.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "fast-element",
+      "group": "@microsoft",
+      "version": "1.14.0",
+      "bom-ref": "qt-ui@1.19.0|@microsoft/fast-element@1.14.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/fast-element@1.14.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/fast-element/-/fast-element-1.14.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cd7bee48ecefb2ef330d3cbd79bcbc8b1f15a8ba29dabc0a460a7ef993769130aca01dfe4095686860f64ff0b2b28d958994055cda6234254a7e79b106f99691"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@microsoft/fast-element"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-foundation",
+      "group": "@microsoft",
+      "version": "2.50.0",
+      "bom-ref": "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/fast-foundation@2.50.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/fast-foundation/-/fast-foundation-2.50.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f261581bcf1779ad6365fd9323d2e6fe3cd9e91591f31dbdaf6e261ae2e88cd62a211d8197cfa19ecc2857a95a02929d09b18c3ca9ec00bfceebc434b11c5e56"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@microsoft/fast-foundation"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "tslib",
+          "version": "1.14.1",
+          "bom-ref": "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0|tslib@1.14.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "0BSD",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/tslib@1.14.1",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "5e78b7e4d2b38e032bc1ebf2b074c202bb4b0e93efc9ef3357fd04e04c989f8dcfeffeeabd0c0f87d0469077b06ccba5567b5b8a099c4fbadd5f704da3dc1126"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/@microsoft/fast-foundation/node_modules/tslib"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-react-wrapper",
+      "group": "@microsoft",
+      "version": "0.3.25",
+      "bom-ref": "qt-ui@1.19.0|@microsoft/fast-react-wrapper@0.3.25",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/fast-react-wrapper@0.3.25",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/fast-react-wrapper/-/fast-react-wrapper-0.3.25.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8cace6936c4957ddd12ff8c4157119801bd794a218e0de245f2deaae39817c5a6a362dd58d8fa85135b23271d1302e44521205c43f98d550f8bbdb883d7de343"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@microsoft/fast-react-wrapper"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-web-utilities",
+      "group": "@microsoft",
+      "version": "5.4.1",
+      "bom-ref": "qt-ui@1.19.0|@microsoft/fast-web-utilities@5.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/fast-web-utilities@5.4.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/fast-web-utilities/-/fast-web-utilities-5.4.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "45e5989dc9dd8d5ddcf03f22abdb69ecd70535cd6f6d51ef70114f304da734528d6d2d5709eb1864694895fde8b79126b8e5cf96bcd41ce5b3436bc5a4892a0e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@microsoft/fast-web-utilities"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "webview-ui-toolkit",
+      "group": "@vscode",
+      "version": "1.4.0",
+      "bom-ref": "qt-ui@1.19.0|@vscode/webview-ui-toolkit@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vscode/webview-ui-toolkit@1.4.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vscode/webview-ui-toolkit/-/webview-ui-toolkit-1.4.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9a875754742464bb31826779ca83f7a6d442fc6f0d0430fea1bfa780f896350765ac7e87d7147faa03810fce5b7d4dc184e079b19cc5581c30869f7f49fa07c3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vscode/webview-ui-toolkit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "exenv-es6",
+      "version": "1.1.1",
+      "bom-ref": "qt-ui@1.19.0|exenv-es6@1.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/exenv-es6@1.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/exenv-es6/-/exenv-es6-1.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "be556edcdf1deb210ca4cb049beeec501008f356aa618b84bdf2b48cdaa675bfce3d7cf31fb4160c39d58ccbc3498e3b25d1c4ab1fdd7c2feaf1691fa139a919"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/exenv-es6"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "bom-ref": "qt-ui@1.19.0|js-tokens@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/js-tokens@4.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "45d2547e5704ddc5332a232a420b02bb4e853eef5474824ed1b7986cf84737893a6a9809b627dca02b53f5b7313a9601b690f690233a49bce0e026aeb16fcf29"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/js-tokens"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "loose-envify",
+      "version": "1.4.0",
+      "bom-ref": "qt-ui@1.19.0|loose-envify@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/loose-envify@1.4.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "972bb13c6aff59f86b95e9b608bfd472751cd7372a280226043cee918ed8e45ff242235d928ebe7d12debe5c351e03324b0edfeb5d54218e34f04b71452a0add"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/loose-envify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "module-alias",
+      "version": "2.2.3",
+      "bom-ref": "qt-ui@1.19.0|module-alias@2.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/module-alias@2.2.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/module-alias/-/module-alias-2.2.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "db78390458f8cdd40bfdbeada2bec98be418e2911f347efce0132c958f506f4527256440b7e95018b62645a334283070206db77df10110b8590cfdab862f5ffd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/module-alias"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qt-lib",
+      "version": "1.19.0",
+      "bom-ref": "qt-ui@1.19.0|qt-lib@1.19.0",
+      "purl": "pkg:npm/qt-lib@1.19.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/qt-lib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "react",
+      "version": "18.3.1",
+      "bom-ref": "qt-ui@1.19.0|react@18.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/react@18.3.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/react/-/react-18.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c12fa1020252851d0a844bcf240adfb8f54dd7e1f3d6dd18ea7e632eb1906e46f8bab80f13fd11bdefb590c075bffa16807826e1621c57e8bb176a53563fb689"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/react"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tabbable",
+      "version": "5.3.3",
+      "bom-ref": "qt-ui@1.19.0|tabbable@5.3.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tabbable@5.3.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tabbable/-/tabbable-5.3.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "403f6a298dd2b5f6d9a9638f2e9d3efa93ab0156ff1db522e7109cf1c528e178cfd7df34f2868c883ce7d257816399827aca4804cd0221978fcd98e0cd1f3790"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tabbable"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tslib",
+      "version": "2.8.0",
+      "bom-ref": "qt-ui@1.19.0|tslib@2.8.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "0BSD",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tslib@2.8.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tslib/-/tslib-2.8.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8d657304ba659c29a8693af5dd5f5d61b890f7dc2f651774bcd59a0d183e6956117230c5de70e4b3114313ff9f9179ca8699d45249b1e692bfbfc982b4b56a64"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tslib"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "qt-ui@1.19.0",
+      "dependsOn": [
+        "qt-ui@1.19.0|@vscode/webview-ui-toolkit@1.4.0",
+        "qt-ui@1.19.0|module-alias@2.2.3",
+        "qt-ui@1.19.0|qt-lib@1.19.0"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|@microsoft/fast-element@1.14.0"
+    },
+    {
+      "ref": "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0",
+      "dependsOn": [
+        "qt-ui@1.19.0|@microsoft/fast-element@1.14.0",
+        "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0|tslib@1.14.1",
+        "qt-ui@1.19.0|@microsoft/fast-web-utilities@5.4.1",
+        "qt-ui@1.19.0|tabbable@5.3.3"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0|tslib@1.14.1"
+    },
+    {
+      "ref": "qt-ui@1.19.0|@microsoft/fast-react-wrapper@0.3.25",
+      "dependsOn": [
+        "qt-ui@1.19.0|@microsoft/fast-element@1.14.0",
+        "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0",
+        "qt-ui@1.19.0|react@18.3.1"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|@microsoft/fast-web-utilities@5.4.1",
+      "dependsOn": [
+        "qt-ui@1.19.0|exenv-es6@1.1.1"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|@vscode/webview-ui-toolkit@1.4.0",
+      "dependsOn": [
+        "qt-ui@1.19.0|@microsoft/fast-element@1.14.0",
+        "qt-ui@1.19.0|@microsoft/fast-foundation@2.50.0",
+        "qt-ui@1.19.0|@microsoft/fast-react-wrapper@0.3.25",
+        "qt-ui@1.19.0|react@18.3.1",
+        "qt-ui@1.19.0|tslib@2.8.0"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|exenv-es6@1.1.1"
+    },
+    {
+      "ref": "qt-ui@1.19.0|js-tokens@4.0.0"
+    },
+    {
+      "ref": "qt-ui@1.19.0|loose-envify@1.4.0",
+      "dependsOn": [
+        "qt-ui@1.19.0|js-tokens@4.0.0"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|module-alias@2.2.3"
+    },
+    {
+      "ref": "qt-ui@1.19.0|qt-lib@1.19.0"
+    },
+    {
+      "ref": "qt-ui@1.19.0|react@18.3.1",
+      "dependsOn": [
+        "qt-ui@1.19.0|loose-envify@1.4.0"
+      ]
+    },
+    {
+      "ref": "qt-ui@1.19.0|tabbable@5.3.3"
+    },
+    {
+      "ref": "qt-ui@1.19.0|tslib@2.8.0"
+    }
+  ]
+}
