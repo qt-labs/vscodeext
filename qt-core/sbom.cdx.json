@@ -1,0 +1,4366 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "qt-core",
+      "version": "1.19.0",
+      "bom-ref": "qt-core@1.19.0",
+      "description": "Qt Core",
+      "purl": "pkg:npm/qt-core@1.19.0?vcs_url=git%2Bhttps%3A%2F%2Fgithub.com%2Fqt-labs%2Fvscodeext.git",
+      "externalReferences": [
+        {
+          "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/qt-labs/vscodeext.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.qt.io/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:vscode",
+          "value": "^1.94.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "text-codec",
+      "group": "@borewit",
+      "version": "0.2.2",
+      "bom-ref": "qt-core@1.19.0|@borewit/text-codec@0.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40borewit/text-codec@0.2.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@borewit/text-codec/-/text-codec-0.2.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0c36917a1b2c83568dac7e3eda19e3d41eef9d41848d4e8e225c9176431dd1a51d214bca5eb25f5eccbc2d5b57032ec346f61596e59b32ca6c461cf695c5b499"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@borewit/text-codec"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "core",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/core@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/core@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/core/-/core-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f81a0a0b91ba864ad2cb9d35cdc2761297e79653fe6af3debdc05f45c65efc25be13011f63a5f5119f105b24fb3690c8bc41096f57dd26730c7d49c59319b0f4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/core"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "mime",
+          "version": "3.0.0",
+          "bom-ref": "qt-core@1.19.0|@jimp/core@1.6.1|mime@3.0.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/mime@3.0.0",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/mime/-/mime-3.0.0.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "8d2094eff541d65a0858165ed7868460753ffb550c107a1a3bbab108e5493b0f46807ef65405a9a7135c8d4fb1f5ada4dc648805734ac57405a91bef67bbebdc"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/@jimp/core/node_modules/mime"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "diff",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/diff@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/diff@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/diff/-/diff-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "6242833dd1e32e0a350298b7f8185cd062c0ca095d969b7decd7ce2a8360d54e8850d5c0e97d8c828b028cf7d20624af26faebcf57ec211fbfe1c7d85c123f1d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/diff"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "file-ops",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/file-ops@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/file-ops@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/file-ops/-/file-ops-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4fe817ea8b078e9adb0d169dd3f07bd44bf2adeed9755635cff8051841bd67c28eb593ca6e85af3de3f65236d961640bcbd50a08f417d453409c388e3e424bef"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/file-ops"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-bmp",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/js-bmp@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/js-bmp@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/js-bmp/-/js-bmp-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c735b3353e3fbb9cc6ad34f74e67bdb0653b63320ac62d77f81090c0ba8009bb790d77fd4807ddcd1928a59427983928fba227e67a9a4fcf468ece37fd676761"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/js-bmp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-gif",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/js-gif@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/js-gif@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/js-gif/-/js-gif-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "6236365b6eab41ad395e16a7621459edd8a780288d37e4f66266f52628a021b001634076f301c4defdc27f5fc764f586bb484e837eb295a2a05792b1176339f3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/js-gif"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-jpeg",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/js-jpeg@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/js-jpeg@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/js-jpeg/-/js-jpeg-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1d3f47df23a694e173626748d7921875fcba82042149121a1de03e39325210e45706a128f7bb1466efc3b201c8717e4d27b4e42414e067d0595ec57a51bb3232"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/js-jpeg"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-png",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/js-png@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/js-png@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/js-png/-/js-png-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "499fca561239523712cf3957b177488bf2e127b51285fd8d90c3ad56b6d941c1b3b2a36dca701e96b3977a84f171a9df56a98d840a151e0f32476718a2aad88c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/js-png"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-tiff",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/js-tiff@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/js-tiff@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/js-tiff/-/js-tiff-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8c31bf789aae203d4ce0c06528c9834419b3d93a5732fed3532bb69c8454c61954736a200bcd93f9541491c6bd1891f504127d771e6c484e5d1a458d8c86d9c7"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/js-tiff"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-blit",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-blit@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-blit@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-blit/-/plugin-blit-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3309c8ec2ecaf35b9675d63d14bc357c2388cba4ac3c851fb54cf7e92a6dee38ac0a7f3fe340e140c952c69c5335e96765bff64a79681629907d16409872cea9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-blit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-blur",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-blur@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-blur@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-blur/-/plugin-blur-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "948a3b4f3a798d0bb7d0414548afe985700d2b7722b4a5448dea438d0ea58c7a0816db8c46b9f26e7988d8c776e2e96f5a50dacfe861de7eaaacc6fcc9dc2165"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-blur"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-circle",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-circle@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-circle@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-circle/-/plugin-circle-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "90ad4f6af63a70a1cd34a71edfbbdd5784e6a5cd7fcc32a7806a1e395de3f8431ab681c56548a7577b3a17d696af23ecdc0d318422d981d27a65e79ad5de4b09"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-circle"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-color",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-color@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-color@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-color/-/plugin-color-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2ed50dd6f00ff8b465640b53355843452897c7edba29bcf7cc9686e9ae64e7d810f798e04f99a49e717c97190772a26d84ce0c124dffb4fc64749a44c9bc85fc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-color"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-contain",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-contain@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-contain@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-contain/-/plugin-contain-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9b4aa1adf03c8e44eaadeb46bf8c3e4ff003151e06c01a44d2c08e0b6b89d1dcebe38fdd74e32c21dae98bcf6469ba9888f608af19207425422e6df39f556492"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-contain"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-cover",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-cover@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-cover@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-cover/-/plugin-cover-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "859cad9ecb61d33a2597a70f7f8df806b4fea7fbf9ebd5abe6dc8ee83a74747d480cf873841e45dfcb1918c2c3a3b6f342237d245541ddfc64709fd660227732"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-cover"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-crop",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-crop@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-crop@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-crop/-/plugin-crop-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "11ead148b95c957c8a0e761cfc7f70ff56a6656edbeefdce1a2fd595eacf77633fa40bb95fc4e4c985ad7ea6025e7369d48c6d77ca02a3dcc67d8f73a174f8ae"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-crop"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-displace",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-displace@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-displace@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-displace/-/plugin-displace-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2b4ed0565ef143021f0fa29fc5157f73713d7bb6415f1517756bafa1359c2872f6a95e3c30e17936a6f3fda256e13867400448b31bd89598cf162aa40a3954fa"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-displace"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-dither",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-dither@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-dither@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-dither/-/plugin-dither-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fb657e1825765b270ca17d7fcfdefb4e467c66aff831548a1251d86ad814aadc17322d9f0cada029853683d577f48a85bd326c4c8b0ad3ee7c545cff44e0557b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-dither"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-fisheye",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-fisheye@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-fisheye@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-fisheye/-/plugin-fisheye-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5ed4b9672a19d2fc59c49ea092a23add28af86d239f2f5fde5fa0c3ccf9ccb362446c25730e602afc0d27311796e9e17af4d37363626fcffbbfb4f2d89bc331c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-fisheye"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-flip",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-flip@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-flip@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-flip/-/plugin-flip-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c2cdfc5bfb068fb2e86cd45ac90f3781aaf18a4b4ec96c4ce6f3bfcb86bfd9ccbdbfae522c4533564ae3fa878069449239b773e077021256bb5ed1a59c018068"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-flip"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-hash",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-hash@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-hash@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-hash/-/plugin-hash-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b19b7a65c317ea2f2f1566f81989f0d2947fa3dfbe79fd1d4d571ba1307907f83b9ebc42383201e307c4909fd8a99339c14be897becad6a792d3fad53bacf6d4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-hash"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-mask",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-mask@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-mask@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-mask/-/plugin-mask-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4881b4fc5726123ded93017173b7c018b3bca38b8dccca5239d40e85b0a0c5e7d02aae70395324f41431fec74c3c1c2d30bafd58bab41b32c0feb93ab76bf6d0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-mask"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-print",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-print@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-print@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-print/-/plugin-print-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "058573fd7dd7ceff17622955783cb5d4d3a9d21ec14c38e53adbb405e9081473f5c8755ddb80173736cecb9d97973619590d03977e8738712997f9d236bcdceb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-print"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-quantize",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-quantize@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-quantize@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-quantize/-/plugin-quantize-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "276127f4f2d445f3febf0603b6e67d4fcc815ba0566190527327408d188f06625f1214dc350aa2890383ad97fb12a6db5ff4b2e47e9d01e462aa482857d37a5b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-quantize"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-resize",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-resize@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-resize/-/plugin-resize-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "08b92bb49a08cf61dd5a7a5888dea9f0a61c3dcd34ac21ff494bbaa3e95f64bd39438ba179c2659ef5ee8fdc7e53a9839f795d3e6263e9a66a307b94273755aa"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-resize"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-rotate",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-rotate@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-rotate@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-rotate/-/plugin-rotate-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9ce8d58db6e3ef4e41d3692ccac2a78743ce0301015d9b49f73439a82f97ed36af97724d9fe3f7073428bdb0712cf49b51295de97203f73e628e29f83ed38052"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-rotate"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "plugin-threshold",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/plugin-threshold@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/plugin-threshold@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/plugin-threshold/-/plugin-threshold-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "24e2aff45f2cead9d52dfe2c07fd9f174177dfd1059c7be011d158ba03ba561a3028bb1aa74a446662f213f0e546762d223d9175d1d957154ca7f78a274e25d9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/plugin-threshold"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "types",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/types@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/types@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/types/-/types-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "95e23b61bbde4cd8b9eb99bdd745e020ec17caebb4ef81f9a9acc00f5df9ec7226252bf686ac67597a70c506da746599ee0a19458043672e65a6ab9dd29eeae7"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "utils",
+      "group": "@jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|@jimp/utils@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jimp/utils@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jimp/utils/-/utils-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bde14f45df771429d2ec08260a43e0011546a0346b27d726d6e8ee37203e51f43954a6c40f6d34dac9b95df14b1704ec282f23d3885e4ebc1efad535765b973b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jimp/utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "entities",
+      "group": "@nodable",
+      "version": "2.1.0",
+      "bom-ref": "qt-core@1.19.0|@nodable/entities@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nodable/entities@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@nodable/entities/-/entities-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9f24fb4f79db332048fe5bebe8be53c966c524023d15381545a90da01a820fe3e6203f03cc5aeb35d2cbb4733032ccceb6a65af0f00e576e19a839d0ae140834"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@nodable/entities"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "inflate",
+      "group": "@tokenizer",
+      "version": "0.4.1",
+      "bom-ref": "qt-core@1.19.0|@tokenizer/inflate@0.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40tokenizer/inflate@0.4.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@tokenizer/inflate/-/inflate-0.4.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "da602ffbca641ba18866217590d8358c08e1dbb203c443cac1d1ae977b277f3b457ab7cf188d4b8c37b3669de2ec11255e89a9a84b4f9a83f1e9cdb082d5ac38"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@tokenizer/inflate"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "token",
+      "group": "@tokenizer",
+      "version": "0.3.0",
+      "bom-ref": "qt-core@1.19.0|@tokenizer/token@0.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40tokenizer/token@0.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@tokenizer/token/-/token-0.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3af8c5fb3e752f7a2fd0ec8053476ecec62ebced353c7ef1e2de83271fa0b9a8604e704792125d1bbb2841e4d214b58ddde7e71f289b67867c97612e5b024ddc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@tokenizer/token"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "any-base",
+      "version": "1.1.0",
+      "bom-ref": "qt-core@1.19.0|any-base@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/any-base@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/any-base/-/any-base-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b8c823a33c924bc69d65961e3e9696b3c73107dfe47739a95fa4a0259fb06f3d4ae5e624e503180d525a64a871c881d47679c991f47b495812b601fb2e4194ca"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/any-base"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "asynckit",
+      "version": "0.4.0",
+      "bom-ref": "qt-core@1.19.0|asynckit@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/asynckit@0.4.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/asynckit/-/asynckit-0.4.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "39e8bd387e2d461d18a94dc6c615fbf5d33f9b0560bdb64969235a464f9bb21923d12e5c7c772061a92b7818eb1f06ad5ca6f3f88a087582f1aca8a6d8c8d6d1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/asynckit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "await-to-js",
+      "version": "3.0.0",
+      "bom-ref": "qt-core@1.19.0|await-to-js@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/await-to-js@3.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/await-to-js/-/await-to-js-3.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cc901a3fdcf14dcbd31d195e8dabb764e63857b491a620727f7fddc71daec8ac71a2bd7db699a9576411b132a291c93085a3e6af6755a71c4cafb8ce098569e6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/await-to-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "axios",
+      "version": "1.19.0",
+      "bom-ref": "qt-core@1.19.0|axios@1.19.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/axios@1.19.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/axios/-/axios-1.19.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "86dfe2b986571231712c7fc791ece077b9ba24a9471d71144a779a0f3f2e65ed468f9419b429e9c83b1c92f0221274fcf4e11b08b9a7b5ee11e2c9fb3f410a17"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/axios"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "agent-base",
+          "version": "6.0.2",
+          "bom-ref": "qt-core@1.19.0|axios@1.19.0|agent-base@6.0.2",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/agent-base@6.0.2",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/agent-base/-/agent-base-6.0.2.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "45937035c945efe312ffc6c383bd1a9a0df6772799199c620ee42667128b025423af78c6c8bc7ee0a924e7c50eec3d90760148402a2fb92b991129dee911ba5d"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/axios/node_modules/agent-base"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "https-proxy-agent",
+          "version": "5.0.1",
+          "bom-ref": "qt-core@1.19.0|axios@1.19.0|https-proxy-agent@5.0.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/https-proxy-agent@5.0.1",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-5.0.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "7457008e94d0160a0b3330b657053e0bf09b4bbb912f49569b10c84e6aa6ec2fbb17439d9a3eacf65e9a95973a0042d786b9e080cd827964971c639d5f662dc0"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/axios/node_modules/https-proxy-agent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bmp-ts",
+      "version": "1.0.9",
+      "bom-ref": "qt-core@1.19.0|bmp-ts@1.0.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/bmp-ts@1.0.9",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/bmp-ts/-/bmp-ts-1.0.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7131079368cbacfca2fb5d8cddd86911b9e73ceb1a66eabb0b8e7295b6d02225a00c566ae145583c46399a5aa3bec8ffea026ff6a5f9b1af9e6c3ccb5d3dbc57"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/bmp-ts"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "call-bind-apply-helpers",
+      "version": "1.0.2",
+      "bom-ref": "qt-core@1.19.0|call-bind-apply-helpers@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/call-bind-apply-helpers@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4a9d5a6e52748af0e44b38dc68977112e9cde7f5ef92c149dac30115fabac74af285057fd9bfcac057b6d5c329987b4f3928a3f0af7dff049fa04b9339b9ae31"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/call-bind-apply-helpers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "combined-stream",
+      "version": "1.0.8",
+      "bom-ref": "qt-core@1.19.0|combined-stream@1.0.8",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/combined-stream@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/combined-stream/-/combined-stream-1.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1503783117ee25e1dfedc05b04c2455e12920eafb690002b06599106f72f144e410751d9297b5214048385d973f73398c3187c943767be630e7bffb971da0476"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/combined-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "command-exists",
+      "version": "1.2.9",
+      "bom-ref": "qt-core@1.19.0|command-exists@1.2.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/command-exists@1.2.9",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/command-exists/-/command-exists-1.2.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2d343f48673eb345dcd05bb959a2a7474622ca06649bd78a16fc92f9f46c53bfd958517cca414ce8f73d68255fd7ec5ab0e399a4edc1015815acabeca8a1d5ef"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/command-exists"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debug",
+      "version": "4.4.3",
+      "bom-ref": "qt-core@1.19.0|debug@4.4.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/debug@4.4.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "446c305a7c10be455f6af295b76d8518bc3ec5849dcc04709b4aeee83853540dee994e6165cdbc57790ee2cb6062bcab4e52e9baf808f468a28e5b408cd6dca8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/debug"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "delayed-stream",
+      "version": "1.0.0",
+      "bom-ref": "qt-core@1.19.0|delayed-stream@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/delayed-stream@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/delayed-stream/-/delayed-stream-1.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "672483ecd7fdd5a2c1d11c4be0a1ab28705797b11db350c098475ca156b05e72c3ed20e1a4d82db88236680920edaed04b8d63c4f499d7ba7855d1a730793731"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/delayed-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dotenv",
+      "version": "16.5.0",
+      "bom-ref": "qt-core@1.19.0|dotenv@16.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/dotenv@16.5.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/dotenv/-/dotenv-16.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9bf0be030380afdfd6d54388654a36df67a330d9c9009b5842351b1e835304d4c94afab3cc387bbe7ade8b7a37af79bd6e57fa6680e4bdcc34566a33351149c6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/dotenv"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dunder-proto",
+      "version": "1.0.1",
+      "bom-ref": "qt-core@1.19.0|dunder-proto@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/dunder-proto@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "28837f9c3241411717c3430b561644f62407986ebca80548060f42aa65188e64088608a3f54e4c16faea9142f915bb72cb366e39e3add3375e45ee1463b72df8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/dunder-proto"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "bom-ref": "qt-core@1.19.0|es-define-property@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-define-property@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7b79d17e07d4678acd18bdb7da05205f4e90372c9ecf4e0a76316b17e2d34683979ab3a014a0e0e0109db235bc1274faf5ea9d606991a49c223d560dac2696de"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-define-property"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-errors",
+      "version": "1.3.0",
+      "bom-ref": "qt-core@1.19.0|es-errors@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-errors@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "65fe47d8ac6ddb18d3bdb26f3f66562c4202c40ea3fa1026333225ca9cb8c5c060d6f2959f1f3d5b2d066d2fa47f9730095145cdd0858765d20853542d2e9cb3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-errors"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-object-atoms",
+      "version": "1.1.1",
+      "bom-ref": "qt-core@1.19.0|es-object-atoms@1.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-object-atoms@1.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "146807da1f3328d8a6f658e3edd6a79053dc20220af42a796e6f9cda041261e3e1a5a1b9f9eb2b2ce0e2848a2b9fe3dee85189cd6857428b4fbfbde34da95d5c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-object-atoms"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-set-tostringtag",
+      "version": "2.1.0",
+      "bom-ref": "qt-core@1.19.0|es-set-tostringtag@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-set-tostringtag@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-set-tostringtag/-/es-set-tostringtag-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8fabd6cdfac655fc97c607be3b4c79b21e9cbf10288346bfe1175dd8adfacc2315e5e27effeb4e0278113bc70e0cc3566d545d5659866502f6612df247c6c850"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-set-tostringtag"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "exif-parser",
+      "version": "0.1.12",
+      "bom-ref": "qt-core@1.19.0|exif-parser@0.1.12",
+      "purl": "pkg:npm/exif-parser@0.1.12",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/exif-parser/-/exif-parser-0.1.12.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7366d07cb35b3332cf9b342e3abf1fcb472ccbce169b09c447cd56f3c0f34e9f4260d3c9eb2cce8f6119021f69cb0629a879ec8552c7409f16ce5740c9f63e23"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/exif-parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-xml-builder",
+      "version": "1.2.0",
+      "bom-ref": "qt-core@1.19.0|fast-xml-builder@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-xml-builder@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d346805a27aa7dff99261b1703883583b33c93eec062831450717eff315be54e94bff3f4565e10668f38fc872e7f361a94bb848fdf76f1b5cdf4f6db173305d1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/fast-xml-builder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-xml-parser",
+      "version": "5.8.0",
+      "bom-ref": "qt-core@1.19.0|fast-xml-parser@5.8.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-xml-parser@5.8.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.8.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e9b20cedfb09c5ea37b97bfb3a771062c04030f27b575e9295a865ffa33df02fe2daafaf075fb86b432daef6300c5114af00d26c099e2c3457b0e070acbef202"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/fast-xml-parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "file-type",
+      "version": "21.3.4",
+      "bom-ref": "qt-core@1.19.0|file-type@21.3.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/file-type@21.3.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/file-type/-/file-type-21.3.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "21ebe2ff2cbc0d2df2806bd3e3b3e349f745a17fb68ac42e7a860fd5c9ed156d492d802e4b8183ecd50f1a0e33bf68997d5e76b83ca4e70e59d13769452e90d6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/file-type"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "follow-redirects",
+      "version": "1.16.0",
+      "bom-ref": "qt-core@1.19.0|follow-redirects@1.16.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/follow-redirects@1.16.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.16.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cb9acdfee3ac69d153fc97d8c21c514b947b41c7be837cc6f7bf89aed159942f64957fd6e610fb8a22f349c2389d9a944bb0cd51d84f830e3123c5b62ee5e553"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/follow-redirects"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "form-data",
+      "version": "4.0.6",
+      "bom-ref": "qt-core@1.19.0|form-data@4.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/form-data@4.0.6",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/form-data/-/form-data-4.0.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bca6ad021e129557e06eff98b66862463844309b18a6c1b5636acc42d47e49549bcadb120f5606cc321cac026674579cf3cbbff95a069b19e5fbcd202f5b5109"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/form-data"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "function-bind",
+      "version": "1.1.2",
+      "bom-ref": "qt-core@1.19.0|function-bind@1.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/function-bind@1.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ed71cdc47eea5fdc46e66230c6486e993a31fcc21135c3a00ebc56b0cb76a40af6dd61e9e8cad194dec50521690a9afea153b417be38894811f369c931f1b648"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/function-bind"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-intrinsic",
+      "version": "1.3.0",
+      "bom-ref": "qt-core@1.19.0|get-intrinsic@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-intrinsic@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f5f4a349aa2cfdf448548a7ec5226513a95fc21112ecb36d29a08121a987b23af69dad418800493e8d263a38f3f062435116ab9823c6a9a89583999f8dbf7c09"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-intrinsic"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-proto",
+      "version": "1.0.1",
+      "bom-ref": "qt-core@1.19.0|get-proto@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-proto@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b1349f063a17069f3d26f20a21e7eac3b53608279bb1cef892263a6b0886a202ada1219b823604fc6ffe97db05dcc5853cd73d21ca0e0b83837ca1dfc459a9d2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-proto"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gifwrap",
+      "version": "0.10.1",
+      "bom-ref": "qt-core@1.19.0|gifwrap@0.10.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/gifwrap@0.10.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/gifwrap/-/gifwrap-0.10.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "dbbeb46f5be92473662f367fb9b4ed367131e5602937f3d8589bd7be04beb4bd5e8134ed85ac85608410362d77e852c40dc37f232118d84706a482130fa79853"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/gifwrap"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gopd",
+      "version": "1.2.0",
+      "bom-ref": "qt-core@1.19.0|gopd@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/gopd@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "65429187afe4505a0089302d4d83d9277870f70371c7e04804e8a39e51bd3e7ac9b027128ecd70cb20fabc9a5a62d827cc3aca6114aa7f738ee917daf77c6c46"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/gopd"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "has-symbols",
+      "version": "1.1.0",
+      "bom-ref": "qt-core@1.19.0|has-symbols@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/has-symbols@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d5c0cd77027625aa2199bdec8383a629a301c2e0b8f2c6278b91d4c360efb02f0b8c64cb2bd87e79bd57e91cae3877b8853d142c25baf22a26863528294aa53d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/has-symbols"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "has-tostringtag",
+      "version": "1.0.2",
+      "bom-ref": "qt-core@1.19.0|has-tostringtag@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/has-tostringtag@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/has-tostringtag/-/has-tostringtag-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "36a00307c5633c52ccd95d15bc751ec30c2cc3465605a21d828fa2787b4ade16ac2f3e2a78246361ca9f07a010ac182044aa69285f0be76fd5a9d56c3b8ec397"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/has-tostringtag"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hasown",
+      "version": "2.0.4",
+      "bom-ref": "qt-core@1.19.0|hasown@2.0.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/hasown@2.0.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/hasown/-/hasown-2.0.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4f651b7db044177db089ea5722c3254d6f7e743602eb0321fedfef600e2db8e30aa96cff9f7bebd4d152c508b23fece4da65eca0c03f8bfeea57a2cabadd6dd4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/hasown"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ieee754",
+      "version": "1.2.1",
+      "bom-ref": "qt-core@1.19.0|ieee754@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ieee754@1.2.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "75ccaa843bd7d42e3a95765c56a0a92be16d31141574830debf0dfe63b36ce8b94b2a1bb23ab05c62b480beeca60adbd29d5ce2c776ef732f8b059e85509ea68"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/ieee754"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "image-q",
+      "version": "4.0.0",
+      "bom-ref": "qt-core@1.19.0|image-q@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/image-q@4.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/image-q/-/image-q-4.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3df24656021f29026eab7b34b530ce2adced92c89bb9411b2502184f76f2eb072d428f9176587b79fe1ebc9e4d09dc58e027cc6ef164a1c1306e5e0117c46527"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/image-q"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "node",
+          "group": "@types",
+          "version": "16.9.1",
+          "bom-ref": "qt-core@1.19.0|image-q@4.0.0|@types/node@16.9.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/%40types/node@16.9.1",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/@types/node/-/node-16.9.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "4292dc5fd652b2add86145270f79c50d8f07ef072d021423fd314a2fc61af2fe5f326dc2157c68f334adb0b025efcd25b68628a355af2945460502bed627ebee"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/image-q/node_modules/@types/node"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "isexe",
+      "version": "3.1.1",
+      "bom-ref": "qt-core@1.19.0|isexe@3.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/isexe@3.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/isexe/-/isexe-3.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2e907fe7807eff627986a43b8a66477dd537d4e96042ac7b6627159649bd93383dff0f0628b11c15f265fedec30840ee78ec81003eb3082c133ba173b3436811"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/isexe"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jimp",
+      "version": "1.6.1",
+      "bom-ref": "qt-core@1.19.0|jimp@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jimp@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/jimp/-/jimp-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "84d421eab66d59f4955923559afabcecde413c9b0d1fb93b23bab2ad77fd0ce99af71013424ddfb321dacc241ee759c28dd92859d4e6874bc3edb8d548ba31c7"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/jimp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jpeg-js",
+      "version": "0.4.4",
+      "bom-ref": "qt-core@1.19.0|jpeg-js@0.4.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jpeg-js@0.4.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/jpeg-js/-/jpeg-js-0.4.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "599cde0ce12d4ce04ae0c76c6abd08a84539b0caf7bd257646a9002335045760479d47ca1b2b305853c5c0ae44783a3ddcadc5a214876cb0238f4b355b377e76"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/jpeg-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lodash-es",
+      "version": "4.18.1",
+      "bom-ref": "qt-core@1.19.0|lodash-es@4.18.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash-es@4.18.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.18.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "27cc5ec0a0ff1a4db63996e1a4e552c1cb3ad3385df791120f07b3385b80dffd3df7ddb93dd1c9ece1473531ad6a32f7025664ca40f7d87ca488ca3e048048f0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/lodash-es"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lodash",
+      "version": "4.18.1",
+      "bom-ref": "qt-core@1.19.0|lodash@4.18.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.18.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "74c22789c4cf544f1dd5ee68b5fc269a3971919a14a6254bc32793754b22fc26a3fe07f3cdb941702139b111d5fc0b23b829b15abb5ed93346498b82782abed1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/lodash"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "math-intrinsics",
+      "version": "1.1.0",
+      "bom-ref": "qt-core@1.19.0|math-intrinsics@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/math-intrinsics@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fc85ed6f0124e474cfc84c32297ea11a4617c4cf676e3eb807e8a55499c2fd1e81d291f91b85776f4a556cbec3063e2d921040a696d05257fa17a5e5f4b1eed6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/math-intrinsics"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mime-db",
+      "version": "1.52.0",
+      "bom-ref": "qt-core@1.19.0|mime-db@1.52.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/mime-db@1.52.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b0f538b95edd625bed589c70c311c3d0fba285536213b4f201b439496c43081f66518bce82ba103b061040e28f27c0886c4fb51135653a82b5502da7537818be"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/mime-db"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mime-types",
+      "version": "2.1.35",
+      "bom-ref": "qt-core@1.19.0|mime-types@2.1.35",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/mime-types@2.1.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "64363e6cf9b9cd34c5f98a42ac053d9cad148080983d3d10b53d4d65616fe2cfbe4cd91c815693d20ebee11dae238323423cf2b07075cf1b962f9d21cda7978b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/mime-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "module-alias",
+      "version": "2.2.3",
+      "bom-ref": "qt-core@1.19.0|module-alias@2.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/module-alias@2.2.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/module-alias/-/module-alias-2.2.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "db78390458f8cdd40bfdbeada2bec98be418e2911f347efce0132c958f506f4527256440b7e95018b62645a334283070206db77df10110b8590cfdab862f5ffd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/module-alias"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ms",
+      "version": "2.1.3",
+      "bom-ref": "qt-core@1.19.0|ms@2.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ms@2.1.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e85973b9b4cb646dc9d9afcd542025784863ceae68c601f268253dc985ef70bb2fa1568726afece715c8ebf5d73fab73ed1f7100eb479d23bfb57b45dd645394"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/ms"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "omggif",
+      "version": "1.0.10",
+      "bom-ref": "qt-core@1.19.0|omggif@1.0.10",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/omggif@1.0.10",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/omggif/-/omggif-1.0.10.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2cc253b6f81cfe7ba05e3d1572baecebc327d83d6bd337fadf454db6ab692351443bb7be3bd14fe20aacf4072705a4847a81c83e6dbcbbaaa03d1d28c84a464b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/omggif"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pako",
+      "version": "1.0.11",
+      "bom-ref": "qt-core@1.19.0|pako@1.0.11",
+      "licenses": [
+        {
+          "expression": "(MIT AND Zlib)",
+          "acknowledgement": "declared"
+        }
+      ],
+      "purl": "pkg:npm/pako@1.0.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e212c1f0fcb8cd971ee6ce3277d5f3a29ab056fff218d855d4197c353982ab5efadc778adbe130553bfe95e19e2f5dc39e1db07dbaa8c153d70883b4cf8b5a63"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pako"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parse-bmfont-ascii",
+      "version": "1.0.6",
+      "bom-ref": "qt-core@1.19.0|parse-bmfont-ascii@1.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/parse-bmfont-ascii@1.0.6",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/parse-bmfont-ascii/-/parse-bmfont-ascii-1.0.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "53846b56c5050a5788381b0819838c2a39fd3dabec18e5f16ef606b4c3847e721dd1254db207a15e1d43c547553cba317799af704b6f98ab363267f43296b564"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/parse-bmfont-ascii"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parse-bmfont-binary",
+      "version": "1.0.6",
+      "bom-ref": "qt-core@1.19.0|parse-bmfont-binary@1.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/parse-bmfont-binary@1.0.6",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/parse-bmfont-binary/-/parse-bmfont-binary-1.0.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1b19ac45e6b4c1d19d62d863b947964cc58faa6dbe140778188f2f0af86026c167a06853acb8570c3ba9c13a3bad754081a2c81a85470d94bda7fe576d2a9e58"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/parse-bmfont-binary"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parse-bmfont-xml",
+      "version": "1.1.6",
+      "bom-ref": "qt-core@1.19.0|parse-bmfont-xml@1.1.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/parse-bmfont-xml@1.1.6",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/parse-bmfont-xml/-/parse-bmfont-xml-1.1.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d1c125895319121ac50f0321e12c48c95269a98a0e58327d3fcf79b45b92f97b8dcc8e54066064e54e4ee0ab897539d9a52048e0b140dbe66225a8b07d2c2530"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/parse-bmfont-xml"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-expression-matcher",
+      "version": "1.6.2",
+      "bom-ref": "qt-core@1.19.0|path-expression-matcher@1.6.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-expression-matcher@1.6.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.6.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7a74a56a26add3989ab27ce680dc518fcade15d8f7a6e6364293603f568f21a55f4fa9e7f480ae3e816528793c10ddb61dcc1ec2c84efa63760c66e40843ada9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/path-expression-matcher"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pixelmatch",
+      "version": "5.3.0",
+      "bom-ref": "qt-core@1.19.0|pixelmatch@5.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pixelmatch@5.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pixelmatch/-/pixelmatch-5.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a3c9a463813ff8b3547fa2f35fdea1b7a93a0840e2eb993d1b6ae332d05ef4ea3e54f292be5fb418a1ee1ff0251be180e4b3c6fe2e61ade924c54737b361d4f9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pixelmatch"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "pngjs",
+          "version": "6.0.0",
+          "bom-ref": "qt-core@1.19.0|pixelmatch@5.3.0|pngjs@6.0.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/pngjs@6.0.0",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/pngjs/-/pngjs-6.0.0.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "4d1cf3b85451984a125bfa7529502688e80f728d88ae56a1f9b18509e35f257c71606c12c3b63000e01c77b5f6f0afe6e5b8c158ab02dbd2b2a0c7c76f2a5aca"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/pixelmatch/node_modules/pngjs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pngjs",
+      "version": "7.0.0",
+      "bom-ref": "qt-core@1.19.0|pngjs@7.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pngjs@7.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pngjs/-/pngjs-7.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2ca5aa589461b2dc98a3da46be0a2bfe2be4db0f787928c4dd1195bb32c696bdcd983f1b7fb45c606cded6635d10744fe9344feab32e0c7939b78e219d3472a3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pngjs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "proxy-from-env",
+      "version": "2.1.0",
+      "bom-ref": "qt-core@1.19.0|proxy-from-env@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/proxy-from-env@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "709fa81d35b554011af1c26c96099466b73eb2344a8002a5dd9cac7baf8f577f2165efd5e99d784db0ae5dc6a7f45f60865cf842b16bd9cf764cd17cd949181c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/proxy-from-env"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qt-lib",
+      "version": "1.19.0",
+      "bom-ref": "qt-core@1.19.0|qt-lib@1.19.0",
+      "purl": "pkg:npm/qt-lib@1.19.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/qt-lib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rss-parser",
+      "version": "3.13.0",
+      "bom-ref": "qt-core@1.19.0|rss-parser@3.13.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/rss-parser@3.13.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/rss-parser/-/rss-parser-3.13.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ee3594055e7218ddeba8c323ec266e7e5ff6f7540086faeb1a90cd13893fd3665c84bd27a62b22618a942c5ef58c210aa08887bcafd0d9ee88903c0fce24fbfb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/rss-parser"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "entities",
+          "version": "2.2.0",
+          "bom-ref": "qt-core@1.19.0|rss-parser@3.13.0|entities@2.2.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "BSD-2-Clause",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/entities@2.2.0",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/entities/-/entities-2.2.0.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "a7dda27f9373eb5f48d30f9a909acb647d0c5f43dbe435f7f573b0413b5749d41039a607d374b5b88429e2684e66d017af1ab85623baed84e22c1a36eb7f28f4"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/rss-parser/node_modules/entities"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sax",
+      "version": "1.4.1",
+      "bom-ref": "qt-core@1.19.0|sax@1.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/sax@1.4.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/sax/-/sax-1.4.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f9a58ecfbc9549c106a0a35de0f035d0b67cb24d00ff3e7e9d7406e608943b9ae9ad7f63818b13768bfda827216623c865ecdb647fa346eb7c9cfa1d1405f826"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/sax"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "simple-xml-to-json",
+      "version": "1.2.7",
+      "bom-ref": "qt-core@1.19.0|simple-xml-to-json@1.2.7",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/simple-xml-to-json@1.2.7",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/simple-xml-to-json/-/simple-xml-to-json-1.2.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9b3f555e984ec50597dde43fb970ad9baba996da0dd032f1f196f94f84c50b814707b4bd1433c6adef027cb5aa3d64101ff1ab41877601786154ce4b0e9631e9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/simple-xml-to-json"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strnum",
+      "version": "2.3.0",
+      "bom-ref": "qt-core@1.19.0|strnum@2.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strnum@2.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/strnum/-/strnum-2.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ba6b3728d778d8f1b2c79c5aa154ced668d4d5b1f7369638becad5967bfd3cd1aa423f3077bac9ea7132a4bac9ef3e6fc4ae513f4c8c2e8e89fc6b26eb60c8e5"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/strnum"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strtok3",
+      "version": "10.3.5",
+      "bom-ref": "qt-core@1.19.0|strtok3@10.3.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strtok3@10.3.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/strtok3/-/strtok3-10.3.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "922e216507e1e6b5f44032cb90e0a3fa1f8254d92a9a9fc231ff2ff2466990d54aea3190a28332b6accb65851560865c159eb20c1ef411f0fc3ce7055e2179a0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/strtok3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinycolor2",
+      "version": "1.6.0",
+      "bom-ref": "qt-core@1.19.0|tinycolor2@1.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tinycolor2@1.6.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tinycolor2/-/tinycolor2-1.6.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5cf68191640976c7f7a4b28957da78a8dfd2f9f9b63a3f0020fa35053521839a3192f9bdf92544185761c8ecfbb537544dfbf132202ce2ca7afde64ed84c3ea7"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tinycolor2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "token-types",
+      "version": "6.1.2",
+      "bom-ref": "qt-core@1.19.0|token-types@6.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/token-types@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/token-types/-/token-types-6.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7515dc872f82d0880af163c2eb1bc21c544859851baaa74420a3da2a8fc071350dcf02d32ba007ed18dd2d6b0465c00dfd305db5f530dcf60480faf954fafac3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/token-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uint8array-extras",
+      "version": "1.5.0",
+      "bom-ref": "qt-core@1.19.0|uint8array-extras@1.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/uint8array-extras@1.5.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/uint8array-extras/-/uint8array-extras-1.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "aef2920620b9cea08288367d9003accd9703bdd007c3020a246df76248f8dce29c5ac9e670144bd3d6135389ce78767c6366bb9753204ddd3c4817bd03c423e8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/uint8array-extras"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "utif2",
+      "version": "4.1.0",
+      "bom-ref": "qt-core@1.19.0|utif2@4.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/utif2@4.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/utif2/-/utif2-4.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fa892707d147ac9ee85bb03659961a8ce72fe0570347809fa0607474f35fc5b8b818ed394519c59ade686b6dfef70df611a9eb61c4895aca5488990b32cfb7ef"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/utif2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "which",
+      "version": "5.0.0",
+      "bom-ref": "qt-core@1.19.0|which@5.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/which@5.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/which/-/which-5.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "244746cc7c3092b6d6a063a5207a90e60b69aca18e7a7a431e9c44f73551d5b59b3ad611c8f3c731ef4568feb1eb50a635a4d385291bd03009b5ee630fe0e6cd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/which"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xml-naming",
+      "version": "0.1.0",
+      "bom-ref": "qt-core@1.19.0|xml-naming@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xml-naming@0.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xml-naming/-/xml-naming-0.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "93c28ef61accc8d93ab545aa51f9131196decd146938d54ecd44e773ded59c2bf28fa4dff65c9447d1030087a254bbf9ea3b0c7285c4c235bc2afe723d8e7697"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xml-naming"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xml-parse-from-string",
+      "version": "1.0.1",
+      "bom-ref": "qt-core@1.19.0|xml-parse-from-string@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xml-parse-from-string@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xml-parse-from-string/-/xml-parse-from-string-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "12b70ac094c5e78b91cf334c5ead97e6c308cbcf3326f7cdd8399da10bf2ecf00527eb4f454eb2756b8e28d3327e63a37720504c54448bad2cd18d12c88d06d2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xml-parse-from-string"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xml2js",
+      "version": "0.5.0",
+      "bom-ref": "qt-core@1.19.0|xml2js@0.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xml2js@0.5.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xml2js/-/xml2js-0.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "76b3c59e44098a4fcefae3caa6a4a0af6da6a6e147a8a75b4bcdf988042b502ef72f61795a46e821177adda8bfd9883a2358f389f3c5287d8d4caf9c7e096420"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xml2js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xmlbuilder",
+      "version": "11.0.1",
+      "bom-ref": "qt-core@1.19.0|xmlbuilder@11.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xmlbuilder@11.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-11.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7c396c23f905131ee02ef6de71cd3fa212c6e747ee810a7caf21f3313b96f6f49ad462745d858a9e1b14c7ba227b71bdf3eaf9e9a4d0214078921b78d91dc9bc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xmlbuilder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zod",
+      "version": "3.25.76",
+      "bom-ref": "qt-core@1.19.0|zod@3.25.76",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/zod@3.25.76",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "83352dfeab7cd675ec14628815c0b76277c4031e4d92e9c27e70e5bee0524854b4d9b717bb82e679ad001485306cb5b158fc7777da7c4b94286ae8ca70d43171"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/zod"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "qt-core@1.19.0",
+      "dependsOn": [
+        "qt-core@1.19.0|axios@1.19.0",
+        "qt-core@1.19.0|command-exists@1.2.9",
+        "qt-core@1.19.0|dotenv@16.5.0",
+        "qt-core@1.19.0|fast-xml-builder@1.2.0",
+        "qt-core@1.19.0|fast-xml-parser@5.8.0",
+        "qt-core@1.19.0|jimp@1.6.1",
+        "qt-core@1.19.0|lodash-es@4.18.1",
+        "qt-core@1.19.0|lodash@4.18.1",
+        "qt-core@1.19.0|module-alias@2.2.3",
+        "qt-core@1.19.0|qt-lib@1.19.0",
+        "qt-core@1.19.0|rss-parser@3.13.0",
+        "qt-core@1.19.0|which@5.0.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@borewit/text-codec@0.2.2"
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/core@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1|mime@3.0.0",
+        "qt-core@1.19.0|@jimp/file-ops@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|await-to-js@3.0.0",
+        "qt-core@1.19.0|exif-parser@0.1.12",
+        "qt-core@1.19.0|file-type@21.3.4"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/core@1.6.1|mime@3.0.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/diff@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|pixelmatch@5.3.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/file-ops@1.6.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/js-bmp@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|bmp-ts@1.0.9"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/js-gif@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|gifwrap@0.10.1",
+        "qt-core@1.19.0|omggif@1.0.10"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/js-jpeg@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|jpeg-js@0.4.4"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/js-png@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|pngjs@7.0.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/js-tiff@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|utif2@4.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-blit@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-blur@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-circle@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-color@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|tinycolor2@1.6.0",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-contain@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-blit@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-cover@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-crop@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-crop@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-displace@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-dither@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-fisheye@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-flip@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-hash@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/js-bmp@1.6.1",
+        "qt-core@1.19.0|@jimp/js-jpeg@1.6.1",
+        "qt-core@1.19.0|@jimp/js-png@1.6.1",
+        "qt-core@1.19.0|@jimp/js-tiff@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-color@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|any-base@1.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-mask@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-print@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/js-jpeg@1.6.1",
+        "qt-core@1.19.0|@jimp/js-png@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-blit@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|parse-bmfont-ascii@1.0.6",
+        "qt-core@1.19.0|parse-bmfont-binary@1.0.6",
+        "qt-core@1.19.0|parse-bmfont-xml@1.1.6",
+        "qt-core@1.19.0|simple-xml-to-json@1.2.7",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-quantize@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|image-q@4.0.0",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-rotate@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-crop@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/plugin-threshold@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-color@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-hash@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1",
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/types@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|zod@3.25.76"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@jimp/utils@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|tinycolor2@1.6.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@nodable/entities@2.1.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|@tokenizer/inflate@0.4.1",
+      "dependsOn": [
+        "qt-core@1.19.0|debug@4.4.3",
+        "qt-core@1.19.0|token-types@6.1.2"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|@tokenizer/token@0.3.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|any-base@1.1.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|asynckit@0.4.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|await-to-js@3.0.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|axios@1.19.0",
+      "dependsOn": [
+        "qt-core@1.19.0|axios@1.19.0|https-proxy-agent@5.0.1",
+        "qt-core@1.19.0|follow-redirects@1.16.0",
+        "qt-core@1.19.0|form-data@4.0.6",
+        "qt-core@1.19.0|proxy-from-env@2.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|axios@1.19.0|agent-base@6.0.2",
+      "dependsOn": [
+        "qt-core@1.19.0|debug@4.4.3"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|axios@1.19.0|https-proxy-agent@5.0.1",
+      "dependsOn": [
+        "qt-core@1.19.0|axios@1.19.0|agent-base@6.0.2",
+        "qt-core@1.19.0|debug@4.4.3"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|bmp-ts@1.0.9"
+    },
+    {
+      "ref": "qt-core@1.19.0|call-bind-apply-helpers@1.0.2",
+      "dependsOn": [
+        "qt-core@1.19.0|es-errors@1.3.0",
+        "qt-core@1.19.0|function-bind@1.1.2"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|combined-stream@1.0.8",
+      "dependsOn": [
+        "qt-core@1.19.0|delayed-stream@1.0.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|command-exists@1.2.9"
+    },
+    {
+      "ref": "qt-core@1.19.0|debug@4.4.3",
+      "dependsOn": [
+        "qt-core@1.19.0|ms@2.1.3"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|delayed-stream@1.0.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|dotenv@16.5.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|dunder-proto@1.0.1",
+      "dependsOn": [
+        "qt-core@1.19.0|call-bind-apply-helpers@1.0.2",
+        "qt-core@1.19.0|es-errors@1.3.0",
+        "qt-core@1.19.0|gopd@1.2.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|es-define-property@1.0.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|es-errors@1.3.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|es-object-atoms@1.1.1",
+      "dependsOn": [
+        "qt-core@1.19.0|es-errors@1.3.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|es-set-tostringtag@2.1.0",
+      "dependsOn": [
+        "qt-core@1.19.0|es-errors@1.3.0",
+        "qt-core@1.19.0|get-intrinsic@1.3.0",
+        "qt-core@1.19.0|has-tostringtag@1.0.2",
+        "qt-core@1.19.0|hasown@2.0.4"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|exif-parser@0.1.12"
+    },
+    {
+      "ref": "qt-core@1.19.0|fast-xml-builder@1.2.0",
+      "dependsOn": [
+        "qt-core@1.19.0|path-expression-matcher@1.6.2",
+        "qt-core@1.19.0|xml-naming@0.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|fast-xml-parser@5.8.0",
+      "dependsOn": [
+        "qt-core@1.19.0|@nodable/entities@2.1.0",
+        "qt-core@1.19.0|fast-xml-builder@1.2.0",
+        "qt-core@1.19.0|path-expression-matcher@1.6.2",
+        "qt-core@1.19.0|strnum@2.3.0",
+        "qt-core@1.19.0|xml-naming@0.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|file-type@21.3.4",
+      "dependsOn": [
+        "qt-core@1.19.0|@tokenizer/inflate@0.4.1",
+        "qt-core@1.19.0|strtok3@10.3.5",
+        "qt-core@1.19.0|token-types@6.1.2",
+        "qt-core@1.19.0|uint8array-extras@1.5.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|follow-redirects@1.16.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|form-data@4.0.6",
+      "dependsOn": [
+        "qt-core@1.19.0|asynckit@0.4.0",
+        "qt-core@1.19.0|combined-stream@1.0.8",
+        "qt-core@1.19.0|es-set-tostringtag@2.1.0",
+        "qt-core@1.19.0|hasown@2.0.4",
+        "qt-core@1.19.0|mime-types@2.1.35"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|function-bind@1.1.2"
+    },
+    {
+      "ref": "qt-core@1.19.0|get-intrinsic@1.3.0",
+      "dependsOn": [
+        "qt-core@1.19.0|call-bind-apply-helpers@1.0.2",
+        "qt-core@1.19.0|es-define-property@1.0.1",
+        "qt-core@1.19.0|es-errors@1.3.0",
+        "qt-core@1.19.0|es-object-atoms@1.1.1",
+        "qt-core@1.19.0|function-bind@1.1.2",
+        "qt-core@1.19.0|get-proto@1.0.1",
+        "qt-core@1.19.0|gopd@1.2.0",
+        "qt-core@1.19.0|has-symbols@1.1.0",
+        "qt-core@1.19.0|hasown@2.0.4",
+        "qt-core@1.19.0|math-intrinsics@1.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|get-proto@1.0.1",
+      "dependsOn": [
+        "qt-core@1.19.0|dunder-proto@1.0.1",
+        "qt-core@1.19.0|es-object-atoms@1.1.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|gifwrap@0.10.1",
+      "dependsOn": [
+        "qt-core@1.19.0|image-q@4.0.0",
+        "qt-core@1.19.0|omggif@1.0.10"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|gopd@1.2.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|has-symbols@1.1.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|has-tostringtag@1.0.2",
+      "dependsOn": [
+        "qt-core@1.19.0|has-symbols@1.1.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|hasown@2.0.4",
+      "dependsOn": [
+        "qt-core@1.19.0|function-bind@1.1.2"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|ieee754@1.2.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|image-q@4.0.0",
+      "dependsOn": [
+        "qt-core@1.19.0|image-q@4.0.0|@types/node@16.9.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|image-q@4.0.0|@types/node@16.9.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|isexe@3.1.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|jimp@1.6.1",
+      "dependsOn": [
+        "qt-core@1.19.0|@jimp/core@1.6.1",
+        "qt-core@1.19.0|@jimp/diff@1.6.1",
+        "qt-core@1.19.0|@jimp/js-bmp@1.6.1",
+        "qt-core@1.19.0|@jimp/js-gif@1.6.1",
+        "qt-core@1.19.0|@jimp/js-jpeg@1.6.1",
+        "qt-core@1.19.0|@jimp/js-png@1.6.1",
+        "qt-core@1.19.0|@jimp/js-tiff@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-blit@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-blur@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-circle@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-color@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-contain@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-cover@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-crop@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-displace@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-dither@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-fisheye@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-flip@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-hash@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-mask@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-print@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-quantize@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-resize@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-rotate@1.6.1",
+        "qt-core@1.19.0|@jimp/plugin-threshold@1.6.1",
+        "qt-core@1.19.0|@jimp/types@1.6.1",
+        "qt-core@1.19.0|@jimp/utils@1.6.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|jpeg-js@0.4.4"
+    },
+    {
+      "ref": "qt-core@1.19.0|lodash-es@4.18.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|lodash@4.18.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|math-intrinsics@1.1.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|mime-db@1.52.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|mime-types@2.1.35",
+      "dependsOn": [
+        "qt-core@1.19.0|mime-db@1.52.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|module-alias@2.2.3"
+    },
+    {
+      "ref": "qt-core@1.19.0|ms@2.1.3"
+    },
+    {
+      "ref": "qt-core@1.19.0|omggif@1.0.10"
+    },
+    {
+      "ref": "qt-core@1.19.0|pako@1.0.11"
+    },
+    {
+      "ref": "qt-core@1.19.0|parse-bmfont-ascii@1.0.6"
+    },
+    {
+      "ref": "qt-core@1.19.0|parse-bmfont-binary@1.0.6"
+    },
+    {
+      "ref": "qt-core@1.19.0|parse-bmfont-xml@1.1.6",
+      "dependsOn": [
+        "qt-core@1.19.0|xml-parse-from-string@1.0.1",
+        "qt-core@1.19.0|xml2js@0.5.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|path-expression-matcher@1.6.2"
+    },
+    {
+      "ref": "qt-core@1.19.0|pixelmatch@5.3.0",
+      "dependsOn": [
+        "qt-core@1.19.0|pixelmatch@5.3.0|pngjs@6.0.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|pixelmatch@5.3.0|pngjs@6.0.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|pngjs@7.0.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|proxy-from-env@2.1.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|qt-lib@1.19.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|rss-parser@3.13.0",
+      "dependsOn": [
+        "qt-core@1.19.0|rss-parser@3.13.0|entities@2.2.0",
+        "qt-core@1.19.0|xml2js@0.5.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|rss-parser@3.13.0|entities@2.2.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|sax@1.4.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|simple-xml-to-json@1.2.7"
+    },
+    {
+      "ref": "qt-core@1.19.0|strnum@2.3.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|strtok3@10.3.5",
+      "dependsOn": [
+        "qt-core@1.19.0|@tokenizer/token@0.3.0"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|tinycolor2@1.6.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|token-types@6.1.2",
+      "dependsOn": [
+        "qt-core@1.19.0|@borewit/text-codec@0.2.2",
+        "qt-core@1.19.0|@tokenizer/token@0.3.0",
+        "qt-core@1.19.0|ieee754@1.2.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|uint8array-extras@1.5.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|utif2@4.1.0",
+      "dependsOn": [
+        "qt-core@1.19.0|pako@1.0.11"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|which@5.0.0",
+      "dependsOn": [
+        "qt-core@1.19.0|isexe@3.1.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|xml-naming@0.1.0"
+    },
+    {
+      "ref": "qt-core@1.19.0|xml-parse-from-string@1.0.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|xml2js@0.5.0",
+      "dependsOn": [
+        "qt-core@1.19.0|sax@1.4.1",
+        "qt-core@1.19.0|xmlbuilder@11.0.1"
+      ]
+    },
+    {
+      "ref": "qt-core@1.19.0|xmlbuilder@11.0.1"
+    },
+    {
+      "ref": "qt-core@1.19.0|zod@3.25.76"
+    }
+  ]
+}

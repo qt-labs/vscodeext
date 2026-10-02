@@ -28,6 +28,10 @@ function main() {
       stdio: 'inherit'
     }
   );
+  execSync(`npm run checkSbom -- --dir="${targetExtensionRoot}"`, {
+    cwd: extensionRoot,
+    stdio: 'inherit'
+  });
   execSync(`npm run checkPackage -- --dir="${targetExtensionRoot}"`, {
     cwd: extensionRoot,
     stdio: 'inherit'
