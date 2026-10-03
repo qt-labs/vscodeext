@@ -1,0 +1,6836 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "qt-python",
+      "version": "1.19.0",
+      "bom-ref": "qt-python@1.19.0",
+      "description": "Qt Python Support",
+      "purl": "pkg:npm/qt-python@1.19.0?vcs_url=git%2Bhttps%3A%2F%2Fgithub.com%2Fqt-labs%2Fvscodeext.git",
+      "externalReferences": [
+        {
+          "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/qt-labs/vscodeext.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.qt.io/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:vscode",
+          "value": "^1.94.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "colors",
+      "group": "@colors",
+      "version": "1.6.0",
+      "bom-ref": "@colors/colors@1.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40colors/colors@1.6.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@colors/colors"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "diagnostics",
+      "group": "@dabh",
+      "version": "2.0.3",
+      "bom-ref": "@dabh/diagnostics@2.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40dabh/diagnostics@2.0.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@dabh/diagnostics"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "eslint-utils",
+      "group": "@eslint-community",
+      "version": "4.4.0",
+      "bom-ref": "@eslint-community/eslint-utils@4.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40eslint-community/eslint-utils@4.4.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@eslint-community/eslint-utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "regexpp",
+      "group": "@eslint-community",
+      "version": "4.11.1",
+      "bom-ref": "@eslint-community/regexpp@4.11.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40eslint-community/regexpp@4.11.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@eslint-community/regexpp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "config-array",
+      "group": "@humanwhocodes",
+      "version": "0.13.0",
+      "bom-ref": "@humanwhocodes/config-array@0.13.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40humanwhocodes/config-array@0.13.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@humanwhocodes/config-array"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "module-importer",
+      "group": "@humanwhocodes",
+      "version": "1.0.1",
+      "bom-ref": "@humanwhocodes/module-importer@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40humanwhocodes/module-importer@1.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@humanwhocodes/module-importer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "object-schema",
+      "group": "@humanwhocodes",
+      "version": "2.0.3",
+      "bom-ref": "@humanwhocodes/object-schema@2.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40humanwhocodes/object-schema@2.0.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@humanwhocodes/object-schema"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "1ds-core-js",
+      "group": "@microsoft",
+      "version": "4.3.11",
+      "bom-ref": "@microsoft/1ds-core-js@4.3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/1ds-core-js@4.3.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/1ds-core-js/-/1ds-core-js-4.3.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "432404fd8cc5601fb7d561295fd86f0e85d93885c0ef7d3c679bae2f5992b320d290d3e5db88415b3f4edef64bfbfa7db21cbbe7a78a2c8da714bc30200857cb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/1ds-core-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "1ds-post-js",
+      "group": "@microsoft",
+      "version": "4.3.11",
+      "bom-ref": "@microsoft/1ds-post-js@4.3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/1ds-post-js@4.3.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/1ds-post-js/-/1ds-post-js-4.3.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "57465e7802f2fcf8fc1d680d1c3b0afb20de0989c9f5b0a04d685cae76bf662013fac19f5acea60c18c055c1b4dee3fb4c38dd58b7fcc3bf6581b5c9dfeb370c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/1ds-post-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "applicationinsights-channel-js",
+      "group": "@microsoft",
+      "version": "3.3.11",
+      "bom-ref": "@microsoft/applicationinsights-channel-js@3.3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/applicationinsights-channel-js@3.3.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/applicationinsights-channel-js/-/applicationinsights-channel-js-3.3.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d1ec7f9b14dfe51f8fe564af754f0781b7a0f15cd0d17bdc9e3290766432d39c9c49c9ca7afb7c6a7dc310f8a4385a8e2838b9f4be615044d995c7617ac9d5b6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/applicationinsights-channel-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "applicationinsights-common",
+      "group": "@microsoft",
+      "version": "3.3.11",
+      "bom-ref": "@microsoft/applicationinsights-common@3.3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/applicationinsights-common@3.3.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/applicationinsights-common/-/applicationinsights-common-3.3.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3887b9bcbe7a964988b11b08db542a6c6a45f2017f53350fe269448465b21b650cb2476d5ab63e73ec40ca7c8d0ec02384a2a07be46bb3fc64a42d05a3442b85"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/applicationinsights-common"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "applicationinsights-core-js",
+      "group": "@microsoft",
+      "version": "3.3.11",
+      "bom-ref": "@microsoft/applicationinsights-core-js@3.3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/applicationinsights-core-js@3.3.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/applicationinsights-core-js/-/applicationinsights-core-js-3.3.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5a5058d6c28334beb64fef8d89f8050b20ee3a835436b5482df9c7b9b3b3814fe877b30511061653c119c837010bff99f1edd30fa8df8b1bab62d5a8502fba12"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/applicationinsights-core-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "applicationinsights-shims",
+      "group": "@microsoft",
+      "version": "3.0.1",
+      "bom-ref": "@microsoft/applicationinsights-shims@3.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/applicationinsights-shims@3.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/applicationinsights-shims/-/applicationinsights-shims-3.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0cac1ba05e3b1f59dbdf7ad251f8ea23aaf25f6f6ffb6416713ad1bdc403037d8066be48964afbc2138e4ac0f5681cf0a97d1124420fd59f358df1373419bf2e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/applicationinsights-shims"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "applicationinsights-web-basic",
+      "group": "@microsoft",
+      "version": "3.3.11",
+      "bom-ref": "@microsoft/applicationinsights-web-basic@3.3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/applicationinsights-web-basic@3.3.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/applicationinsights-web-basic/-/applicationinsights-web-basic-3.3.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a5dc57593d248510d2b9b2bae998551b60d7909c2dab2adc8a5fa20c3da955a64ff9f1475ee9c923afcc844763824ea3de3a404adf124aaf7159560eaab05ba4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/applicationinsights-web-basic"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dynamicproto-js",
+      "group": "@microsoft",
+      "version": "2.0.3",
+      "bom-ref": "@microsoft/dynamicproto-js@2.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40microsoft/dynamicproto-js@2.0.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@microsoft/dynamicproto-js/-/dynamicproto-js-2.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "25359353cd2b332de67713a38e96a20d0b132d9e984861aab23511b18e80510b488f4b9d945fe362685d2d9bbcebddd9202d13d48c189c56b4f907a2327ce204"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@microsoft/dynamicproto-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ts-async",
+      "group": "@nevware21",
+      "version": "0.5.5",
+      "bom-ref": "@nevware21/ts-async@0.5.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nevware21/ts-async@0.5.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@nevware21/ts-async/-/ts-async-0.5.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bf0a9a2f4e6224f8cb7a1e6280f8bc31e780bb5d22f80abbc64a357dba3d1794a2e8c9d5379e74e6a695ec0852764e4c0812554ff518324de48089cd8c36f822"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@nevware21/ts-async"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ts-utils",
+      "group": "@nevware21",
+      "version": "0.15.0",
+      "bom-ref": "@nevware21/ts-utils@0.15.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nevware21/ts-utils@0.15.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@nevware21/ts-utils/-/ts-utils-0.15.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f9b50c28888a020a16e6e3446f9c71cc1cddc1d2d2f5229170ecbc4b12c4f8aa92948754615e4ef67c4956ad5151870ed83b4be4396b2b519b81c5441efe8654"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@nevware21/ts-utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "entities",
+      "group": "@nodable",
+      "version": "2.1.0",
+      "bom-ref": "@nodable/entities@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nodable/entities@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@nodable/entities/-/entities-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9f24fb4f79db332048fe5bebe8be53c966c524023d15381545a90da01a820fe3e6203f03cc5aeb35d2cbb4733032ccceb6a65af0f00e576e19a839d0ae140834"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@nodable/entities"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fs.scandir",
+      "group": "@nodelib",
+      "version": "2.1.5",
+      "bom-ref": "@nodelib/fs.scandir@2.1.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nodelib/fs.scandir@2.1.5",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@nodelib/fs.scandir"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fs.stat",
+      "group": "@nodelib",
+      "version": "2.0.5",
+      "bom-ref": "@nodelib/fs.stat@2.0.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nodelib/fs.stat@2.0.5",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@nodelib/fs.stat"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fs.walk",
+      "group": "@nodelib",
+      "version": "1.2.8",
+      "bom-ref": "@nodelib/fs.walk@1.2.8",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nodelib/fs.walk@1.2.8",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@nodelib/fs.walk"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "async",
+      "group": "@types",
+      "version": "3.2.24",
+      "bom-ref": "@types/async@3.2.24",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/async@3.2.24",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@types/async"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chai",
+      "group": "@types",
+      "version": "5.2.2",
+      "bom-ref": "@types/chai@5.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/chai@5.2.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@types/chai"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "deep-eql",
+      "group": "@types",
+      "version": "4.0.2",
+      "bom-ref": "@types/deep-eql@4.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/deep-eql@4.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@types/deep-eql"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "node",
+      "group": "@types",
+      "version": "20.19.43",
+      "bom-ref": "@types/node@20.19.43",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/node@20.19.43",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ea8601022e62920e0f97e906b2862d6b050c053db364c0af3cd17ba552e71d97ddd737f7f034625a7fe04f4d51602754aa4bfb161afe0bda2de3fb5bfb6b15bc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@types/node"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "triple-beam",
+      "group": "@types",
+      "version": "1.3.5",
+      "bom-ref": "@types/triple-beam@1.3.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/triple-beam@1.3.5",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@types/triple-beam"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vscode",
+      "group": "@types",
+      "version": "1.94.0",
+      "bom-ref": "@types/vscode@1.94.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/vscode@1.94.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@types/vscode"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "structured-clone",
+      "group": "@ungap",
+      "version": "1.2.0",
+      "bom-ref": "@ungap/structured-clone@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40ungap/structured-clone@1.2.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@ungap/structured-clone"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "extension-telemetry",
+      "group": "@vscode",
+      "version": "1.5.1",
+      "bom-ref": "@vscode/extension-telemetry@1.5.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vscode/extension-telemetry@1.5.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vscode/extension-telemetry/-/extension-telemetry-1.5.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ae7451408442c1175b710d105796a3289473f27a04228400da15fd563025540541f39f8295b68f361963a1b157816df5b9eebd1513ba28f1385c9fe52e02adfd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/@vscode/extension-telemetry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "abort-controller",
+      "version": "3.0.0",
+      "bom-ref": "abort-controller@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/abort-controller@3.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/abort-controller"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "acorn-jsx",
+      "version": "5.3.2",
+      "bom-ref": "acorn-jsx@5.3.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/acorn-jsx@5.3.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/acorn-jsx"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "acorn",
+      "version": "8.14.0",
+      "bom-ref": "acorn@8.14.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/acorn@8.14.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/acorn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ajv",
+      "version": "6.14.0",
+      "bom-ref": "ajv@6.14.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ajv@6.14.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/ajv/-/ajv-6.14.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "216ae8b26ff2ae7e377a22aa91f9078aced08a80e579a5d01dd0d53ca834152c3077f0eebf25fbf5366714e9d8a41edd72c140326b45ced66e5cf0ef49e3e417"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/ajv"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ansi-regex",
+      "version": "5.0.1",
+      "bom-ref": "ansi-regex@5.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ansi-regex@5.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/ansi-regex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ansi-styles",
+      "version": "4.3.0",
+      "bom-ref": "ansi-styles@4.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ansi-styles@4.3.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/ansi-styles"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "argparse",
+      "version": "2.0.1",
+      "bom-ref": "argparse@2.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Python-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/argparse@2.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/argparse"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "assertion-error",
+      "version": "2.0.1",
+      "bom-ref": "assertion-error@2.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/assertion-error@2.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/assertion-error"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "async",
+      "version": "3.2.6",
+      "bom-ref": "async@3.2.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/async@3.2.6",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/async"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "bom-ref": "balanced-match@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "de849e50ed13315ebb84dd4099b5ec2b8c9aa94eed8e21e56f144364ea47d0a5bdf82797e1b440697d009f1b74b71d8cae94695b041a3f02252121098585393f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/balanced-match"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "base64-js",
+      "version": "1.5.1",
+      "bom-ref": "base64-js@1.5.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/base64-js@1.5.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/base64-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "brace-expansion",
+      "version": "1.1.18",
+      "bom-ref": "brace-expansion@1.1.18",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/brace-expansion@1.1.18",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.18.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "11d7a9fd7f5f1aa54d9b328156c0d820eb43fb3d6db9ecd5ef42c18dd0acb7d4eabbbea5b27bd1899ea84e27359fefc12305fa4031803bde0f3783764800efb7"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/brace-expansion"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "buffer",
+      "version": "6.0.3",
+      "bom-ref": "buffer@6.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/buffer@6.0.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/buffer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "callsites",
+      "version": "3.1.0",
+      "bom-ref": "callsites@3.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/callsites@3.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/callsites"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chai",
+      "version": "5.2.1",
+      "bom-ref": "chai@5.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/chai@5.2.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/chai"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "chalk",
+      "version": "4.1.2",
+      "bom-ref": "chalk@4.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/chalk@4.1.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/chalk"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "check-error",
+      "version": "2.1.1",
+      "bom-ref": "check-error@2.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/check-error@2.1.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/check-error"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "color-convert",
+      "version": "2.0.1",
+      "bom-ref": "color-convert@2.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/color-convert@2.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/color-convert"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "color-name",
+      "version": "1.1.4",
+      "bom-ref": "color-name@1.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/color-name@1.1.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/color-name"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "color-string",
+      "version": "1.9.1",
+      "bom-ref": "color-string@1.9.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/color-string@1.9.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/color-string"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "color",
+      "version": "3.2.1",
+      "bom-ref": "color@3.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/color@3.2.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/color"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "color-convert",
+          "version": "1.9.3",
+          "bom-ref": "color@3.2.1|color-convert@1.9.3",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/color-convert@1.9.3",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "../qt-lib/node_modules/color/node_modules/color-convert"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "color-name",
+          "version": "1.1.3",
+          "bom-ref": "color@3.2.1|color-name@1.1.3",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/color-name@1.1.3",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "../qt-lib/node_modules/color/node_modules/color-name"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "colorspace",
+      "version": "1.1.4",
+      "bom-ref": "colorspace@1.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/colorspace@1.1.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/colorspace"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "concat-map",
+      "version": "0.0.1",
+      "bom-ref": "concat-map@0.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/concat-map@0.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/concat-map/-/concat-map-0.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fd2aefe1db30c903417e8846a73f68e986f71b3dd2ad40ea047e6b4ee84647b6a1b656d82a7571c366c214c4658da03b1171da5d9f30b07768745bdb9212a6aa"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/concat-map"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "bom-ref": "cross-spawn@7.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/cross-spawn@7.0.6",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/cross-spawn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debug",
+      "version": "4.3.7",
+      "bom-ref": "debug@4.3.7",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/debug@4.3.7",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/debug"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "deep-eql",
+      "version": "5.0.2",
+      "bom-ref": "deep-eql@5.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/deep-eql@5.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/deep-eql"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "deep-is",
+      "version": "0.1.4",
+      "bom-ref": "deep-is@0.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/deep-is@0.1.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/deep-is"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "doctrine",
+      "version": "3.0.0",
+      "bom-ref": "doctrine@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/doctrine@3.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/doctrine"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "enabled",
+      "version": "2.0.0",
+      "bom-ref": "enabled@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/enabled@2.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/enabled"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "escape-string-regexp",
+      "version": "4.0.0",
+      "bom-ref": "escape-string-regexp@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/escape-string-regexp@4.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/escape-string-regexp"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "eslint-scope",
+      "version": "7.2.2",
+      "bom-ref": "eslint-scope@7.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/eslint-scope@7.2.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/eslint-scope"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "eslint-visitor-keys",
+      "version": "3.4.3",
+      "bom-ref": "eslint-visitor-keys@3.4.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/eslint-visitor-keys@3.4.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/eslint-visitor-keys"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "eslint",
+      "version": "8.57.1",
+      "bom-ref": "eslint@8.57.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/eslint@8.57.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/eslint"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "eslintrc",
+          "group": "@eslint",
+          "version": "2.1.4",
+          "bom-ref": "eslint@8.57.1|@eslint/eslintrc@2.1.4",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/%40eslint/eslintrc@2.1.4",
+          "properties": [
+            {
+              "name": "cdx:npm:package:development",
+              "value": "true"
+            },
+            {
+              "name": "cdx:npm:package:path",
+              "value": "../qt-lib/node_modules/eslint/node_modules/@eslint/eslintrc"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "js",
+          "group": "@eslint",
+          "version": "8.57.1",
+          "bom-ref": "eslint@8.57.1|@eslint/js@8.57.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/%40eslint/js@8.57.1",
+          "properties": [
+            {
+              "name": "cdx:npm:package:development",
+              "value": "true"
+            },
+            {
+              "name": "cdx:npm:package:path",
+              "value": "../qt-lib/node_modules/eslint/node_modules/@eslint/js"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "espree",
+      "version": "9.6.1",
+      "bom-ref": "espree@9.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/espree@9.6.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/espree"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "esquery",
+      "version": "1.6.0",
+      "bom-ref": "esquery@1.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/esquery@1.6.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/esquery"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "esrecurse",
+      "version": "4.3.0",
+      "bom-ref": "esrecurse@4.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/esrecurse@4.3.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/esrecurse"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "estraverse",
+      "version": "5.3.0",
+      "bom-ref": "estraverse@5.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/estraverse@5.3.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/estraverse"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "esutils",
+      "version": "2.0.3",
+      "bom-ref": "esutils@2.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/esutils@2.0.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/esutils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "event-target-shim",
+      "version": "5.0.1",
+      "bom-ref": "event-target-shim@5.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/event-target-shim@5.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/event-target-shim"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "events",
+      "version": "3.3.0",
+      "bom-ref": "events@3.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/events@3.3.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/events"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "bom-ref": "fast-deep-equal@3.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-deep-equal@3.1.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fast-deep-equal"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-json-stable-stringify",
+      "version": "2.1.0",
+      "bom-ref": "fast-json-stable-stringify@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-json-stable-stringify@2.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fast-json-stable-stringify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-levenshtein",
+      "version": "2.0.6",
+      "bom-ref": "fast-levenshtein@2.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-levenshtein@2.0.6",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fast-levenshtein"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-xml-builder",
+      "version": "1.2.0",
+      "bom-ref": "fast-xml-builder@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-xml-builder@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d346805a27aa7dff99261b1703883583b33c93eec062831450717eff315be54e94bff3f4565e10668f38fc872e7f361a94bb848fdf76f1b5cdf4f6db173305d1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fast-xml-builder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-xml-parser",
+      "version": "5.8.0",
+      "bom-ref": "fast-xml-parser@5.8.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-xml-parser@5.8.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.8.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e9b20cedfb09c5ea37b97bfb3a771062c04030f27b575e9295a865ffa33df02fe2daafaf075fb86b432daef6300c5114af00d26c099e2c3457b0e070acbef202"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fast-xml-parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastq",
+      "version": "1.17.1",
+      "bom-ref": "fastq@1.17.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fastq@1.17.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fastq"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fecha",
+      "version": "4.2.3",
+      "bom-ref": "fecha@4.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fecha@4.2.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fecha"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "file-entry-cache",
+      "version": "6.0.1",
+      "bom-ref": "file-entry-cache@6.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/file-entry-cache@6.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/file-entry-cache"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "find-up",
+      "version": "5.0.0",
+      "bom-ref": "find-up@5.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/find-up@5.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/find-up"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "flat-cache",
+      "version": "3.2.0",
+      "bom-ref": "flat-cache@3.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/flat-cache@3.2.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/flat-cache"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "flatted",
+      "version": "3.4.2",
+      "bom-ref": "flatted@3.4.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/flatted@3.4.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/flatted/-/flatted-3.4.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3e30ec7bb47385c3e4209c32e6deca3d641267d7006f341771a7ec7ad4280fbb0e2514251a290d6f1ef2669d8ea2d0e7272ac371bc91ab74ed6f5f2260eaa4c4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/flatted"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fn.name",
+      "version": "1.1.0",
+      "bom-ref": "fn.name@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fn.name@1.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fn.name"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fs.realpath",
+      "version": "1.0.0",
+      "bom-ref": "fs.realpath@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fs.realpath@1.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/fs.realpath"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "glob-parent",
+      "version": "6.0.2",
+      "bom-ref": "glob-parent@6.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/glob-parent@6.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/glob-parent"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "glob",
+      "version": "7.2.3",
+      "bom-ref": "glob@7.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/glob@7.2.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/glob"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "globals",
+      "version": "13.24.0",
+      "bom-ref": "globals@13.24.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/globals@13.24.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/globals"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "graphemer",
+      "version": "1.4.0",
+      "bom-ref": "graphemer@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/graphemer@1.4.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/graphemer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "has-flag",
+      "version": "4.0.0",
+      "bom-ref": "has-flag@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/has-flag@4.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/has-flag"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ieee754",
+      "version": "1.2.1",
+      "bom-ref": "ieee754@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ieee754@1.2.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/ieee754"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ignore",
+      "version": "5.3.2",
+      "bom-ref": "ignore@5.3.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ignore@5.3.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/ignore"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "import-fresh",
+      "version": "3.3.0",
+      "bom-ref": "import-fresh@3.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/import-fresh@3.3.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/import-fresh"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "imurmurhash",
+      "version": "0.1.4",
+      "bom-ref": "imurmurhash@0.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/imurmurhash@0.1.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/imurmurhash"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "inflight",
+      "version": "1.0.6",
+      "bom-ref": "inflight@1.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/inflight@1.0.6",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/inflight"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "inherits",
+      "version": "2.0.4",
+      "bom-ref": "inherits@2.0.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/inherits@2.0.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/inherits"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-arrayish",
+      "version": "0.3.2",
+      "bom-ref": "is-arrayish@0.3.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-arrayish@0.3.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/is-arrayish"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-extglob",
+      "version": "2.1.1",
+      "bom-ref": "is-extglob@2.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-extglob@2.1.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/is-extglob"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-glob",
+      "version": "4.0.3",
+      "bom-ref": "is-glob@4.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-glob@4.0.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/is-glob"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-path-inside",
+      "version": "3.0.3",
+      "bom-ref": "is-path-inside@3.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-path-inside@3.0.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/is-path-inside"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-stream",
+      "version": "2.0.1",
+      "bom-ref": "is-stream@2.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-stream@2.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/is-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "isexe",
+      "version": "2.0.0",
+      "bom-ref": "isexe@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/isexe@2.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/isexe"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-yaml",
+      "version": "4.3.1",
+      "bom-ref": "js-yaml@4.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/js-yaml@4.3.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "098e9cac6ab7d77317f06930bc1eedce0a7df6f8d0c58d7efb9cb5d3f04a37f1947c7a9668e19030d66406fa92cec64a5a4fe28f01e55b3ce42ee96c18786359"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/js-yaml"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "json-buffer",
+      "version": "3.0.1",
+      "bom-ref": "json-buffer@3.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/json-buffer@3.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/json-buffer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "json-schema-traverse",
+      "version": "0.4.1",
+      "bom-ref": "json-schema-traverse@0.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/json-schema-traverse@0.4.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/json-schema-traverse"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "json-stable-stringify-without-jsonify",
+      "version": "1.0.1",
+      "bom-ref": "json-stable-stringify-without-jsonify@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/json-stable-stringify-without-jsonify@1.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/json-stable-stringify-without-jsonify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "keyv",
+      "version": "4.5.4",
+      "bom-ref": "keyv@4.5.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/keyv@4.5.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/keyv"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "kuler",
+      "version": "2.0.0",
+      "bom-ref": "kuler@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/kuler@2.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/kuler"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "levn",
+      "version": "0.4.1",
+      "bom-ref": "levn@0.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/levn@0.4.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/levn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "locate-path",
+      "version": "6.0.0",
+      "bom-ref": "locate-path@6.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/locate-path@6.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/locate-path"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lodash.merge",
+      "version": "4.6.2",
+      "bom-ref": "lodash.merge@4.6.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.merge@4.6.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/lodash.merge"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "logform",
+      "version": "2.6.1",
+      "bom-ref": "logform@2.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/logform@2.6.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/logform"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "loupe",
+      "version": "3.1.4",
+      "bom-ref": "loupe@3.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/loupe@3.1.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/loupe"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "minimatch",
+      "version": "3.1.5",
+      "bom-ref": "minimatch@3.1.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/minimatch@3.1.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/minimatch/-/minimatch-3.1.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "5608d652c9e74fa9fe35493a799abbef37857695b62d60f33facc51ab09b1d789836e9790f3aa4d871d0e6e147d83356e576e9f3e8d5cda78db7de2cb04125e3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/minimatch"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "module-alias",
+      "version": "2.2.3",
+      "bom-ref": "module-alias@2.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/module-alias@2.2.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/module-alias"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ms",
+      "version": "2.1.3",
+      "bom-ref": "ms@2.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ms@2.1.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/ms"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "natural-compare",
+      "version": "1.4.0",
+      "bom-ref": "natural-compare@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/natural-compare@1.4.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/natural-compare"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "once",
+      "version": "1.4.0",
+      "bom-ref": "once@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/once@1.4.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/once"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "one-time",
+      "version": "1.0.0",
+      "bom-ref": "one-time@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/one-time@1.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/one-time"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "optionator",
+      "version": "0.9.4",
+      "bom-ref": "optionator@0.9.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/optionator@0.9.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/optionator"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "p-limit",
+      "version": "3.1.0",
+      "bom-ref": "p-limit@3.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/p-limit@3.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/p-limit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "p-locate",
+      "version": "5.0.0",
+      "bom-ref": "p-locate@5.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/p-locate@5.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/p-locate"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parent-module",
+      "version": "1.0.1",
+      "bom-ref": "parent-module@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/parent-module@1.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/parent-module"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-exists",
+      "version": "4.0.0",
+      "bom-ref": "path-exists@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-exists@4.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/path-exists"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-expression-matcher",
+      "version": "1.5.0",
+      "bom-ref": "path-expression-matcher@1.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-expression-matcher@1.5.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "71badead957eeabbdd42bac3fa218c7191448a24ab6eff537dd92f9eeb32eb2d31d062815d110583f63ae468487e6d2d9cb9ed4e18730a77cac29d56463782c9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/path-expression-matcher"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-is-absolute",
+      "version": "1.0.1",
+      "bom-ref": "path-is-absolute@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-is-absolute@1.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/path-is-absolute"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-key",
+      "version": "3.1.1",
+      "bom-ref": "path-key@3.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-key@3.1.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/path-key"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pathval",
+      "version": "2.0.1",
+      "bom-ref": "pathval@2.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pathval@2.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/pathval"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "prelude-ls",
+      "version": "1.2.1",
+      "bom-ref": "prelude-ls@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/prelude-ls@1.2.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/prelude-ls"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "prettier",
+      "version": "3.3.3",
+      "bom-ref": "prettier@3.3.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/prettier@3.3.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/prettier"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "process",
+      "version": "0.11.10",
+      "bom-ref": "process@0.11.10",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/process@0.11.10",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/process"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "punycode",
+      "version": "2.3.1",
+      "bom-ref": "punycode@2.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/punycode@2.3.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/punycode"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cliui",
+      "group": "@isaacs",
+      "version": "8.0.2",
+      "bom-ref": "qt-python@1.19.0|@isaacs/cliui@8.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40isaacs/cliui@8.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@isaacs/cliui"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "ansi-regex",
+          "version": "6.1.0",
+          "bom-ref": "qt-python@1.19.0|@isaacs/cliui@8.0.2|ansi-regex@6.1.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/ansi-regex@6.1.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/@isaacs/cliui/node_modules/ansi-regex"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "strip-ansi",
+          "version": "7.1.0",
+          "bom-ref": "qt-python@1.19.0|@isaacs/cliui@8.0.2|strip-ansi@7.1.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/strip-ansi@7.1.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/@isaacs/cliui/node_modules/strip-ansi"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-extension",
+      "group": "@vscode",
+      "version": "1.0.5",
+      "bom-ref": "qt-python@1.19.0|@vscode/python-extension@1.0.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vscode/python-extension@1.0.5",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vscode/python-extension"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ansi-regex",
+      "version": "5.0.1",
+      "bom-ref": "qt-python@1.19.0|ansi-regex@5.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ansi-regex@5.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/ansi-regex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "command-exists",
+      "version": "1.2.9",
+      "bom-ref": "qt-python@1.19.0|command-exists@1.2.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/command-exists@1.2.9",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/command-exists/-/command-exists-1.2.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2d343f48673eb345dcd05bb959a2a7474622ca06649bd78a16fc92f9f46c53bfd958517cca414ce8f73d68255fd7ec5ab0e399a4edc1015815acabeca8a1d5ef"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/command-exists"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "bom-ref": "qt-python@1.19.0|cross-spawn@7.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/cross-spawn@7.0.6",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/cross-spawn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "eastasianwidth",
+      "version": "0.2.0",
+      "bom-ref": "qt-python@1.19.0|eastasianwidth@0.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/eastasianwidth@0.2.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/eastasianwidth"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "emoji-regex",
+      "version": "9.2.2",
+      "bom-ref": "qt-python@1.19.0|emoji-regex@9.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/emoji-regex@9.2.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/emoji-regex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "foreground-child",
+      "version": "3.3.1",
+      "bom-ref": "qt-python@1.19.0|foreground-child@3.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/foreground-child@3.3.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8085e32aab45b96120cc544903d58241e4892d90e380950e302333c6dbc5abfdfb2a88ccd41146b9faac0b2d2be2a4909982ec65831ec91ab321638cba9d37b3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/foreground-child"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "glob",
+      "version": "12.0.0",
+      "bom-ref": "qt-python@1.19.0|glob@12.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/glob@12.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/glob/-/glob-12.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e50725975cfb20a807af9838f3978f0dd1dc35063493676dbff6e3632d22bb21b1430daa48e8a25d45c9f80610a60dc736850c1ea02bb97e3bf0979ebfb5142f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/glob"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "balanced-match",
+          "version": "4.0.4",
+          "bom-ref": "qt-python@1.19.0|glob@12.0.0|balanced-match@4.0.4",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/balanced-match@4.0.4",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "04bae011c453c17da8ea01b118e08dc8cbc64a9df96287ee633c3d87520c4d198aaadb40659554ebb6dd6fd3ebdaf50703cfa3de2dad25f8cee82ebee26c864c"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/glob/node_modules/balanced-match"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "brace-expansion",
+          "version": "5.0.9",
+          "bom-ref": "qt-python@1.19.0|glob@12.0.0|brace-expansion@5.0.9",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/brace-expansion@5.0.9",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.9.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "49c43822ebc8105d533253fb66dfaf8c9ffff7394f6f64837315b13376e4f2ceade8619d27b28ed5d09c4e274e3c929e3d6df42c4ff6713ef00b23e1a3dfd6c6"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/glob/node_modules/brace-expansion"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "minimatch",
+          "version": "10.2.4",
+          "bom-ref": "qt-python@1.19.0|glob@12.0.0|minimatch@10.2.4",
+          "licenses": [
+            {
+              "license": {
+                "id": "BlueOak-1.0.0",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/minimatch@10.2.4",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.4.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "a118d3c3ff7b69304dd111db60276d1753107efbac488050334219120ce5eb8dbafbc8d20b49c5d5afc69a754ba5f07dcb2afa83a153a96aa26556f1aed68222"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/glob/node_modules/minimatch"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-fullwidth-code-point",
+      "version": "3.0.0",
+      "bom-ref": "qt-python@1.19.0|is-fullwidth-code-point@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-fullwidth-code-point@3.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/is-fullwidth-code-point"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "isexe",
+      "version": "2.0.0",
+      "bom-ref": "qt-python@1.19.0|isexe@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/isexe@2.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/isexe"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jackspeak",
+      "version": "4.1.1",
+      "bom-ref": "qt-python@1.19.0|jackspeak@4.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jackspeak@4.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/jackspeak/-/jackspeak-4.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ce9b6fe7b3f71a92fe3b423b55d309341642bbe04f1d5414939e45b7cfd00898d3571ae7247b95b97ff4065d80ebffb6a3247f64c12e14ac26ceaa99fd4e673d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/jackspeak"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lodash",
+      "version": "4.18.1",
+      "bom-ref": "qt-python@1.19.0|lodash@4.18.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.18.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "74c22789c4cf544f1dd5ee68b5fc269a3971919a14a6254bc32793754b22fc26a3fe07f3cdb941702139b111d5fc0b23b829b15abb5ed93346498b82782abed1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/lodash"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "minipass",
+      "version": "7.1.2",
+      "bom-ref": "qt-python@1.19.0|minipass@7.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/minipass@7.1.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/minipass"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "module-alias",
+      "version": "2.2.3",
+      "bom-ref": "qt-python@1.19.0|module-alias@2.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/module-alias@2.2.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/module-alias"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "package-json-from-dist",
+      "version": "1.0.1",
+      "bom-ref": "qt-python@1.19.0|package-json-from-dist@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/package-json-from-dist@1.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/package-json-from-dist"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-key",
+      "version": "3.1.1",
+      "bom-ref": "qt-python@1.19.0|path-key@3.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-key@3.1.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/path-key"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "path-scurry",
+      "version": "2.0.1",
+      "bom-ref": "qt-python@1.19.0|path-scurry@2.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-scurry@2.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a16c93e2020202efa4680ed05a4fe3bc21d66ab30a36cea95ce1962834ebedcc382067146d6f8f7937db69088b1a17854698e8e8ef49d0f9b231f40f8c7ef5a0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/path-scurry"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "lru-cache",
+          "version": "11.2.2",
+          "bom-ref": "qt-python@1.19.0|path-scurry@2.0.1|lru-cache@11.2.2",
+          "licenses": [
+            {
+              "license": {
+                "id": "ISC",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/lru-cache@11.2.2",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.2.2.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "17d3837f2a8c2f67284c8b10a529111e72d264cb6453c43e9927dc688c8ac32e7cbbef24e67bc061e88d86cc8c011bf335c5c9f507d656b70fb02f5ef6b031b6"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/path-scurry/node_modules/lru-cache"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qt-lib",
+      "version": "1.19.0",
+      "bom-ref": "qt-python@1.19.0|qt-lib@1.19.0",
+      "purl": "pkg:npm/qt-lib@1.19.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/qt-lib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "bom-ref": "qt-python@1.19.0|shebang-command@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/shebang-command@2.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/shebang-command"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "bom-ref": "qt-python@1.19.0|shebang-regex@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/shebang-regex@3.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/shebang-regex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "signal-exit",
+      "version": "4.1.0",
+      "bom-ref": "qt-python@1.19.0|signal-exit@4.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/signal-exit@4.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/signal-exit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "smol-toml",
+      "version": "1.6.1",
+      "bom-ref": "qt-python@1.19.0|smol-toml@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/smol-toml@1.6.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/smol-toml/-/smol-toml-1.6.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "756506f05e6c2080115e28750d3690017e12b224d78489ca7f56eec5d63d0c88386583d92b99c63355512189846c36ec1eded44a8f7dc522c5bb943522a4e6b2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/smol-toml"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "string-width",
+      "version": "4.2.3",
+      "bom-ref": "qt-python@1.19.0|string-width@4.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/string-width@4.2.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/string-width-cjs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "emoji-regex",
+          "version": "8.0.0",
+          "bom-ref": "qt-python@1.19.0|string-width@4.2.3|emoji-regex@8.0.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/emoji-regex@8.0.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/string-width-cjs/node_modules/emoji-regex"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "string-width",
+      "version": "5.1.2",
+      "bom-ref": "qt-python@1.19.0|string-width@5.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/string-width@5.1.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/string-width"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "ansi-regex",
+          "version": "6.1.0",
+          "bom-ref": "qt-python@1.19.0|string-width@5.1.2|ansi-regex@6.1.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/ansi-regex@6.1.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/string-width/node_modules/ansi-regex"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "strip-ansi",
+          "version": "7.1.0",
+          "bom-ref": "qt-python@1.19.0|string-width@5.1.2|strip-ansi@7.1.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/strip-ansi@7.1.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/string-width/node_modules/strip-ansi"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "bom-ref": "qt-python@1.19.0|strip-ansi@6.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strip-ansi@6.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/strip-ansi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "bom-ref": "qt-python@1.19.0|strip-ansi@6.0.1#2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strip-ansi@6.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/strip-ansi-cjs"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "which",
+      "version": "2.0.2",
+      "bom-ref": "qt-python@1.19.0|which@2.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/which@2.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/which"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wrap-ansi",
+      "version": "7.0.0",
+      "bom-ref": "qt-python@1.19.0|wrap-ansi@7.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/wrap-ansi@7.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/wrap-ansi-cjs"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "ansi-styles",
+          "version": "4.3.0",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@7.0.0|ansi-styles@4.3.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/ansi-styles@4.3.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi-cjs/node_modules/ansi-styles"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "color-convert",
+          "version": "2.0.1",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@7.0.0|color-convert@2.0.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/color-convert@2.0.1",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi-cjs/node_modules/color-convert"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "color-name",
+          "version": "1.1.4",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@7.0.0|color-name@1.1.4",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/color-name@1.1.4",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi-cjs/node_modules/color-name"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "emoji-regex",
+          "version": "8.0.0",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@7.0.0|emoji-regex@8.0.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/emoji-regex@8.0.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi-cjs/node_modules/emoji-regex"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "string-width",
+          "version": "4.2.3",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@7.0.0|string-width@4.2.3",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/string-width@4.2.3",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi-cjs/node_modules/string-width"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wrap-ansi",
+      "version": "8.1.0",
+      "bom-ref": "qt-python@1.19.0|wrap-ansi@8.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/wrap-ansi@8.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/wrap-ansi"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "ansi-regex",
+          "version": "6.1.0",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@8.1.0|ansi-regex@6.1.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/ansi-regex@6.1.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi/node_modules/ansi-regex"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "ansi-styles",
+          "version": "6.2.1",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@8.1.0|ansi-styles@6.2.1",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/ansi-styles@6.2.1",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi/node_modules/ansi-styles"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "name": "strip-ansi",
+          "version": "7.1.0",
+          "bom-ref": "qt-python@1.19.0|wrap-ansi@8.1.0|strip-ansi@7.1.0",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/strip-ansi@7.1.0",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/wrap-ansi/node_modules/strip-ansi"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "queue-microtask",
+      "version": "1.2.3",
+      "bom-ref": "queue-microtask@1.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/queue-microtask@1.2.3",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/queue-microtask"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "readable-stream",
+      "version": "3.6.2",
+      "bom-ref": "readable-stream@3.6.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/readable-stream@3.6.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/readable-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "resolve-from",
+      "version": "4.0.0",
+      "bom-ref": "resolve-from@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/resolve-from@4.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/resolve-from"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "reusify",
+      "version": "1.0.4",
+      "bom-ref": "reusify@1.0.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/reusify@1.0.4",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/reusify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rimraf",
+      "version": "3.0.2",
+      "bom-ref": "rimraf@3.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/rimraf@3.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/rimraf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "run-parallel",
+      "version": "1.2.0",
+      "bom-ref": "run-parallel@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/run-parallel@1.2.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/run-parallel"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "bom-ref": "safe-buffer@5.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/safe-buffer@5.2.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/safe-buffer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "safe-stable-stringify",
+      "version": "2.5.0",
+      "bom-ref": "safe-stable-stringify@2.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/safe-stable-stringify@2.5.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/safe-stable-stringify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "bom-ref": "shebang-command@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/shebang-command@2.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/shebang-command"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "bom-ref": "shebang-regex@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/shebang-regex@3.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/shebang-regex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "simple-swizzle",
+      "version": "0.2.2",
+      "bom-ref": "simple-swizzle@0.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/simple-swizzle@0.2.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/simple-swizzle"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "stack-trace",
+      "version": "0.0.10",
+      "bom-ref": "stack-trace@0.0.10",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/stack-trace@0.0.10",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/stack-trace"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "string_decoder",
+      "version": "1.3.0",
+      "bom-ref": "string_decoder@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/string_decoder@1.3.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/string_decoder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "bom-ref": "strip-ansi@6.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strip-ansi@6.0.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/strip-ansi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strip-json-comments",
+      "version": "3.1.1",
+      "bom-ref": "strip-json-comments@3.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strip-json-comments@3.1.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/strip-json-comments"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "strnum",
+      "version": "2.3.0",
+      "bom-ref": "strnum@2.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strnum@2.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/strnum/-/strnum-2.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ba6b3728d778d8f1b2c79c5aa154ced668d4d5b1f7369638becad5967bfd3cd1aa423f3077bac9ea7132a4bac9ef3e6fc4ae513f4c8c2e8e89fc6b26eb60c8e5"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/strnum"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "supports-color",
+      "version": "7.2.0",
+      "bom-ref": "supports-color@7.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/supports-color@7.2.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/supports-color"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "text-hex",
+      "version": "1.0.0",
+      "bom-ref": "text-hex@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/text-hex@1.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/text-hex"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "text-table",
+      "version": "0.2.0",
+      "bom-ref": "text-table@0.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/text-table@0.2.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/text-table"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "triple-beam",
+      "version": "1.4.1",
+      "bom-ref": "triple-beam@1.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/triple-beam@1.4.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/triple-beam"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tslib",
+      "version": "2.8.1",
+      "bom-ref": "tslib@2.8.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "0BSD",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tslib@2.8.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a0916ef781d06fe29576e49440bef09e99aa9df98bb0e03f9c087a6fa107d30084a0ad3f98f79753a737c0a0d5f373243ae1cf447b525ca294f7d2016b34bfdb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/tslib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "type-check",
+      "version": "0.4.0",
+      "bom-ref": "type-check@0.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/type-check@0.4.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/type-check"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "type-fest",
+      "version": "0.20.2",
+      "bom-ref": "type-fest@0.20.2",
+      "licenses": [
+        {
+          "expression": "(MIT OR CC0-1.0)",
+          "acknowledgement": "declared"
+        }
+      ],
+      "purl": "pkg:npm/type-fest@0.20.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/type-fest"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typescript",
+      "version": "5.9.3",
+      "bom-ref": "typescript@5.9.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/typescript@5.9.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8e5d6f6733c38a72ebf5e52ddc9feded5e8580d130f508ef04f772b33f4a7d00c3e357d0ac2d98e2f290762694a454f86d795bd511e12e9a7cc2d9ba3394e04b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/typescript"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "undici-types",
+      "version": "6.21.0",
+      "bom-ref": "undici-types@6.21.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/undici-types@6.21.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8b00d9aa0d10006ae0f516afe47e27d0ceb87379a4479f5c27ac10a7eec2e2723482c984c5a79d6982cd3b8e1e4f802d041c236d38863cc96dd8c7744fd1fd25"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/undici-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "untildify",
+      "version": "5.0.0",
+      "bom-ref": "untildify@5.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/untildify@5.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/untildify"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uri-js",
+      "version": "4.4.1",
+      "bom-ref": "uri-js@4.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/uri-js@4.4.1",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/uri-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "util-deprecate",
+      "version": "1.0.2",
+      "bom-ref": "util-deprecate@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/util-deprecate@1.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/util-deprecate"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "which",
+      "version": "2.0.2",
+      "bom-ref": "which@2.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/which@2.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/which"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winston-transport-vscode",
+      "version": "0.1.0",
+      "bom-ref": "winston-transport-vscode@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/winston-transport-vscode@0.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/winston-transport-vscode"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winston-transport",
+      "version": "4.8.0",
+      "bom-ref": "winston-transport@4.8.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/winston-transport@4.8.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/winston-transport"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "readable-stream",
+          "version": "4.5.2",
+          "bom-ref": "winston-transport@4.8.0|readable-stream@4.5.2",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/readable-stream@4.5.2",
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "../qt-lib/node_modules/winston-transport/node_modules/readable-stream"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winston",
+      "version": "3.15.0",
+      "bom-ref": "winston@3.15.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/winston@3.15.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/winston"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "word-wrap",
+      "version": "1.2.5",
+      "bom-ref": "word-wrap@1.2.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/word-wrap@1.2.5",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/word-wrap"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wrappy",
+      "version": "1.0.2",
+      "bom-ref": "wrappy@1.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/wrappy@1.0.2",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/wrappy"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xml-naming",
+      "version": "0.1.0",
+      "bom-ref": "xml-naming@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xml-naming@0.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xml-naming/-/xml-naming-0.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "93c28ef61accc8d93ab545aa51f9131196decd146938d54ecd44e773ded59c2bf28fa4dff65c9447d1030087a254bbf9ea3b0c7285c4c235bc2afe723d8e7697"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/xml-naming"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "yocto-queue",
+      "version": "0.1.0",
+      "bom-ref": "yocto-queue@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/yocto-queue@0.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "../qt-lib/node_modules/yocto-queue"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "@colors/colors@1.6.0"
+    },
+    {
+      "ref": "@dabh/diagnostics@2.0.3",
+      "dependsOn": [
+        "colorspace@1.1.4",
+        "enabled@2.0.0",
+        "kuler@2.0.0"
+      ]
+    },
+    {
+      "ref": "@eslint-community/eslint-utils@4.4.0",
+      "dependsOn": [
+        "eslint-visitor-keys@3.4.3",
+        "eslint@8.57.1"
+      ]
+    },
+    {
+      "ref": "@eslint-community/regexpp@4.11.1"
+    },
+    {
+      "ref": "@humanwhocodes/config-array@0.13.0",
+      "dependsOn": [
+        "@humanwhocodes/object-schema@2.0.3",
+        "debug@4.3.7",
+        "minimatch@3.1.5"
+      ]
+    },
+    {
+      "ref": "@humanwhocodes/module-importer@1.0.1"
+    },
+    {
+      "ref": "@humanwhocodes/object-schema@2.0.3"
+    },
+    {
+      "ref": "@microsoft/1ds-core-js@4.3.11",
+      "dependsOn": [
+        "@microsoft/applicationinsights-core-js@3.3.11",
+        "@microsoft/applicationinsights-shims@3.0.1",
+        "@microsoft/dynamicproto-js@2.0.3",
+        "@nevware21/ts-async@0.5.5",
+        "@nevware21/ts-utils@0.15.0"
+      ]
+    },
+    {
+      "ref": "@microsoft/1ds-post-js@4.3.11",
+      "dependsOn": [
+        "@microsoft/1ds-core-js@4.3.11",
+        "@microsoft/applicationinsights-shims@3.0.1",
+        "@microsoft/dynamicproto-js@2.0.3",
+        "@nevware21/ts-async@0.5.5",
+        "@nevware21/ts-utils@0.15.0"
+      ]
+    },
+    {
+      "ref": "@microsoft/applicationinsights-channel-js@3.3.11",
+      "dependsOn": [
+        "@microsoft/applicationinsights-common@3.3.11",
+        "@microsoft/applicationinsights-core-js@3.3.11",
+        "@microsoft/applicationinsights-shims@3.0.1",
+        "@microsoft/dynamicproto-js@2.0.3",
+        "@nevware21/ts-async@0.5.5",
+        "@nevware21/ts-utils@0.15.0",
+        "tslib@2.8.1"
+      ]
+    },
+    {
+      "ref": "@microsoft/applicationinsights-common@3.3.11",
+      "dependsOn": [
+        "@microsoft/applicationinsights-core-js@3.3.11",
+        "@microsoft/applicationinsights-shims@3.0.1",
+        "@microsoft/dynamicproto-js@2.0.3",
+        "@nevware21/ts-utils@0.15.0",
+        "tslib@2.8.1"
+      ]
+    },
+    {
+      "ref": "@microsoft/applicationinsights-core-js@3.3.11",
+      "dependsOn": [
+        "@microsoft/applicationinsights-shims@3.0.1",
+        "@microsoft/dynamicproto-js@2.0.3",
+        "@nevware21/ts-async@0.5.5",
+        "@nevware21/ts-utils@0.15.0",
+        "tslib@2.8.1"
+      ]
+    },
+    {
+      "ref": "@microsoft/applicationinsights-shims@3.0.1",
+      "dependsOn": [
+        "@nevware21/ts-utils@0.15.0"
+      ]
+    },
+    {
+      "ref": "@microsoft/applicationinsights-web-basic@3.3.11",
+      "dependsOn": [
+        "@microsoft/applicationinsights-channel-js@3.3.11",
+        "@microsoft/applicationinsights-common@3.3.11",
+        "@microsoft/applicationinsights-core-js@3.3.11",
+        "@microsoft/applicationinsights-shims@3.0.1",
+        "@microsoft/dynamicproto-js@2.0.3",
+        "@nevware21/ts-async@0.5.5",
+        "@nevware21/ts-utils@0.15.0",
+        "tslib@2.8.1"
+      ]
+    },
+    {
+      "ref": "@microsoft/dynamicproto-js@2.0.3",
+      "dependsOn": [
+        "@nevware21/ts-utils@0.15.0"
+      ]
+    },
+    {
+      "ref": "@nevware21/ts-async@0.5.5",
+      "dependsOn": [
+        "@nevware21/ts-utils@0.15.0"
+      ]
+    },
+    {
+      "ref": "@nevware21/ts-utils@0.15.0"
+    },
+    {
+      "ref": "@nodable/entities@2.1.0"
+    },
+    {
+      "ref": "@nodelib/fs.scandir@2.1.5",
+      "dependsOn": [
+        "@nodelib/fs.stat@2.0.5",
+        "run-parallel@1.2.0"
+      ]
+    },
+    {
+      "ref": "@nodelib/fs.stat@2.0.5"
+    },
+    {
+      "ref": "@nodelib/fs.walk@1.2.8",
+      "dependsOn": [
+        "@nodelib/fs.scandir@2.1.5",
+        "fastq@1.17.1"
+      ]
+    },
+    {
+      "ref": "@types/async@3.2.24"
+    },
+    {
+      "ref": "@types/chai@5.2.2",
+      "dependsOn": [
+        "@types/deep-eql@4.0.2"
+      ]
+    },
+    {
+      "ref": "@types/deep-eql@4.0.2"
+    },
+    {
+      "ref": "@types/node@20.19.43",
+      "dependsOn": [
+        "undici-types@6.21.0"
+      ]
+    },
+    {
+      "ref": "@types/triple-beam@1.3.5"
+    },
+    {
+      "ref": "@types/vscode@1.94.0"
+    },
+    {
+      "ref": "@ungap/structured-clone@1.2.0"
+    },
+    {
+      "ref": "@vscode/extension-telemetry@1.5.1",
+      "dependsOn": [
+        "@microsoft/1ds-core-js@4.3.11",
+        "@microsoft/1ds-post-js@4.3.11",
+        "@microsoft/applicationinsights-web-basic@3.3.11"
+      ]
+    },
+    {
+      "ref": "abort-controller@3.0.0",
+      "dependsOn": [
+        "event-target-shim@5.0.1"
+      ]
+    },
+    {
+      "ref": "acorn-jsx@5.3.2",
+      "dependsOn": [
+        "acorn@8.14.0"
+      ]
+    },
+    {
+      "ref": "acorn@8.14.0"
+    },
+    {
+      "ref": "ajv@6.14.0",
+      "dependsOn": [
+        "fast-deep-equal@3.1.3",
+        "fast-json-stable-stringify@2.1.0",
+        "json-schema-traverse@0.4.1",
+        "uri-js@4.4.1"
+      ]
+    },
+    {
+      "ref": "ansi-regex@5.0.1"
+    },
+    {
+      "ref": "ansi-styles@4.3.0",
+      "dependsOn": [
+        "color-convert@2.0.1"
+      ]
+    },
+    {
+      "ref": "argparse@2.0.1"
+    },
+    {
+      "ref": "assertion-error@2.0.1"
+    },
+    {
+      "ref": "async@3.2.6"
+    },
+    {
+      "ref": "balanced-match@1.0.2"
+    },
+    {
+      "ref": "base64-js@1.5.1"
+    },
+    {
+      "ref": "brace-expansion@1.1.18",
+      "dependsOn": [
+        "balanced-match@1.0.2",
+        "concat-map@0.0.1"
+      ]
+    },
+    {
+      "ref": "buffer@6.0.3",
+      "dependsOn": [
+        "base64-js@1.5.1",
+        "ieee754@1.2.1"
+      ]
+    },
+    {
+      "ref": "callsites@3.1.0"
+    },
+    {
+      "ref": "chai@5.2.1",
+      "dependsOn": [
+        "assertion-error@2.0.1",
+        "check-error@2.1.1",
+        "deep-eql@5.0.2",
+        "loupe@3.1.4",
+        "pathval@2.0.1"
+      ]
+    },
+    {
+      "ref": "chalk@4.1.2",
+      "dependsOn": [
+        "ansi-styles@4.3.0",
+        "supports-color@7.2.0"
+      ]
+    },
+    {
+      "ref": "check-error@2.1.1"
+    },
+    {
+      "ref": "color-convert@2.0.1",
+      "dependsOn": [
+        "color-name@1.1.4"
+      ]
+    },
+    {
+      "ref": "color-name@1.1.4"
+    },
+    {
+      "ref": "color-string@1.9.1",
+      "dependsOn": [
+        "color-name@1.1.4",
+        "simple-swizzle@0.2.2"
+      ]
+    },
+    {
+      "ref": "color@3.2.1",
+      "dependsOn": [
+        "color-string@1.9.1",
+        "color@3.2.1|color-convert@1.9.3"
+      ]
+    },
+    {
+      "ref": "color@3.2.1|color-convert@1.9.3",
+      "dependsOn": [
+        "color@3.2.1|color-name@1.1.3"
+      ]
+    },
+    {
+      "ref": "color@3.2.1|color-name@1.1.3"
+    },
+    {
+      "ref": "colorspace@1.1.4",
+      "dependsOn": [
+        "color@3.2.1",
+        "text-hex@1.0.0"
+      ]
+    },
+    {
+      "ref": "concat-map@0.0.1"
+    },
+    {
+      "ref": "cross-spawn@7.0.6",
+      "dependsOn": [
+        "path-key@3.1.1",
+        "shebang-command@2.0.0",
+        "which@2.0.2"
+      ]
+    },
+    {
+      "ref": "debug@4.3.7",
+      "dependsOn": [
+        "ms@2.1.3"
+      ]
+    },
+    {
+      "ref": "deep-eql@5.0.2"
+    },
+    {
+      "ref": "deep-is@0.1.4"
+    },
+    {
+      "ref": "doctrine@3.0.0",
+      "dependsOn": [
+        "esutils@2.0.3"
+      ]
+    },
+    {
+      "ref": "enabled@2.0.0"
+    },
+    {
+      "ref": "escape-string-regexp@4.0.0"
+    },
+    {
+      "ref": "eslint-scope@7.2.2",
+      "dependsOn": [
+        "esrecurse@4.3.0",
+        "estraverse@5.3.0"
+      ]
+    },
+    {
+      "ref": "eslint-visitor-keys@3.4.3"
+    },
+    {
+      "ref": "eslint@8.57.1",
+      "dependsOn": [
+        "@eslint-community/eslint-utils@4.4.0",
+        "@eslint-community/regexpp@4.11.1",
+        "@humanwhocodes/config-array@0.13.0",
+        "@humanwhocodes/module-importer@1.0.1",
+        "@nodelib/fs.walk@1.2.8",
+        "@ungap/structured-clone@1.2.0",
+        "ajv@6.14.0",
+        "chalk@4.1.2",
+        "cross-spawn@7.0.6",
+        "debug@4.3.7",
+        "doctrine@3.0.0",
+        "escape-string-regexp@4.0.0",
+        "eslint-scope@7.2.2",
+        "eslint-visitor-keys@3.4.3",
+        "eslint@8.57.1|@eslint/eslintrc@2.1.4",
+        "eslint@8.57.1|@eslint/js@8.57.1",
+        "espree@9.6.1",
+        "esquery@1.6.0",
+        "esutils@2.0.3",
+        "fast-deep-equal@3.1.3",
+        "file-entry-cache@6.0.1",
+        "find-up@5.0.0",
+        "glob-parent@6.0.2",
+        "globals@13.24.0",
+        "graphemer@1.4.0",
+        "ignore@5.3.2",
+        "imurmurhash@0.1.4",
+        "is-glob@4.0.3",
+        "is-path-inside@3.0.3",
+        "js-yaml@4.3.1",
+        "json-stable-stringify-without-jsonify@1.0.1",
+        "levn@0.4.1",
+        "lodash.merge@4.6.2",
+        "minimatch@3.1.5",
+        "natural-compare@1.4.0",
+        "optionator@0.9.4",
+        "strip-ansi@6.0.1",
+        "text-table@0.2.0"
+      ]
+    },
+    {
+      "ref": "eslint@8.57.1|@eslint/eslintrc@2.1.4",
+      "dependsOn": [
+        "ajv@6.14.0",
+        "debug@4.3.7",
+        "espree@9.6.1",
+        "globals@13.24.0",
+        "ignore@5.3.2",
+        "import-fresh@3.3.0",
+        "js-yaml@4.3.1",
+        "minimatch@3.1.5",
+        "strip-json-comments@3.1.1"
+      ]
+    },
+    {
+      "ref": "eslint@8.57.1|@eslint/js@8.57.1"
+    },
+    {
+      "ref": "espree@9.6.1",
+      "dependsOn": [
+        "acorn-jsx@5.3.2",
+        "acorn@8.14.0",
+        "eslint-visitor-keys@3.4.3"
+      ]
+    },
+    {
+      "ref": "esquery@1.6.0",
+      "dependsOn": [
+        "estraverse@5.3.0"
+      ]
+    },
+    {
+      "ref": "esrecurse@4.3.0",
+      "dependsOn": [
+        "estraverse@5.3.0"
+      ]
+    },
+    {
+      "ref": "estraverse@5.3.0"
+    },
+    {
+      "ref": "esutils@2.0.3"
+    },
+    {
+      "ref": "event-target-shim@5.0.1"
+    },
+    {
+      "ref": "events@3.3.0"
+    },
+    {
+      "ref": "fast-deep-equal@3.1.3"
+    },
+    {
+      "ref": "fast-json-stable-stringify@2.1.0"
+    },
+    {
+      "ref": "fast-levenshtein@2.0.6"
+    },
+    {
+      "ref": "fast-xml-builder@1.2.0",
+      "dependsOn": [
+        "path-expression-matcher@1.5.0",
+        "xml-naming@0.1.0"
+      ]
+    },
+    {
+      "ref": "fast-xml-parser@5.8.0",
+      "dependsOn": [
+        "@nodable/entities@2.1.0",
+        "fast-xml-builder@1.2.0",
+        "path-expression-matcher@1.5.0",
+        "strnum@2.3.0",
+        "xml-naming@0.1.0"
+      ]
+    },
+    {
+      "ref": "fastq@1.17.1",
+      "dependsOn": [
+        "reusify@1.0.4"
+      ]
+    },
+    {
+      "ref": "fecha@4.2.3"
+    },
+    {
+      "ref": "file-entry-cache@6.0.1",
+      "dependsOn": [
+        "flat-cache@3.2.0"
+      ]
+    },
+    {
+      "ref": "find-up@5.0.0",
+      "dependsOn": [
+        "locate-path@6.0.0",
+        "path-exists@4.0.0"
+      ]
+    },
+    {
+      "ref": "flat-cache@3.2.0",
+      "dependsOn": [
+        "flatted@3.4.2",
+        "keyv@4.5.4",
+        "rimraf@3.0.2"
+      ]
+    },
+    {
+      "ref": "flatted@3.4.2"
+    },
+    {
+      "ref": "fn.name@1.1.0"
+    },
+    {
+      "ref": "fs.realpath@1.0.0"
+    },
+    {
+      "ref": "glob-parent@6.0.2",
+      "dependsOn": [
+        "is-glob@4.0.3"
+      ]
+    },
+    {
+      "ref": "glob@7.2.3",
+      "dependsOn": [
+        "fs.realpath@1.0.0",
+        "inflight@1.0.6",
+        "inherits@2.0.4",
+        "minimatch@3.1.5",
+        "once@1.4.0",
+        "path-is-absolute@1.0.1"
+      ]
+    },
+    {
+      "ref": "globals@13.24.0",
+      "dependsOn": [
+        "type-fest@0.20.2"
+      ]
+    },
+    {
+      "ref": "graphemer@1.4.0"
+    },
+    {
+      "ref": "has-flag@4.0.0"
+    },
+    {
+      "ref": "ieee754@1.2.1"
+    },
+    {
+      "ref": "ignore@5.3.2"
+    },
+    {
+      "ref": "import-fresh@3.3.0",
+      "dependsOn": [
+        "parent-module@1.0.1",
+        "resolve-from@4.0.0"
+      ]
+    },
+    {
+      "ref": "imurmurhash@0.1.4"
+    },
+    {
+      "ref": "inflight@1.0.6",
+      "dependsOn": [
+        "once@1.4.0",
+        "wrappy@1.0.2"
+      ]
+    },
+    {
+      "ref": "inherits@2.0.4"
+    },
+    {
+      "ref": "is-arrayish@0.3.2"
+    },
+    {
+      "ref": "is-extglob@2.1.1"
+    },
+    {
+      "ref": "is-glob@4.0.3",
+      "dependsOn": [
+        "is-extglob@2.1.1"
+      ]
+    },
+    {
+      "ref": "is-path-inside@3.0.3"
+    },
+    {
+      "ref": "is-stream@2.0.1"
+    },
+    {
+      "ref": "isexe@2.0.0"
+    },
+    {
+      "ref": "js-yaml@4.3.1",
+      "dependsOn": [
+        "argparse@2.0.1"
+      ]
+    },
+    {
+      "ref": "json-buffer@3.0.1"
+    },
+    {
+      "ref": "json-schema-traverse@0.4.1"
+    },
+    {
+      "ref": "json-stable-stringify-without-jsonify@1.0.1"
+    },
+    {
+      "ref": "keyv@4.5.4",
+      "dependsOn": [
+        "json-buffer@3.0.1"
+      ]
+    },
+    {
+      "ref": "kuler@2.0.0"
+    },
+    {
+      "ref": "levn@0.4.1",
+      "dependsOn": [
+        "prelude-ls@1.2.1",
+        "type-check@0.4.0"
+      ]
+    },
+    {
+      "ref": "locate-path@6.0.0",
+      "dependsOn": [
+        "p-locate@5.0.0"
+      ]
+    },
+    {
+      "ref": "lodash.merge@4.6.2"
+    },
+    {
+      "ref": "logform@2.6.1",
+      "dependsOn": [
+        "@colors/colors@1.6.0",
+        "@types/triple-beam@1.3.5",
+        "fecha@4.2.3",
+        "ms@2.1.3",
+        "safe-stable-stringify@2.5.0",
+        "triple-beam@1.4.1"
+      ]
+    },
+    {
+      "ref": "loupe@3.1.4"
+    },
+    {
+      "ref": "minimatch@3.1.5",
+      "dependsOn": [
+        "brace-expansion@1.1.18"
+      ]
+    },
+    {
+      "ref": "module-alias@2.2.3"
+    },
+    {
+      "ref": "ms@2.1.3"
+    },
+    {
+      "ref": "natural-compare@1.4.0"
+    },
+    {
+      "ref": "once@1.4.0",
+      "dependsOn": [
+        "wrappy@1.0.2"
+      ]
+    },
+    {
+      "ref": "one-time@1.0.0",
+      "dependsOn": [
+        "fn.name@1.1.0"
+      ]
+    },
+    {
+      "ref": "optionator@0.9.4",
+      "dependsOn": [
+        "deep-is@0.1.4",
+        "fast-levenshtein@2.0.6",
+        "levn@0.4.1",
+        "prelude-ls@1.2.1",
+        "type-check@0.4.0",
+        "word-wrap@1.2.5"
+      ]
+    },
+    {
+      "ref": "p-limit@3.1.0",
+      "dependsOn": [
+        "yocto-queue@0.1.0"
+      ]
+    },
+    {
+      "ref": "p-locate@5.0.0",
+      "dependsOn": [
+        "p-limit@3.1.0"
+      ]
+    },
+    {
+      "ref": "parent-module@1.0.1",
+      "dependsOn": [
+        "callsites@3.1.0"
+      ]
+    },
+    {
+      "ref": "path-exists@4.0.0"
+    },
+    {
+      "ref": "path-expression-matcher@1.5.0"
+    },
+    {
+      "ref": "path-is-absolute@1.0.1"
+    },
+    {
+      "ref": "path-key@3.1.1"
+    },
+    {
+      "ref": "pathval@2.0.1"
+    },
+    {
+      "ref": "prelude-ls@1.2.1"
+    },
+    {
+      "ref": "prettier@3.3.3"
+    },
+    {
+      "ref": "process@0.11.10"
+    },
+    {
+      "ref": "punycode@2.3.1"
+    },
+    {
+      "ref": "qt-python@1.19.0",
+      "dependsOn": [
+        "qt-python@1.19.0|@vscode/python-extension@1.0.5",
+        "qt-python@1.19.0|command-exists@1.2.9",
+        "qt-python@1.19.0|glob@12.0.0",
+        "qt-python@1.19.0|lodash@4.18.1",
+        "qt-python@1.19.0|module-alias@2.2.3",
+        "qt-python@1.19.0|qt-lib@1.19.0",
+        "qt-python@1.19.0|smol-toml@1.6.1"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|@isaacs/cliui@8.0.2",
+      "dependsOn": [
+        "qt-python@1.19.0|@isaacs/cliui@8.0.2|strip-ansi@7.1.0",
+        "qt-python@1.19.0|string-width@4.2.3",
+        "qt-python@1.19.0|string-width@5.1.2",
+        "qt-python@1.19.0|strip-ansi@6.0.1#2",
+        "qt-python@1.19.0|wrap-ansi@7.0.0",
+        "qt-python@1.19.0|wrap-ansi@8.1.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|@isaacs/cliui@8.0.2|ansi-regex@6.1.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|@isaacs/cliui@8.0.2|strip-ansi@7.1.0",
+      "dependsOn": [
+        "qt-python@1.19.0|@isaacs/cliui@8.0.2|ansi-regex@6.1.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|@vscode/python-extension@1.0.5"
+    },
+    {
+      "ref": "qt-python@1.19.0|ansi-regex@5.0.1"
+    },
+    {
+      "ref": "qt-python@1.19.0|command-exists@1.2.9"
+    },
+    {
+      "ref": "qt-python@1.19.0|cross-spawn@7.0.6",
+      "dependsOn": [
+        "qt-python@1.19.0|path-key@3.1.1",
+        "qt-python@1.19.0|shebang-command@2.0.0",
+        "qt-python@1.19.0|which@2.0.2"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|eastasianwidth@0.2.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|emoji-regex@9.2.2"
+    },
+    {
+      "ref": "qt-python@1.19.0|foreground-child@3.3.1",
+      "dependsOn": [
+        "qt-python@1.19.0|cross-spawn@7.0.6",
+        "qt-python@1.19.0|signal-exit@4.1.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|glob@12.0.0",
+      "dependsOn": [
+        "qt-python@1.19.0|foreground-child@3.3.1",
+        "qt-python@1.19.0|glob@12.0.0|minimatch@10.2.4",
+        "qt-python@1.19.0|jackspeak@4.1.1",
+        "qt-python@1.19.0|minipass@7.1.2",
+        "qt-python@1.19.0|package-json-from-dist@1.0.1",
+        "qt-python@1.19.0|path-scurry@2.0.1"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|glob@12.0.0|balanced-match@4.0.4"
+    },
+    {
+      "ref": "qt-python@1.19.0|glob@12.0.0|brace-expansion@5.0.9",
+      "dependsOn": [
+        "qt-python@1.19.0|glob@12.0.0|balanced-match@4.0.4"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|glob@12.0.0|minimatch@10.2.4",
+      "dependsOn": [
+        "qt-python@1.19.0|glob@12.0.0|brace-expansion@5.0.9"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|is-fullwidth-code-point@3.0.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|isexe@2.0.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|jackspeak@4.1.1",
+      "dependsOn": [
+        "qt-python@1.19.0|@isaacs/cliui@8.0.2"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|lodash@4.18.1"
+    },
+    {
+      "ref": "qt-python@1.19.0|minipass@7.1.2"
+    },
+    {
+      "ref": "qt-python@1.19.0|module-alias@2.2.3"
+    },
+    {
+      "ref": "qt-python@1.19.0|package-json-from-dist@1.0.1"
+    },
+    {
+      "ref": "qt-python@1.19.0|path-key@3.1.1"
+    },
+    {
+      "ref": "qt-python@1.19.0|path-scurry@2.0.1",
+      "dependsOn": [
+        "qt-python@1.19.0|minipass@7.1.2",
+        "qt-python@1.19.0|path-scurry@2.0.1|lru-cache@11.2.2"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|path-scurry@2.0.1|lru-cache@11.2.2"
+    },
+    {
+      "ref": "qt-python@1.19.0|qt-lib@1.19.0",
+      "dependsOn": [
+        "@types/async@3.2.24",
+        "@types/chai@5.2.2",
+        "@types/node@20.19.43",
+        "@types/vscode@1.94.0",
+        "@vscode/extension-telemetry@1.5.1",
+        "async@3.2.6",
+        "chai@5.2.1",
+        "eslint@8.57.1",
+        "fast-xml-parser@5.8.0",
+        "module-alias@2.2.3",
+        "prettier@3.3.3",
+        "typescript@5.9.3",
+        "untildify@5.0.0",
+        "winston-transport-vscode@0.1.0",
+        "winston@3.15.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|shebang-command@2.0.0",
+      "dependsOn": [
+        "qt-python@1.19.0|shebang-regex@3.0.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|shebang-regex@3.0.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|signal-exit@4.1.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|smol-toml@1.6.1"
+    },
+    {
+      "ref": "qt-python@1.19.0|string-width@4.2.3",
+      "dependsOn": [
+        "qt-python@1.19.0|is-fullwidth-code-point@3.0.0",
+        "qt-python@1.19.0|string-width@4.2.3|emoji-regex@8.0.0",
+        "qt-python@1.19.0|strip-ansi@6.0.1"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|string-width@4.2.3|emoji-regex@8.0.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|string-width@5.1.2",
+      "dependsOn": [
+        "qt-python@1.19.0|eastasianwidth@0.2.0",
+        "qt-python@1.19.0|emoji-regex@9.2.2",
+        "qt-python@1.19.0|string-width@5.1.2|strip-ansi@7.1.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|string-width@5.1.2|ansi-regex@6.1.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|string-width@5.1.2|strip-ansi@7.1.0",
+      "dependsOn": [
+        "qt-python@1.19.0|string-width@5.1.2|ansi-regex@6.1.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|strip-ansi@6.0.1",
+      "dependsOn": [
+        "qt-python@1.19.0|ansi-regex@5.0.1"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|strip-ansi@6.0.1#2",
+      "dependsOn": [
+        "qt-python@1.19.0|ansi-regex@5.0.1"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|which@2.0.2",
+      "dependsOn": [
+        "qt-python@1.19.0|isexe@2.0.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@7.0.0",
+      "dependsOn": [
+        "qt-python@1.19.0|strip-ansi@6.0.1",
+        "qt-python@1.19.0|wrap-ansi@7.0.0|ansi-styles@4.3.0",
+        "qt-python@1.19.0|wrap-ansi@7.0.0|string-width@4.2.3"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@7.0.0|ansi-styles@4.3.0",
+      "dependsOn": [
+        "qt-python@1.19.0|wrap-ansi@7.0.0|color-convert@2.0.1"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@7.0.0|color-convert@2.0.1",
+      "dependsOn": [
+        "qt-python@1.19.0|wrap-ansi@7.0.0|color-name@1.1.4"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@7.0.0|color-name@1.1.4"
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@7.0.0|emoji-regex@8.0.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@7.0.0|string-width@4.2.3",
+      "dependsOn": [
+        "qt-python@1.19.0|is-fullwidth-code-point@3.0.0",
+        "qt-python@1.19.0|strip-ansi@6.0.1",
+        "qt-python@1.19.0|wrap-ansi@7.0.0|emoji-regex@8.0.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@8.1.0",
+      "dependsOn": [
+        "qt-python@1.19.0|string-width@5.1.2",
+        "qt-python@1.19.0|wrap-ansi@8.1.0|ansi-styles@6.2.1",
+        "qt-python@1.19.0|wrap-ansi@8.1.0|strip-ansi@7.1.0"
+      ]
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@8.1.0|ansi-regex@6.1.0"
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@8.1.0|ansi-styles@6.2.1"
+    },
+    {
+      "ref": "qt-python@1.19.0|wrap-ansi@8.1.0|strip-ansi@7.1.0",
+      "dependsOn": [
+        "qt-python@1.19.0|wrap-ansi@8.1.0|ansi-regex@6.1.0"
+      ]
+    },
+    {
+      "ref": "queue-microtask@1.2.3"
+    },
+    {
+      "ref": "readable-stream@3.6.2",
+      "dependsOn": [
+        "inherits@2.0.4",
+        "string_decoder@1.3.0",
+        "util-deprecate@1.0.2"
+      ]
+    },
+    {
+      "ref": "resolve-from@4.0.0"
+    },
+    {
+      "ref": "reusify@1.0.4"
+    },
+    {
+      "ref": "rimraf@3.0.2",
+      "dependsOn": [
+        "glob@7.2.3"
+      ]
+    },
+    {
+      "ref": "run-parallel@1.2.0",
+      "dependsOn": [
+        "queue-microtask@1.2.3"
+      ]
+    },
+    {
+      "ref": "safe-buffer@5.2.1"
+    },
+    {
+      "ref": "safe-stable-stringify@2.5.0"
+    },
+    {
+      "ref": "shebang-command@2.0.0",
+      "dependsOn": [
+        "shebang-regex@3.0.0"
+      ]
+    },
+    {
+      "ref": "shebang-regex@3.0.0"
+    },
+    {
+      "ref": "simple-swizzle@0.2.2",
+      "dependsOn": [
+        "is-arrayish@0.3.2"
+      ]
+    },
+    {
+      "ref": "stack-trace@0.0.10"
+    },
+    {
+      "ref": "string_decoder@1.3.0",
+      "dependsOn": [
+        "safe-buffer@5.2.1"
+      ]
+    },
+    {
+      "ref": "strip-ansi@6.0.1",
+      "dependsOn": [
+        "ansi-regex@5.0.1"
+      ]
+    },
+    {
+      "ref": "strip-json-comments@3.1.1"
+    },
+    {
+      "ref": "strnum@2.3.0"
+    },
+    {
+      "ref": "supports-color@7.2.0",
+      "dependsOn": [
+        "has-flag@4.0.0"
+      ]
+    },
+    {
+      "ref": "text-hex@1.0.0"
+    },
+    {
+      "ref": "text-table@0.2.0"
+    },
+    {
+      "ref": "triple-beam@1.4.1"
+    },
+    {
+      "ref": "tslib@2.8.1"
+    },
+    {
+      "ref": "type-check@0.4.0",
+      "dependsOn": [
+        "prelude-ls@1.2.1"
+      ]
+    },
+    {
+      "ref": "type-fest@0.20.2"
+    },
+    {
+      "ref": "typescript@5.9.3"
+    },
+    {
+      "ref": "undici-types@6.21.0"
+    },
+    {
+      "ref": "untildify@5.0.0"
+    },
+    {
+      "ref": "uri-js@4.4.1",
+      "dependsOn": [
+        "punycode@2.3.1"
+      ]
+    },
+    {
+      "ref": "util-deprecate@1.0.2"
+    },
+    {
+      "ref": "which@2.0.2",
+      "dependsOn": [
+        "isexe@2.0.0"
+      ]
+    },
+    {
+      "ref": "winston-transport-vscode@0.1.0",
+      "dependsOn": [
+        "logform@2.6.1",
+        "triple-beam@1.4.1",
+        "winston-transport@4.8.0",
+        "winston@3.15.0"
+      ]
+    },
+    {
+      "ref": "winston-transport@4.8.0",
+      "dependsOn": [
+        "logform@2.6.1",
+        "triple-beam@1.4.1",
+        "winston-transport@4.8.0|readable-stream@4.5.2"
+      ]
+    },
+    {
+      "ref": "winston-transport@4.8.0|readable-stream@4.5.2",
+      "dependsOn": [
+        "abort-controller@3.0.0",
+        "buffer@6.0.3",
+        "events@3.3.0",
+        "process@0.11.10",
+        "string_decoder@1.3.0"
+      ]
+    },
+    {
+      "ref": "winston@3.15.0",
+      "dependsOn": [
+        "@colors/colors@1.6.0",
+        "@dabh/diagnostics@2.0.3",
+        "async@3.2.6",
+        "is-stream@2.0.1",
+        "logform@2.6.1",
+        "one-time@1.0.0",
+        "readable-stream@3.6.2",
+        "safe-stable-stringify@2.5.0",
+        "stack-trace@0.0.10",
+        "triple-beam@1.4.1",
+        "winston-transport@4.8.0"
+      ]
+    },
+    {
+      "ref": "word-wrap@1.2.5"
+    },
+    {
+      "ref": "wrappy@1.0.2"
+    },
+    {
+      "ref": "xml-naming@0.1.0"
+    },
+    {
+      "ref": "yocto-queue@0.1.0"
+    }
+  ]
+}
