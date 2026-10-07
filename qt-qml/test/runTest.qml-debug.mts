@@ -14,6 +14,10 @@ import {
   verifyQtCppVsix
 } from './runTestHelper.mjs';
 import type { ExtensionInstallInfo } from 'qt-lib/src/test-vscode-install.ts';
+import {
+  resolveVSCodeExecutable,
+  getSharedVSCodeCachePath
+} from '../../qt-lib/src/test-vscode-install.js';
 
 const IsWindows = process.platform === 'win32';
 
@@ -31,7 +35,11 @@ async function main() {
     );
 
     // Download VS Code and resolve CLI/dirs using shared helper
-    const vscodeExecutablePath = await downloadAndUnzipVSCode();
+    const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
+      cachePath
+    );
     const { qtRoot, localQtCoreVsix, cli, args, userDataDir } =
       await setupTestInfrastructure(vscodeExecutablePath);
 
@@ -80,6 +88,7 @@ async function main() {
     // Run the integration tests
     try {
       await runTests({
+        vscodeExecutablePath,
         launchArgs: [tmpProject, '--disable-workspace-trust'],
         extensionDevelopmentPath,
         extensionTestsPath

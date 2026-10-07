@@ -51,7 +51,14 @@ function main() {
   }
   const script = path.join(extensionRoot, 'scripts', 'install-ext.ts');
   if (targetExtension === 'all') {
-    const extensions = ['qt-core', 'qt-cpp', 'qt-qml', 'qt-ui', 'qt-python'];
+    const extensions = [
+      'qt-core',
+      'qt-cpp',
+      'qt-qml',
+      'qt-ui',
+      'qt-python',
+      'qt-csharp'
+    ];
     for (const ext of extensions) {
       const targetRoot = path.join(extensionRoot, ext);
       execSync(

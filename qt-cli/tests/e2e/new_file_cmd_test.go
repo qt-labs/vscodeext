@@ -19,6 +19,7 @@ type NewFileCmdTestData struct {
 func TestNewFileCmd(t *testing.T) {
 	allTestData := []NewFileCmdTestData{
 		{"@types/qml", "myitem", "types_qml"},
+		{"@types/qml/qtbridge", "myitem", "types_qml_qtbridge"},
 		{"@types/qrc", "myasset", "types_qrc"},
 		{"@types/ui", "myui", "types_ui"},
 		{"@cpp/class", "MyClass", "cpp_class"},

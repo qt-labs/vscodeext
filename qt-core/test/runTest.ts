@@ -12,8 +12,10 @@ import {
 } from '@vscode/test-electron';
 
 import {
-  parseVSCodeDirs,
-  getDebugLevel
+  resolveVSCodeExecutable,
+  getDebugLevel,
+  getSharedVSCodeCachePath,
+  parseVSCodeDirs
 } from '../../qt-lib/src/test-vscode-install.js';
 
 async function main() {
@@ -26,7 +28,11 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
-    const vscodeExecutablePath = await downloadAndUnzipVSCode();
+    const cachePath = getSharedVSCodeCachePath(extensionDevelopmentPath);
+    const vscodeExecutablePath = resolveVSCodeExecutable(
+      await downloadAndUnzipVSCode({ cachePath }),
+      cachePath
+    );
     const [cli, ...args] =
       resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
@@ -50,6 +56,7 @@ async function main() {
 
     // Download VS Code, unzip it and run the integration test
     await runTests({
+      vscodeExecutablePath,
       launchArgs,
       extensionDevelopmentPath,
       extensionTestsPath

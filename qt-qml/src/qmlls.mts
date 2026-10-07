@@ -28,6 +28,7 @@ import { coreAPI, projectManager } from '@/extension.mjs';
 import { EXTENSION_ID } from '@/constants.js';
 import * as installer from '@/installer.mjs';
 import { QmllsOperationType } from '@/qmlls-queue.mjs';
+import type { QtBridgeQmllsSessionConfig } from '@/qtbridge-qmlls-update.mjs';
 
 const logger = createLogger('qmlls');
 const QMLLS_CONFIG = `${EXTENSION_ID}.qmlls`;
@@ -49,6 +50,33 @@ export enum DecisionCode {
 enum QmllsStatus {
   running,
   stopped
+}
+
+function normalizeQmllsPath(filePath: string | undefined): string | undefined {
+  if (!filePath) {
+    return undefined;
+  }
+
+  const trimmedPath = filePath.trim();
+  if (!trimmedPath) {
+    return undefined;
+  }
+
+  let normalizedPath = path.normalize(trimmedPath).replace(/\\/g, '/');
+  if (/^[A-Za-z]:\//.test(normalizedPath)) {
+    normalizedPath = `${normalizedPath[0]?.toUpperCase() ?? ''}${normalizedPath.slice(1)}`;
+  }
+
+  const isWindowsDriveRoot = /^[A-Za-z]:\/$/.test(normalizedPath);
+  if (
+    normalizedPath !== '/' &&
+    !isWindowsDriveRoot &&
+    normalizedPath.endsWith('/')
+  ) {
+    normalizedPath = normalizedPath.replace(/\/+$/, '');
+  }
+
+  return normalizedPath;
 }
 
 export async function setDoNotAskForDownloadingQmlls(value: boolean) {
@@ -215,6 +243,8 @@ export class Qmlls {
   private _client: LanguageClient | undefined;
   private _channel: vscode.OutputChannel | undefined;
   private _buildDir: string | undefined;
+  private _useNoCMakeCalls = false;
+  private _qtBridgeSessionConfigs: readonly QtBridgeQmllsSessionConfig[] = [];
 
   constructor(readonly _folder: vscode.WorkspaceFolder) {
     const eventHandler = vscode.workspace.onDidChangeConfiguration((event) => {
@@ -232,14 +262,37 @@ export class Qmlls {
     this._channel?.dispose();
   }
   set buildDir(buildDir: string | undefined) {
-    this._buildDir = buildDir;
+    this._buildDir = normalizeQmllsPath(buildDir);
   }
   get buildDir() {
     return this._buildDir;
   }
 
+  set useNoCMakeCalls(useNoCMakeCalls: boolean) {
+    this._useNoCMakeCalls = useNoCMakeCalls;
+  }
+
+  get useNoCMakeCalls() {
+    return this._useNoCMakeCalls;
+  }
+
+  set qtBridgeSessionConfigs(
+    qtBridgeSessionConfigs: readonly QtBridgeQmllsSessionConfig[]
+  ) {
+    this._qtBridgeSessionConfigs = qtBridgeSessionConfigs.map((config) => ({
+      projectSourceDir:
+        normalizeQmllsPath(config.projectSourceDir) ?? config.projectSourceDir,
+      buildDirs: config.buildDirs.map(
+        (buildDir) => normalizeQmllsPath(buildDir) ?? buildDir
+      )
+    }));
+  }
+
   addImportPath(importPath: string) {
-    this._importPaths.add(importPath);
+    const normalizedImportPath = normalizeQmllsPath(importPath);
+    if (normalizedImportPath) {
+      this._importPaths.add(normalizedImportPath);
+    }
   }
 
   get docsPath() {
@@ -247,11 +300,14 @@ export class Qmlls {
   }
 
   set docsPath(docsPath: string | undefined) {
-    this._docsPath = docsPath;
+    this._docsPath = normalizeQmllsPath(docsPath);
   }
 
   removeImportPath(importPath: string) {
-    this._importPaths.delete(importPath);
+    const normalizedImportPath = normalizeQmllsPath(importPath);
+    if (normalizedImportPath) {
+      this._importPaths.delete(normalizedImportPath);
+    }
   }
   clearImportPaths() {
     this._importPaths.clear();
@@ -465,7 +521,10 @@ export class Qmlls {
       }
 
       if (docsPath) {
-        args.push(`-d${docsPath}`);
+        const normalizedDocsPath = normalizeQmllsPath(docsPath);
+        if (normalizedDocsPath) {
+          args.push(`-d${normalizedDocsPath}`);
+        }
       }
 
       const toImportParam = (p: string) => {
@@ -474,19 +533,25 @@ export class Qmlls {
 
       const resolvedAdditionalImportPaths = additionalImportPaths.map(
         (importPath) => {
-          return resolveConfiguration(importPath);
+          return normalizeQmllsPath(resolveConfiguration(importPath));
         }
       );
 
+      const importPaths = new Set<string>();
       resolvedAdditionalImportPaths.forEach((importPath) => {
+        if (importPath) {
+          importPaths.add(importPath);
+        }
+      });
+
+      this._importPaths.forEach((importPath) => importPaths.add(importPath));
+
+      importPaths.forEach((importPath) => {
         args.push(toImportParam(importPath));
       });
 
-      this._importPaths.forEach((importPath) =>
-        args.push(toImportParam(importPath))
-      );
-
-      const useNoCMakeCalls = configs.get<boolean>('useNoCMakeCalls', false);
+      const useNoCMakeCalls =
+        this._useNoCMakeCalls || configs.get<boolean>('useNoCMakeCalls', false);
       if (useNoCMakeCalls) {
         args.push('--no-cmake-calls');
       }
@@ -520,6 +585,7 @@ export class Qmlls {
       .start()
       .then(async () => {
         await this._client?.setTrace(Trace.fromString(traceLsp));
+        await this.applyQtBridgePostStartNotifications();
 
         logger.info(
           `QML Language Server started for ${this._folder.name} ${qmllsPath}`
@@ -530,6 +596,94 @@ export class Qmlls {
         void vscode.window.showErrorMessage('Cannot start QML language server');
         logger.error(`LanguageClient has failed to start with ${qmllsPath}`);
       });
+  }
+
+  private async applyQtBridgePostStartNotifications() {
+    const client = this._client;
+    const sessionConfigs = this._qtBridgeSessionConfigs;
+    if (!client || sessionConfigs.length === 0) {
+      logger.info(
+        `Skipping Qt Bridge post-start notifications for ${this._folder.uri.fsPath}: ` +
+          `client=${String(client !== undefined)}; ` +
+          `sessionConfigs=${String(sessionConfigs.length)}`
+      );
+      return;
+    }
+
+    const addedFolders = sessionConfigs
+      .map((config) => vscode.Uri.file(config.projectSourceDir))
+      .filter(
+        (uri, index, uris) =>
+          uri.toString() !== this._folder.uri.toString() &&
+          uris.findIndex(
+            (candidate) => candidate.toString() === uri.toString()
+          ) === index
+      )
+      .map((uri) => ({
+        uri: uri.toString(),
+        name: path.basename(uri.fsPath)
+      }));
+    if (addedFolders.length > 0) {
+      logger.info(
+        `Sending workspace/didChangeWorkspaceFolders for Qt Bridge project source dirs: ` +
+          addedFolders.map((folder) => folder.uri).join(';')
+      );
+      await client.sendNotification('workspace/didChangeWorkspaceFolders', {
+        event: {
+          added: addedFolders,
+          removed: []
+        }
+      });
+    } else {
+      logger.info(
+        `Qt Bridge project source dirs already match workspace folder for ${this._folder.uri.fsPath}`
+      );
+    }
+
+    await this.sendQtBridgeBuildDirs(client, sessionConfigs);
+  }
+
+  private async sendQtBridgeBuildDirs(
+    client: LanguageClient,
+    sessionConfigs: readonly QtBridgeQmllsSessionConfig[]
+  ) {
+    logger.info(
+      `Sending $/addBuildDirs for ${this._folder.uri.fsPath}: ` +
+        sessionConfigs.flatMap((config) => config.buildDirs).join(';')
+    );
+    await client.sendNotification('$/addBuildDirs', {
+      buildDirsToSet: sessionConfigs.map((config) => ({
+        baseUri: vscode.Uri.file(config.projectSourceDir).toString(),
+        buildDirs: [...config.buildDirs]
+      }))
+    });
+  }
+
+  private async refreshQtBridgeBuildDirsInternal() {
+    const client = this._client;
+    const sessionConfigs = this._qtBridgeSessionConfigs;
+    if (!client?.isRunning() || sessionConfigs.length === 0) {
+      logger.info(
+        `Skipping Qt Bridge build-directory refresh for ${this._folder.uri.fsPath}: ` +
+          `clientRunning=${String(client?.isRunning() === true)}; ` +
+          `sessionConfigs=${String(sessionConfigs.length)}`
+      );
+      return;
+    }
+
+    // Recent qmlls versions re-read an already known .qmlls.build.ini when
+    // $/addBuildDirs is repeated. This refreshes generated QML state without
+    // restarting the server when its command-line inputs did not change.
+    await this.sendQtBridgeBuildDirs(client, sessionConfigs);
+  }
+
+  public async refreshQtBridgeBuildDirs() {
+    return projectManager.qmllsQueue.enqueue(
+      QmllsOperationType.Update,
+      async () => {
+        await this.refreshQtBridgeBuildDirsInternal();
+      }
+    );
   }
 
   public async stop() {

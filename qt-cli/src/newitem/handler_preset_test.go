@@ -48,8 +48,10 @@ func TestHandler_GetPresetById(t *testing.T) {
 		{"@projects/cpp/console", http.StatusOK},
 		{"@projects/cpp/qtquick", http.StatusOK},
 		{"@projects/cpp/qwidget", http.StatusOK},
+		{"@projects/csharp/qtbridge", http.StatusOK},
 		{"@cpp/class", http.StatusOK},
 		{"@types/qml", http.StatusOK},
+		{"@types/qml/qtbridge", http.StatusOK},
 		{"@types/qrc", http.StatusOK},
 		{"@types/ui", http.StatusOK},
 
