@@ -507,13 +507,43 @@ export class CppProject implements Project {
         const refinedFragments = filteredFragment.map((fragment) => {
           // Remove the path and extension and get the name without lib prefix
           const name = path.parse(fragment).name;
-          if (buildType === 'Debug' || buildType === 'RelWithDebInfo') {
-            // Check if the name contains 'd' at the end
-            if (name.endsWith('d')) {
-              return name.slice(0, -1);
+
+          let refinedName = name;
+
+          // Remove "lib" prefix
+          if (refinedName.startsWith('lib')) {
+            refinedName = refinedName.slice(3);
+          }
+
+          // Remove debug suffix
+          if (
+            (buildType === 'Debug' || buildType === 'RelWithDebInfo') &&
+            refinedName.endsWith('d')
+          ) {
+            refinedName = refinedName.slice(0, -1);
+          }
+
+          // Remove architecture suffix
+          const architectureSuffixes = [
+            '_arm64-v8a',
+            '_armeabi-v7a',
+            '_x86_64',
+            '_x86'
+          ];
+
+          for (const suffix of architectureSuffixes) {
+            if (refinedName.endsWith(suffix)) {
+              refinedName = refinedName.slice(0, -suffix.length);
+              break;
             }
           }
-          return name;
+          // Qt6Xml_TP should be refined to Qt6Xml
+          // We should remove any trailing suffixes after an underscore
+          const underscoreIndex = refinedName.indexOf('_');
+          if (underscoreIndex !== -1) {
+            refinedName = refinedName.slice(0, underscoreIndex);
+          }
+          return refinedName;
         });
         frameworks.push(...refinedFragments);
       }
