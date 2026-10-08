@@ -12,7 +12,10 @@ function main() {
   program.parse(process.argv);
   const options = program.opts();
   const extensionRoot = path.resolve(__dirname, '../');
-  const targetExtensionRoot = path.join(extensionRoot, options.dir as string);
+  const targetExtensionRoot = path.resolve(
+    extensionRoot,
+    options.dir as string
+  );
   const exclude = options.exclude as string;
   const temp = path.join(targetExtensionRoot, 'ThirdPartyNotices_temp.txt');
   let isCatchedError = false;
