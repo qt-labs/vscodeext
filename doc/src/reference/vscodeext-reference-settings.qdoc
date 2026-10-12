@@ -145,6 +145,12 @@
         \li \uicontrol {Args}
         \li Default command-line arguments to pass to the application when you
             start it from the command palette.
+    \row
+        \li \uicontrol {Hot Reload}
+        \li Update changed components in place and keep the application state
+            when the application runs with Qt 6.12 or later. When cleared, or
+            with older Qt versions, every change reloads the whole
+            application.
     \endtable
 
     \section2 \QP settings

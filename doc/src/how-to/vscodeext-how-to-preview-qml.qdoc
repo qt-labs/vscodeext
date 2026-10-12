@@ -17,6 +17,22 @@
     \image {vscodeext-qml-preview.gif} {Previewing a Qt Quick application}
     \caption Previewing a Qt Quick application.
 
+    \section1 Hot reload
+
+    When the application runs with Qt 6.12 or later, the preview uses hot
+    reload: the components you change are updated in place and the
+    application keeps its state. In addition, input events, such as mouse
+    clicks and key presses, are recorded and replayed to restore the
+    application state if a change cannot be applied in place and the
+    application has to restart.
+
+    Older Qt versions reload the whole application on every change.
+
+    To always reload the whole application on every change, select
+    \uicontrol {Qt: Open Qt Extension settings} >
+    \uicontrol {Qt QML Configuration}, and clear
+    \uicontrol {Preview: Hot Reload}.
+
     \section1 Preview the whole application
 
     To launch and preview a Qt Quick application:
@@ -60,7 +76,7 @@
         \li In the \uicontrol Terminal, start the application with the following
             arguments:
             \badcode
-            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:QmlPreview,DebugTranslation
+            <your_executable_path> -qmljsdebugger=host:<IP_address>,port:<port_number>,block,services:QmlPreview,DebugTranslation,CanvasFrameRate,EventReplay
             \endcode
             Where \e IP_address is the IP address of the host where the
             application is running and \e port_number is the debugging port.
@@ -86,6 +102,14 @@
 
     To reload the preview window, go to \uicontrol {Command Palette}, and select
     \uicontrol {Qt: Reload QML Preview}.
+
+    \section1 Change the animation speed
+
+    The status bar shows the current animation speed of the preview, for
+    example \c 1x for normal speed. To change it, select the status bar item,
+    or go to \uicontrol {Command Palette}, and select
+    \uicontrol {Qt: Set QML Preview Animation Speed}. Pick a preset or enter
+    a custom factor. The speed is kept when the preview application restarts.
 
     \sa {Qt settings}
 */

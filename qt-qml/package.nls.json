@@ -9,6 +9,7 @@
   "qt-qml.command.stopQmlPreview.title": "Stop QML Preview",
   "qt-qml.command.reloadQmlPreview.title": "Reload QML Preview",
   "qt-qml.command.clearQmlPreviewCache.title": "Clear QML Preview Cache",
+  "qt-qml.command.setQmlPreviewAnimationSpeed.title": "Set QML Preview Animation Speed",
   "qt-qml.command.startQmlProfiler.title": "Profile QML application",
   "qt-qml.command.attachQmlProfiler.title": "Attach to running QML application for profiling",
   "qt-qml.command.stopQmlProfiler.title": "Stop QML Profiler",

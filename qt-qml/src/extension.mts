@@ -41,6 +41,7 @@ import {
   registerStopQmlPreviewCommand,
   registerReloadQmlPreviewCommand,
   registerClearQmlPreviewCacheCommand,
+  registerSetQmlPreviewAnimationSpeedCommand,
   disposePreviewManager
 } from '@/preview/preview.mjs';
 import { isQtBridgePreviewAvailable } from '@/preview/qtbridge-preview-project.mjs';
@@ -113,6 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerStopQmlPreviewCommand(),
     registerReloadQmlPreviewCommand(),
     registerClearQmlPreviewCacheCommand(),
+    registerSetQmlPreviewAnimationSpeedCommand(),
     registerStartQmlProfilerCommand(),
     registerAttachQmlProfilerCommand(),
     registerStopQmlProfilerCommand(),

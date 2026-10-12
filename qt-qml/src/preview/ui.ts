@@ -18,6 +18,7 @@ interface FpsDisplayInfo {
 /* eslint-disable @typescript-eslint/class-methods-use-this */
 export class QmlPreviewUI {
   private readonly _fpsStatusItem: vscode.StatusBarItem;
+  private readonly _speedStatusItem: vscode.StatusBarItem;
   private _lastValidFps = 0;
   private _progressResolve: (() => void) | undefined;
 
@@ -27,6 +28,62 @@ export class QmlPreviewUI {
       100
     );
     this._fpsStatusItem.name = 'QML Preview FPS';
+
+    this._speedStatusItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      99
+    );
+    this._speedStatusItem.name = 'QML Preview Animation Speed';
+    this._speedStatusItem.command = 'qt-qml.setQmlPreviewAnimationSpeed';
+    this.updateAnimationSpeed(1);
+  }
+
+  updateAnimationSpeed(speed: number) {
+    this._speedStatusItem.text = `$(watch) ${speed.toString()}x`;
+    this._speedStatusItem.tooltip = `QML Preview animation speed: ${speed.toString()}x\nClick to change`;
+  }
+
+  showAnimationSpeedStatus() {
+    this._speedStatusItem.show();
+  }
+
+  hideAnimationSpeedStatus() {
+    this._speedStatusItem.hide();
+  }
+
+  /**
+   * Ask for the animation speed factor, offering common presets.
+   */
+  async promptForAnimationSpeed(current: number) {
+    const presets = [0.1, 0.25, 0.5, 1, 2, 4];
+    const customItem: vscode.QuickPickItem = { label: 'Custom...' };
+    const presetItems = presets.map((preset): vscode.QuickPickItem => {
+      const label = `${preset.toString()}x`;
+      return preset === current ? { label, description: 'current' } : { label };
+    });
+    const picked = await vscode.window.showQuickPick(
+      [...presetItems, customItem],
+      { placeHolder: `Animation speed (current: ${current.toString()}x)` }
+    );
+    if (!picked) {
+      return undefined;
+    }
+    if (picked !== customItem) {
+      return presets[presetItems.indexOf(picked)];
+    }
+
+    const input = await vscode.window.showInputBox({
+      prompt: 'Enter the animation speed factor (1 is normal speed)',
+      value: current.toString(),
+      validateInput: (value) => {
+        const num = Number(value);
+        if (!Number.isFinite(num) || num <= 0 || num > 100) {
+          return 'Enter a number greater than 0 and at most 100';
+        }
+        return undefined;
+      }
+    });
+    return input === undefined ? undefined : Number(input);
   }
 
   updateFps(fps: FpsDisplayInfo) {
@@ -60,6 +117,7 @@ export class QmlPreviewUI {
   dispose() {
     this.removeWaitingForConnection();
     this._fpsStatusItem.dispose();
+    this._speedStatusItem.dispose();
   }
 
   showError(message: string) {
@@ -170,6 +228,18 @@ export class QmlPreviewUI {
     }
   }
 
+  showHotReloadFailed(reason: string) {
+    this.showWarning(
+      `QML Preview hot reload failed: ${reason}. Restarting the application...`
+    );
+  }
+
+  showHotReloadFailedAttached(reason: string) {
+    this.showWarning(
+      `QML Preview hot reload failed: ${reason}. Restart the application to recover.`
+    );
+  }
+
   showReloaded() {
     this.showInfo('QML Preview reloaded.');
   }
@@ -185,6 +255,7 @@ export class QmlPreviewUI {
       true
     );
     this.showFpsStatus();
+    this.showAnimationSpeedStatus();
   }
 
   setPreviewStopped() {
@@ -194,6 +265,7 @@ export class QmlPreviewUI {
       false
     );
     this.hideFpsStatus();
+    this.hideAnimationSpeedStatus();
   }
 
   async promptForHost() {
