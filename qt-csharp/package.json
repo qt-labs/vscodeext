@@ -2,7 +2,7 @@
   "name": "qt-csharp",
   "displayName": "Qt Bridge C#",
   "description": "Qt Bridge C# project support",
-  "version": "1.19.0",
+  "version": "1.17.1",
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
