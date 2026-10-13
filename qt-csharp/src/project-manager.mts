@@ -7,6 +7,7 @@ import {
   CoreKey,
   createLogger,
   getCoreApi,
+  resolveConfiguration,
   type CoreAPI,
   type QtBridgeMetadataChangeEvent,
   type QtBridgeProject
@@ -314,10 +315,11 @@ export class QtBridgeProjectManager implements vscode.Disposable {
   private getQtDirFallbacks(
     folder: vscode.WorkspaceFolder
   ): QtBridgeQtDirFallbacks {
-    const configuredQtDir = vscode.workspace
+    const qtDir = vscode.workspace
       .getConfiguration(EXTENSION_ID, folder.uri)
       .get<string>('qtDir')
       ?.trim();
+    const configuredQtDir = qtDir ? resolveConfiguration(qtDir) : undefined;
     const selectedQtPaths =
       this.coreApi?.getValue<string>(folder, CoreKey.SELECTED_QT_PATHS) ??
       this.coreApi?.getValue<string>(
