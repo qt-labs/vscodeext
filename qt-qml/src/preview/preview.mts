@@ -142,14 +142,14 @@ function getProjectType(
     folder,
     CoreKey.WORKSPACE_FEATURES
   );
+  if (isQtBridgePreviewAvailable(bridgeProject)) {
+    return 'bridge';
+  }
   if (features?.projectTypes.cmake) {
     return 'cmake';
   }
   if (features?.projectTypes.pyside) {
     return 'pyside';
-  }
-  if (isQtBridgePreviewAvailable(bridgeProject)) {
-    return 'bridge';
   }
 
   return undefined;
