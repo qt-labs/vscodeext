@@ -50,6 +50,9 @@ export interface QmlLaunchProject {
  * project therefore wins over CMake and PySide, unless the active file
  * belongs to the folder but to none of its Bridge projects.
  *
+ * A 'bridge' result without a project means that the folder has Bridge
+ * projects, but none of them has been built yet.
+ *
  * Returns undefined when the user cancelled the Bridge project selection.
  */
 export async function resolveQmlLaunchProject(
@@ -68,9 +71,15 @@ export async function resolveQmlLaunchProject(
       ? 'pyside'
       : undefined;
 
-  const projects = getQtBridgePreviewProjects(services.getProjects(folder));
+  const allProjects = services.getProjects(folder);
+  const projects = getQtBridgePreviewProjects(allProjects);
   if (projects.length === 0) {
-    return { type: otherType };
+    // Bridge projects without build metadata cannot be launched yet. Report
+    // them as Bridge projects so that the caller can ask for a build instead
+    // of falling back to CMake.
+    return {
+      type: otherType ?? (allProjects.length > 0 ? 'bridge' : undefined)
+    };
   }
 
   const activeProject = findActiveQtBridgePreviewProject(
