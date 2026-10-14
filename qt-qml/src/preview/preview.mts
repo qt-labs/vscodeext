@@ -27,11 +27,10 @@ import {
   spawnProgramForTool
 } from '@/utils.mts';
 import { QmlPreviewUI } from '@preview/ui.js';
-import { getQtBridgeProjects, QMLProject } from '@/project.mjs';
+import { QMLProject } from '@/project.mjs';
 import {
-  getQtBridgePreviewProjects,
-  isQtBridgePreviewAvailable,
-  selectQtBridgePreviewProject
+  resolveQmlLaunchProject,
+  type QmlLaunchProjectFeatures
 } from '@/preview/qtbridge-preview-project.mjs';
 
 const logger = createLogger('qml-preview');
@@ -128,31 +127,20 @@ async function resolveWorkspaceFolder(
 }
 
 /**
- * Determine the project type for the given workspace folder.
+ * Collect the project features that decide how to launch the preview.
  */
-function getProjectType(
-  folder: vscode.WorkspaceFolder,
-  bridgeProject?: QtBridgeProject
-): 'bridge' | 'cmake' | 'pyside' | undefined {
-  const project = projectManager.getProject(folder);
-  if (project?.pySideProject) {
-    return 'pyside';
-  }
+function getLaunchFeatures(
+  folder: vscode.WorkspaceFolder
+): QmlLaunchProjectFeatures {
   const features = coreAPI?.getValue<QtWorkspaceFeatures>(
     folder,
     CoreKey.WORKSPACE_FEATURES
   );
-  if (features?.projectTypes.cmake) {
-    return 'cmake';
-  }
-  if (features?.projectTypes.pyside) {
-    return 'pyside';
-  }
-  if (isQtBridgePreviewAvailable(bridgeProject)) {
-    return 'bridge';
-  }
-
-  return undefined;
+  return {
+    pySideProject: !!projectManager.getProject(folder)?.pySideProject,
+    cmake: features?.projectTypes.cmake === true,
+    pyside: features?.projectTypes.pyside === true
+  };
 }
 
 async function launchCMakePreview(qmlFile?: string) {
@@ -635,19 +623,16 @@ async function startQmlPreviewImpl(loadCurrentFile: boolean) {
     }
   }
 
-  let bridgeProject: QtBridgeProject | undefined;
-  let projectType = getProjectType(folder);
-  if (!projectType) {
-    const bridgeProjects = getQtBridgePreviewProjects(
-      getQtBridgeProjects(folder)
-    );
-    bridgeProject = await selectQtBridgePreviewProject(folder, activeUri);
-    if (bridgeProjects.length > 1 && !bridgeProject) {
-      logger.info('Qt Bridge project selection was cancelled');
-      return;
-    }
-    projectType = getProjectType(folder, bridgeProject);
+  const launchProject = await resolveQmlLaunchProject(
+    folder,
+    activeUri,
+    getLaunchFeatures(folder)
+  );
+  if (!launchProject) {
+    logger.info('Qt Bridge project selection was cancelled');
+    return;
   }
+  const { type: projectType, bridgeProject } = launchProject;
   logger.info(`Project type for ${folder.name}: ${projectType ?? 'unknown'}`);
 
   if (projectType === 'pyside') {
