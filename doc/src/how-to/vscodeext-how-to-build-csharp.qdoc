@@ -1,0 +1,62 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-to-build-csharp.html
+    \previouspage vscodeext-how-to-csharp.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-csharp
+
+    \title Build and run Qt Bridge for C# applications
+
+    A \l {Qt Bridge for C#} project is a regular .NET project. Build and run it
+    with the .NET command-line tools or with C# Dev Kit.
+
+    Before you build, make sure that the build finds a Qt installation. For
+    more information, see
+    \l {vscodeext-how-to-select-qt-csharp.html}
+    {Select Qt for Qt Bridge for C# projects}.
+
+    The first build takes longer, because it also generates and builds the
+    native code that connects C# and QML.
+
+    \section1 Build in the terminal
+
+    To build and run the application, enter the following commands in the
+    \uicontrol Terminal view:
+
+    \code [text]
+    dotnet build
+    dotnet run
+    \endcode
+
+    To build a particular configuration, add \c {-c}, for example
+    \c {dotnet build -c Release}.
+
+    \section1 Build with C# Dev Kit
+
+    If you installed the C# Dev Kit extension, you can also build the project
+    from the \uicontrol {Solution Explorer} view: right-click the project, and
+    select \uicontrol Build. To run or debug the application, press \key F5,
+    and select \uicontrol {C#} as the debugger.
+
+    C# Dev Kit builds the project outside the \uicontrol Terminal view, so it
+    does not get the \uicontrol {Qt Dir} setting. On Windows ARM64, Linux, and
+    macOS, set the \c QtDir environment variable before you start VS Code, or
+    set \c QtDir in the project.
+
+    \section1 Use the QML tools after the build
+
+    The build generates metadata that the QML language server, QML Preview,
+    and \QP need for your C# types and QML modules. After the first build,
+    the code completion in QML files knows the types that you expose from C#.
+
+    If you build the project in several configurations or for several target
+    frameworks, select the build that the QML tools should use. For more
+    information, see
+    \l {vscodeext-how-to-preview-csharp.html}
+    {Preview and profile Qt Bridge for C# applications}.
+
+    \sa {vscodeext-tutorials-qt-csharp.html}{Tutorial: Qt Bridge for C#}
+*/

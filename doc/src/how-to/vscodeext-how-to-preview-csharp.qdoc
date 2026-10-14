@@ -1,0 +1,76 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-to-preview-csharp.html
+    \previouspage vscodeext-how-to-csharp.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-csharp
+
+    \title Preview and profile Qt Bridge for C# applications
+
+    You can \l {Preview Qt Quick applications}{preview} and
+    \l {Profile QML code}{profile} the QML code of \l {Qt Bridge for C#}
+    applications in the same way as other Qt Quick applications. \QVSC starts
+    your C# application for you.
+
+    \section1 Build first
+
+    QML Preview and \QP need the metadata that building the project
+    generates. Build the project once before you start them. For more
+    information, see
+    \l {vscodeext-how-to-build-csharp.html}
+    {Build and run Qt Bridge for C# applications}.
+
+    If you start them before the first build, \QVSC asks you to build the
+    project first.
+
+    \section1 Preview QML files
+
+    To preview the QML file that is open in the editor:
+
+    \list
+        \li Select \inlineimage {preview-file.png} {Preview current QML file live}
+            on the editor toolbar.
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt: Preview current QML file live}.
+    \endlist
+
+    The changes you make to the QML code become visible in the preview when
+    you save the file. This applies to all QML files of the project, and the
+    preview always starts with the saved QML code, so you do not need to
+    build the project after changing QML code. Changes to the C# code and
+    new QML files take effect after you build the project again.
+
+    \section1 Profile the application
+
+    To profile the application, go to \uicontrol {Command Palette}, and select
+    \uicontrol {Qt: Profile QML application}.
+
+    \section1 Work with several projects
+
+    If a workspace folder contains several Qt Bridge for C# projects, \QVSC
+    uses the project that contains the file in the editor. If that does not
+    identify a project, it asks you to select one.
+
+    \section1 Select the build configuration
+
+    If you build a project in several configurations, such as \c Debug and
+    \c Release, or for several target frameworks, the project has QML metadata
+    for each of them. \QVSC asks you which one to use.
+
+    To select a different build later:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt Bridge C#: Select QML Build Metadata}.
+        \li Select the configuration and target framework.
+    \endlist
+
+    The QML language server, QML Preview, and \QP use the selected build. \QVSC
+    remembers the selection for the workspace.
+
+    \sa {vscodeext-how-to-select-qt-csharp.html}
+        {Select Qt for Qt Bridge for C# projects}
+*/
