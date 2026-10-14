@@ -42,6 +42,10 @@
       {
         "command": "qt-csharp.selectQmlMetadata",
         "title": "Qt Bridge C#: Select QML Build Metadata"
+      },
+      {
+        "command": "qt-csharp.selectQtDir",
+        "title": "Qt Bridge C#: Select Qt Installation"
       }
     ],
     "configuration": {
@@ -51,7 +55,7 @@
         "qt-csharp.qtDir": {
           "type": "string",
           "default": "",
-          "description": "Override the Qt installation used by Qt Bridge C# tooling.",
+          "markdownDescription": "Qt installation prefix (`QtDir`) for Qt Bridge C# projects. Used by the QML tooling and exported as `QtDir` to the integrated terminal, so that builds started there use the same Qt. Builds started elsewhere, for example by C# Dev Kit, still need `QtDir` in the environment or in the project.",
           "scope": "machine-overridable"
         }
       }
