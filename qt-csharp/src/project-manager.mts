@@ -50,6 +50,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
   private readonly metadataRefreshTimers = new Map<string, NodeJS.Timeout>();
   private readonly metadataRefreshVersions = new Map<string, number>();
   private readonly missingBuildQtWarnings = new Set<string>();
+  private readonly ambiguousMetadataPrompts = new Set<string>();
   private readonly projectsChanged = new vscode.EventEmitter<void>();
   private readonly metadataChanged =
     new vscode.EventEmitter<QtBridgeMetadataChangeEvent>();
@@ -176,7 +177,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
     return closest;
   }
 
-  async selectMetadata(): Promise<void> {
+  async selectMetadata(target?: QtBridgeProjectSnapshot): Promise<void> {
     const projects = [...this.projects.values()].filter(
       (project) => project.metadataCandidates.length > 0
     );
@@ -191,9 +192,11 @@ export class QtBridgeProjectManager implements vscode.Disposable {
     const activeProject = activeUri
       ? this.getProjectForUri(activeUri)
       : undefined;
-    let project = activeProject
-      ? this.projects.get(canonicalPath(activeProject.projectFile.fsPath))
-      : undefined;
+    let project =
+      target ??
+      (activeProject
+        ? this.projects.get(canonicalPath(activeProject.projectFile.fsPath))
+        : undefined);
     if (!project || project.metadataCandidates.length === 0) {
       if (projects.length === 1) {
         project = projects[0];
@@ -317,6 +320,29 @@ export class QtBridgeProjectManager implements vscode.Disposable {
     }
   }
 
+  // Without a selection, a project built in several configurations or target
+  // frameworks has no active metadata, and the QML tooling cannot use it.
+  // Ask once per project and session instead of failing silently.
+  private askForMetadataSelection(project: QtBridgeProjectSnapshot) {
+    const key = canonicalPath(project.projectFile.fsPath);
+    if (this.ambiguousMetadataPrompts.has(key)) {
+      return;
+    }
+    this.ambiguousMetadataPrompts.add(key);
+    const select = 'Select...';
+    void vscode.window
+      .showInformationMessage(
+        `${path.basename(project.projectFile.fsPath)} was built in several ` +
+          'configurations. Select the one to use for the QML tooling.',
+        select
+      )
+      .then(async (choice) => {
+        if (choice === select) {
+          await this.selectMetadata(project);
+        }
+      });
+  }
+
   // Point out projects whose build cannot find Qt, once per project and
   // session, before the first build fails with a less obvious error.
   private warnAboutMissingBuildQt(
@@ -416,6 +442,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
         `Multiple QML build metadata candidates are available for ${project.projectFile.fsPath}; ` +
           `run ${EXTENSION_ID}.selectQmlMetadata to select one`
       );
+      this.askForMetadataSelection(project);
     }
     this.watchMetadata(project, result.readyFiles);
     if (notify && result.metadata !== previous) {
