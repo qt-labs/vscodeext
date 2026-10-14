@@ -29,6 +29,8 @@ import {
 import { QmlPreviewUI } from '@preview/ui.js';
 import { QMLProject } from '@/project.mjs';
 import {
+  createQtBridgeResourceLookup,
+  createQtBridgeSourceRedirect,
   resolveQmlLaunchProject,
   type QmlLaunchProjectFeatures
 } from '@/preview/qtbridge-preview-project.mjs';
@@ -277,6 +279,10 @@ async function launchQtBridgePreview(
     }
 
     manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs);
+    manager.setSourceRedirect(
+      createQtBridgeSourceRedirect(metadata, path.dirname(launch.executable))
+    );
+    manager.setResourceLookup(createQtBridgeResourceLookup(metadata));
     const previewUrl = resolveQtBridgePreviewUrl(bridgeProject, qmlFile);
     if (qmlFile && previewUrl) {
       manager.registerLoadedFile(qmlFile, previewUrl);
