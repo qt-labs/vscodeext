@@ -13,6 +13,36 @@ export function normalizePathForComparison(filePath: string) {
   return IsWindows ? normalized.toLowerCase() : normalized;
 }
 
+/**
+ * Call `handler` once per key after `delayMs` without further calls for that
+ * key. A single save can arrive as several file change events within a few
+ * milliseconds, which would otherwise be handled several times.
+ */
+export function createKeyedDebouncer(
+  delayMs: number,
+  handler: (key: string) => void
+) {
+  const timers = new Map<string, NodeJS.Timeout>();
+  return {
+    trigger(key: string) {
+      clearTimeout(timers.get(key));
+      timers.set(
+        key,
+        setTimeout(() => {
+          timers.delete(key);
+          handler(key);
+        }, delayMs)
+      );
+    },
+    dispose() {
+      for (const timer of timers.values()) {
+        clearTimeout(timer);
+      }
+      timers.clear();
+    }
+  };
+}
+
 export function prependPathEntries(
   environment: NodeJS.ProcessEnv,
   pathEntries: readonly string[],
