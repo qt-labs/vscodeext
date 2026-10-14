@@ -11,9 +11,12 @@ import {
 import { QmlPreviewClient, FpsInfo } from './preview-client.mts';
 import { QrcResourceFinder } from './qrc-resource-finder.mts';
 import { createLogger, delay } from 'qt-lib';
-import { normalizePathForComparison } from '@/utils.mjs';
+import { createKeyedDebouncer, normalizePathForComparison } from '@/utils.mjs';
 
 const logger = createLogger('qml-preview-manager');
+
+// Time to wait for further change events of a file before reloading it.
+const FILE_CHANGE_SETTLE_MS = 50;
 
 /**
  * File loader function type
@@ -82,6 +85,14 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private readonly _pathMap = new Map<string, string>();
   // Set of files being actively watched (Qt Creator pattern)
   private readonly _watchedFiles = new Set<string>();
+  // A save can arrive as several change events, reload once per save.
+  private readonly _fileChanges = createKeyedDebouncer(
+    FILE_CHANGE_SETTLE_MS,
+    (changedFile) => {
+      logger.info('===> File changed (disk):', `"${changedFile}"`);
+      void this.handleFileChange(changedFile);
+    }
+  );
   // Signals (Qt Creator pattern: signals for communication with external components)
   // Maps to: signals in QmlPreviewConnectionManager
   private readonly _onRestart = new vscode.EventEmitter<void>();
@@ -612,7 +623,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
     // Connect file change signal to handler (for saved file changes on disk)
     // Maps to: connect(&m_fileSystemWatcher, &FileSystemWatcher::fileChanged, ...)
-    this._fileSystemWatcher.onDidChange(async (uri) => {
+    this._fileSystemWatcher.onDidChange((uri) => {
       // Normalize path for consistent comparisons (Windows uses backslashes)
       const changedFile = normalizePathForComparison(uri.fsPath);
 
@@ -625,8 +636,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         return;
       }
 
-      logger.info('===> File changed (disk):', `"${changedFile}"`);
-      await this.handleFileChange(changedFile);
+      this._fileChanges.trigger(changedFile);
     });
 
     // Connect file creation signal to cache clear
@@ -762,6 +772,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     this._onDebugServiceUnavailable.dispose();
 
     // Clear tracked data structures
+    this._fileChanges.dispose();
     this._watchedFiles.clear();
     this._pathMap.clear();
   }
