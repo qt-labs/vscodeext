@@ -14,6 +14,7 @@ await runEsbuild({
     './test/suite/extension.test.mts',
     './test/suite/metadata.test.mts',
     './test/suite/project.test.mts',
+    './test/suite/beta-apphost-workaround.test.mts',
     './test/suite/qt-dir.test.mts'
   ]
 });
