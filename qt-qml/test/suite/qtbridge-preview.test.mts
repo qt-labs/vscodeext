@@ -8,6 +8,7 @@ import type { QtBridgeProject } from 'qt-lib';
 import {
   getQtBridgePreviewProjects,
   isQtBridgePreviewAvailable,
+  resolveQmlLaunchProject,
   selectQtBridgePreviewProject
 } from '@/preview/qtbridge-preview-project.mjs';
 import { normalizePathForComparison, prependPathEntries } from '@/utils.mjs';
@@ -157,6 +158,130 @@ describe('Qt Bridge QML Preview project selection', () => {
 
     expect(selected).to.equal(project);
     expect(picker.called).to.equal(false);
+  });
+});
+
+describe('QML Preview and Profiler launch project', () => {
+  const noFeatures = { pySideProject: false, cmake: false, pyside: false };
+  const cmakeFeatures = { ...noFeatures, cmake: true };
+
+  it('prefers a Bridge project over a generated CMake project', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const project = bridgeProject(folder, 'Application');
+
+    const launch = await resolveQmlLaunchProject(
+      folder,
+      undefined,
+      cmakeFeatures,
+      {
+        getProjects: () => [project],
+        getProjectForUri: () => undefined,
+        getWorkspaceFolder: () => undefined,
+        pickProject: sinon.stub().resolves(undefined)
+      }
+    );
+
+    expect(launch).to.deep.equal({ type: 'bridge', bridgeProject: project });
+  });
+
+  it('uses the Bridge project of the active file in a CMake folder', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const first = bridgeProject(folder, 'First');
+    const second = bridgeProject(folder, 'Second');
+    const activeUri = vscode.Uri.joinPath(folder.uri, 'Second', 'Main.qml');
+    const picker = sinon.stub().resolves(first);
+
+    const launch = await resolveQmlLaunchProject(
+      folder,
+      activeUri,
+      cmakeFeatures,
+      {
+        getProjects: () => [first, second],
+        getProjectForUri: () => second,
+        getWorkspaceFolder: () => folder,
+        pickProject: picker
+      }
+    );
+
+    expect(launch).to.deep.equal({ type: 'bridge', bridgeProject: second });
+    expect(picker.called).to.equal(false);
+  });
+
+  it('keeps CMake for an active file outside the Bridge projects', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const project = bridgeProject(folder, 'Application');
+    const activeUri = vscode.Uri.joinPath(folder.uri, 'cpp', 'Main.qml');
+
+    const launch = await resolveQmlLaunchProject(
+      folder,
+      activeUri,
+      cmakeFeatures,
+      {
+        getProjects: () => [project],
+        getProjectForUri: () => undefined,
+        getWorkspaceFolder: () => folder,
+        pickProject: sinon.stub().resolves(undefined)
+      }
+    );
+
+    expect(launch).to.deep.equal({ type: 'cmake' });
+  });
+
+  it('keeps an existing PySide project first', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const project = bridgeProject(folder, 'Application');
+
+    const launch = await resolveQmlLaunchProject(
+      folder,
+      undefined,
+      { ...noFeatures, pySideProject: true },
+      {
+        getProjects: () => [project],
+        getProjectForUri: () => undefined,
+        getWorkspaceFolder: () => undefined,
+        pickProject: sinon.stub().resolves(undefined)
+      }
+    );
+
+    expect(launch).to.deep.equal({ type: 'pyside' });
+  });
+
+  it('falls back to the detected type without ready Bridge projects', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const unready = bridgeProject(folder, 'Application', false);
+    const services = {
+      getProjects: () => [unready],
+      getProjectForUri: () => undefined,
+      getWorkspaceFolder: () => undefined,
+      pickProject: sinon.stub().resolves(undefined)
+    };
+
+    expect(
+      await resolveQmlLaunchProject(folder, undefined, cmakeFeatures, services)
+    ).to.deep.equal({ type: 'cmake' });
+    expect(
+      await resolveQmlLaunchProject(folder, undefined, noFeatures, services)
+    ).to.deep.equal({ type: undefined });
+  });
+
+  it('reports a cancelled Bridge project selection', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const first = bridgeProject(folder, 'First');
+    const second = bridgeProject(folder, 'Second');
+
+    const launch = await resolveQmlLaunchProject(
+      folder,
+      undefined,
+      cmakeFeatures,
+      {
+        getProjects: () => [first, second],
+        getProjectForUri: () => undefined,
+        getWorkspaceFolder: () => undefined,
+        pickProject: sinon.stub().resolves(undefined)
+      }
+    );
+
+    expect(launch).to.equal(undefined);
   });
 });
 
