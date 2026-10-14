@@ -76,6 +76,9 @@ interface SpawnProgramOptions {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
   sanitizeVsCodeEnv?: boolean;
+  // Add the Qt of the selected qt-cpp kit to PATH on Windows. Defaults to
+  // true. Launches that bring their own Qt runtime paths disable it.
+  useQtCppPath?: boolean;
 }
 
 export async function spawnProcessForTool(
@@ -154,7 +157,7 @@ async function createSpawnOptions(
     }
   }
 
-  if (IsWindows) {
+  if (IsWindows && optionsOverrides?.useQtCppPath !== false) {
     try {
       const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
       if (typeof dllDirs === 'string' && dllDirs.length > 0) {
