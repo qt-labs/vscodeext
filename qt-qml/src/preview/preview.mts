@@ -297,7 +297,8 @@ async function launchQtBridgePreview(
       pathEntries: launch.pathEntries,
       cwd: launch.cwd,
       env: { ...launch.environment },
-      sanitizeVsCodeEnv: true
+      sanitizeVsCodeEnv: true,
+      useQtCppPath: false
     });
 
     if (process.killed || process.pid === undefined) {
