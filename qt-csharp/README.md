@@ -21,17 +21,26 @@ Language Server, QML Preview, and QML Profiler support. C# Dev Kit is
 recommended for normal C# editing and debugging but is not required by the Qt
 Bridge integration.
 
-On Linux and macOS, configure the Qt installation as described in the Qt Bridge
-C# documentation. Windows packages can provide their bundled Qt installation.
-
-The extension resolves Qt from the project, the `qt-csharp.qtDir`
-workspace setting, the `QTDIR` environment variable, or the Qt selected by Qt
-Core, in that order. The Qt bundled by a Windows package is used only as the
-final fallback.
-
 To create a project, run `Qt: Create a new project or file` and select
 `Qt Bridge for C# application`. Use the `Qt Bridge for C# QML file` item to
 add QML files to an existing project.
+
+## Qt installation
+
+Building a Qt Bridge project needs a Qt installation, which is set with
+`QtDir`. Only the Windows x64 package bundles Qt. On Windows ARM64, Linux, and
+macOS, `QtDir` is required.
+
+If a build would not find Qt, the extension asks you to select one. Run
+`Qt Bridge C#: Select Qt Installation` to select it later. The selection is
+stored in the `qt-csharp.qtDir` setting and exported as `QtDir` to the
+integrated terminal, so builds started there use the same Qt as the QML
+tooling. For builds started elsewhere, for example by C# Dev Kit, set `QtDir`
+in the environment or in the project.
+
+The extension resolves Qt from the project, the `qt-csharp.qtDir` setting, the
+`QtDir` environment variable, or the Qt selected by Qt Core, in that order. The
+Qt bundled by the Windows x64 package is used only as the final fallback.
 
 ## Documentation
 
