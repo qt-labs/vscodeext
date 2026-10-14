@@ -86,6 +86,21 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.info('Received config change:', message.config as unknown as string);
     return processMessage(message);
   });
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      for (const project of projectManager.getProjects()) {
+        const uri = project.folder.uri;
+        if (
+          event.affectsConfiguration('cmake.sourceDirectory', uri) ||
+          event.affectsConfiguration('cmake.autoDetectSourceDirectory', uri)
+        ) {
+          project.refreshCMakeSources().catch((error: unknown) => {
+            logger.error('Failed to refresh CMake sources:', String(error));
+          });
+        }
+      }
+    })
+  );
   void tryToUseCMakeFromQtTools();
 
   checkCMakeToolsVersion();
