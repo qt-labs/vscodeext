@@ -42,6 +42,27 @@ export interface QtBridgeProjectInfo {
   readonly packageId: string | undefined;
   readonly packageVersion: string | undefined;
   readonly qtDir: string | undefined;
+  readonly qtDirSource?: QtBridgeQtDirSource;
+  readonly hasBundledQt?: boolean;
+}
+
+// Where the Qt directory of a project comes from. Only 'project' and
+// 'environment' reach every build. 'setting' reaches builds in the integrated
+// terminal, 'qtCore' only the QML tooling of the extensions.
+export type QtBridgeQtDirSource =
+  'project' | 'setting' | 'environment' | 'qtCore';
+
+/**
+ * Whether building the project finds a Qt installation, either through
+ * QtDir or through the Qt bundled with the runtime package.
+ */
+export function buildFindsQt(project: QtBridgeProjectInfo) {
+  return (
+    project.hasBundledQt === true ||
+    project.qtDirSource === 'project' ||
+    project.qtDirSource === 'environment' ||
+    project.qtDirSource === 'setting'
+  );
 }
 
 export interface QtBridgeQtDirFallbacks {
@@ -378,12 +399,31 @@ export function resolveQtBridgeQtDir(
   fallbacks: QtBridgeQtDirFallbacks = {},
   environmentQtDir = getEnvironmentVariable(['QTDIR', 'QtDir'])
 ): string | undefined {
-  return (
-    normalizeQtDir(projectQtDir) ??
-    normalizeQtDir(fallbacks.configuredQtDir) ??
-    normalizeQtDir(environmentQtDir) ??
-    normalizeQtDir(fallbacks.selectedQtDir)
-  );
+  return resolveQtBridgeQtDirWithSource(
+    projectQtDir,
+    fallbacks,
+    environmentQtDir
+  ).qtDir;
+}
+
+export function resolveQtBridgeQtDirWithSource(
+  projectQtDir: string | undefined,
+  fallbacks: QtBridgeQtDirFallbacks = {},
+  environmentQtDir = getEnvironmentVariable(['QTDIR', 'QtDir'])
+): { qtDir?: string; source?: QtBridgeQtDirSource } {
+  const candidates: [string | undefined, QtBridgeQtDirSource][] = [
+    [projectQtDir, 'project'],
+    [fallbacks.configuredQtDir, 'setting'],
+    [environmentQtDir, 'environment'],
+    [fallbacks.selectedQtDir, 'qtCore']
+  ];
+  for (const [value, source] of candidates) {
+    const qtDir = normalizeQtDir(value);
+    if (qtDir) {
+      return { qtDir, source };
+    }
+  }
+  return {};
 }
 
 function findNuGetPackageVersionDirectory(
@@ -463,22 +503,33 @@ export function inspectQtBridgeProject(
     }
 
     const projectQtDir = inferProjectQtDir(properties);
-    const projectInfo = {
+    const packageVersion = packageId
+      ? (getPackageReferenceVersion(
+          packageReferences,
+          TEMPLATED_QT_BRIDGE_PACKAGE_ID,
+          properties
+        ) ??
+        getPackageReferenceVersion(packageReferences, packageId, properties))
+      : undefined;
+    const { qtDir, source: qtDirSource } = resolveQtBridgeQtDirWithSource(
+      projectQtDir,
+      qtDirFallbacks
+    );
+    const projectInfo: QtBridgeProjectInfo = {
       projectFile: projectFile.fsPath,
       packageId,
-      packageVersion: packageId
-        ? (getPackageReferenceVersion(
-            packageReferences,
-            TEMPLATED_QT_BRIDGE_PACKAGE_ID,
-            properties
-          ) ??
-          getPackageReferenceVersion(packageReferences, packageId, properties))
-        : undefined,
-      qtDir: resolveQtBridgeQtDir(projectQtDir, qtDirFallbacks)
+      packageVersion,
+      qtDir,
+      ...(qtDirSource ? { qtDirSource } : {}),
+      // The win-x64 package always bundles Qt, also before it is restored.
+      hasBundledQt:
+        packageId?.toLowerCase().endsWith('.win-x64') === true ||
+        findBundledWindowsQtDir(packageId, packageVersion) !== undefined
     };
     logger.info(
       `Detected Qt Bridge project: ${projectInfo.projectFile}; ` +
-        `package=${projectInfo.packageId ?? '<none>'}; qtDir=${projectInfo.qtDir ?? '<none>'}`
+        `package=${projectInfo.packageId ?? '<none>'}; qtDir=${projectInfo.qtDir ?? '<none>'}` +
+        ` (${qtDirSource ?? 'unset'}); bundledQt=${String(projectInfo.hasBundledQt)}`
     );
     return projectInfo;
   } catch (error) {
