@@ -1,0 +1,91 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-to-select-qt-csharp.html
+    \previouspage vscodeext-how-to-csharp.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-csharp
+
+    \title Select Qt for Qt Bridge for C# projects
+
+    Building a \l {Qt Bridge for C#} project needs a Qt installation. The build
+    finds it in the \c QtDir MSBuild property, which you can also set as an
+    environment variable.
+
+    Only the Qt Bridge for C# package for Windows x64 brings its own Qt. On
+    Windows ARM64, Linux, and macOS, you must set \c QtDir to a Qt 6
+    installation that matches the architecture of your computer. On Windows,
+    it must be an MSVC build of Qt.
+
+    \section1 Select Qt in VS Code
+
+    If the build of a Qt Bridge for C# project would not find Qt, \QVSC asks
+    you to select one when you open the project. Select \uicontrol {Select Qt}
+    to do it right away.
+
+    To select Qt later, or to select a different Qt:
+
+    \list 1
+        \li Go to \uicontrol {Command Palette}, and select
+            \uicontrol {Qt Bridge C#: Select Qt Installation}.
+        \li Select one of the \l {Register Qt installations}{registered Qt
+            installations}. The list only shows installations that can build
+            on your computer.
+        \li To use a Qt installation that is not in the list, select
+            \uicontrol {Browse}, and then select the installation prefix,
+            the folder that contains the \c bin and \c lib folders.
+    \endlist
+
+    \QVSC stores the selection in the \l {qt-csharp-settings}{Qt Dir}
+    setting. It uses this Qt for the QML language server and QML Preview, and
+    sets it as \c QtDir in new terminals in the \uicontrol Terminal view. Builds
+    that you start there, such as \c {dotnet build}, use the same Qt.
+
+    \section1 Set QtDir for other builds
+
+    The \uicontrol {Qt Dir} setting does not reach builds that start outside
+    the \uicontrol Terminal view, such as builds from C# Dev Kit or from
+    Visual Studio. For them, set \c QtDir in one of the following ways:
+
+    \list
+        \li Set the \c QtDir environment variable for your user account, and
+            restart VS Code. For example, on Linux add the following line to
+            your shell profile:
+            \code [text]
+            export QtDir=~/Qt/6.11.0/gcc_64
+            \endcode
+            On Windows, run the following command:
+            \code [text]
+            setx QtDir C:\Qt\6.11.0\msvc2022_64
+            \endcode
+        \li Set the \c QtDir property in the project file or in a
+            \c Directory.Build.props file next to it:
+            \code [text]
+            <PropertyGroup>
+              <QtDir>C:\Qt\6.11.0\msvc2022_64</QtDir>
+            </PropertyGroup>
+            \endcode
+            This is useful if a project needs a particular Qt version, but
+            the path is specific to your computer.
+    \endlist
+
+    A \c QtDir property in the project overrides the environment variable and
+    the \uicontrol {Qt Dir} setting.
+
+    \section1 Check which Qt the build uses
+
+    Newer versions of the Qt Bridge for C# packages show the Qt installation
+    that the build uses in the build output, for example:
+
+    \code [text]
+    Qt Bridge for C#: Using Qt at 'C:\Qt\6.11.0\msvc2022_64'.
+    \endcode
+
+    If the build does not find Qt, it stops with an error that asks you to set
+    \c QtDir.
+
+    \sa {vscodeext-how-to-build-csharp.html}
+        {Build and run Qt Bridge for C# applications}
+*/
