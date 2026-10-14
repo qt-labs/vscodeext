@@ -16,8 +16,10 @@ QML Language Server and live-preview support.
 
 ## Prerequisites
 
-The Qt Core extension is required. C# Dev Kit is recommended for normal C#
-editing and debugging but is not required by the Qt Bridge integration.
+The Qt Core extension is required. Install the Qt QML extension for QML
+Language Server, QML Preview, and QML Profiler support. C# Dev Kit is
+recommended for normal C# editing and debugging but is not required by the Qt
+Bridge integration.
 
 On Linux and macOS, configure the Qt installation as described in the Qt Bridge
 C# documentation. Windows packages can provide their bundled Qt installation.
@@ -27,12 +29,9 @@ workspace setting, the `QTDIR` environment variable, or the Qt selected by Qt
 Core, in that order. The Qt bundled by a Windows package is used only as the
 final fallback.
 
-Install the Qt Bridge project and item templates to create projects and QML
-files through the Qt New Item wizard:
-
-```bash
-dotnet new install QtGroup.Qt.Bridge.CSharp.Templates
-```
+To create a project, run `Qt: Create a new project or file` and select
+`Qt Bridge for C# application`. Use the `Qt Bridge for C# QML file` item to
+add QML files to an existing project.
 
 ## Documentation
 
