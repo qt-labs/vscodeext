@@ -38,8 +38,14 @@
 
     \list
         \li \l {Installation}{Install \QVSC}
+        \li Install the .NET SDK
         \li \l {Register Qt installations}
     \endlist
+
+    On Windows ARM64, Linux, and macOS, you also need to
+    \l {vscodeext-how-to-select-qt-csharp.html}{select the Qt installation}
+    to build with. On Windows x64, the Qt Bridge for C# package brings its own
+    Qt.
 
     \section1 Create a Qt Quick C# application project
 
@@ -95,9 +101,11 @@
     \note After you build the application once, the code completion offers more
     complete suggestions for C# classes.
 
-    \note To preview a QML file without building the application, select
+    \note To preview a QML file after you build the application once, select
     \inlineimage {preview-file.png} {Preview current QML file live} on
-    the editor toolbar
+    the editor toolbar. For more information, see
+    \l {vscodeext-how-to-preview-csharp.html}
+    {Preview and profile Qt Bridge for C# applications}.
 
     \section1 Inspect the QML code
 
