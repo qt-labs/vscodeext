@@ -952,18 +952,19 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
       application.executableName
     );
 
-    if (!pathExists(stagedHostPath)) {
-      if (!pathExists(application.nativeHostPath)) {
-        await fs.promises.rm(targetDirectory, {
-          recursive: true,
-          force: true
-        });
-        logger.warn(
-          `Qt Bridge native host does not exist: ${application.nativeHostPath}`
+    try {
+      // nativeHostPath is a build template. Only the managed output host has
+      // the application manifest and the SDK's platform finalisation.
+      await fs.promises.access(stagedHostPath);
+    } catch (error) {
+      await fs.promises.rm(targetDirectory, { recursive: true, force: true });
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        throw new Error(
+          `Qt Bridge application host is missing from ${application.managedOutputDir}. ` +
+            'Build the application before starting QML Preview.'
         );
-        return undefined;
       }
-      await fs.promises.copyFile(application.nativeHostPath, stagedHostPath);
+      throw error;
     }
 
     const qmlImportRoot = path.join(targetDirectory, 'qml');
