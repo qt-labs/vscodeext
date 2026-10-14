@@ -18,6 +18,10 @@
 
     \generatelist vscodeext-how-to-qml
 
+    \section1 Develop with C#
+
+    \generatelist vscodeext-how-to-csharp
+
     \section1 Develop for the web
 
     \generatelist vscodeext-how-to-wasm
