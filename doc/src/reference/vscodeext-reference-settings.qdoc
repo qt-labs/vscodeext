@@ -214,6 +214,25 @@
         \li Shows verbose output from \QMLLS.
     \endtable
 
+    \target qt-csharp-settings
+    \section1 Qt Bridge C# settings
+
+    Settings for developing with \l {Qt Bridge for C#}. For more information,
+    see \l {vscodeext-how-to-select-qt-csharp.html}
+    {Select Qt for Qt Bridge for C# projects}.
+
+    \table
+    \header
+        \li Setting
+        \li Description
+    \row
+        \li \uicontrol {Qt Dir}
+        \li The Qt installation prefix for Qt Bridge for C# projects. The QML
+            language server and QML Preview use this Qt, and new terminals in
+            the \uicontrol Terminal view get it as the \c QtDir environment
+            variable. A \c QtDir property in the project overrides it.
+    \endtable
+
     \section1 Qt Python settings
 
     \image {vscodeext-qt-settings-python.webp} {Qt Python Configuration}
