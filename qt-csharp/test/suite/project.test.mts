@@ -428,7 +428,12 @@ describe('Qt Bridge project discovery', () => {
         'managed',
         'utf8'
       ),
-      fs.promises.writeFile(nativeHostPath, 'native', 'utf8')
+      fs.promises.writeFile(nativeHostPath, 'template', 'utf8'),
+      fs.promises.writeFile(
+        path.join(managedOutputDir, 'Application.exe'),
+        'patched application',
+        'utf8'
+      )
     ]);
 
     const folder: vscode.WorkspaceFolder = {
@@ -476,7 +481,7 @@ describe('Qt Bridge project discovery', () => {
 
     expect(firstLaunch.executable).not.to.equal(secondLaunch.executable);
     expect(await fs.promises.readFile(firstLaunch.executable, 'utf8')).to.equal(
-      'native'
+      'patched application'
     );
     expect(normalizedPath(firstLaunch.cwd)).to.equal(
       normalizedPath(testDirectory)
@@ -519,6 +524,46 @@ describe('Qt Bridge project discovery', () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
     expect(fs.existsSync(secondStagingDirectory)).to.equal(false);
+  });
+
+  it('rejects a missing application host without launching the native template', async () => {
+    const managedOutputDir = path.join(testDirectory, 'bin');
+    const nativeHostPath = path.join(testDirectory, 'native-template');
+    await fs.promises.mkdir(managedOutputDir);
+    await fs.promises.writeFile(nativeHostPath, 'native template');
+    const projectFile = path.join(testDirectory, 'Application.csproj');
+    const project = new QtBridgeProjectSnapshot(
+      { uri: vscode.Uri.file(testDirectory), name: 'workspace', index: 0 },
+      {
+        projectFile,
+        packageId: undefined,
+        packageVersion: undefined,
+        qtDir: undefined
+      }
+    );
+    project.updateMetadata(
+      {
+        application: {
+          assemblyName: 'Application',
+          executableName: 'Application',
+          managedOutputDir,
+          nativeHostPath
+        }
+      } as QtBridgeQmlMetadata,
+      true
+    );
+
+    let failure: unknown;
+    try {
+      await project.prepareQmlPreview();
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).to.be.instanceOf(Error);
+    expect((failure as Error).message).to.include('Build the application');
+    expect(await fs.promises.readFile(nativeHostPath, 'utf8')).to.equal(
+      'native template'
+    );
   });
 });
 
