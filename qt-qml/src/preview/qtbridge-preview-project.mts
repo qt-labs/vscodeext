@@ -2,9 +2,72 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
-import type { QtBridgeProject } from 'qt-lib';
+import type { QtBridgeProject, QtBridgeQmlMetadata } from 'qt-lib';
 import { getQtBridgeProjects, getQtBridgeProjectForUri } from '@/project.mjs';
+import { normalizePathForComparison } from '@/utils.mjs';
+
+/**
+ * Map the copies of a Qt Bridge project's QML files back to their sources.
+ *
+ * The Bridge build copies the QML files below obj/ and into the build
+ * output, and the preview runs a staged copy of the build output. Requests
+ * for these copies are answered with the sources, so that the preview shows
+ * the current QML without a rebuild and watches the files the user edits.
+ */
+export function createQtBridgeSourceRedirect(
+  metadata: QtBridgeQmlMetadata,
+  stagedDir: string
+): (localPath: string) => string | undefined {
+  const copyRoots = [stagedDir, path.join(metadata.qml.sourceDir, 'qml')];
+  if (metadata.application) {
+    copyRoots.push(metadata.application.managedOutputDir);
+  }
+  // Qt resolves symlinks in application paths (notably /var -> /private/var
+  // on macOS). Register both spellings while preserving the editable source.
+  for (const root of [...copyRoots]) {
+    try {
+      copyRoots.push(fs.realpathSync.native(root));
+    } catch {
+      // Build directories may not exist yet; the lexical mapping still works.
+    }
+  }
+  const sources = new Map<string, string>();
+  for (const file of metadata.qml.files) {
+    const relativePath = path.join(
+      file.modulePath,
+      path.basename(file.sourcePath)
+    );
+    for (const root of copyRoots) {
+      sources.set(
+        normalizePathForComparison(path.join(root, relativePath)),
+        file.sourcePath
+      );
+    }
+  }
+  return (localPath) => sources.get(normalizePathForComparison(localPath));
+}
+
+/**
+ * Map the resource paths of a Qt Bridge project's QML files to their sources.
+ *
+ * The preview requests changed files by their resource path. A build that
+ * exports types as metadata does not write a resource file for the QML files
+ * into the build directory, so that the resource path cannot be resolved
+ * from there.
+ */
+export function createQtBridgeResourceLookup(
+  metadata: QtBridgeQmlMetadata
+): (resourcePath: string) => string | undefined {
+  const sources = new Map<string, string>();
+  for (const file of metadata.qml.files) {
+    if (file.resourceUrl.startsWith('qrc:')) {
+      sources.set(file.resourceUrl.slice('qrc:'.length), file.sourcePath);
+    }
+  }
+  return (resourcePath) => sources.get(resourcePath.replace(/^(qrc)?:/, ''));
+}
 
 const defaultServices = {
   getProjects: getQtBridgeProjects,

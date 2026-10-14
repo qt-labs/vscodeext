@@ -38,10 +38,26 @@ type FpsHandler = (fps: FpsInfo) => void;
 /**
  * Settings for QML Preview
  */
+/**
+ * Maps a local file that answers a path request to the source file that the
+ * user edits, or returns undefined to keep the file. Used when the build
+ * copies QML files, so that the preview serves and watches the sources.
+ */
+export type SourceRedirect = (localPath: string) => string | undefined;
+
+/**
+ * Maps a resource path to the source file that the user edits, or returns
+ * undefined to look the path up in the resource files of the build
+ * directories.
+ */
+export type ResourceLookup = (resourcePath: string) => string | undefined;
+
 interface QmlPreviewSettings {
   fileLoader?: FileLoader;
   fileClassifier?: FileClassifier;
   fpsHandler?: FpsHandler;
+  sourceRedirect?: SourceRedirect;
+  resourceLookup?: ResourceLookup;
 }
 
 /**
@@ -126,6 +142,46 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   setFpsHandler(handler: FpsHandler) {
     this._settings.fpsHandler = handler;
     logger.info('Custom FPS handler set');
+  }
+
+  /**
+   * Set the mapping from build copies of QML files to their sources
+   */
+  setSourceRedirect(redirect: SourceRedirect) {
+    this._settings.sourceRedirect = redirect;
+    logger.info('Source redirect set');
+  }
+
+  /**
+   * Set the mapping from resource paths to sources, which is consulted
+   * before the resource files of the build directories
+   */
+  setResourceLookup(lookup: ResourceLookup) {
+    this._settings.resourceLookup = lookup;
+    logger.info('Resource lookup set');
+  }
+
+  private async findResource(requestedPath: string) {
+    const sourcePath = this._settings.resourceLookup?.(requestedPath);
+    if (sourcePath && fs.existsSync(sourcePath)) {
+      logger.info('Resource', `"${requestedPath}"`, 'is', `"${sourcePath}"`);
+      return { type: 'file' as const, realPath: sourcePath };
+    }
+    return this._qrcFinder.findResource(requestedPath);
+  }
+
+  private toSourcePath(localPath: string) {
+    const sourcePath = this._settings.sourceRedirect?.(localPath);
+    if (sourcePath && sourcePath !== localPath) {
+      logger.info(
+        'Serving source:',
+        `"${sourcePath}"`,
+        'for',
+        `"${localPath}"`
+      );
+      return sourcePath;
+    }
+    return localPath;
   }
 
   /**
@@ -328,7 +384,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     }
 
     // Find the QRC resource
-    const resource = await this._qrcFinder.findResource(requestedPath);
+    const resource = await this.findResource(requestedPath);
 
     if (resource) {
       if (resource.type === 'directory') {
@@ -349,20 +405,19 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         // File - map it and load contents
         // This is key: map the real filesystem path to the QRC path
         // so we can find it later during file change events
-        const normalizedRealPath = normalizePathForComparison(
-          resource.realPath
-        );
+        const realPath = this.toSourcePath(resource.realPath);
+        const normalizedRealPath = normalizePathForComparison(realPath);
         this._pathMap.set(normalizedRealPath, requestedPath);
         logger.info('Mapped QRC:', normalizedRealPath, '->', requestedPath);
 
         const loader =
           this._settings.fileLoader ??
           ((f: string) => QmlPreviewConnectionManager.defaultFileLoader(f));
-        const { success, contents } = loader(resource.realPath);
+        const { success, contents } = loader(realPath);
 
         if (success) {
           // Add file to watcher (Qt Creator pattern: add files when requested)
-          this.addFileToWatcher(resource.realPath);
+          this.addFileToWatcher(realPath);
 
           logger.info(
             'Announcing file:',
@@ -419,18 +474,19 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         return;
       } else if (stats.isFile()) {
         // File - load contents
+        const localPath = this.toSourcePath(fsPath);
         const loader =
           this._settings.fileLoader ??
           ((f: string) => QmlPreviewConnectionManager.defaultFileLoader(f));
-        const { success, contents } = loader(fsPath);
+        const { success, contents } = loader(localPath);
 
         if (success) {
           // Add file to watcher (Qt Creator pattern: dynamically add files)
-          this.addFileToWatcher(fsPath);
+          this.addFileToWatcher(localPath);
 
           // Store the path mapping (identity mapping for filesystem paths)
           // Normalize path for consistent lookups
-          const normalizedFsPath = normalizePathForComparison(fsPath);
+          const normalizedFsPath = normalizePathForComparison(localPath);
           this._pathMap.set(normalizedFsPath, requestedPath);
           logger.info(
             'Mapped filesystem:',
