@@ -6,6 +6,7 @@
   "homepage": "https://www.qt.io/",
   "icon": "res/icons/qt.png",
   "publisher": "theqtcompany",
+  "preview": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/qt-labs/vscodeext"
