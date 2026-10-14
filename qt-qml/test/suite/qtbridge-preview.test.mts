@@ -4,8 +4,12 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import type { QtBridgeProject } from 'qt-lib';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
+import type { QtBridgeProject, QtBridgeQmlMetadata } from 'qt-lib';
 import {
+  createQtBridgeSourceRedirect,
   getQtBridgePreviewProjects,
   isQtBridgePreviewAvailable,
   resolveQmlLaunchProject,
@@ -304,6 +308,82 @@ describe('QML Preview and Profiler launch project', () => {
     );
 
     expect(launch).to.equal(undefined);
+  });
+});
+
+describe('Qt Bridge QML Preview source redirect', () => {
+  const project = path.resolve('/work/App');
+  const staged = path.resolve('/tmp/preview/launch');
+  const metadata = {
+    application: { managedOutputDir: path.join(project, 'bin', 'Debug') },
+    qml: {
+      sourceDir: path.join(project, 'obj', 'qt', 'native', 'source'),
+      files: [
+        {
+          sourcePath: path.join(project, 'Main.qml'),
+          modulePath: 'Application/'
+        },
+        {
+          sourcePath: path.join(project, 'controls', 'ColorBox.qml'),
+          modulePath: 'controls/'
+        }
+      ]
+    }
+  } as unknown as QtBridgeQmlMetadata;
+
+  it('serves the sources for the build copies of QML files', () => {
+    const redirect = createQtBridgeSourceRedirect(metadata, staged);
+    const colorBox = path.join(project, 'controls', 'ColorBox.qml');
+
+    expect(redirect(path.join(staged, 'controls', 'ColorBox.qml'))).to.equal(
+      colorBox
+    );
+    expect(
+      redirect(
+        path.join(metadata.qml.sourceDir, 'qml', 'controls', 'ColorBox.qml')
+      )
+    ).to.equal(colorBox);
+    expect(
+      redirect(path.join(project, 'bin', 'Debug', 'Application', 'Main.qml'))
+    ).to.equal(path.join(project, 'Main.qml'));
+  });
+
+  it('keeps files that are not copies of project QML files', () => {
+    const redirect = createQtBridgeSourceRedirect(metadata, staged);
+
+    expect(redirect(path.join(staged, 'Application', 'qmldir'))).to.equal(
+      undefined
+    );
+    expect(redirect(path.join(staged, 'Application', 'ColorBox.qml'))).to.equal(
+      undefined
+    );
+  });
+
+  it('redirects canonical staging paths when the staging root is a symlink', async function () {
+    if (process.platform === 'win32') {
+      this.skip();
+    }
+    const directory = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'qml-redirect-')
+    );
+    try {
+      const real = path.join(directory, 'real');
+      const alias = path.join(directory, 'alias');
+      await fs.promises.mkdir(real);
+      await fs.promises.symlink(real, alias, 'dir');
+      const redirect = createQtBridgeSourceRedirect(metadata, alias);
+      const source = path.join(project, 'Main.qml');
+      expect(redirect(path.join(alias, 'Application', 'Main.qml'))).to.equal(
+        source
+      );
+      expect(
+        redirect(
+          path.join(fs.realpathSync.native(alias), 'Application', 'Main.qml')
+        )
+      ).to.equal(source);
+    } finally {
+      await fs.promises.rm(directory, { recursive: true, force: true });
+    }
   });
 });
 
