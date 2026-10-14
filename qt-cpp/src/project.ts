@@ -32,6 +32,7 @@ import {
 import { analyzeKit, Kit as CMakeKit } from '@/kit-manager';
 import * as cmakeFileApi from '@/cmake-file-api';
 import { getMajorQtVersion, isValidAndString } from '@/util/util';
+import { hasCMakeSources } from '@/util/cmake-sources';
 
 const logger = createLogger('project');
 
@@ -684,6 +685,42 @@ export class CppProject implements Project {
     }
     return undefined;
   }
+  /**
+   * Whether the folder contains a CMake project. CMake Tools returns a
+   * project for every workspace folder, including folders without any CMake
+   * sources, so this checks the source directories CMake Tools would use.
+   */
+  hasCMakeSources() {
+    if (this._cmakeProject?.useCMakePresets) {
+      return true;
+    }
+    const config = vscode.workspace.getConfiguration('cmake', this.folder.uri);
+    // Only an explicit setting counts, the default disables auto-detection.
+    const sourceDirectory = config.inspect<string | string[]>(
+      'sourceDirectory'
+    );
+    return hasCMakeSources(
+      this.folder.uri.fsPath,
+      sourceDirectory?.workspaceFolderValue ??
+        sourceDirectory?.workspaceValue ??
+        sourceDirectory?.globalValue,
+      config.get<boolean>('autoDetectSourceDirectory', true)
+    );
+  }
+  /**
+   * Publish the configuration again if the folder became a CMake project or
+   * stopped being one, for example after CMake Tools detected a source
+   * directory and stored it in cmake.sourceDirectory.
+   */
+  async refreshCMakeSources() {
+    const features = coreAPI?.getValue<QtWorkspaceFeatures>(
+      this.folder,
+      CoreKey.WORKSPACE_FEATURES
+    );
+    if ((features?.projectTypes.cmake === true) !== this.hasCMakeSources()) {
+      await this.initConfigValues();
+    }
+  }
   async initConfigValues() {
     if (!coreAPI) {
       throw new Error('CoreAPI is not initialized');
@@ -698,14 +735,21 @@ export class CppProject implements Project {
       CoreKey.WORKSPACE_FEATURES
     );
     features ??= { projectTypes: {} };
-    features.projectTypes.cmake = true;
+    features.projectTypes.cmake = this.hasCMakeSources();
     const message = new QtWorkspaceConfigMessage(this.folder);
     const configEntries: [string, string | undefined | QtWorkspaceFeatures][] =
-      [
+      [];
+    // Without CMake sources there is no kit or build directory to publish,
+    // and querying the kit could prompt the user to select one.
+    if (features.projectTypes.cmake) {
+      configEntries.push(
         [CoreKey.SELECTED_QT_PATHS, await this.getQtPaths()],
-        [CoreKey.BUILD_DIR, await this._cmakeProject.getBuildDirectory()],
-        [CoreKey.WORKSPACE_FEATURES, features]
-      ];
+        [CoreKey.BUILD_DIR, await this._cmakeProject.getBuildDirectory()]
+      );
+    } else {
+      logger.info(`No CMake sources found in ${this.folder.uri.fsPath}`);
+    }
+    configEntries.push([CoreKey.WORKSPACE_FEATURES, features]);
     for (const [key, value] of configEntries) {
       coreAPI.setValue(this.folder, key, value);
       message.config.add(key);

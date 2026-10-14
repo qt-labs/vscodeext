@@ -11,9 +11,12 @@ import {
 import { QmlPreviewClient, FpsInfo } from './preview-client.mts';
 import { QrcResourceFinder } from './qrc-resource-finder.mts';
 import { createLogger, delay } from 'qt-lib';
-import { normalizePathForComparison } from '@/utils.mjs';
+import { createKeyedDebouncer, normalizePathForComparison } from '@/utils.mjs';
 
 const logger = createLogger('qml-preview-manager');
+
+// Time to wait for further change events of a file before reloading it.
+const FILE_CHANGE_SETTLE_MS = 50;
 
 /**
  * File loader function type
@@ -38,10 +41,18 @@ type FpsHandler = (fps: FpsInfo) => void;
 /**
  * Settings for QML Preview
  */
+/**
+ * Maps a local file that answers a path request to the source file that the
+ * user edits, or returns undefined to keep the file. Used when the build
+ * copies QML files, so that the preview serves and watches the sources.
+ */
+export type SourceRedirect = (localPath: string) => string | undefined;
+
 interface QmlPreviewSettings {
   fileLoader?: FileLoader;
   fileClassifier?: FileClassifier;
   fpsHandler?: FpsHandler;
+  sourceRedirect?: SourceRedirect;
 }
 
 /**
@@ -66,6 +77,14 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private readonly _pathMap = new Map<string, string>();
   // Set of files being actively watched (Qt Creator pattern)
   private readonly _watchedFiles = new Set<string>();
+  // A save can arrive as several change events, reload once per save.
+  private readonly _fileChanges = createKeyedDebouncer(
+    FILE_CHANGE_SETTLE_MS,
+    (changedFile) => {
+      logger.info('===> File changed (disk):', `"${changedFile}"`);
+      void this.handleFileChange(changedFile);
+    }
+  );
   // Signals (Qt Creator pattern: signals for communication with external components)
   // Maps to: signals in QmlPreviewConnectionManager
   private readonly _onRestart = new vscode.EventEmitter<void>();
@@ -126,6 +145,28 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   setFpsHandler(handler: FpsHandler) {
     this._settings.fpsHandler = handler;
     logger.info('Custom FPS handler set');
+  }
+
+  /**
+   * Set the mapping from build copies of QML files to their sources
+   */
+  setSourceRedirect(redirect: SourceRedirect) {
+    this._settings.sourceRedirect = redirect;
+    logger.info('Source redirect set');
+  }
+
+  private toSourcePath(localPath: string) {
+    const sourcePath = this._settings.sourceRedirect?.(localPath);
+    if (sourcePath && sourcePath !== localPath) {
+      logger.info(
+        'Serving source:',
+        `"${sourcePath}"`,
+        'for',
+        `"${localPath}"`
+      );
+      return sourcePath;
+    }
+    return localPath;
   }
 
   /**
@@ -349,20 +390,19 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         // File - map it and load contents
         // This is key: map the real filesystem path to the QRC path
         // so we can find it later during file change events
-        const normalizedRealPath = normalizePathForComparison(
-          resource.realPath
-        );
+        const realPath = this.toSourcePath(resource.realPath);
+        const normalizedRealPath = normalizePathForComparison(realPath);
         this._pathMap.set(normalizedRealPath, requestedPath);
         logger.info('Mapped QRC:', normalizedRealPath, '->', requestedPath);
 
         const loader =
           this._settings.fileLoader ??
           ((f: string) => QmlPreviewConnectionManager.defaultFileLoader(f));
-        const { success, contents } = loader(resource.realPath);
+        const { success, contents } = loader(realPath);
 
         if (success) {
           // Add file to watcher (Qt Creator pattern: add files when requested)
-          this.addFileToWatcher(resource.realPath);
+          this.addFileToWatcher(realPath);
 
           logger.info(
             'Announcing file:',
@@ -419,18 +459,19 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         return;
       } else if (stats.isFile()) {
         // File - load contents
+        const localPath = this.toSourcePath(fsPath);
         const loader =
           this._settings.fileLoader ??
           ((f: string) => QmlPreviewConnectionManager.defaultFileLoader(f));
-        const { success, contents } = loader(fsPath);
+        const { success, contents } = loader(localPath);
 
         if (success) {
           // Add file to watcher (Qt Creator pattern: dynamically add files)
-          this.addFileToWatcher(fsPath);
+          this.addFileToWatcher(localPath);
 
           // Store the path mapping (identity mapping for filesystem paths)
           // Normalize path for consistent lookups
-          const normalizedFsPath = normalizePathForComparison(fsPath);
+          const normalizedFsPath = normalizePathForComparison(localPath);
           this._pathMap.set(normalizedFsPath, requestedPath);
           logger.info(
             'Mapped filesystem:',
@@ -556,7 +597,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
     // Connect file change signal to handler (for saved file changes on disk)
     // Maps to: connect(&m_fileSystemWatcher, &FileSystemWatcher::fileChanged, ...)
-    this._fileSystemWatcher.onDidChange(async (uri) => {
+    this._fileSystemWatcher.onDidChange((uri) => {
       // Normalize path for consistent comparisons (Windows uses backslashes)
       const changedFile = normalizePathForComparison(uri.fsPath);
 
@@ -569,8 +610,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
         return;
       }
 
-      logger.info('===> File changed (disk):', `"${changedFile}"`);
-      await this.handleFileChange(changedFile);
+      this._fileChanges.trigger(changedFile);
     });
 
     // Connect file creation signal to cache clear
@@ -706,6 +746,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     this._onDebugServiceUnavailable.dispose();
 
     // Clear tracked data structures
+    this._fileChanges.dispose();
     this._watchedFiles.clear();
     this._pathMap.clear();
   }
