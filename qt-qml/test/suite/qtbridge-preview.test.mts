@@ -15,7 +15,11 @@ import {
   resolveQmlLaunchProject,
   selectQtBridgePreviewProject
 } from '@/preview/qtbridge-preview-project.mjs';
-import { normalizePathForComparison, prependPathEntries } from '@/utils.mjs';
+import {
+  createKeyedDebouncer,
+  normalizePathForComparison,
+  prependPathEntries
+} from '@/utils.mjs';
 
 function workspaceFolder(name: string, index: number): vscode.WorkspaceFolder {
   return {
@@ -399,5 +403,46 @@ describe('Qt Bridge QML Preview launch environment', () => {
       'C:\\Qt\\bin;C:\\Windows;C:\\Program Files\\dotnet'
     );
     expect(environment).not.to.have.property('PATH');
+  });
+});
+
+describe('QML Preview file change handling', () => {
+  let clock: sinon.SinonFakeTimers;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(() => {
+    clock.restore();
+  });
+
+  it('handles a burst of change events for a file once', () => {
+    const handler = sinon.spy();
+    const changes = createKeyedDebouncer(50, handler);
+
+    changes.trigger('main.qml');
+    clock.tick(2);
+    changes.trigger('main.qml');
+    changes.trigger('box.qml');
+    clock.tick(49);
+    expect(handler.called).to.equal(false);
+
+    clock.tick(1);
+    expect(handler.args).to.deep.equal([['main.qml'], ['box.qml']]);
+
+    changes.trigger('main.qml');
+    clock.tick(50);
+    expect(handler.callCount).to.equal(3);
+  });
+
+  it('drops pending changes when disposed', () => {
+    const handler = sinon.spy();
+    const changes = createKeyedDebouncer(50, handler);
+
+    changes.trigger('main.qml');
+    changes.dispose();
+    clock.tick(100);
+    expect(handler.called).to.equal(false);
   });
 });
