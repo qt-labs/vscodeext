@@ -459,7 +459,8 @@ async function launchQtBridgeProfiler(
       pathEntries: launch.pathEntries,
       cwd: launch.cwd,
       env: { ...launch.environment },
-      sanitizeVsCodeEnv: true
+      sanitizeVsCodeEnv: true,
+      useQtCppPath: false
     });
     if (process.killed || process.pid === undefined) {
       throw new Error('Process failed to start');
