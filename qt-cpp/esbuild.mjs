@@ -21,6 +21,7 @@ await runEsbuild({
     './test/suite/index-presets.mts',
     './test/suite/extension.test.mts',
     './test/suite/commands.test.mts',
+    './test/suite/cmake-sources.test.mts',
     './test/suite/build.test.mts',
     './test/suite/natvis.test.mts',
     './test/suite/presets.test.mts'
