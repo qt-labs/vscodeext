@@ -58,9 +58,14 @@ function main() {
   try {
     execSync('npm ls');
 
-    const jqCommand = 'npx --no-install node-jq empty';
-    execSync(`${jqCommand} package.json`);
-    execSync(`${jqCommand} package-lock.json`);
+    // node-jq has no jq binary for Windows ARM64, where the optional
+    // dependency is not installed. JSON.parse above still validates both
+    // files there.
+    if (process.platform !== 'win32' || process.arch !== 'arm64') {
+      const jqCommand = 'npx --no-install node-jq empty';
+      execSync(`${jqCommand} package.json`);
+      execSync(`${jqCommand} package-lock.json`);
+    }
   } catch (error) {
     const errorMessage =
       "Missing dependencies found. Please run 'npm install' to install missing dependencies.";
