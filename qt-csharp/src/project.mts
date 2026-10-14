@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { XMLParser } from 'fast-xml-parser';
 import { createHash } from 'crypto';
+import { applyBetaAppHostWorkaround } from './beta-apphost-workaround.mjs';
 import {
   createLogger,
   type QtBridgePreviewLaunch,
@@ -956,6 +957,11 @@ export class QtBridgeProjectSnapshot implements QtBridgeProject {
       // nativeHostPath is a build template. Only the managed output host has
       // the application manifest and the SDK's platform finalisation.
       await fs.promises.access(stagedHostPath);
+      // REMOVE with beta-apphost-workaround.mts once the fixed package is
+      // published, and no later than the C# extension leaving preview.
+      await applyBetaAppHostWorkaround(stagedHostPath, metadata, {
+        dotNetDirectory: findDotNetPathEntry()
+      });
     } catch (error) {
       await fs.promises.rm(targetDirectory, { recursive: true, force: true });
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
