@@ -13,6 +13,7 @@ await runEsbuild({
     './test/suite/index.mts',
     './test/suite/extension.test.mts',
     './test/suite/metadata.test.mts',
-    './test/suite/project.test.mts'
+    './test/suite/project.test.mts',
+    './test/suite/qt-dir.test.mts'
   ]
 });
