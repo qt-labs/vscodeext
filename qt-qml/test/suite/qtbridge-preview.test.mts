@@ -249,6 +249,25 @@ describe('QML Preview and Profiler launch project', () => {
   it('falls back to the detected type without ready Bridge projects', async () => {
     const folder = workspaceFolder('selected', 0);
     const unready = bridgeProject(folder, 'Application', false);
+
+    const launch = await resolveQmlLaunchProject(
+      folder,
+      undefined,
+      cmakeFeatures,
+      {
+        getProjects: () => [unready],
+        getProjectForUri: () => undefined,
+        getWorkspaceFolder: () => undefined,
+        pickProject: sinon.stub().resolves(undefined)
+      }
+    );
+
+    expect(launch).to.deep.equal({ type: 'cmake' });
+  });
+
+  it('reports unbuilt Bridge projects instead of falling back to CMake', async () => {
+    const folder = workspaceFolder('selected', 0);
+    const unready = bridgeProject(folder, 'Application', false);
     const services = {
       getProjects: () => [unready],
       getProjectForUri: () => undefined,
@@ -257,10 +276,13 @@ describe('QML Preview and Profiler launch project', () => {
     };
 
     expect(
-      await resolveQmlLaunchProject(folder, undefined, cmakeFeatures, services)
-    ).to.deep.equal({ type: 'cmake' });
-    expect(
       await resolveQmlLaunchProject(folder, undefined, noFeatures, services)
+    ).to.deep.equal({ type: 'bridge' });
+    expect(
+      await resolveQmlLaunchProject(folder, undefined, noFeatures, {
+        ...services,
+        getProjects: () => []
+      })
     ).to.deep.equal({ type: undefined });
   });
 
