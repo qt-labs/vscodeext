@@ -19,8 +19,10 @@ import {
   persistQtBridgeMetadataSelection
 } from '@/metadata.mjs';
 import {
+  buildFindsQt,
   inspectQtBridgeProject,
   QtBridgeProjectSnapshot,
+  type QtBridgeProjectInfo,
   type QtBridgeQtDirFallbacks
 } from '@/project.mjs';
 import { EXTENSION_ID } from '@/constants.js';
@@ -47,6 +49,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
   private readonly folderRefreshes = new Map<string, Promise<void>>();
   private readonly metadataRefreshTimers = new Map<string, NodeJS.Timeout>();
   private readonly metadataRefreshVersions = new Map<string, number>();
+  private readonly missingBuildQtWarnings = new Set<string>();
   private readonly projectsChanged = new vscode.EventEmitter<void>();
   private readonly metadataChanged =
     new vscode.EventEmitter<QtBridgeMetadataChangeEvent>();
@@ -303,12 +306,51 @@ export class QtBridgeProjectManager implements vscode.Disposable {
       );
     }
 
+    this.warnAboutMissingBuildQt(folder, inspectedProjects);
+
     const currentProjects = this.getProjectsForFolder(folder);
     logger.info(
       `Qt Bridge discovery found ${String(currentProjects.length)} project(s) in ${folder.uri.fsPath}`
     );
     if (notify) {
       this.projectsChanged.fire();
+    }
+  }
+
+  // Point out projects whose build cannot find Qt, once per project and
+  // session, before the first build fails with a less obvious error.
+  private warnAboutMissingBuildQt(
+    folder: vscode.WorkspaceFolder,
+    projects: readonly (QtBridgeProjectInfo | undefined)[]
+  ) {
+    for (const project of projects) {
+      if (!project || buildFindsQt(project)) {
+        continue;
+      }
+      const key = canonicalPath(project.projectFile);
+      if (this.missingBuildQtWarnings.has(key)) {
+        continue;
+      }
+      this.missingBuildQtWarnings.add(key);
+      const name = path.basename(project.projectFile);
+      logger.warn(
+        `No Qt for building ${project.projectFile}, QtDir is not set`
+      );
+      const selectQt = 'Select Qt...';
+      void vscode.window
+        .showWarningMessage(
+          `Building ${name} needs a Qt installation, but QtDir is not set. ` +
+            'Select the Qt installation to build with.',
+          selectQt
+        )
+        .then(async (choice) => {
+          if (choice === selectQt) {
+            await vscode.commands.executeCommand(
+              `${EXTENSION_ID}.selectQtDir`,
+              folder
+            );
+          }
+        });
     }
   }
 
