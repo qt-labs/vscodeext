@@ -1,0 +1,69 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page vscodeext-how-debug-apps-csharp.html
+    \previouspage vscodeext-how-tos.html
+    \nextpage vscodeext-reference.html
+
+    \ingroup vscodeext-how-to-qml
+    \ingroup vscodeext-how-to-csharp
+
+    \title Debug Qt Bridge for C# applications
+
+    You can debug the QML code of a \l {Qt Bridge for C#} application with the
+    QML debugger of \QVSC. To debug the C# code, use the debugger of the C# Dev
+    Kit extension.
+
+    Before you start debugging, build the application. For more information,
+    see \l {vscodeext-how-to-build-csharp.html}
+    {Build and run Qt Bridge for C# applications}.
+
+    \section1 Debug QML code
+
+    Projects that you create from the \uicontrol {Qt Bridge for C# application}
+    template have a QML debugger configuration in the \c {.vscode/launch.json}
+    file. To debug the QML code of the application, select the
+    \uicontrol {Qt Bridge: QML} debug configuration, and start debugging.
+
+    For other projects, add the configuration to the \c {launch.json} file of
+    the project. For more information, see \l {Debug Qt applications}. The
+    configuration uses \c {${command:qt-csharp.launchTargetPath}} as the
+    program:
+
+    \badcode
+    "configurations": [
+        {
+            "name": "Qt Bridge: QML",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:qt-csharp.launchTargetPath}"
+        }
+    ]
+    \endcode
+
+    The command resolves the executable of the project that contains the file
+    in the editor, or asks you to select a project if there are several. It
+    does not build the project. If you built the project in several
+    configurations or for several target frameworks, select the build to use
+    with \uicontrol {Qt Bridge C#: Select QML Build Metadata}.
+
+    When the debugger stops, the editor shows the QML files of your project,
+    not the copies that the build makes of them.
+
+    \note Breakpoints in QML code that runs right when the application starts
+    can be missed.
+
+    For more information about debugging QML code, such as attaching to a
+    running application, see \l {Debug Qt Quick applications}.
+
+    \section1 Debug C# code
+
+    To debug the C# code of the application, install the C# Dev Kit extension,
+    and start the C# debugger from the \uicontrol {Solution Explorer} view:
+    right-click the project, and select \uicontrol Debug. If the project has a
+    QML debugger configuration, \key F5 starts the QML debugger instead.
+
+    \sa {vscodeext-how-to-build-csharp.html}
+        {Build and run Qt Bridge for C# applications}
+*/
