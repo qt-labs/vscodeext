@@ -38,13 +38,20 @@
 
     If you installed the C# Dev Kit extension, you can also build the project
     from the \uicontrol {Solution Explorer} view: right-click the project, and
-    select \uicontrol Build. To run or debug the application, press \key F5,
-    and select \uicontrol {C#} as the debugger.
+    select \uicontrol Build. To run or debug the application with the C#
+    debugger, right-click the project, and select \uicontrol Debug.
 
     C# Dev Kit builds the project outside the \uicontrol Terminal view, so it
     does not get the \uicontrol {Qt Dir} setting. On Windows ARM64, Linux, and
     macOS, set the \c QtDir environment variable before you start VS Code, or
     set \c QtDir in the project.
+
+    \section1 Debug the application
+
+    To debug the QML code of the application with the QML debugger, or the C#
+    code with C# Dev Kit, see
+    \l {vscodeext-how-debug-apps-csharp.html}
+    {Debug Qt Bridge for C# applications}.
 
     \section1 Use the QML tools after the build
 
