@@ -143,7 +143,7 @@ async function downloadFile(
                 );
               }
             });
-            reject(err instanceof Error ? err : new Error(String(err)));
+            reject(new Error(err.message));
           });
         })
         .on('error', (err) => {
@@ -154,7 +154,7 @@ async function downloadFile(
               );
             }
           });
-          reject(err instanceof Error ? err : new Error(String(err)));
+          reject(new Error(err.message));
         });
     };
     doRequest(url, 0);
@@ -177,7 +177,7 @@ async function unzipFile(zipPath: string, destDir: string): Promise<void> {
         ],
         (err) => {
           if (err) {
-            reject(err instanceof Error ? err : new Error(String(err)));
+            reject(new Error(err.message));
           } else {
             resolve();
           }
@@ -186,7 +186,7 @@ async function unzipFile(zipPath: string, destDir: string): Promise<void> {
     } else {
       execFile('unzip', ['-o', zipPath, '-d', destDir], (err) => {
         if (err) {
-          reject(err instanceof Error ? err : new Error(String(err)));
+          reject(new Error(err.message));
         } else {
           resolve();
         }
@@ -218,7 +218,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
           ['-n', '-W', appPath, '--args', 'install', '--accept-telemetry'],
           (err) => {
             if (err) {
-              reject(err instanceof Error ? err : new Error(String(err)));
+              reject(new Error(err.message));
             } else {
               resolve();
             }
@@ -275,9 +275,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
                 }
               );
               if (runErr) {
-                reject(
-                  runErr instanceof Error ? runErr : new Error(String(runErr))
-                );
+                reject(new Error(runErr.message));
               } else {
                 resolve();
               }
@@ -297,7 +295,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
       logger.info(`Running bootstrap: ${runPath}`);
       execFile(runPath, ['install', '--accept-telemetry'], (err) => {
         if (err) {
-          reject(err instanceof Error ? err : new Error(String(err)));
+          reject(new Error(err.message));
         } else {
           resolve();
         }
@@ -313,7 +311,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
       logger.info(`Running bootstrap: ${exePath}`);
       execFile(exePath, ['install', '--accept-telemetry'], (err) => {
         if (err) {
-          reject(err instanceof Error ? err : new Error(String(err)));
+          reject(new Error(err.message));
         } else {
           resolve();
         }
