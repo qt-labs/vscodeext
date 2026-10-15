@@ -42,6 +42,33 @@ The extension resolves Qt from the project, the `qt-csharp.qtDir` setting, the
 `QtDir` environment variable, or the Qt selected by Qt Core, in that order. The
 Qt bundled by the Windows x64 package is used only as the final fallback.
 
+## Debug QML code
+
+Projects created from the `Qt Bridge for C# application` template have a
+`.vscode/launch.json` with a configuration for the QML debugger of the Qt QML
+extension. Select `Qt Bridge: QML` and start debugging.
+
+For other projects, add the configuration to `launch.json`. It uses
+`${command:qt-csharp.launchTargetPath}` as the program:
+
+```json
+{
+  "name": "Qt Bridge: QML",
+  "type": "qml",
+  "request": "launch",
+  "program": "${command:qt-csharp.launchTargetPath}"
+}
+```
+
+The command resolves the executable of the project that contains the active
+file, or asks which project to use when there are several. Build the project
+first; the command does not build it. If you built the project in several
+configurations or for several target frameworks, select one with
+`Qt Bridge C#: Select QML Build Metadata`.
+
+Breakpoints in QML code that runs right when the application starts can be
+missed.
+
 ## Documentation
 
 For Qt Bridge C# setup and project documentation, see the
