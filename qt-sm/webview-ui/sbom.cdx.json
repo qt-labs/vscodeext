@@ -1,0 +1,957 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "qt-sm-webview-ui",
+      "version": "0.0.0",
+      "bom-ref": "qt-sm-webview-ui@0.0.0",
+      "purl": "pkg:npm/qt-sm-webview-ui@0.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        },
+        {
+          "name": "cdx:npm:package:private",
+          "value": "true"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "gen-mapping",
+      "group": "@jridgewell",
+      "version": "0.3.13",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@jridgewell/gen-mapping@0.3.13",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/gen-mapping@0.3.13",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "da492dffb9e227a32010fc45d1b61d43a7ad65a03e7d0bc370b29c921cb5c8840ecdaa0a8c10634a3eb7fda2d58d8137aa146de5dbccfae5327c283a50a0816c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/gen-mapping"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "remapping",
+      "group": "@jridgewell",
+      "version": "2.3.5",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@jridgewell/remapping@2.3.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/remapping@2.3.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "2c8f6effe95a606e03b354c3292256d983eb22571560ec22d9f502eb1078de5b9e0a383157895f7ce0990ad605887e9334e5feb50297c7ded3e082876e1c8711"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/remapping"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "resolve-uri",
+      "group": "@jridgewell",
+      "version": "3.1.2",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@jridgewell/resolve-uri@3.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/resolve-uri@3.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "6d12128022233f6d3fb5b5923d63048b9e1054f45913192e0fd9492fe508c542adc15240f305b54eb6f58ccb354455e8d42053359ff98690bd42f98a59da292b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/resolve-uri"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sourcemap-codec",
+      "group": "@jridgewell",
+      "version": "1.5.5",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/sourcemap-codec@1.5.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "71843ddf5d20aeac6e7966e5f96b885086a251a0dc8fb58eab97d58449633558117ce52163d7f2db34ef7e8a96b2779b87c4a5ef45527056c80af2672ca0743a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/sourcemap-codec"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "trace-mapping",
+      "group": "@jridgewell",
+      "version": "0.3.31",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@jridgewell/trace-mapping@0.3.31",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/trace-mapping@0.3.31",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cf3351f9275048327373c8e869e3fc410a0242bf0db98c76748232b65d507811191c9f6e5ba85e6ecad881bcfc849c1441aa374d608cb667d5f0dbb5b7038b03"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/trace-mapping"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "svelte",
+      "group": "@lucide",
+      "version": "1.18.0",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@lucide/svelte@1.18.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40lucide/svelte@1.18.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@lucide/svelte/-/svelte-1.18.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4b57238897e530b222ac366d67ca2ed95cb4c4cacea844336330e8dbd014c682623a351f30751e0a5be9ac9b06504afad116032731209234a45a6d6794df62c9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@lucide/svelte"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "acorn-typescript",
+      "group": "@sveltejs",
+      "version": "1.0.9",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@sveltejs/acorn-typescript@1.0.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40sveltejs/acorn-typescript@1.0.9",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@sveltejs/acorn-typescript/-/acorn-typescript-1.0.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "955257eaa120b3fe0339c453a68e7ab662b354fb685806956cbe217ceeedecd57097d0005f3411e9c8a17ac5b506634c3e5f9b2ba76b7aedac38a04fd90f4220"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@sveltejs/acorn-typescript"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "estree",
+      "group": "@types",
+      "version": "1.0.8",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@types/estree@1.0.8",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/estree@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@types/estree/-/estree-1.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7561f31dad96a845c8fced44f4e8eba1c313289976992ac4a258752289abbfa53e26e3706875ec5f1f5b2eee601bb05458520dd2c90840943f2f5ac87b1e17eb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@types/estree"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "trusted-types",
+      "group": "@types",
+      "version": "2.0.7",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|@types/trusted-types@2.0.7",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/trusted-types@2.0.7",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "49c68f767d5d41cce06e5d101537933a65471542eddfde17260390368c95859eabdaf2e730b25f04f779dd2079d93ff71b7e95235fe0d8c65a5f47300ee5ec7f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@types/trusted-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "acorn",
+      "version": "8.16.0",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|acorn@8.16.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/acorn@8.16.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/acorn/-/acorn-8.16.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "51527213d32db4eb014080cac35b246fd9c0c10b91e70b860f7fbcd8ae89809966fd8f8a23dda836c30d199098743b15b511d26a4d29715e439e8e7ee2387db3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/acorn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aria-query",
+      "version": "5.3.1",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|aria-query@5.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/aria-query@5.3.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/aria-query/-/aria-query-5.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "67f65e3a0565edb712619feefeb8747cea6f129abffcb66675b917c9ceecc95ce33c085f39af5e6ec7534a31010d4e2fb399c2f7c29f76e8f5b85a34ab2113de"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/aria-query"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "axobject-query",
+      "version": "4.1.0",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|axobject-query@4.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/axobject-query@4.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/axobject-query/-/axobject-query-4.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a888f41bdc196cc18d2e32e68353d3eafda613d007db3967003243ff6b42e84d348609a150e7c407a82b7873c07cb452b9f1ea44e2144e4c3a13e337947d0f4d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/axobject-query"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "clsx",
+      "version": "2.1.1",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|clsx@2.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/clsx@2.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7989b441606d52b0566561b4777f3a386030d7a67df793e2395a3607b6e35926c779d1a5e5ed1959aabae6438681448d7ac1080e407d2126d383f24af5d84264"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/clsx"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "devalue",
+      "version": "5.7.1",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|devalue@5.7.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/devalue@5.7.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/devalue/-/devalue-5.7.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3146d9e7ce84810a9d4670b8c83ae5a1ddc111dcaf1384daa46607316d8289a5be2a4905996105a8151a2e5b446421a2d221570848d11743a31740d5d901e338"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/devalue"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "esm-env",
+      "version": "1.2.2",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|esm-env@1.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/esm-env@1.2.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/esm-env/-/esm-env-1.2.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "129c6bbfe36bfc268be1970518f24860b585a26f98795d43a8c2c726811df52611c4d6da16bb81c1f117fe49075097f9e63dbe4d46e60dc9ae8a56cfd539971c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/esm-env"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "esrap",
+      "version": "2.2.5",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|esrap@2.2.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/esrap@2.2.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/esrap/-/esrap-2.2.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ff22c1d79dfc99a83e767d30b1e3d37bc0b4ac322350e689a4cb3631ca1d4b398cda6b16719b0149d46d83a1ce06dd00febf3604df8c777a60c1273fb96b7622"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/esrap"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-reference",
+      "version": "3.0.3",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|is-reference@3.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-reference@3.0.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/is-reference/-/is-reference-3.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8b1909a2a42f00ff3c13ac0bc9d2c61aa089b2b1549eaa07e879da73307c5e60c7d6869653ec71769b6f8a44e068486d679dcacba617881b942365972cc0b08f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/is-reference"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "locate-character",
+      "version": "3.0.0",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|locate-character@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/locate-character@3.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/locate-character/-/locate-character-3.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "496d77c2cec18da789ea9ed0e823b69dc85b6047375f727a5ab9934c3b68ef230fa954994d4c98e538db89df806fc80b9c04edca062d8832091904519f664e88"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/locate-character"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "magic-string",
+      "version": "0.30.21",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|magic-string@0.30.21",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/magic-string@0.30.21",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bddd85e1853211728670b1e8abe4c4c828f1b9e49e1e7171cb28cda7cd328345d5e2f5219c37abfe5bef96a33f6ab0796d740de4adbfde88a7c82472c7c4f609"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/magic-string"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "svelte",
+      "version": "5.55.5",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|svelte@5.55.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/svelte@5.55.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/svelte/-/svelte-5.55.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "dae0acfcb67dbacf8092d77360933c39cc50f2a9cf4b592968eeecc864ff3203bee90af561b97e4ea3eafbdeeeecf1ea9a6325c9ee59928c9738dcb99a38c06f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/svelte"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "zimmerframe",
+      "version": "1.1.4",
+      "bom-ref": "qt-sm-webview-ui@0.0.0|zimmerframe@1.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/zimmerframe@1.1.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/zimmerframe/-/zimmerframe-1.1.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "079f0d18112873c63d31658240697f82af710427b822228cd1adb1ec665d40a396e44c6bf12d56db827a3a03359e32bcc42446bc02482ff3315c77fa4a499029"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/zimmerframe"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "qt-sm-webview-ui@0.0.0",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@lucide/svelte@1.18.0",
+        "qt-sm-webview-ui@0.0.0|svelte@5.55.5"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@jridgewell/gen-mapping@0.3.13",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5",
+        "qt-sm-webview-ui@0.0.0|@jridgewell/trace-mapping@0.3.31"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@jridgewell/remapping@2.3.5",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@jridgewell/gen-mapping@0.3.13",
+        "qt-sm-webview-ui@0.0.0|@jridgewell/trace-mapping@0.3.31"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@jridgewell/resolve-uri@3.1.2"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@jridgewell/trace-mapping@0.3.31",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@jridgewell/resolve-uri@3.1.2",
+        "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@lucide/svelte@1.18.0",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|svelte@5.55.5"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@sveltejs/acorn-typescript@1.0.9",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|acorn@8.16.0"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@types/estree@1.0.8"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|@types/trusted-types@2.0.7"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|acorn@8.16.0"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|aria-query@5.3.1"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|axobject-query@4.1.0"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|clsx@2.1.1"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|devalue@5.7.1"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|esm-env@1.2.2"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|esrap@2.2.5",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|is-reference@3.0.3",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@types/estree@1.0.8"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|locate-character@3.0.0"
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|magic-string@0.30.21",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|svelte@5.55.5",
+      "dependsOn": [
+        "qt-sm-webview-ui@0.0.0|@jridgewell/remapping@2.3.5",
+        "qt-sm-webview-ui@0.0.0|@jridgewell/sourcemap-codec@1.5.5",
+        "qt-sm-webview-ui@0.0.0|@sveltejs/acorn-typescript@1.0.9",
+        "qt-sm-webview-ui@0.0.0|@types/estree@1.0.8",
+        "qt-sm-webview-ui@0.0.0|@types/trusted-types@2.0.7",
+        "qt-sm-webview-ui@0.0.0|acorn@8.16.0",
+        "qt-sm-webview-ui@0.0.0|aria-query@5.3.1",
+        "qt-sm-webview-ui@0.0.0|axobject-query@4.1.0",
+        "qt-sm-webview-ui@0.0.0|clsx@2.1.1",
+        "qt-sm-webview-ui@0.0.0|devalue@5.7.1",
+        "qt-sm-webview-ui@0.0.0|esm-env@1.2.2",
+        "qt-sm-webview-ui@0.0.0|esrap@2.2.5",
+        "qt-sm-webview-ui@0.0.0|is-reference@3.0.3",
+        "qt-sm-webview-ui@0.0.0|locate-character@3.0.0",
+        "qt-sm-webview-ui@0.0.0|magic-string@0.30.21",
+        "qt-sm-webview-ui@0.0.0|zimmerframe@1.1.4"
+      ]
+    },
+    {
+      "ref": "qt-sm-webview-ui@0.0.0|zimmerframe@1.1.4"
+    }
+  ]
+}
