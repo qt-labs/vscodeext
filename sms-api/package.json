@@ -1,0 +1,35 @@
+{
+  "name": "sms-api",
+  "version": "0.1.0",
+  "description": "TypeScript client API for Qt Software Management Service",
+  "main": "out/index.js",
+  "types": "out/index.d.ts",
+  "files": [
+    "out"
+  ],
+  "scripts": {
+    "compile": "tsc",
+    "compile-test": "tsc -p tsconfig.test.json",
+    "watch": "tsc --watch",
+    "pretest": "npm run compile && npm run lint",
+    "test:integration": "npm run compile-test && node out/test/integration.js",
+    "test:integration:launcher": "npm run compile-test && node out/test/integration-launcher.js",
+    "test:integration:auth": "npm run compile-test && node out/test/integration-auth.js",
+    "test:unit": "npm run compile-test && node --test --test-reporter spec out/test/unit/*.test.js",
+    "ci-lint": "npm run prettierCheck && eslint . ",
+    "lint": "npm run prettierWrite && eslint . --fix --cache",
+    "prettierWrite": "npm run prettierBase -- --write \"**/*.{js,ts,mts,json,mjs,cjs}\" --log-level silent",
+    "prettierCheck": "npm run prettierBase -- --check \"**/*.{js,ts,mts,json,mjs,cjs}\"",
+    "prettierBase": "prettier --config \"../common/.prettierrc\" --ignore-path \"../common/.prettierignore\" --cache --cache-strategy metadata"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.21.0",
+    "@types/node": "^20.17.0",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  }
+}
