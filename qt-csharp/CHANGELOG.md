@@ -13,3 +13,6 @@
 - Integrate Qt Bridge projects with the QML Language Server and live preview.
 - Integrate Qt Bridge C# project and QML item templates with the Qt New Item
   wizard.
+- Debug QML code of Qt Bridge applications with the QML debugger, using
+  `${command:qt-csharp.launchTargetPath}` in `launch.json`. Projects created
+  from the Qt Bridge C# project template include this configuration.
