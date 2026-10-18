@@ -56,6 +56,42 @@ export type {
   ServiceLauncherEvents
 } from './client';
 
-// Authentication
+// Settings file locations
+export {
+  genericDataLocation,
+  qtIniPath,
+  qtCompanyIniPath,
+  legacyQtAccountIniPath
+} from './paths';
+export type { LogLevel, LogCallback } from './types';
+
+// QSettings compatible INI codec
+export { IniDocument } from './ini';
+
+// Qt account authentication (OIDC in the browser, tokens in Qt.ini)
+export {
+  QtCredentialStorage,
+  emptyOidcTokens,
+  OIDC_EXPIRY_MARGIN_SECS
+} from './credential-storage';
+export type {
+  OidcTokens,
+  QtCredentialStorageOptions
+} from './credential-storage';
+export {
+  OidcAuthenticator,
+  OidcAuthError,
+  OidcError,
+  OIDC_DEFAULTS,
+  OIDC_ENV,
+  applyOidcEnvOverrides,
+  defaultOidcClientConfig,
+  decodeJwtPayload,
+  normalizeIssuer
+} from './oidc';
+export type { OidcClientConfig, OidcAuthenticatorOptions } from './oidc';
+export { BearerTokenProvider } from './bearer-token';
+
+// Legacy email and password login (removed in a follow-up commit)
 export { QtAccountStorage, QtAccount } from './qt-account';
-export type { QtAccountEvents, LogLevel, LogCallback } from './qt-account';
+export type { QtAccountEvents } from './qt-account';

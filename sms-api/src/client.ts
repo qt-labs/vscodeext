@@ -16,7 +16,7 @@ import {
   type PromptHandler,
   type MessageHandler
 } from './jsonrpc';
-import { QtAccountStorage } from './qt-account';
+import { qtCompanyIniPath } from './paths';
 import {
   type SmsError,
   type PackageReference,
@@ -119,8 +119,7 @@ function parseLicenseAgreement(obj: Record<string, unknown>): LicenseAgreement {
 
 function parseUnsatisfiedRule(obj: Record<string, unknown>): UnsatisfiedRule {
   const rule = (obj.rule as Record<string, unknown> | undefined) ?? {};
-  const pkgs =
-    (obj.packages as Record<string, unknown>[] | undefined) ?? [];
+  const pkgs = (obj.packages as Record<string, unknown>[] | undefined) ?? [];
 
   const ruleType = (rule.ruleType as string | undefined) ?? '';
   const conditionType = (rule.conditionType as string | undefined) ?? '';
@@ -163,7 +162,11 @@ export class Session extends EventEmitter {
   private readonly _connectTimeoutMs: number;
   private readonly _userAgent: string;
 
-  constructor(userAgent?: string, socketPath?: string, connectTimeoutMs?: number) {
+  constructor(
+    userAgent?: string,
+    socketPath?: string,
+    connectTimeoutMs?: number
+  ) {
     super();
     this._userAgent = userAgent ?? 'sms-api';
     this._socketPath = socketPath ?? IPC.defaultSocket;
@@ -373,7 +376,7 @@ export class ServiceLauncher extends EventEmitter {
     }
 
     // 3. Read serviceInstallPath from QtCompany.ini (set by bootstrap)
-    const iniPath = QtAccountStorage.defaultQtCompanyPath();
+    const iniPath = qtCompanyIniPath();
     try {
       const content = fs.readFileSync(iniPath, 'utf-8');
       const match = /^serviceInstallPath\s*=\s*(.+)$/m.exec(content);
@@ -605,12 +608,7 @@ export class Packages {
    * Sends a cancel request to the service which aborts the active download.
    */
   async cancel(callbacks?: JobCallbacks): Promise<void> {
-    await this.callService(
-      IPC.methods.cancel,
-      {},
-      () => undefined,
-      callbacks
-    );
+    await this.callService(IPC.methods.cancel, {}, () => undefined, callbacks);
   }
 
   // ── Query commands ─────────────────────────────────────────────────────
