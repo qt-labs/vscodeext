@@ -38,7 +38,7 @@ export class AccountViewProvider implements vscode.WebviewViewProvider {
       return;
     }
     this._view.description = this._session?.account.label ?? '';
-    this._view.webview.html = getHtml(!!this._session);
+    this._view.webview.html = getHtml(this._session?.account.label);
   }
 }
 
@@ -55,17 +55,40 @@ export function registerAccountView(
   return provider;
 }
 
-function getHtml(loggedIn: boolean): string {
-  const body = loggedIn
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (ch) => {
+    switch (ch) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      default:
+        return '&#39;';
+    }
+  });
+}
+
+function getHtml(accountLabel: string | undefined): string {
+  const body = accountLabel
     ? /*html*/ `
-        <p>Signed in to your Qt Account.</p>
+        <p>Signed in as <strong>${escapeHtml(accountLabel)}</strong>.</p>
         <button data-command="${EXTENSION_ID}.logout">Sign Out</button>
       `
     : /*html*/ `
-        <p>Sign in to your Qt Account to manage packages.</p>
+        <p>Sign in to your Qt Account in the browser to install Qt.</p>
         <button data-command="${EXTENSION_ID}.login">Sign In</button>
         <button class="secondary" data-command="${EXTENSION_ID}.resetPassword">
           Forgot Password
+        </button>
+        <button
+          class="secondary"
+          data-command="${EXTENSION_ID}.loginWithPersonalAccessToken"
+        >
+          Use a Personal Access Token
         </button>
         <p class="or">or</p>
         <button data-command="${EXTENSION_ID}.createAccount">

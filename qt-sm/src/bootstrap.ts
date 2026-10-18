@@ -17,7 +17,7 @@ import {
   Isx64,
   OSExeSuffix
 } from 'qt-lib';
-import { QtAccountStorage, ServiceLauncher } from 'sms-api';
+import { ServiceLauncher, qtCompanyIniPath } from 'sms-api';
 
 const logger = createLogger('bootstrap');
 
@@ -55,7 +55,7 @@ function getBootstrapUrl(): string | undefined {
  * re-downloaded.
  */
 function isBootstrapInstalled(): boolean {
-  const iniPath = QtAccountStorage.defaultQtCompanyPath();
+  const iniPath = qtCompanyIniPath();
   if (!fs.existsSync(iniPath)) {
     return false;
   }
@@ -336,9 +336,7 @@ export async function installBootstrap(): Promise<void> {
   }
 
   if (isBootstrapInstalled()) {
-    logger.info(
-      `Bootstrap already installed ("${QtAccountStorage.defaultQtCompanyPath()}" exists)`
-    );
+    logger.info(`Bootstrap already installed ("${qtCompanyIniPath()}" exists)`);
     // Service binary exists but is not running — try to start it
     const started = await launcher.startService();
     if (started) {

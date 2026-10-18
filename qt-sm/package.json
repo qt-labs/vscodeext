@@ -101,6 +101,32 @@
         "icon": "$(sign-in)"
       },
       {
+        "command": "qt-sm.loginWithPersonalAccessToken",
+        "title": "%qt-sm.command.loginWithPersonalAccessToken.title%",
+        "category": "Qt",
+        "icon": "$(key)"
+      },
+      {
+        "command": "qt-sm.reopenSignIn",
+        "title": "%qt-sm.command.reopenSignIn.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.cancelSignIn",
+        "title": "%qt-sm.command.cancelSignIn.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.openTroubleshooting",
+        "title": "%qt-sm.command.openTroubleshooting.title%",
+        "category": "Qt"
+      },
+      {
+        "command": "qt-sm.openTelemetryStatement",
+        "title": "%qt-sm.command.openTelemetryStatement.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-sm.logout",
         "title": "%qt-sm.command.logout.title%",
         "category": "Qt",
@@ -135,11 +161,31 @@
           "when": "!qt-sm.isLoggedIn"
         },
         {
+          "command": "qt-sm.loginWithPersonalAccessToken",
+          "when": "!qt-sm.isLoggedIn"
+        },
+        {
           "command": "qt-sm.logout",
           "when": "qt-sm.isLoggedIn"
         },
         {
           "command": "qt-sm.removePackage",
+          "when": "false"
+        },
+        {
+          "command": "qt-sm.reopenSignIn",
+          "when": "false"
+        },
+        {
+          "command": "qt-sm.cancelSignIn",
+          "when": "false"
+        },
+        {
+          "command": "qt-sm.openTroubleshooting",
+          "when": "false"
+        },
+        {
+          "command": "qt-sm.openTelemetryStatement",
           "when": "false"
         }
       ],
