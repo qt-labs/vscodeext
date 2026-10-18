@@ -15,7 +15,9 @@ import {
   EXTENSION_ID,
   CONF_INSTALLATION_PATH,
   CREATE_ACCOUNT_URL,
-  RESET_PASSWORD_URL
+  RESET_PASSWORD_URL,
+  TELEMETRY_STATEMENT_URL,
+  TROUBLESHOOT_URL
 } from '@/constants';
 import {
   searchPackages,
@@ -24,6 +26,7 @@ import {
   setInstallationPath,
   onInstallationPathChanged,
   login,
+  loginWithPersonalAccessToken,
   logout,
   resetTestState,
   setExtensionContext,
@@ -31,7 +34,11 @@ import {
   syncInstalledPackages
 } from '@/commands';
 import { disconnect } from '@/service-connection';
-import { registerAuthenticationProvider } from '@/auth-provider';
+import {
+  registerAuthenticationProvider,
+  type QtAccountAuthenticationProvider,
+  type SignInState
+} from '@/auth-provider';
 import { registerAccountView } from '@/account-view';
 import { initSurvey, disposeSurvey } from '@/survey';
 import {
@@ -195,6 +202,13 @@ export function getAccountLabel(): string | undefined {
   return accountLabel;
 }
 
+// Progress of the browser sign-in, rendered by the walkthrough's sign-in step.
+let authProviderRef: QtAccountAuthenticationProvider | undefined;
+
+export function getSignInState(): SignInState {
+  return authProviderRef?.signInState ?? { phase: 'idle' };
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   initLogger(EXTENSION_ID);
   logger.info(`Activating ${context.extension.id}`);
@@ -245,6 +259,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const authProvider = registerAuthenticationProvider(context);
   setAuthProvider(authProvider);
+  authProviderRef = authProvider;
 
   // Activity bar account view
   const accountViewProvider = registerAccountView(context);
@@ -261,7 +276,8 @@ export async function activate(context: vscode.ExtensionContext) {
     accountViewProvider.setSession(session);
   };
 
-  // Check login status at startup
+  // Check login status at startup. The session comes from the shared Qt.ini,
+  // so a login made by another Qt tool counts too.
   const sessions = await authProvider.getSessions();
   if (sessions.length > 0 && sessions[0]) {
     logger.info(`Already logged in as ${sessions[0].account.label}`);
@@ -269,19 +285,9 @@ export async function activate(context: vscode.ExtensionContext) {
     setAccountSession(sessions[0]);
     syncInstalledPackages();
   } else {
-    logger.info('No active session, attempting to renew stored credentials');
-    const renewed = await authProvider.tryRenewSession();
-    if (renewed) {
-      logger.info(`Session renewed for ${renewed.account.label}`);
-      setLoggedIn(true);
-      const renewedSessions = await authProvider.getSessions();
-      setAccountSession(renewedSessions[0]);
-      syncInstalledPackages();
-    } else {
-      logger.info('No stored credentials found, user is not logged in');
-      setLoggedIn(false);
-      setAccountSession(undefined);
-    }
+    logger.info('No stored credentials found, user is not logged in');
+    setLoggedIn(false);
+    setAccountSession(undefined);
   }
 
   // Keep context key and account view in sync when sessions change
@@ -309,6 +315,9 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  // Renew an expired login in the background; a revoked one signs out.
+  void authProvider.startBackgroundRenewal();
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.searchPackages`,
@@ -327,6 +336,23 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.logout`, async () =>
       logout(authProvider)
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.loginWithPersonalAccessToken`,
+      async () => loginWithPersonalAccessToken(authProvider)
+    ),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.reopenSignIn`, () => {
+      authProvider.reopenBrowser();
+    }),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.cancelSignIn`, () => {
+      authProvider.cancelSignIn();
+    }),
+    vscode.commands.registerCommand(`${EXTENSION_ID}.openTroubleshooting`, () =>
+      vscode.env.openExternal(vscode.Uri.parse(TROUBLESHOOT_URL))
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.openTelemetryStatement`,
+      () => vscode.env.openExternal(vscode.Uri.parse(TELEMETRY_STATEMENT_URL))
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.resetPassword`, () =>
       vscode.env.openExternal(vscode.Uri.parse(RESET_PASSWORD_URL))
