@@ -208,6 +208,8 @@ interface QmlBacktraceResponse extends QmlResponse<QmlBacktrace> {
 export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
   private readonly _ui = new QmlEngineUI();
   private _buildDirs: string[] = [];
+  // Maps build copies of QML files back to their sources, if set.
+  sourceRedirect: ((localPath: string) => string | undefined) | undefined;
   private _connectionState = QmlDebugConnectionState.Unavailable;
   private readonly _callbackForToken = new Map<
     number,
@@ -462,13 +464,15 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
           return true;
         })
         .map(async (frame) => {
-          const physicalPath = await fileFinder.findFile(frame.script);
-          if (!physicalPath) {
+          const foundPath = await fileFinder.findFile(frame.script);
+          if (!foundPath) {
             const err =
               `Cannot find physical path for: "${frame.script}".` +
               ' Use "buildDirs" to set the build directories in "launch.json".';
             throw new Error(err);
           }
+          // Show the source instead of a copy that the build made of it.
+          const physicalPath = this.sourceRedirect?.(foundPath) ?? foundPath;
           const parsedPath = path.parse(physicalPath);
           return new StackFrame(
             frame.index,
