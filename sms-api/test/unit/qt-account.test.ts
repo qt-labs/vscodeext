@@ -31,8 +31,7 @@ const TEST_JWT = [
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
   Buffer.from(
     JSON.stringify({ sub: 'user-42', email: 'test@qt.io', iat: 1700000000 })
-  )
-    .toString('base64url'),
+  ).toString('base64url'),
   'fake-signature'
 ].join('.');
 
@@ -217,13 +216,7 @@ describe('QtAccountStorage paths', () => {
 
   it('defaultQtCompanyPath returns a path ending with QtCompany.ini', () => {
     const p = QtAccountStorage.defaultQtCompanyPath();
-    assert.ok(
-      p.endsWith('QtCompany.ini'),
-      `Expected QtCompany.ini, got: ${p}`
-    );
-    assert.ok(
-      p.includes('QtCompany'),
-      `Expected QtCompany in path, got: ${p}`
-    );
+    assert.ok(p.endsWith('QtCompany.ini'), `Expected QtCompany.ini, got: ${p}`);
+    assert.ok(p.includes('QtCompany'), `Expected QtCompany in path, got: ${p}`);
   });
 });

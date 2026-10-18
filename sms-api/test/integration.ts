@@ -345,10 +345,25 @@ const INSTALL_OUTPUT_DIR = path.join(MOCK_HOME_DIR, 'Qt');
 //   Windows: ~/AppData/Local/<AppName>
 const INSTALL_JOURNAL_DIR =
   process.platform === 'darwin'
-    ? path.join(MOCK_HOME_DIR, 'Library', 'Application Support', 'QtSoftwareManagementService')
+    ? path.join(
+        MOCK_HOME_DIR,
+        'Library',
+        'Application Support',
+        'QtSoftwareManagementService'
+      )
     : process.platform === 'win32'
-      ? path.join(MOCK_HOME_DIR, 'AppData', 'Local', 'QtSoftwareManagementService')
-      : path.join(MOCK_HOME_DIR, '.local', 'share', 'QtSoftwareManagementService');
+      ? path.join(
+          MOCK_HOME_DIR,
+          'AppData',
+          'Local',
+          'QtSoftwareManagementService'
+        )
+      : path.join(
+          MOCK_HOME_DIR,
+          '.local',
+          'share',
+          'QtSoftwareManagementService'
+        );
 const INSTALL_JOURNAL_PATH = path.join(
   INSTALL_JOURNAL_DIR,
   'installationJournal.json'
@@ -705,7 +720,11 @@ async function main(): Promise<void> {
     }
 
     // ── Connection tests ──
-    const session = new Session('integration-test', socketPath, config.connectTimeoutMs);
+    const session = new Session(
+      'integration-test',
+      socketPath,
+      config.connectTimeoutMs
+    );
 
     session.on('stateChanged', (state: SessionState) => {
       log(`  [session] state -> ${state}`);

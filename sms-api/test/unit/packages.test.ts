@@ -136,7 +136,12 @@ describe('Packages', () => {
         server.sendJsonRpc(conn, {
           jsonrpc: '2.0',
           method: 'service/progress',
-          params: { id: reqId, progress: 0.5, type: 'download', details: 'Downloading' }
+          params: {
+            id: reqId,
+            progress: 0.5,
+            type: 'download',
+            details: 'Downloading'
+          }
         });
 
         const info = await progressD.promise;
@@ -322,7 +327,9 @@ describe('Packages', () => {
     it('sends packages/cancel and resolves on success', async () => {
       // Start an install so there is an in-flight operation
       const installMsgPromise = server.nextMessage();
-      const installPromise = packages.install([{ id: 'qt6-base', version: '6.10' }]);
+      const installPromise = packages.install([
+        { id: 'qt6-base', version: '6.10' }
+      ]);
 
       const { payload: installPayload, conn } = await installMsgPromise;
       const installReqId = installPayload.id as string;
@@ -333,7 +340,9 @@ describe('Packages', () => {
 
       const { payload: cancelPayload } = await cancelMsgPromise;
       assert.equal(cancelPayload.method, 'packages/cancel');
-      assert.ok(typeof cancelPayload.id === 'string' && cancelPayload.id.length > 0);
+      assert.ok(
+        typeof cancelPayload.id === 'string' && cancelPayload.id.length > 0
+      );
 
       const cancelReqId = cancelPayload.id as string;
 
@@ -501,7 +510,12 @@ describe('Packages', () => {
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
         method: 'service/progress',
-        params: { id: reqId, progress: 0.5, type: 'install', message: 'Extracting archives' }
+        params: {
+          id: reqId,
+          progress: 0.5,
+          type: 'install',
+          message: 'Extracting archives'
+        }
       });
 
       const info = await progressD.promise;
@@ -718,9 +732,7 @@ describe('Packages', () => {
       const resultPromise = packages.install(
         [{ id: 'qt6-base', version: '6.10' }],
         {
-          preAnsweredAgreements: [
-            { id: 'gplv3', answer: 'Accept' }
-          ]
+          preAnsweredAgreements: [{ id: 'gplv3', answer: 'Accept' }]
         }
       );
 
