@@ -85,7 +85,8 @@ describe('Cache', () => {
 
       const msgPromise = server.nextMessage();
       const resultPromise = cache.updateCache({
-        onProgress: (info) => progressD.resolve({ progress: info.progress, type: info.type })
+        onProgress: (info) =>
+          progressD.resolve({ progress: info.progress, type: info.type })
       });
 
       const { payload, conn } = await msgPromise;
@@ -94,7 +95,12 @@ describe('Cache', () => {
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
         method: 'service/progress',
-        params: { id: reqId, progress: 0.75, type: 'query', message: 'Fetching metadata' }
+        params: {
+          id: reqId,
+          progress: 0.75,
+          type: 'query',
+          message: 'Fetching metadata'
+        }
       });
 
       const result = await progressD.promise;
