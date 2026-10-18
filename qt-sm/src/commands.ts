@@ -56,6 +56,7 @@ import {
   refreshInstalledPackagesView
 } from '@/installed-packages-view';
 import {
+  isWalkthroughOpen,
   refreshWalkthrough,
   refreshLatestFrameworkState,
   resetWalkthroughState
@@ -1041,7 +1042,10 @@ async function validateAndSetInstallationPath(insPath: string): Promise<void> {
   }
 }
 
-/** Sign in to the Qt Account in the browser. */
+/**
+ * Sign in to the Qt Account in the browser. Failures are shown in the
+ * walkthrough's sign-in card when it is open, otherwise as a notification.
+ */
 export async function login(
   authProvider: QtAccountAuthenticationProvider
 ): Promise<void> {
@@ -1060,6 +1064,9 @@ export async function login(
       return;
     }
     logger.error(`Qt Account login failed: ${msg}`);
+    if (isWalkthroughOpen()) {
+      return; // the sign-in card shows the failure
+    }
     const troubleshoot = 'Troubleshoot';
     void vscode.window
       .showErrorMessage(`Qt Account sign-in failed: ${msg}`, troubleshoot)

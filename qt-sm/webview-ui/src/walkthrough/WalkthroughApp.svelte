@@ -4,10 +4,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import type { MessageToWebview, MessageToExtension, WalkthroughStepData } from './types';
+  import type {
+    MessageToWebview,
+    MessageToExtension,
+    PrivacyKey,
+    WalkthroughStepData
+  } from './types';
   import Walkthrough from './Walkthrough.svelte';
 
-  // @ts-ignore — acquireVsCodeApi is injected by the host
+  // acquireVsCodeApi is injected by the host; see vscode-webview.d.ts.
   const vscodeApi =
     typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : undefined;
 
@@ -69,6 +74,26 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     post({ type: 'markDone' });
   }
 
+  function handleSignInContinue() {
+    // The host persists the choices and answers with 'stepCompleted'.
+    post({ type: 'signInContinue' });
+  }
+
+  function handlePrivacyOption(key: PrivacyKey, enabled: boolean) {
+    // Optimistic local update so the checkbox does not flicker; the next
+    // 'init' from the host is authoritative.
+    const idx = steps.findIndex((s) => s.signIn !== undefined);
+    const signIn = idx === -1 ? undefined : steps[idx].signIn;
+    if (signIn) {
+      steps[idx] = {
+        ...steps[idx],
+        signIn: { ...signIn, privacy: { ...signIn.privacy, [key]: enabled } }
+      };
+      steps = [...steps];
+    }
+    post({ type: 'privacyOption', key, enabled });
+  }
+
   // Register listener immediately at module evaluation time — NOT in $effect.
   // This guarantees it's ready before the extension's setTimeout fires.
   function handleMessage(event: MessageEvent) {
@@ -110,6 +135,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
       onreview={handleReview}
       onreset={handleReset}
       onmarkdone={handleMarkDone}
+      onsignincontinue={handleSignInContinue}
+      onprivacy={handlePrivacyOption}
     />
   {:else}
     <div class="loading">Loading…</div>
