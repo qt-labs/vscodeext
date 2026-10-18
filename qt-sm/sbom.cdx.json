@@ -168,9 +168,9 @@
     {
       "type": "library",
       "name": "qt-lib",
-      "version": "1.17.0",
-      "bom-ref": "qt-sm@0.1.5|qt-lib@1.17.0",
-      "purl": "pkg:npm/qt-lib@1.17.0",
+      "version": "1.19.0",
+      "bom-ref": "qt-sm@0.1.5|qt-lib@1.19.0",
+      "purl": "pkg:npm/qt-lib@1.19.0",
       "properties": [
         {
           "name": "cdx:npm:package:path",
@@ -197,7 +197,7 @@
       "ref": "qt-sm@0.1.5",
       "dependsOn": [
         "qt-sm@0.1.5|module-alias@2.3.4",
-        "qt-sm@0.1.5|qt-lib@1.17.0",
+        "qt-sm@0.1.5|qt-lib@1.19.0",
         "qt-sm@0.1.5|sms-api@0.1.0"
       ]
     },
@@ -205,7 +205,7 @@
       "ref": "qt-sm@0.1.5|module-alias@2.3.4"
     },
     {
-      "ref": "qt-sm@0.1.5|qt-lib@1.17.0"
+      "ref": "qt-sm@0.1.5|qt-lib@1.19.0"
     },
     {
       "ref": "qt-sm@0.1.5|sms-api@0.1.0"
