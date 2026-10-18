@@ -129,7 +129,7 @@ export interface PackageFilters {
   hostArch?: string;
   targetArch?: string;
   compiler?: string;
-  packageType?: string
+  packageType?: string;
   packagePresentation?: string;
   packageVersion?: string;
   packageId?: string;
@@ -273,6 +273,11 @@ export interface AuthCredentials {
   readonly jwt: string;
   readonly userId: string;
 }
+
+// ── Logging ──────────────────────────────────────────────────────────────────
+
+export type LogLevel = 'info' | 'warn' | 'error';
+export type LogCallback = (level: LogLevel, message: string) => void;
 
 // ── Settings types ────────────────────────────────────────────────────────────
 
