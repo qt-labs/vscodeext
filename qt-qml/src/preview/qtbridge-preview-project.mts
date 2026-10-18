@@ -69,6 +69,29 @@ export function createQtBridgeResourceLookup(
   return (resourcePath) => sources.get(resourcePath.replace(/^(qrc)?:/, ''));
 }
 
+/**
+ * Return the source redirect for debugging `program` if it is the
+ * application host of a Qt Bridge project, or undefined otherwise.
+ */
+export function createQtBridgeDebugSourceRedirect(
+  program: string,
+  projects: readonly QtBridgeProject[]
+) {
+  const target = normalizePathForComparison(path.resolve(program));
+  const metadata = projects
+    .map((project) => project.metadata)
+    .find(
+      (candidate) =>
+        candidate?.application !== undefined &&
+        normalizePathForComparison(
+          path.resolve(candidate.application.managedHostPath)
+        ) === target
+    );
+  return metadata
+    ? createQtBridgeSourceRedirect(metadata, path.dirname(program))
+    : undefined;
+}
+
 const defaultServices = {
   getProjects: getQtBridgeProjects,
   getProjectForUri: getQtBridgeProjectForUri,
