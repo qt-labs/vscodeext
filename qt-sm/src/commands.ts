@@ -10,8 +10,9 @@ import * as path from 'path';
 import {
   Packages,
   Settings,
-  QtAccountStorage,
   IPC,
+  legacyQtAccountIniPath,
+  qtCompanyIniPath,
   type PackageData,
   type LicenseAnswer,
   type UserPrompt,
@@ -35,12 +36,14 @@ import {
   EXTENSION_ID,
   CONF_INSTALLATION_PATH,
   CONF_RESET_LICENSE_AFTER_INSTALL,
-  DEFAULT_BACKEND_URL
+  DEFAULT_BACKEND_URL,
+  TROUBLESHOOT_URL
 } from '@/constants';
 import { ensureConnected, disconnect } from '@/service-connection';
 import { coreAPI } from '@/extension';
 import {
   AUTH_PROVIDER_ID,
+  LOGIN_CANCELLED_MESSAGE,
   type QtAccountAuthenticationProvider
 } from '@/auth-provider';
 import { showLicenseAgreementPanel } from '@/license-panel';
@@ -681,8 +684,15 @@ async function resetLicenseConsents(): Promise<void> {
     return;
   }
 
-  const sessions = await authProviderInstance?.getSessions();
-  const jwt = sessions?.[0]?.accessToken;
+  let jwt: string | undefined;
+  try {
+    jwt = await authProviderInstance?.acquireAccessToken();
+  } catch (err) {
+    logger.warn(
+      `Cannot reset license consents: ${err instanceof Error ? err.message : String(err)}`
+    );
+    return;
+  }
   if (!jwt) {
     logger.warn('Cannot reset license consents: no active session');
     return;
@@ -1031,6 +1041,7 @@ async function validateAndSetInstallationPath(insPath: string): Promise<void> {
   }
 }
 
+/** Sign in to the Qt Account in the browser. */
 export async function login(
   authProvider: QtAccountAuthenticationProvider
 ): Promise<void> {
@@ -1044,13 +1055,34 @@ export async function login(
   try {
     await authProvider.createSession([AUTH_PROVIDER_ID]);
   } catch (err) {
-    // createSession already notified the user; just log here to avoid
-    // showing the same failure twice.
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg !== 'Login cancelled') {
-      logger.error(`Qt Account login failed: ${msg}`);
+    if (msg === LOGIN_CANCELLED_MESSAGE) {
+      return;
     }
+    logger.error(`Qt Account login failed: ${msg}`);
+    const troubleshoot = 'Troubleshoot';
+    void vscode.window
+      .showErrorMessage(`Qt Account sign-in failed: ${msg}`, troubleshoot)
+      .then((pick) => {
+        if (pick === troubleshoot) {
+          void vscode.env.openExternal(vscode.Uri.parse(TROUBLESHOOT_URL));
+        }
+      });
   }
+}
+
+/** Store a personal access token instead of signing in with the browser. */
+export async function loginWithPersonalAccessToken(
+  authProvider: QtAccountAuthenticationProvider
+): Promise<void> {
+  const sessions = await authProvider.getSessions();
+  if (sessions.length > 0 && sessions[0]) {
+    void vscode.window.showInformationMessage(
+      `Already signed in as ${sessions[0].account.label}`
+    );
+    return;
+  }
+  await authProvider.signInWithPersonalAccessToken();
 }
 
 export async function logout(
@@ -1068,7 +1100,8 @@ export async function logout(
  * This removes:
  *   - The Qt installation directory (e.g. ~/QtAlpha)
  *   - QtCompany.ini (service settings)
- *   - qtaccount.ini (Qt account credentials)
+ *   - The Qt Account credentials in Qt.ini (via sign-out; the file itself is
+ *     shared with other Qt tools and kept) and a legacy qtaccount.ini
  *   - The QtSoftwareManagementService lock file
  *   - The IPC socket / named pipe
  *   - The persisted walkthrough state, so it restarts from step 1
@@ -1105,8 +1138,8 @@ export async function resetTestState(): Promise<void> {
 
   const pathsToRemove = [
     installPath,
-    QtAccountStorage.defaultQtCompanyPath(),
-    QtAccountStorage.defaultPath(),
+    qtCompanyIniPath(),
+    legacyQtAccountIniPath(),
     getServiceLockFilePath(),
     IPC.defaultSocket
   ];
