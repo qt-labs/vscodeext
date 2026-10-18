@@ -6,14 +6,19 @@ import * as vscode from 'vscode';
 import {
   CONF_GET_STARTED_DONE,
   EXTENSION_ID,
-  STATE_WALKTHROUGH_FIRST_APP_DONE
+  STATE_PRIVACY_CRASH_DUMPS,
+  STATE_PRIVACY_USAGE_DATA,
+  STATE_WALKTHROUGH_FIRST_APP_DONE,
+  STATE_WALKTHROUGH_SIGN_IN_ACKNOWLEDGED
 } from '@/constants';
 import { isAnyVersionInstalledOnDisk } from '@/installed-packages-store';
 import { isLatestFrameworkInstalled } from '@/latest-framework';
+import type { SignInPhase } from '@/auth-provider';
 import {
   getAccountLabel,
   getLoggedIn,
-  getRequiredExtensionsContext
+  getRequiredExtensionsContext,
+  getSignInState
 } from './extension';
 import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 
@@ -33,8 +38,9 @@ function createWebviewPanelIcons(context: vscode.ExtensionContext) {
 }
 
 /**
- * Persisted walkthrough state. Only the "Build your first Qt application" step
- * needs persisting — the other steps are derived from live signals (login,
+ * Persisted walkthrough state: the "Build your first Qt application" step,
+ * whether the signed-in card was acknowledged with Continue, and the two
+ * privacy opt-ins. The other steps are derived from live signals (login,
  * installed extensions/framework).
  */
 class WalkthroughStateManager extends BaseStateManager {
@@ -48,6 +54,30 @@ class WalkthroughStateManager extends BaseStateManager {
 
   set firstAppDone(value: boolean) {
     void this._update(STATE_WALKTHROUGH_FIRST_APP_DONE, value);
+  }
+
+  get signInAcknowledged(): boolean {
+    return this._get<boolean>(STATE_WALKTHROUGH_SIGN_IN_ACKNOWLEDGED, false);
+  }
+
+  set signInAcknowledged(value: boolean) {
+    void this._update(STATE_WALKTHROUGH_SIGN_IN_ACKNOWLEDGED, value);
+  }
+
+  get privacyUsageData(): boolean {
+    return this._get<boolean>(STATE_PRIVACY_USAGE_DATA, false);
+  }
+
+  set privacyUsageData(value: boolean) {
+    void this._update(STATE_PRIVACY_USAGE_DATA, value);
+  }
+
+  get privacyCrashDumps(): boolean {
+    return this._get<boolean>(STATE_PRIVACY_CRASH_DUMPS, false);
+  }
+
+  set privacyCrashDumps(value: boolean) {
+    void this._update(STATE_PRIVACY_CRASH_DUMPS, value);
   }
 }
 
@@ -89,12 +119,24 @@ interface WalkthroughAction {
   commandArgs?: unknown;
 }
 
+type PrivacyKey = 'usage' | 'crash';
+
+/** Mirrors `SignInStepState` in webview-ui/src/walkthrough/types.ts. */
+interface SignInStepState {
+  phase: SignInPhase;
+  email?: string;
+  errorMessage?: string;
+  privacy: { usage: boolean; crash: boolean };
+}
+
 interface WalkthroughStepData {
   id: string;
   title: string;
   description: string;
   status: 'locked' | 'active' | 'completed';
   actions?: WalkthroughAction[];
+  /** Only on the sign-in step; the webview renders its SignInCard from it. */
+  signIn?: SignInStepState;
 }
 
 interface WalkthroughConfig {
@@ -113,10 +155,18 @@ interface MessageToWebview {
 }
 
 interface MessageToExtension {
-  type: 'action' | 'review' | 'resetAll' | 'markDone';
+  type:
+    | 'action'
+    | 'review'
+    | 'resetAll'
+    | 'markDone'
+    | 'signInContinue'
+    | 'privacyOption';
   stepId?: string;
   command?: string;
   commandArgs?: unknown;
+  key?: PrivacyKey;
+  enabled?: boolean;
 }
 
 interface StepCompletion {
@@ -144,7 +194,38 @@ function computeStatus(
   return 'locked';
 }
 
+/**
+ * The sign-in step as the webview renders it. While signed in the card shows
+ * the account and the privacy opt-ins (the step completes with Continue);
+ * otherwise it follows the browser hand-off reported by the auth provider.
+ */
+function buildSignInState(context: vscode.ExtensionContext): SignInStepState {
+  const state = getWalkthroughState(context);
+  const live = getSignInState();
+  const phase: SignInPhase = getLoggedIn()
+    ? 'signedIn'
+    : live.phase === 'signedIn'
+      ? 'idle'
+      : live.phase;
+  const result: SignInStepState = {
+    phase,
+    privacy: {
+      usage: state.privacyUsageData,
+      crash: state.privacyCrashDumps
+    }
+  };
+  const email = getAccountLabel();
+  if (email) {
+    result.email = email;
+  }
+  if (phase === 'failed' && live.errorMessage) {
+    result.errorMessage = live.errorMessage;
+  }
+  return result;
+}
+
 function getDefaultConfig(
+  context: vscode.ExtensionContext,
   completion: StepCompletion,
   getStartedDone: boolean
 ): WalkthroughConfig {
@@ -161,41 +242,10 @@ function getDefaultConfig(
       {
         id: 'signin',
         title: 'Sign in to Qt Account',
-        description: s.signin
-          ? `You are currently signed in as ${getAccountLabel() ?? 'your Qt Account'}`
-          : 'Sign in to your Qt Account to get started. This is what lets you download and install Qt.',
+        description:
+          'Sign in to your Qt Account to get started. This is what lets you download and install Qt.',
         status: computeStatus(s.signin, true),
-        actions: s.signin
-          ? [
-              {
-                label: 'Sign Out',
-                primary: true,
-                command: `${EXTENSION_ID}.logout`
-              },
-              {
-                label: 'Reset password',
-                trailing: true,
-                command: `${EXTENSION_ID}.resetPassword`
-              }
-            ]
-          : [
-              {
-                label: 'Sign In',
-                primary: true,
-                command: `${EXTENSION_ID}.login`
-              },
-              { label: 'or', text: true },
-              {
-                label: 'Create Account',
-                primary: true,
-                command: `${EXTENSION_ID}.createAccount`
-              },
-              {
-                label: 'Forgot Password',
-                trailing: true,
-                command: `${EXTENSION_ID}.resetPassword`
-              }
-            ]
+        signIn: buildSignInState(context)
       },
       {
         id: 'extensions',
@@ -283,7 +333,8 @@ export function getStepCompletion(
   areExtensionsInstalled: boolean
 ): StepCompletion {
   return {
-    signin: isLoggedIn,
+    // Signed in, and the signed-in card was acknowledged with Continue.
+    signin: isLoggedIn && getWalkthroughState(context).signInAcknowledged,
     extensions: areExtensionsInstalled,
     framework: isAnyVersionInstalledOnDisk(),
     firstApp: getWalkthroughState(context).firstAppDone
@@ -299,7 +350,7 @@ function computeLiveCompletion(
   context: vscode.ExtensionContext
 ): StepCompletion {
   return {
-    signin: getLoggedIn(),
+    signin: getLoggedIn() && getWalkthroughState(context).signInAcknowledged,
     extensions: getRequiredExtensionsContext(),
     framework: isAnyVersionInstalledOnDisk(),
     firstApp: getWalkthroughState(context).firstAppDone
@@ -319,7 +370,7 @@ function allStepsComplete(c: StepCompletion): boolean {
  * regressing (e.g. the user signing out). No-op if no panel is open.
  */
 function postConfig(completion: StepCompletion, explicitDone?: boolean): void {
-  if (!currentPanel) {
+  if (!currentPanel || !panelContext) {
     return;
   }
   const done =
@@ -329,7 +380,7 @@ function postConfig(completion: StepCompletion, explicitDone?: boolean): void {
   }
   const msg: MessageToWebview = {
     type: 'init',
-    payload: getDefaultConfig(completion, done)
+    payload: getDefaultConfig(panelContext, completion, done)
   };
   void currentPanel.webview.postMessage(msg);
 }
@@ -397,6 +448,25 @@ function wirePanel(
           break;
         }
         case 'review': {
+          break;
+        }
+        case 'signInContinue': {
+          // The signed-in card was acknowledged: the step completes and the
+          // next one unlocks.
+          getWalkthroughState(context).signInAcknowledged = true;
+          refreshWalkthrough();
+          break;
+        }
+        case 'privacyOption': {
+          const state = getWalkthroughState(context);
+          if (msg.key === 'usage') {
+            state.privacyUsageData = msg.enabled === true;
+          } else if (msg.key === 'crash') {
+            state.privacyCrashDumps = msg.enabled === true;
+          }
+          logger.info(
+            `Privacy opt-in "${msg.key ?? ''}" set to ${String(msg.enabled === true)}`
+          );
           break;
         }
         case 'markDone': {
@@ -495,10 +565,28 @@ export function refreshWalkthrough(): void {
 export async function resetWalkthroughState(
   context: vscode.ExtensionContext
 ): Promise<void> {
-  getWalkthroughState(context).firstAppDone = false;
+  const state = getWalkthroughState(context);
+  state.firstAppDone = false;
+  state.signInAcknowledged = false;
+  state.privacyUsageData = false;
+  state.privacyCrashDumps = false;
   // Await so the re-render below reads the cleared flag.
   await setGetStartedDone(false);
   refreshWalkthrough();
+}
+
+/**
+ * The user signed out: the signed-in card has to be acknowledged again after
+ * the next sign-in, and the sign-in step (with everything behind it) reverts.
+ */
+export function markSignedOut(context: vscode.ExtensionContext): void {
+  getWalkthroughState(context).signInAcknowledged = false;
+  refreshWalkthrough();
+}
+
+/** True while the walkthrough panel is open (its sign-in card shows failures). */
+export function isWalkthroughOpen(): boolean {
+  return currentPanel !== undefined;
 }
 
 /**
