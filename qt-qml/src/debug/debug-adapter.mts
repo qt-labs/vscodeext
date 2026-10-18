@@ -633,7 +633,10 @@ export class QmlDebugSession extends LoggingDebugSession {
       // Start the program with the debugger args
       const program = args.program;
       const additionalArgs = args.args ?? [];
-      const command = `${program} ${debuggerArgs ?? ''}`;
+      // The command runs in a shell, so quote the program for paths with
+      // spaces.
+      const quotedProgram = /^".*"$/.test(program) ? program : `"${program}"`;
+      const command = `${quotedProgram} ${debuggerArgs ?? ''}`;
       this._process = await spawnProcessForTool(command, additionalArgs);
 
       if (!this._process.stdout || !this._process.stderr) {
