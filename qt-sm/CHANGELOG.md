@@ -1,5 +1,23 @@
 # Change Log
 
+## Unreleased
+
+🎉 **Added**
+
+- Sign in to the Qt Account in the browser with OpenID Connect (authorization code flow with PKCE)
+- Sign in with a personal access token for windowless use
+- Show the browser sign-in progress in the walkthrough (waiting, stalled, failed, signed in with privacy opt-ins)
+- Pick up logins and logouts made by other Qt tools from the shared Qt.ini
+
+⚠️ **Changed**
+
+- Store the Qt Account credentials in the shared Qt.ini that the Qt Software Management Service reads and renews
+- Update the walkthrough to the "Install Qt" design
+
+🗑️ **Removed**
+
+- Remove the email and password login and the `@qt.io` alpha allow list, the login server controls access now
+
 ## 0.1.4 (Aug 4, 2026)
 
 🎉 **Added**

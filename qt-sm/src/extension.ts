@@ -46,7 +46,8 @@ import {
   getStepCompletion,
   registerWalkthroughSerializer,
   refreshWalkthrough,
-  refreshLatestFrameworkState
+  refreshLatestFrameworkState,
+  markSignedOut
 } from '@/walkthrough-panel';
 
 import { installBootstrap } from '@/bootstrap';
@@ -307,11 +308,15 @@ export async function activate(context: vscode.ExtensionContext) {
         setAccountSession(undefined);
         // Signed out: the sign-in step (and everything gated behind it)
         // reverts, so re-render the walkthrough.
-        refreshWalkthrough();
+        markSignedOut(context);
       } else if (e.changed && e.changed.length > 0) {
         const currentSessions = await authProvider.getSessions();
         setAccountSession(currentSessions[0]);
       }
+    }),
+    // The sign-in card follows the browser hand-off (signing, stalled, failed).
+    authProvider.onDidChangeSignInState(() => {
+      refreshWalkthrough();
     })
   );
 
