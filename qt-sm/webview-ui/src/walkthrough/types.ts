@@ -3,6 +3,17 @@
 
 export type StepStatus = 'locked' | 'active' | 'completed';
 
+export type SignInPhase = 'idle' | 'signing' | 'stalled' | 'failed' | 'signedIn';
+
+export type PrivacyKey = 'usage' | 'crash';
+
+export interface SignInStepState {
+  phase: SignInPhase;
+  email?: string;
+  errorMessage?: string;
+  privacy: { usage: boolean; crash: boolean };
+}
+
 export interface WalkthroughAction {
   label: string;
   primary?: boolean;
@@ -21,6 +32,8 @@ export interface WalkthroughStepData {
   description: string;
   status: StepStatus;
   actions?: WalkthroughAction[];
+  /** Only present on the sign-in step; when present the step renders SignInCard. */
+  signIn?: SignInStepState;
 }
 
 export interface WalkthroughConfig {
@@ -44,4 +57,6 @@ export type MessageToExtension =
   | { type: 'action'; stepId: string; command: string; commandArgs?: unknown }
   | { type: 'review'; stepId: string }
   | { type: 'resetAll' }
-  | { type: 'markDone' };
+  | { type: 'markDone' }
+  | { type: 'signInContinue' }
+  | { type: 'privacyOption'; key: PrivacyKey; enabled: boolean };

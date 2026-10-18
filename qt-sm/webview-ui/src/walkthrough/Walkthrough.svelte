@@ -6,7 +6,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <script lang="ts">
   import { CheckCheck } from '@lucide/svelte';
 
-  import type { WalkthroughStepData } from './types';
+  import type { PrivacyKey, SignInPhase, WalkthroughStepData } from './types';
   import ProgressBar from './ProgressBar.svelte';
   import WalkthroughStep from './WalkthroughStep.svelte';
   import SuccessPanel from './SuccessPanel.svelte';
@@ -24,6 +24,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     onreview?: (stepId: string) => void;
     onreset?: () => void;
     onmarkdone?: () => void;
+    onsignincontinue?: () => void;
+    onprivacy?: (key: PrivacyKey, enabled: boolean) => void;
   }
 
   let {
@@ -37,7 +39,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     onaction,
     onreview,
     onreset,
-    onmarkdone
+    onmarkdone,
+    onsignincontinue,
+    onprivacy
   }: Props = $props();
 
   const completedCount = $derived(
@@ -50,277 +54,401 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   // clear; otherwise the button is a no-op and stays hidden.
   const canReset = $derived(completedCount > 0 || getStartedDone);
 
-  // Partition steps around the active one so the active card
-  // visually breaks out of the compact-row flow.
   const activeIdx = $derived(steps.findIndex((s) => s.status === 'active'));
-  const beforeActive = $derived(
-    activeIdx === -1
-      ? steps.filter((s) => s.status === 'completed')
-      : steps.slice(0, activeIdx)
-  );
-  const activeStep = $derived(
-    activeIdx === -1 ? null : (steps[activeIdx] ?? null)
-  );
-  const afterActive = $derived(
-    activeIdx === -1 ? [] : steps.slice(activeIdx + 1)
-  );
+  const activeStep = $derived(activeIdx === -1 ? null : (steps[activeIdx] ?? null));
+  // Once signed in (1d) the sign-in itself is finished, so the footer points
+  // at the following step.
+  const nextStep = $derived.by(() => {
+    if (!activeStep) return null;
+    if (activeStep.signIn?.phase === 'signedIn') {
+      return steps[activeIdx + 1] ?? activeStep;
+    }
+    return activeStep;
+  });
+
+  // Screen reader announcements for the sign-in phase changes. The initial
+  // phase is not announced, only transitions after the first render.
+  const signInStep = $derived(steps.find((s) => s.signIn !== undefined));
+  let announcement = $state('');
+  let lastAnnounced: SignInPhase | undefined | null = null;
+
+  function announcementFor(phase: SignInPhase | undefined, email?: string) {
+    switch (phase) {
+      case 'signing':
+        return 'Waiting for you to sign in in the browser.';
+      case 'stalled':
+        return "We haven't heard back from the browser yet.";
+      case 'failed':
+        return 'Sign-in failed.';
+      case 'signedIn':
+        return `Signed in as ${email ?? 'your Qt Account'}.`;
+      default:
+        return '';
+    }
+  }
+
+  $effect(() => {
+    const phase = signInStep?.signIn?.phase;
+    const email = signInStep?.signIn?.email;
+    if (lastAnnounced === null) {
+      lastAnnounced = phase;
+      return;
+    }
+    if (phase === lastAnnounced) return;
+    lastAnnounced = phase;
+    announcement = announcementFor(phase, email);
+  });
 </script>
 
-{#snippet markDoneControl()}
-  <button
-    class="mark-done-btn"
-    onclick={() => onmarkdone?.()}
-    aria-label="Mark walkthrough as done"
-  >
-    <CheckCheck size={16} />
-    Mark Done
-  </button>
-{/snippet}
-
 <div class="walkthrough" role="region" aria-label={title}>
-  <!-- Header is always shown, including when the walkthrough is complete -->
-  <div class="header">
-    <h1 class="wt-title">{title}</h1>
-    <p class="wt-description">{description}</p>
+  <div class="head">
+    <h1 class="title">{title}</h1>
   </div>
+  <p class="intro">{description}</p>
 
   <div class="progress-wrapper">
     <ProgressBar completed={completedCount} total={steps.length} />
   </div>
 
+  <div class="steps" role="list" aria-label="Walkthrough steps">
+    {#each steps as step, i (step.id)}
+      <WalkthroughStep
+        {step}
+        index={i}
+        isLast={i === steps.length - 1}
+        previousTitle={i > 0 ? steps[i - 1]?.title : undefined}
+        reviewing={step.id === reviewingStepId}
+        {onaction}
+        {onreview}
+        {onsignincontinue}
+        {onprivacy}
+      />
+    {/each}
+  </div>
+
   {#if allCompleted}
-    <!-- All-complete view: completed rows + success card + footer -->
-    <div class="timeline" role="list" aria-label="Walkthrough steps">
-      <div class="rail rail-completed rail-full" aria-hidden="true"></div>
-      {#each steps as step, i (step.id)}
-        <WalkthroughStep {step} index={i} reviewing={step.id === reviewingStepId} {onaction} {onreview} />
-      {/each}
-    </div>
-
-    <div class="success-wrapper">
-      <SuccessPanel title={successTitle} message={successMessage} />
-    </div>
-
-    <div class="footer">
-      {#if canReset}
-        <button
-          class="reset-link"
-          onclick={() => onreset?.()}
-          aria-label="Reset walkthrough"
-        >
-          Reset walkthrough
-        </button>
-      {/if}
-      <span class="completed-label">Completed</span>
-    </div>
-  {:else}
-    <!-- In-progress view: timeline with active card -->
-    <div class="timeline" role="list" aria-label="Walkthrough steps">
-      <!-- Completed steps before active; carry the blue rail -->
-      {#if beforeActive.length > 0}
-        <div class="completed-region">
-          <div class="rail rail-completed" aria-hidden="true"></div>
-          {#each beforeActive as step, i (step.id)}
-            <WalkthroughStep {step} index={i} reviewing={step.id === reviewingStepId} {onaction} {onreview} />
-          {/each}
-        </div>
-      {/if}
-
-      <!-- Active step + any locked steps below it. The grey rail lives here
-           so it only connects the active circle down to the last locked
-           circle — never dangling below a last-step active card. -->
-      {#if activeStep}
-        <div class="active-region">
-          {#if afterActive.length > 0}
-            <div class="rail rail-locked" aria-hidden="true"></div>
-          {/if}
-
-          {#key activeStep.id}
-            <WalkthroughStep
-              step={activeStep}
-              index={activeIdx}
-              {onaction}
-              {onreview}
-            />
-          {/key}
-
-          {#each afterActive as step, i (step.id)}
-            <WalkthroughStep
-              {step}
-              index={beforeActive.length + 1 + i}
-              reviewing={step.id === reviewingStepId}
-              {onaction}
-              {onreview}
-            />
-          {/each}
-        </div>
-      {/if}
-    </div>
-
-    <div class="footer">
-      {#if canReset}
-        <button
-          class="reset-link"
-          onclick={() => onreset?.()}
-          aria-label="Reset walkthrough"
-        >
-          Reset walkthrough
-        </button>
-      {/if}
-      {#if activeStep}
-        <span class="next-label">Next: {activeStep.title}</span>
-      {/if}
-      <!-- Once the walkthrough is marked done there is nothing left to mark. -->
-      {#if !getStartedDone}
-        {@render markDoneControl()}
-      {/if}
-    </div>
+    <SuccessPanel title={successTitle} message={successMessage} />
   {/if}
+
+  <div class="foot">
+    {#if canReset}
+      <button class="wt-link" onclick={() => onreset?.()} aria-label="Reset walkthrough">
+        Reset walkthrough
+      </button>
+    {/if}
+    {#if allCompleted}
+      <span class="foot-note">Completed</span>
+    {:else if nextStep}
+      <span class="foot-note">Next: {nextStep.title}</span>
+    {/if}
+    <!-- Once the walkthrough is marked done there is nothing left to mark. -->
+    {#if !allCompleted && !getStartedDone}
+      <button
+        class="wt-link mark-done"
+        onclick={() => onmarkdone?.()}
+        aria-label="Mark walkthrough as done"
+      >
+        <CheckCheck size={16} />
+        Mark Done
+      </button>
+    {/if}
+  </div>
+
+  <div class="wt-sr" aria-live="polite">{announcement}</div>
 </div>
 
 <style>
+  /*
+   * Design tokens. Every colour maps to a --vscode-* token with the
+   * proposal's Dark Modern value as the fallback (only used outside VS Code,
+   * e.g. in `vite dev`). Child components read these custom properties.
+   */
   .walkthrough {
-    display: flex;
-    flex-direction: column;
-    max-width: 680px;
+    --wt-fg: var(--vscode-foreground, #cccccc);
+    --wt-desc: var(--vscode-descriptionForeground, #9d9d9d);
+    --wt-bg: var(--vscode-editor-background, #1f1f1f);
+    --wt-tile: var(--vscode-welcomePage-tileBackground, #2a2a2a);
+    --wt-tile-hover: var(--vscode-welcomePage-tileHoverBackground, #333333);
+    --wt-btn: var(--vscode-button-background, #0078d4);
+    --wt-btn-hover: var(--vscode-button-hoverBackground, #026ec1);
+    --wt-btn-fg: var(--vscode-button-foreground, #ffffff);
+    --wt-btn2: var(--vscode-button-secondaryBackground, #313131);
+    --wt-btn2-hover: var(--vscode-button-secondaryHoverBackground, #3c3c3c);
+    --wt-btn2-fg: var(--vscode-button-secondaryForeground, #cccccc);
+    --wt-link: var(--vscode-textLink-foreground, #4daafc);
+    --wt-focus: var(--vscode-focusBorder, #0078d4);
+    --wt-warning: var(--vscode-editorWarning-foreground, #cca700);
+    --wt-error: var(--vscode-editorError-foreground, #f14c4c);
+    --wt-divider: var(--vscode-widget-border, rgba(255, 255, 255, 0.12));
+    --wt-checkbox-bg: var(--vscode-checkbox-background, #313131);
+    --wt-checkbox-border: var(--vscode-checkbox-border, #6b6b6b);
+    --wt-avatar: var(--vscode-badge-background, #5a5a5a);
+    --wt-avatar-fg: var(--vscode-badge-foreground, #ffffff);
+    --wt-rail: var(--vscode-widget-border, rgba(255, 255, 255, 0.16));
+    --wt-ind-border: var(--vscode-widget-border, rgba(255, 255, 255, 0.28));
+    /* Qt brand green, completion card only. */
+    --wt-success: #41cd52;
+    --wt-success-bg: rgba(65, 205, 82, 0.12);
+
+    box-sizing: border-box;
+    max-width: 880px;
     margin: 0 auto;
-    padding: 24px 16px;
-    font-family: var(--vscode-font-family);
-    color: var(--vscode-foreground);
+    padding: 28px 22px 40px;
+    font-family: var(
+      --vscode-font-family,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      'Noto Sans',
+      Roboto,
+      Ubuntu,
+      'Helvetica Neue',
+      sans-serif
+    );
+    font-size: 13px;
+    color: var(--wt-fg);
+    background: var(--wt-bg);
   }
 
-  .header {
-    margin-bottom: 4px;
+  :global(body.vscode-light) .walkthrough,
+  :global(body.vscode-high-contrast-light) .walkthrough {
+    --wt-success: #2e9e3f;
+    --wt-success-bg: rgba(46, 158, 63, 0.1);
   }
 
-  .wt-title {
-    font-size: 1.4em;
+  .walkthrough :global(*),
+  .walkthrough :global(*::before),
+  .walkthrough :global(*::after) {
+    box-sizing: border-box;
+  }
+
+  .walkthrough :global(:focus-visible) {
+    outline: 1px solid var(--wt-focus);
+    outline-offset: 2px;
+  }
+
+  /* ── Header, progress, footer ── */
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 24px;
     font-weight: 600;
-    color: var(--vscode-foreground);
-    margin: 0 0 6px;
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: var(--wt-fg);
   }
 
-  .wt-description {
-    font-size: 0.9em;
-    color: var(--vscode-descriptionForeground);
-    margin: 0 0 16px;
+  .intro {
+    font-size: 13px;
     line-height: 1.5;
+    color: var(--wt-desc);
+    margin: 10px 0 0;
   }
 
   .progress-wrapper {
-    margin-bottom: 28px;
+    margin-top: 26px;
   }
 
-  .timeline {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    margin-left: 6px;
-    gap: 8px;
-  }
-
-  .completed-region,
-  .active-region {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  /* Vertical timeline rail, drawn behind the step circles */
-  .rail {
-    position: absolute;
-    left: 22px;
-    width: 2px;
-    z-index: 0;
-  }
-
-  /* Grey rail within the active region: starts at the active step's circle
-     (≈18px down from the card top) and stops at the *top edge* of the last
-     step's circle so the line ends at the circle instead of running into it.
-     The last row is 48px tall with a 36px circle centred in it, so the circle
-     top sits 42px above the region bottom. Only rendered when locked steps
-     follow, so it never dangles below the active card on the final step. */
-  .rail-locked {
-    top: 18px;
-    bottom: 42px;
-    background: var(
-      --vscode-editorWidget-border,
-      rgba(128, 128, 128, 0.2)
-    );
-  }
-
-  /* Blue rail over the completed portion; extends down to the active
-     step's circle (timeline gap 8px + circle centre 22px ≈ 30px). */
-  .rail-completed {
-    top: 24px;
-    bottom: -30px;
-    background: var(--vscode-button-background);
-  }
-
-  /* When every step is complete the blue rail spans the full timeline. */
-  .rail-full {
-    bottom: 24px;
-  }
-
-  .success-wrapper {
+  .steps {
     margin-top: 32px;
   }
 
-  .footer {
+  .foot {
+    margin-top: 28px;
     display: flex;
     align-items: center;
-    gap: 24px;
-    margin-top: 24px;
-    padding-top: 16px;
+    gap: 32px;
+    font-size: 13px;
   }
 
-  .reset-link {
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--vscode-textLink-foreground);
-    font-size: 0.95em;
-    cursor: pointer;
+  .foot-note {
+    color: var(--wt-desc);
+  }
+
+  .mark-done {
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  /*
+   * ── Shared building blocks ──
+   * Buttons, links, cards and the action row are used by WalkthroughStep and
+   * SignInCard alike. They are declared once here, scoped under the
+   * walkthrough root, so the proposal's sizes have a single source of truth.
+   */
+  .walkthrough :global(.wt-btn) {
     font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+    background: var(--wt-btn);
+    color: var(--wt-btn-fg);
   }
 
-  .reset-link:hover {
-    text-decoration: underline;
+  .walkthrough :global(.wt-btn:hover) {
+    background: var(--wt-btn-hover);
   }
 
-  .reset-link:focus-visible {
-    outline: 1px solid var(--vscode-focusBorder);
-    outline-offset: 2px;
+  .walkthrough :global(.wt-btn:disabled) {
+    opacity: 0.5;
+    cursor: default;
   }
 
-  .completed-label,
-  .next-label {
-    color: var(--vscode-descriptionForeground);
-    font-size: 0.95em;
+  .walkthrough :global(.wt-btn--secondary) {
+    background: var(--wt-btn2);
+    color: var(--wt-btn2-fg);
   }
 
-  /* Link-style "Mark Done", matching the default VS Code walkthrough. */
-  .mark-done-btn {
+  .walkthrough :global(.wt-btn--secondary:hover) {
+    background: var(--wt-btn2-hover);
+  }
+
+  .walkthrough :global(.wt-link) {
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--wt-link);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-left: auto;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--vscode-textLink-foreground);
-    font-size: 0.95em;
-    cursor: pointer;
-    font-family: inherit;
+    gap: 4px;
   }
 
-  .mark-done-btn:hover {
+  .walkthrough :global(.wt-link:hover) {
     text-decoration: underline;
   }
 
-  .mark-done-btn:focus-visible {
-    outline: 1px solid var(--vscode-focusBorder);
-    outline-offset: 2px;
+  .walkthrough :global(.wt-card) {
+    background: var(--wt-tile);
+    border: 1px solid var(--wt-focus);
+    border-radius: 4px;
+    padding: 20px 26px;
+  }
+
+  .walkthrough :global(.wt-card--warning) {
+    border-color: var(--wt-warning);
+  }
+
+  .walkthrough :global(.wt-card--error) {
+    border-color: var(--wt-error);
+  }
+
+  .walkthrough :global(.wt-card-head) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .walkthrough :global(.wt-card-title) {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .walkthrough :global(.wt-card-body) {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--wt-desc);
+    margin: 10px 0 16px;
+  }
+
+  .walkthrough :global(.wt-card-lead) {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 14px 0 2px;
+  }
+
+  .walkthrough :global(.wt-card-sub) {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--wt-desc);
+    margin: 0;
+  }
+
+  .walkthrough :global(.wt-card-meta) {
+    font-size: 12px;
+    color: var(--wt-desc);
+    margin-top: 8px;
+  }
+
+  .walkthrough :global(.wt-actions + .wt-card-meta) {
+    margin-top: 12px;
+  }
+
+  .walkthrough :global(.wt-divider) {
+    border: none;
+    border-top: 1px solid var(--wt-divider);
+    margin: 16px 0 14px;
+  }
+
+  .walkthrough :global(.wt-actions) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .walkthrough :global(.wt-actions-or) {
+    font-size: 12px;
+    color: var(--wt-desc);
+    padding: 0 4px;
+  }
+
+  .walkthrough :global(.wt-actions-end) {
+    margin-left: auto;
+  }
+
+  .walkthrough :global(.wt-done-tag) {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--wt-link);
+    margin-left: 8px;
+  }
+
+  .walkthrough :global(.wt-reveal) {
+    animation: wt-reveal 0.24s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  @keyframes -global-wt-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .walkthrough :global(.wt-sr) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .walkthrough :global(.wt-reveal) {
+      animation: none;
+    }
+
+    .walkthrough :global(.wt-btn) {
+      transition: none;
+    }
   }
 </style>
