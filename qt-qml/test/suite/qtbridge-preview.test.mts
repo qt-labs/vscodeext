@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import type { QtBridgeProject, QtBridgeQmlMetadata } from 'qt-lib';
 import {
+  createQtBridgeDebugSourceRedirect,
   createQtBridgeResourceLookup,
   createQtBridgeSourceRedirect,
   getQtBridgePreviewProjects,
@@ -418,6 +419,47 @@ describe('Qt Bridge QML Preview resource lookup', () => {
 
     expect(lookup(':/qt/qml/Application/qmldir')).to.equal(undefined);
     expect(lookup(':/qt/qml/Application/+windows')).to.equal(undefined);
+  });
+});
+
+describe('Qt Bridge QML debugging source redirect', () => {
+  const project = path.resolve('/work/App');
+  const output = path.join(project, 'bin', 'Debug');
+  const bridgeProject = {
+    metadata: {
+      application: {
+        managedOutputDir: output,
+        managedHostPath: path.join(output, 'App.exe')
+      },
+      qml: {
+        sourceDir: path.join(project, 'obj', 'qt', 'native', 'source'),
+        files: [
+          {
+            sourcePath: path.join(project, 'ColorBox.qml'),
+            modulePath: 'Application/'
+          }
+        ]
+      }
+    }
+  } as unknown as QtBridgeProject;
+
+  it('maps the build output of a debugged Bridge host to the sources', () => {
+    const redirect = createQtBridgeDebugSourceRedirect(
+      path.join(output, 'App.exe'),
+      [bridgeProject]
+    );
+
+    expect(
+      redirect?.(path.join(output, 'Application', 'ColorBox.qml'))
+    ).to.equal(path.join(project, 'ColorBox.qml'));
+  });
+
+  it('does not redirect for programs of other projects', () => {
+    expect(
+      createQtBridgeDebugSourceRedirect(path.resolve('/work/Other/app.exe'), [
+        bridgeProject
+      ])
+    ).to.equal(undefined);
   });
 });
 

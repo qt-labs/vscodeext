@@ -40,6 +40,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "qt-csharp.launchTargetPath",
+        "title": "Qt Bridge C#: Resolve Launch Target Path"
+      },
+      {
         "command": "qt-csharp.selectQmlMetadata",
         "title": "Qt Bridge C#: Select QML Build Metadata"
       },
@@ -48,6 +52,14 @@
         "title": "Qt Bridge C#: Select Qt Installation"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "qt-csharp.launchTargetPath",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "Qt Bridge C# Configuration",

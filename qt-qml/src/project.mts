@@ -37,6 +37,10 @@ export function getQtBridgeProject(folder: vscode.WorkspaceFolder) {
   return qtBridgeApi?.getProject(folder);
 }
 
+export function getAllQtBridgeProjects() {
+  return qtBridgeApi?.getProjects() ?? [];
+}
+
 export function getQtBridgeProjects(folder: vscode.WorkspaceFolder) {
   return (qtBridgeApi?.getProjects() ?? []).filter(
     (project) => project.folder.uri.toString() === folder.uri.toString()
