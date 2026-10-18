@@ -13,8 +13,6 @@ export {
   ProgressType,
   SettingsPersistence,
   SessionState,
-  AuthState,
-  LoginError,
   IPC
 } from './types';
 export type {
@@ -32,8 +30,7 @@ export type {
   UserPromptReply,
   ProgressInfo,
   MessageInfo,
-  JobCallbacks,
-  AuthCredentials
+  JobCallbacks
 } from './types';
 
 // Transport (for advanced / testing use)
@@ -91,7 +88,3 @@ export {
 } from './oidc';
 export type { OidcClientConfig, OidcAuthenticatorOptions } from './oidc';
 export { BearerTokenProvider } from './bearer-token';
-
-// Legacy email and password login (removed in a follow-up commit)
-export { QtAccountStorage, QtAccount } from './qt-account';
-export type { QtAccountEvents } from './qt-account';
