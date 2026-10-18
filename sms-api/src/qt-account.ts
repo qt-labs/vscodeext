@@ -18,9 +18,16 @@ import * as os from 'os';
 import * as https from 'https';
 import * as crypto from 'crypto';
 
-import { AuthState, LoginError, type AuthCredentials } from './types';
+import {
+  AuthState,
+  LoginError,
+  type AuthCredentials,
+  type LogLevel,
+  type LogCallback
+} from './types';
+import { qtCompanyIniPath } from './paths';
 
-export type LogLevel = 'info' | 'warn' | 'error';
+export type { LogLevel, LogCallback };
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -109,7 +116,11 @@ function decodeJwtPayload(jwt: string): Record<string, unknown> | undefined {
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const json = Buffer.from(base64, 'base64').toString('utf-8');
     const parsed: unknown = JSON.parse(json);
-    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      !Array.isArray(parsed)
+    ) {
       return parsed as Record<string, unknown>;
     }
     return undefined;
@@ -134,7 +145,8 @@ function extractUserId(jwt: string): string {
  */
 function defaultStoragePath(): string {
   if (process.platform === 'win32') {
-    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    const appData =
+      process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
     return path.join(appData, 'Qt', 'qtaccount.ini');
   }
   // Linux/macOS: ~/.local/share/Qt/qtaccount.ini
@@ -143,35 +155,7 @@ function defaultStoragePath(): string {
   return path.join(dataDir, 'Qt', 'qtaccount.ini');
 }
 
-/**
- * Returns the path to the QtCompany.ini file (used for service settings).
- *   Linux:   $HOME/.local/share/QtCompany/QtCompany.ini
- *   macOS:   $HOME/Library/Application Support/QtCompany/QtCompany.ini
- *   Windows: %APPDATA%/QtCompany/QtCompany.ini
- */
-function qtCompanySettingsPath(): string {
-  if (process.platform === 'win32') {
-    const appData = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
-    return path.join(appData, 'QtCompany', 'QtCompany.ini');
-  }
-  if (process.platform === 'darwin') {
-    return path.join(
-      os.homedir(),
-      'Library',
-      'Application Support',
-      'QtCompany',
-      'QtCompany.ini'
-    );
-  }
-  // Linux
-  const dataDir =
-    process.env.XDG_DATA_HOME ?? path.join(os.homedir(), '.local', 'share');
-  return path.join(dataDir, 'QtCompany', 'QtCompany.ini');
-}
-
 // ── QtAccountStorage ─────────────────────────────────────────────────────────
-
-export type LogCallback = (level: LogLevel, message: string) => void;
 
 export class QtAccountStorage {
   private _email = '';
@@ -220,7 +204,10 @@ export class QtAccountStorage {
       this._email = group[INI_KEY_EMAIL] ?? '';
       this._jwt = group[INI_KEY_JWT] ?? '';
       this._userId = group[INI_KEY_USER_ID] ?? '';
-      this.log('info', `Loaded credentials for "${this._email}" from "${filePath}"`);
+      this.log(
+        'info',
+        `Loaded credentials for "${this._email}" from "${filePath}"`
+      );
       return true;
     } catch {
       this.log('warn', `Failed to read "${filePath}"`);
@@ -299,7 +286,7 @@ export class QtAccountStorage {
   }
 
   static defaultQtCompanyPath(): string {
-    return qtCompanySettingsPath();
+    return qtCompanyIniPath();
   }
 }
 
@@ -336,9 +323,7 @@ export class QtAccount {
 
   constructor(options?: { serverUrl?: string; storagePath?: string }) {
     this._serverUrl =
-      options?.serverUrl ??
-      process.env.QT_ACCOUNT_SERVER_URL ??
-      AUTH_SERVER;
+      options?.serverUrl ?? process.env.QT_ACCOUNT_SERVER_URL ?? AUTH_SERVER;
     this._storage = new QtAccountStorage();
     this.log('info', `Initializing (server: ${this._serverUrl})`);
     if (options?.storagePath) {
@@ -346,7 +331,10 @@ export class QtAccount {
     } else {
       this._storage.load();
     }
-    this.log('info', `Has stored credentials: ${String(this._storage.hasCredentials())}`);
+    this.log(
+      'info',
+      `Has stored credentials: ${String(this._storage.hasCredentials())}`
+    );
   }
 
   get state(): AuthState {
@@ -373,11 +361,17 @@ export class QtAccount {
     this.onLog?.(level, message);
   }
 
-  on<K extends keyof QtAccountEvents>(event: K, listener: QtAccountEvents[K]): void {
+  on<K extends keyof QtAccountEvents>(
+    event: K,
+    listener: QtAccountEvents[K]
+  ): void {
     this._listeners[event].push(listener as never);
   }
 
-  off<K extends keyof QtAccountEvents>(event: K, listener: QtAccountEvents[K]): void {
+  off<K extends keyof QtAccountEvents>(
+    event: K,
+    listener: QtAccountEvents[K]
+  ): void {
     const arr = this._listeners[event] as unknown[];
     const idx = arr.indexOf(listener);
     if (idx >= 0) {
@@ -425,7 +419,10 @@ export class QtAccount {
     const email = process.env.QT_ACCOUNT_LOGIN_EMAIL;
     const password = process.env.QT_ACCOUNT_LOGIN_PASSWORD;
     if (!email || !password) {
-      this.log('info', 'No env credentials found (QT_ACCOUNT_LOGIN_EMAIL / QT_ACCOUNT_LOGIN_PASSWORD)');
+      this.log(
+        'info',
+        'No env credentials found (QT_ACCOUNT_LOGIN_EMAIL / QT_ACCOUNT_LOGIN_PASSWORD)'
+      );
       return undefined;
     }
     this.log('info', `Logging in via environment variables for ${email}`);
@@ -490,7 +487,10 @@ export class QtAccount {
     email: string,
     jwt: string
   ): Promise<AuthCredentials> {
-    this.log('info', `Performing token renewal to ${this._serverUrl}${RENEW_TOKEN_ENDPOINT}`);
+    this.log(
+      'info',
+      `Performing token renewal to ${this._serverUrl}${RENEW_TOKEN_ENDPOINT}`
+    );
     this.setState(AuthState.LoggingIn);
 
     const payload = {
@@ -514,7 +514,11 @@ export class QtAccount {
       responseBody = await httpPost(this._serverUrl + endpoint, payload);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('SSL') || msg.includes('TLS') || msg.includes('certificate')) {
+      if (
+        msg.includes('SSL') ||
+        msg.includes('TLS') ||
+        msg.includes('certificate')
+      ) {
         return this.fail(LoginError.SslError, msg);
       }
       return this.fail(LoginError.NetworkError, `Login request failed: ${msg}`);
@@ -523,12 +527,19 @@ export class QtAccount {
     let obj: Record<string, unknown>;
     try {
       const parsed: unknown = JSON.parse(responseBody);
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      if (
+        typeof parsed !== 'object' ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
         return this.fail(LoginError.InvalidResponse, 'Unexpected reply format');
       }
       obj = parsed as Record<string, unknown>;
     } catch {
-      return this.fail(LoginError.InvalidResponse, 'Invalid JSON in login response');
+      return this.fail(
+        LoginError.InvalidResponse,
+        'Invalid JSON in login response'
+      );
     }
 
     const jwt = typeof obj.jwt === 'string' ? obj.jwt : '';
