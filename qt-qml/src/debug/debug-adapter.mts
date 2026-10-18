@@ -21,6 +21,8 @@ import {
 } from '@debug/debug-connection.mjs';
 import { QmlEngine, StepAction } from '@debug/qml-engine.mjs';
 import { projectManager } from '@/extension.mjs';
+import { getAllQtBridgeProjects } from '@/project.mjs';
+import { createQtBridgeDebugSourceRedirect } from '@/preview/qtbridge-preview-project.mjs';
 import { spawnProcessForTool } from '@/utils.mts';
 import { QtProcess } from '@/utils.mjs';
 
@@ -637,7 +639,15 @@ export class QmlDebugSession extends LoggingDebugSession {
       // spaces.
       const quotedProgram = /^".*"$/.test(program) ? program : `"${program}"`;
       const command = `${quotedProgram} ${debuggerArgs ?? ''}`;
-      this._process = await spawnProcessForTool(command, additionalArgs);
+      // A Qt Bridge application maps its build copies of QML files back to
+      // the sources, and brings its own Qt, so it skips the qt-cpp kit Qt.
+      const bridgeSourceRedirect = createQtBridgeDebugSourceRedirect(
+        program.replace(/^"(.*)"$/, '$1'),
+        getAllQtBridgeProjects()
+      );
+      this._process = await spawnProcessForTool(command, additionalArgs, {
+        useQtCppPath: bridgeSourceRedirect === undefined
+      });
 
       if (!this._process.stdout || !this._process.stderr) {
         throw new Error('Process stdout or stderr is undefined');
@@ -655,6 +665,9 @@ export class QmlDebugSession extends LoggingDebugSession {
       });
 
       this.initAndStartEngine(server, args.buildDirs);
+      if (this._qmlEngine) {
+        this._qmlEngine.sourceRedirect = bridgeSourceRedirect;
+      }
 
       this.sendResponse(response);
       this.sendEvent(new InitializedEvent());

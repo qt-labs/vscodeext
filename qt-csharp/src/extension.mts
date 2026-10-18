@@ -7,6 +7,7 @@ import { EXTENSION_ID, LOG_NAME } from '@/constants.js';
 import { QtBridgeCSharpApi } from '@/api.mjs';
 import { QtDirTerminalEnvironment, selectQtDir } from '@/qt-dir.mjs';
 import { collectPreviewStagingGarbage } from '@/project.mjs';
+import { resolveLaunchTargetPath } from '@/launch-target.mjs';
 
 const logger = createLogger('extension');
 
@@ -38,6 +39,10 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     api,
     new QtDirTerminalEnvironment(context.environmentVariableCollection),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.launchTargetPath`,
+      async () => resolveLaunchTargetPath(api)
+    ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.selectQmlMetadata`,
       async () => api.selectMetadata()

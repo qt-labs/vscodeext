@@ -113,7 +113,8 @@ interface SpawnProgramOptions {
 
 export async function spawnProcessForTool(
   command: string,
-  additionalArgs: string[] = []
+  additionalArgs: string[] = [],
+  optionsOverrides?: Pick<SpawnProgramOptions, 'useQtCppPath'>
 ): Promise<QtProcess> {
   const quoteArg = (arg: string): string => {
     // Escape double quotes and wrap the argument in quotes
@@ -124,7 +125,7 @@ export async function spawnProcessForTool(
     command += ` ${additionalArgs.map(quoteArg).join(' ')}`;
   }
   logger.info('Starting program:', command);
-  const options = await createSpawnOptions(true);
+  const options = await createSpawnOptions(true, optionsOverrides);
   const childProcess = spawn(command, options);
   return createQtProcess(childProcess);
 }
