@@ -345,7 +345,8 @@ function throwIfCancelled(op: Operation): void {
 async function waitForRedirect(
   op: Operation,
   state: string,
-  issuer: string
+  issuer: string,
+  successPage: string | undefined
 ): Promise<string> {
   const server = op.server;
   if (!server) {
@@ -363,7 +364,7 @@ async function waitForRedirect(
         'content-type': 'text/html; charset=utf-8',
         'cache-control': 'no-store'
       });
-      res.end(callbackPage(ok, message));
+      res.end(ok && successPage ? successPage : callbackPage(ok, message));
     };
     server.on('request', (req, res) => {
       const url = new URL(req.url ?? '/', `http://${CALLBACK_HOST}`);
@@ -444,12 +445,18 @@ export interface OidcAuthenticatorOptions {
   onLog?: LogCallback;
   /** Called during `login()` with the URL the user has to open in a browser. */
   onAuthorizationUrl?: (url: string) => void;
+  /**
+   * HTML page shown in the browser after a successful redirect. Failures
+   * keep the built-in page, which names the cause.
+   */
+  successPage?: string;
 }
 
 export class OidcAuthenticator {
   readonly config: OidcClientConfig;
   private readonly storage: QtCredentialStorage;
   private readonly transferTimeoutMs: number;
+  private readonly successPage: string | undefined;
   private operation: Operation | undefined;
   private discovery: Discovery | undefined;
   private _authorizationUrl: string | undefined;
@@ -466,6 +473,7 @@ export class OidcAuthenticator {
     this.config = { ...config, issuerUrl: normalizeIssuer(config.issuerUrl) };
     this.transferTimeoutMs =
       options?.transferTimeoutMs ?? DEFAULT_TRANSFER_TIMEOUT_MS;
+    this.successPage = options?.successPage;
     this.onLog = options?.onLog;
     this.onAuthorizationUrl = options?.onAuthorizationUrl;
   }
@@ -733,7 +741,12 @@ export class OidcAuthenticator {
         .join('&');
     this._authorizationUrl = url.toString();
 
-    const redirect = waitForRedirect(op, state, discovery.issuer);
+    const redirect = waitForRedirect(
+      op,
+      state,
+      discovery.issuer,
+      this.successPage
+    );
     this.log('info', 'Starting the OIDC login in the browser.');
     this.onAuthorizationUrl?.(this._authorizationUrl);
     const code = await redirect;

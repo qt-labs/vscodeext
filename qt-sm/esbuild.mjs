@@ -8,7 +8,10 @@ import { build, context } from 'esbuild';
 const baseConfig = {
   bundle: true,
   minify: process.env.NODE_ENV === 'production',
-  sourcemap: process.env.NODE_ENV !== 'production'
+  sourcemap: process.env.NODE_ENV !== 'production',
+  // Pages served outside a webview, such as the sign-in callback, are
+  // bundled as strings.
+  loader: { '.html': 'text' }
 };
 
 // Config for extension source code (to be run in a Node-based context)
