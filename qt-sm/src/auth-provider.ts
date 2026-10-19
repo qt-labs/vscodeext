@@ -9,13 +9,14 @@ import {
   OidcAuthError,
   OidcAuthenticator,
   OidcError,
+  OIDC_DEFAULTS,
   QtCredentialStorage,
   applyOidcEnvOverrides,
   type LogLevel
 } from 'sms-api';
 import { createLogger } from 'qt-lib';
 import {
-  OIDC_CLIENT_CONFIG,
+  OIDC_STAGING_CLIENT_ID,
   PERSONAL_ACCESS_TOKEN_URL,
   SIGN_IN_EXPIRY_MS,
   SIGN_IN_STALL_MS
@@ -95,11 +96,15 @@ export class QtAccountAuthenticationProvider
   private expired = false;
   private reloadTimer: ReturnType<typeof setTimeout> | undefined;
 
-  constructor() {
+  constructor(extensionMode: vscode.ExtensionMode) {
     this.storage = new QtCredentialStorage();
     this.storage.onLog = logCallback('QtCredentialStorage');
+    const clientId =
+      extensionMode === vscode.ExtensionMode.Production
+        ? OIDC_DEFAULTS.clientId
+        : OIDC_STAGING_CLIENT_ID;
     this.authenticator = new OidcAuthenticator(this.storage, {
-      config: applyOidcEnvOverrides(OIDC_CLIENT_CONFIG),
+      config: applyOidcEnvOverrides({ ...OIDC_DEFAULTS, clientId }),
       onLog: logCallback('OidcAuthenticator'),
       onAuthorizationUrl: (url) => {
         this.openBrowser(url);
@@ -529,7 +534,7 @@ export class QtAccountAuthenticationProvider
 export function registerAuthenticationProvider(
   context: vscode.ExtensionContext
 ): QtAccountAuthenticationProvider {
-  const provider = new QtAccountAuthenticationProvider();
+  const provider = new QtAccountAuthenticationProvider(context.extensionMode);
 
   context.subscriptions.push(
     vscode.authentication.registerAuthenticationProvider(
