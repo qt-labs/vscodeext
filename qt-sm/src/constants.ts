@@ -1,8 +1,6 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { OIDC_DEFAULTS, type OidcClientConfig } from 'sms-api';
-
 export * from 'qt-lib/src/constants';
 export const EXTENSION_ID = 'qt-sm';
 export const CONF_INSTALLATION_PATH = 'installationPath';
@@ -27,17 +25,10 @@ export const TELEMETRY_STATEMENT_URL =
 export const PERSONAL_ACCESS_TOKEN_URL =
   'https://login.qt.io/personal-access-tokens';
 
-// OIDC client registration used for the browser sign-in. The registration
-// for this extension is `qt-pif-sms` (OIDC_DEFAULTS). Until the
-// login server accepts it, the Qt Design Studio staging client is used; its
-// loopback redirect URI is registered with a fixed port. Switching back is
-// this one constant. QT_ACCOUNT_OIDC_* environment variables still override.
-export const OIDC_CLIENT_CONFIG: OidcClientConfig = {
-  ...OIDC_DEFAULTS,
-  clientId: 'qt-design-studio-staging',
-  scopes: 'openid offline_access email profile license:read',
-  redirectPort: 54867
-};
+// OIDC client of the browser sign-in when the extension runs from source or
+// in tests. Installed builds use `qt-pif-sms` (OIDC_DEFAULTS).
+// QT_ACCOUNT_OIDC_* environment variables override both.
+export const OIDC_STAGING_CLIENT_ID = 'qt-pif-sms-staging';
 
 // Browser sign-in timings, from the Qt offline installer: report a stalled
 // hand-off after 25 seconds without a result, give up after 10 minutes. Both
