@@ -104,7 +104,9 @@ describe('OidcAuthenticator', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  function authenticator(options: { transferTimeoutMs?: number } = {}) {
+  function authenticator(
+    options: { transferTimeoutMs?: number; successPage?: string } = {}
+  ) {
     return new OidcAuthenticator(storage, { config, ...options });
   }
 
@@ -179,6 +181,15 @@ describe('OidcAuthenticator', () => {
     for (const r of server.requests) {
       assert.ok(!r.query.toString().includes('mock-access-token'));
     }
+  });
+
+  it('serves the given success page after the redirect', async () => {
+    const successPage = '<!DOCTYPE html><title>Signed in</title>';
+    const auth = authenticator({ successPage });
+    const { done, page } = await loginWithBrowser(auth);
+    await done;
+    assert.equal(page.status, 200);
+    assert.equal(page.body, successPage);
   });
 
   it('reports login failures with the right error kind', async () => {
