@@ -490,6 +490,36 @@ function platformArch(): string {
   }
 }
 
+/**
+ * Tell the user the install finished and offer the next steps: the Qt panel
+ * with the installed packages, or the walkthrough to build a first app.
+ */
+async function showInstalledNotification(pkg: PackageData): Promise<void> {
+  const openPanel = 'Open Qt Panel';
+  const startWalkthrough = 'Start Walkthrough';
+  const rawInstallRoot = vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .get<string>(CONF_INSTALLATION_PATH);
+  const location = rawInstallRoot
+    ? ` Installed in ${path.join(resolveConfiguration(rawInstallRoot), 'QtFramework', pkg.version)}.`
+    : '';
+  const action = await vscode.window.showInformationMessage(
+    `${pkg.name || pkg.id} ${pkg.version} installed successfully. ` +
+      "Your Qt development environment is ready. Open the Qt panel to see what's installed, " +
+      'or start the walkthrough to build your first app.' +
+      location,
+    openPanel,
+    startWalkthrough
+  );
+  if (action === openPanel) {
+    await vscode.commands.executeCommand(
+      `workbench.view.extension.${EXTENSION_ID}`
+    );
+  } else if (action === startWalkthrough) {
+    await vscode.commands.executeCommand(`${EXTENSION_ID}.openWalkthrough`);
+  }
+}
+
 function registerInstalledQtPaths(version: string): void {
   const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
   const rawInstallRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
@@ -916,9 +946,7 @@ async function installPackageByIdImpl(
     .then(() => {
       endDownloadPhase?.();
       endInstallPhase?.();
-      void vscode.window.showInformationMessage(
-        `Successfully installed ${pkg.name || pkg.id} ${pkg.version}`
-      );
+      void showInstalledNotification(pkg);
       // Updates the packageInstalled context and the Installed Packages view.
       syncInstalledPackages();
       // Re-render so the framework step's install button is recomputed as
