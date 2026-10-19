@@ -21,6 +21,7 @@ import {
   SIGN_IN_EXPIRY_MS,
   SIGN_IN_STALL_MS
 } from '@/constants';
+import signInCallbackPage from '../webview-ui/sign-in-callback.html';
 
 const logger = createLogger('auth');
 
@@ -106,6 +107,7 @@ export class QtAccountAuthenticationProvider
     this.authenticator = new OidcAuthenticator(this.storage, {
       config: applyOidcEnvOverrides({ ...OIDC_DEFAULTS, clientId }),
       onLog: logCallback('OidcAuthenticator'),
+      successPage: signInCallbackPage,
       onAuthorizationUrl: (url) => {
         this.openBrowser(url);
       }
