@@ -18,3 +18,4 @@ export * from './qml-api';
 export * from './qtbridge-csharp-api';
 export * from './msvc';
 export * from './disposable';
+export * from './dotnet';
