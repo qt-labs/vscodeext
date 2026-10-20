@@ -16,5 +16,9 @@ files:
     out: .gitignore
     bypass: true
 
+  - in: vscode.launch.json
+    out: .vscode/launch.json
+    bypass: true
+
 fields:
   - namespace: '{{ (Qt.CSharpNamespace .name) }}'

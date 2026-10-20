@@ -296,6 +296,13 @@ function writeJsonFile(filePath: string, content: unknown) {
 }
 
 export function generateProjectConfigs(projectDir: string) {
+  // The settings and launch configurations are for CMake projects. Other
+  // projects, such as Qt Bridge for C# or Qt for Python projects, would get
+  // configurations that cannot work for them.
+  if (!fs.existsSync(path.join(projectDir, 'CMakeLists.txt'))) {
+    return;
+  }
+
   const vscodeDir = path.join(projectDir, '.vscode');
 
   try {
