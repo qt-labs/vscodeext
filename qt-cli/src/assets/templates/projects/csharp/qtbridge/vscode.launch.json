@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Qt Bridge: QML",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:qt-csharp.launchTargetPath}"
+        }
+    ]
+}
