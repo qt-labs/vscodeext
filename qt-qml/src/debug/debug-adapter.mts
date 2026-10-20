@@ -13,7 +13,7 @@ import { Mutex } from 'async-mutex';
 import path from 'path';
 import getPort from 'get-port';
 
-import { createLogger, delay, telemetry } from 'qt-lib';
+import { createLogger, delay, findDotNetPathEntry, telemetry } from 'qt-lib';
 import {
   QmlDebugConnectionState,
   Server,
@@ -645,8 +645,14 @@ export class QmlDebugSession extends LoggingDebugSession {
         program.replace(/^"(.*)"$/, '$1'),
         getAllQtBridgeProjects()
       );
+      // The native host of a Bridge application finds .NET through PATH,
+      // which lacks it when VS Code was not started from a shell.
+      const dotNetPathEntry = bridgeSourceRedirect
+        ? findDotNetPathEntry()
+        : undefined;
       this._process = await spawnProcessForTool(command, additionalArgs, {
-        useQtCppPath: bridgeSourceRedirect === undefined
+        useQtCppPath: bridgeSourceRedirect === undefined,
+        ...(dotNetPathEntry ? { pathEntries: [dotNetPathEntry] } : {})
       });
 
       if (!this._process.stdout || !this._process.stderr) {
