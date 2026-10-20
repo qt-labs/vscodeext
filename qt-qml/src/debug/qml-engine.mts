@@ -134,7 +134,7 @@ interface IQmlEvent extends QmlMessage {
 interface IResponseBodyBreak {
   invocationText: string;
   sourceLineText: string;
-  script: string;
+  script: { name: string };
   breakpoints: number[];
   sourceLine: number;
 }
@@ -977,7 +977,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
         // clearRefs();
         const breakData = response.body;
         const invocationText = breakData.invocationText;
-        const scriptUrl = breakData.script;
+        const scriptUrl = breakData.script.name;
         const sourceLineText = breakData.sourceLineText;
         const v8BreakpointIdList = breakData.breakpoints;
         logger.info('invocationText:', invocationText);
@@ -1002,12 +1002,7 @@ export class QmlEngine extends QmlDebugClient implements IQmlDebugClient {
       this.mainQmlThreadId
     );
     const breakpointIds = breakData.breakpoints;
-    const description: string[] = [];
-    description.push(breakData.script);
-    description.push(breakData.sourceLineText);
-    description.push(breakData.invocationText);
-    description.push(breakData.breakpoints.join(','));
-    stoppedEvent.body.description = description.join(':');
+    // Without a description, VS Code describes the stop by its reason.
     stoppedEvent.body.hitBreakpointIds = breakData.breakpoints;
 
     logger.info('Stopped event: breakpointIds: ', breakpointIds.join(','));
