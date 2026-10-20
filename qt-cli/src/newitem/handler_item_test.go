@@ -124,6 +124,11 @@ func TestHandler_PostItems_BridgeProjectOptions(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(qmlFile), "import QtQuick.Layouts")
 	require.Contains(t, string(qmlFile), "Counter.clicks")
+
+	launchFile, err := os.ReadFile(filepath.Join(projectDir, ".vscode", "launch.json"))
+	require.NoError(t, err)
+	require.Contains(t, string(launchFile), `"type": "qml"`)
+	require.Contains(t, string(launchFile), "${command:qt-csharp.launchTargetPath}")
 }
 
 func TestHandler_PostItems_BridgeProjectDefaultsToSourceExport(t *testing.T) {
