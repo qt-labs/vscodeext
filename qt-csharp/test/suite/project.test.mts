@@ -9,13 +9,12 @@ import * as vscode from 'vscode';
 import {
   collectPreviewStagingGarbage,
   defaultQtRid,
-  findDotNetPathEntry,
   inspectQtBridgeProject,
   resolveQtBridgeQtDir,
   QtBridgeProjectSnapshot
 } from '@/project.mjs';
 import { QtBridgeProjectManager } from '@/project-manager.mjs';
-import type { QtBridgeQmlMetadata } from 'qt-lib';
+import { findDotNetPathEntry, type QtBridgeQmlMetadata } from 'qt-lib';
 
 function normalizedPath(filePath: string | undefined) {
   return process.platform === 'win32' ? filePath?.toLowerCase() : filePath;
@@ -81,6 +80,55 @@ describe('Qt Bridge project discovery', () => {
         'darwin',
         'arm64'
       )
+    ).to.equal(path.resolve(dotNetDirectory));
+  });
+
+  it('finds a dotnet-install installation in LOCALAPPDATA', async () => {
+    const dotNetDirectory = path.join(testDirectory, 'Microsoft', 'dotnet');
+    await fs.promises.mkdir(dotNetDirectory, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(dotNetDirectory, 'dotnet.exe'),
+      '',
+      'utf8'
+    );
+
+    // Neither PATH nor DOTNET_ROOT point to the dotnet-install location, and
+    // ProgramFiles points to an empty directory, so that a .NET installation
+    // of the test machine is not found first.
+    expect(
+      findDotNetPathEntry(
+        {
+          PATH: '',
+          ProgramFiles: path.join(testDirectory, 'Program Files'),
+          LOCALAPPDATA: testDirectory
+        },
+        'win32',
+        'x64'
+      )
+    ).to.equal(path.resolve(dotNetDirectory));
+  });
+
+  it('finds a dotnet-install installation in the home directory', async function () {
+    // The system locations cannot be redirected, and a .NET installation in
+    // one of them is found before the home directory.
+    const systemLocations = [
+      '/usr/local/share/dotnet',
+      '/opt/homebrew/share/dotnet'
+    ];
+    if (systemLocations.some((location) => fs.existsSync(location))) {
+      this.skip();
+    }
+    const dotNetDirectory = path.join(testDirectory, '.dotnet');
+    await fs.promises.mkdir(dotNetDirectory);
+    await fs.promises.writeFile(
+      path.join(dotNetDirectory, 'dotnet'),
+      '',
+      'utf8'
+    );
+
+    // Neither PATH nor DOTNET_ROOT point to the dotnet-install location.
+    expect(
+      findDotNetPathEntry({ PATH: '', HOME: testDirectory }, 'darwin', 'arm64')
     ).to.equal(path.resolve(dotNetDirectory));
   });
 
