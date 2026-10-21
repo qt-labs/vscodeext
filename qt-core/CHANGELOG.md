@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.17.1 (Oct 22, 2026)
+
+### qtcli
+
+🎉 **Added**
+
+- Add the `Qt Bridge for C# application` project template and the `Qt Bridge for C# QML file` file template
+- Add a QML debugger configuration to the `.vscode/launch.json` file of new Qt Bridge C# projects
+
+🐞 **Fixed**
+
+- Create `.vscode/settings.json` and `.vscode/launch.json` files with CMake settings and C++ debug configurations for CMake projects only
+
 ## 1.17.0 (Aug 28, 2026)
 
 🐞 **Fixed**

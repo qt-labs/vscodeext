@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.17.1 (Oct 22, 2026)
+
+The same as `1.17.0`
+
 ## 1.17.0 (Aug 28, 2026)
 
 ⚠️ **Changed**

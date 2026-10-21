@@ -1,18 +1,21 @@
 # Change Log
 
-## 1.17.1
+## 1.17.1 (Oct 22, 2026)
 
-### Added
+🎉 **Our Initial Preview Release** 🎉
 
-- Add Qt Bridge C# project discovery and multi-project workspace support.
-- Resolve explicit and packaged Qt installations for QML tooling.
-- Allow workspace, environment, and Qt Core selections to override packaged Qt.
-- Discover build-generated QML metadata and track build readiness.
-- Provide a public API for project state, builds, metadata changes, and QML
-  Preview launch preparation.
-- Integrate Qt Bridge projects with the QML Language Server and live preview.
-- Integrate Qt Bridge C# project and QML item templates with the Qt New Item
-  wizard.
-- Debug QML code of Qt Bridge applications with the QML debugger, using
-  `${command:qt-csharp.launchTargetPath}` in `launch.json`. Projects created
-  from the Qt Bridge C# project template include this configuration.
+[Documentation](https://doc-snapshots.qt.io/vscodeext-dev/vscodeext-tutorials-qt-csharp.html)
+
+🎉 **Added**
+
+- Detect Qt Bridge C# projects, also in workspaces that have several projects
+- Create Qt Bridge C# projects and QML files with Qt: Create a new project or file
+- Integrate Qt Bridge C# projects with QML Language Server, QML Preview, and QML Profiler in the `Qt QML` extension
+- Debug the QML code of Qt Bridge C# applications with the QML debugger by setting `${command:qt-csharp.launchTargetPath}` as the program in `launch.json`
+  - Include this configuration in projects that you create from the `Qt Bridge for C# application` template
+- Introduce the `qt-csharp.qtDir` setting for selecting the Qt installation of Qt Bridge C# projects
+  - Export the setting as `QtDir` to the integrated terminal, so that builds that you start there use the same Qt
+  - Look for Qt in the project, the `qt-csharp.qtDir` setting, the `QtDir` environment variable, and the Qt selected in the `Qt Core` extension, in this order, before using the Qt that the Windows x64 package bundles
+- Add the `Qt Bridge C#: Select Qt Installation` command, and suggest it when a build would not find Qt
+- Add the `Qt Bridge C#: Select QML Build Metadata` command, and ask you to select a build if you built a project in several configurations or for several target frameworks
+- Introduce the Qt Bridge C# API so that other extensions can integrate with Qt Bridge C# projects

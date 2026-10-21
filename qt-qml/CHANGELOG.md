@@ -1,5 +1,20 @@
 # Change Log
 
+## 1.17.1 (Oct 22, 2026)
+
+🎉 **Added**
+
+- Support Qt Bridge C# projects together with the `Qt Bridge C#` extension
+  - Use the build metadata of Qt Bridge C# projects in QML Language Server, also for several projects in one workspace folder
+  - Preview and profile Qt Bridge C# applications with QML Preview and QML Profiler
+  - Debug the QML code of Qt Bridge C# applications with the QML debugger
+
+🐞 **Fixed**
+
+- Fix the QML debugger not starting programs that have spaces in their paths
+- Fix the `[object Object]` text in the `Call Stack` view when the QML debugger stops at a breakpoint
+- Fix the QML preview reloading twice when you save a file
+
 ## 1.17.0 (Aug 28, 2026)
 
 🎉 **Added**
