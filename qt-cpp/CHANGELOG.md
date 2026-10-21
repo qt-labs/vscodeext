@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.17.1 (Oct 22, 2026)
+
+🐞 **Fixed**
+
+- Fix the extension waiting for a CMake kit selection before it finishes activating when no kit is active
+- Treat a workspace folder as a CMake project only if it has a `CMakeLists.txt` file or uses CMake presets
+
 ## 1.17.0 (Aug 28, 2026)
 
 🎉 **Added**
