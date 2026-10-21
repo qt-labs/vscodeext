@@ -102,6 +102,11 @@
         "category": "Qt"
       },
       {
+        "command": "qt-qml.setQmlPreviewAnimationSpeed",
+        "title": "%qt-qml.command.setQmlPreviewAnimationSpeed.title%",
+        "category": "Qt"
+      },
+      {
         "command": "qt-qml.startQmlProfiler",
         "title": "%qt-qml.command.startQmlProfiler.title%",
         "category": "Qt",
@@ -142,6 +147,10 @@
         },
         {
           "command": "qt-qml.clearQmlPreviewCache",
+          "when": "qt-qml.qmlPreviewRunning"
+        },
+        {
+          "command": "qt-qml.setQmlPreviewAnimationSpeed",
           "when": "qt-qml.qmlPreviewRunning"
         },
         {
@@ -341,6 +350,12 @@
           },
           "default": [],
           "description": "Default command line arguments to pass to the QML Preview application when started from commands (not used for tasks).",
+          "scope": "machine-overridable"
+        },
+        "qt-qml.preview.hotReload": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable hot reload (in-place updates) for QML Preview when the application runs with Qt 6.12 or later. Changed components are updated in place and input events are recorded, so the application state can be restored if the preview has to restart. Older Qt versions fall back to full reloads automatically.",
           "scope": "machine-overridable"
         },
         "qt-qml.profiler.args": {

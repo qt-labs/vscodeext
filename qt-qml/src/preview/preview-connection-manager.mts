@@ -8,7 +8,12 @@ import {
   QmlDebugConnection,
   QmlDebugConnectionManager
 } from '@debug/debug-connection.mjs';
-import { QmlPreviewClient, FpsInfo } from './preview-client.mts';
+import {
+  QmlPreviewClient,
+  QmlPreviewSettings,
+  FpsInfo
+} from './preview-client.mts';
+import { RecordedInputEvent } from './preview-event-replay-client.mts';
 import { QrcResourceFinder } from './qrc-resource-finder.mts';
 import { createLogger, delay } from 'qt-lib';
 import { normalizePathForComparison } from '@/utils.mjs';
@@ -36,9 +41,9 @@ type FileClassifier = (filename: string) => boolean;
 type FpsHandler = (fps: FpsInfo) => void;
 
 /**
- * Settings for QML Preview
+ * Settings for the QML Preview connection manager
  */
-interface QmlPreviewSettings {
+interface QmlPreviewManagerSettings {
   fileLoader?: FileLoader;
   fileClassifier?: FileClassifier;
   fpsHandler?: FpsHandler;
@@ -60,8 +65,14 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private readonly _qrcFinder: QrcResourceFinder;
   private _fileSystemWatcher?: vscode.FileSystemWatcher;
   private _lastLoadedUrl?: URL;
-  private readonly _settings: QmlPreviewSettings = {};
+  private readonly _settings: QmlPreviewManagerSettings = {};
   private _buildDirs: string[] = [];
+  private _hotReloadEnabled = true;
+  private _animationSpeed = 1;
+  // Input events preserved from a previous session, replayed after the
+  // debug service confirms the configuration. Maps to the event storage in
+  // Qt Creator's QmlPreviewPlugin.
+  private _seedEvents: RecordedInputEvent[] = [];
   // Map from local file paths to QRC paths (for file change handling)
   private readonly _pathMap = new Map<string, string>();
   // Set of files being actively watched (Qt Creator pattern)
@@ -71,6 +82,9 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private readonly _onRestart = new vscode.EventEmitter<void>();
   private readonly _onLanguageChange = new vscode.EventEmitter<string>();
   private readonly _onDebugServiceUnavailable = new vscode.EventEmitter<void>();
+  private readonly _onHotReloadStateChanged =
+    new vscode.EventEmitter<QmlPreviewSettings>();
+  private readonly _onHotReloadFailure = new vscode.EventEmitter<string>();
   constructor() {
     super();
     this._qrcFinder = new QrcResourceFinder();
@@ -89,6 +103,43 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
   get onDebugServiceUnavailable() {
     return this._onDebugServiceUnavailable.event;
+  }
+
+  get onHotReloadStateChanged() {
+    return this._onHotReloadStateChanged.event;
+  }
+
+  get onHotReloadFailure() {
+    return this._onHotReloadFailure.event;
+  }
+
+  /**
+   * Whether hot reload (in-place updates) should be requested from the
+   * debug service. Must be set before the connection is created.
+   */
+  set hotReloadEnabled(enabled: boolean) {
+    this._hotReloadEnabled = enabled;
+  }
+
+  get hotReloadEnabled() {
+    return this._hotReloadEnabled;
+  }
+
+  /**
+   * Input events recorded in this session, e.g. to preserve them across a
+   * restart triggered by a hot reload failure.
+   */
+  get recordedEvents(): RecordedInputEvent[] {
+    return this._previewClient?.recordedEvents ?? [];
+  }
+
+  /**
+   * Seed input events preserved from a previous session. They are handed
+   * to the preview client when it is created and replayed once the debug
+   * service confirms the configuration.
+   */
+  seedRecordedEvents(events: RecordedInputEvent[]) {
+    this._seedEvents = [...events];
   }
 
   /**
@@ -147,7 +198,24 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
    */
   private createPreviewClient(connection: QmlDebugConnection) {
     logger.info('Creating QmlPreviewClient');
-    this._previewClient = new QmlPreviewClient(connection);
+    this._previewClient = new QmlPreviewClient(
+      connection,
+      this._hotReloadEnabled
+    );
+
+    this._previewClient.presetAnimationSpeed(this._animationSpeed);
+
+    // Maybe we are starting after a hot reload failure, so we already have
+    // the events to replay. Hand them to the client, so that they can be
+    // replayed as soon as the configuration is confirmed.
+    if (this._seedEvents.length > 0) {
+      logger.info(
+        'Seeding',
+        String(this._seedEvents.length),
+        'recorded input events from the previous session'
+      );
+      this._previewClient.setRecordedEvents(this._seedEvents);
+    }
 
     // Connect to connection's onConnected event (fires after hello message)
     connection.onConnected(() => {
@@ -167,9 +235,35 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
     // Signal: errorReported -> Slot: log and show error
     this._previewClient.onErrorReported((error) => {
+      // Qt versions without hot reload support reject the Configuration
+      // command with this error. Fall back to full reloads silently.
+      if (error === 'Invalid command: 10') {
+        logger.info(
+          'Hot reload is not supported by the target Qt version, ' +
+            'falling back to full reloads'
+        );
+        return;
+      }
       logger.info('<=== Error received from Qt:', `"${error}"`);
       logger.error('QML Preview error:', error);
       void vscode.window.showErrorMessage(`QML Preview: ${error}`);
+    });
+
+    // Signal: confirmationReported -> Slot: report hot reload state
+    this._previewClient.onConfirmationReported((settings) => {
+      logger.info(
+        'Hot reload (in-place updates) confirmed as:',
+        settings.enableInPlaceUpdates ? 'enabled' : 'disabled'
+      );
+      this._onHotReloadStateChanged.fire(settings);
+    });
+
+    // Signal: hotReloadFailureReported -> Slot: request restart
+    // Maps to Qt Creator's hotReloadFailure handler which preserves the
+    // recorded events and restarts the application.
+    this._previewClient.onHotReloadFailureReported((reason) => {
+      logger.error('QML Preview hot reload failed:', reason);
+      this._onHotReloadFailure.fire(reason);
     });
 
     // Signal: fpsReported -> Slot: handle FPS or log
@@ -246,7 +340,16 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
    */
   setAnimationSpeed(factor: number) {
     logger.info('Setting animation speed:', String(factor));
+    this._animationSpeed = factor;
     this._previewClient?.setAnimationSpeed(factor);
+  }
+
+  /**
+   * The animation speed chosen by the user. It can be set before the
+   * connection is created, to keep it across a restart.
+   */
+  get animationSpeed() {
+    return this._animationSpeed;
   }
 
   /**
@@ -621,10 +724,8 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     if (!classifier(changedFile)) {
       logger.info('File requires full restart (classifier check failed)');
       // Emit restart signal (Qt Creator pattern)
-      // External components can listen to this and decide how to restart
+      // External components listen to this and decide how to restart
       this._onRestart.fire();
-      // Also trigger rerun directly as fallback
-      this._previewClient.rerun();
       return;
     }
 
@@ -704,6 +805,8 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     this._onRestart.dispose();
     this._onLanguageChange.dispose();
     this._onDebugServiceUnavailable.dispose();
+    this._onHotReloadStateChanged.dispose();
+    this._onHotReloadFailure.dispose();
 
     // Clear tracked data structures
     this._watchedFiles.clear();
