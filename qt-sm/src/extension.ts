@@ -54,6 +54,7 @@ import { installBootstrap } from '@/bootstrap';
 import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
 import { registerInstalledPackagesView } from '@/installed-packages-view';
 import { publishQtToolsPaths, watchQtToolsOnDisk } from '@/qt-tools-store';
+import { initLatestFrameworkState } from '@/latest-framework';
 
 const logger = createLogger('extension');
 
@@ -216,6 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
 
   setExtensionContext(context);
+  initLatestFrameworkState(context);
 
   await ensureCoreVersion();
 
