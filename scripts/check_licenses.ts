@@ -28,7 +28,7 @@ function main() {
     process.chdir(targetExtensionRoot);
     console.log('temp file:', temp);
     execSync(
-      `npm run generateLicenses -- --output="${temp}" --dir="${targetExtensionRoot}" --exclude="${exclude}, qt-lib"`,
+      `npm run generateLicenses -- --output="${temp}" --dir="${targetExtensionRoot}" --exclude="${exclude}, qt-lib, sms-api"`,
       {
         cwd: extensionRoot,
         stdio: 'inherit'
