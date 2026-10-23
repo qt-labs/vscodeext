@@ -55,3 +55,6 @@ export const STATE_WALKTHROUGH_SIGN_IN_ACKNOWLEDGED =
 // The two "Privacy & data" opt-ins of the signed-in card.
 export const STATE_PRIVACY_USAGE_DATA = 'privacyUsageDataOptIn';
 export const STATE_PRIVACY_CRASH_DUMPS = 'privacyCrashDumpsOptIn';
+
+// Newest available Qt Framework version last reported by the service.
+export const STATE_LATEST_FRAMEWORK_VERSION = 'latestFrameworkVersion';
