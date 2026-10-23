@@ -63,6 +63,10 @@ import {
 } from '@/walkthrough-panel';
 import { isInstalling, setInstalling } from '@/install-state';
 import { publishQtToolsPaths } from '@/qt-tools-store';
+import {
+  findLatestFramework,
+  resetLatestFrameworkState
+} from '@/latest-framework';
 
 const logger = createLogger('commands');
 
@@ -369,6 +373,10 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
         )
     );
 
+    // Remember the newest available framework for the walkthrough's
+    // "Get latest" gate, which can't query the service after a reload.
+    findLatestFramework(results);
+
     let candidates = [...results];
 
     // Query installed packages from the service and update local store
@@ -422,7 +430,9 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     );
 
     if (args?.version === 'latest') {
-      const sorted = [...uninstalledCandidates].sort((a, b) =>
+      // Pick the newest available version, not the newest uninstalled one,
+      // otherwise an older version is installed when the latest is present.
+      const sorted = [...candidates].sort((a, b) =>
         b.version.localeCompare(a.version, undefined, {
           numeric: true,
           sensitivity: 'base'
@@ -430,6 +440,14 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       );
       const latest = sorted[0];
       if (latest) {
+        if (!uninstalledCandidates.includes(latest)) {
+          void vscode.window.showInformationMessage(
+            `The latest version ${latest.version} is already installed.`
+          );
+          refreshWalkthrough();
+          void refreshLatestFrameworkState();
+          return;
+        }
         await installPackageById(packages, latest);
         return;
       }
@@ -1140,6 +1158,7 @@ export async function logout(
  *   - The QtSoftwareManagementService lock file
  *   - The IPC socket / named pipe
  *   - The persisted walkthrough state, so it restarts from step 1
+ *   - The persisted latest Qt Framework version
  *
  * It also kills any running QtSoftwareManagementService process and
  * disconnects the current IPC session.
@@ -1218,6 +1237,8 @@ export async function resetTestState(): Promise<void> {
       `Removed ${String(currentPaths.length - filtered.length)} Qt path(s) under ${installPath}`
     );
   }
+
+  resetLatestFrameworkState();
 
   // Clear the persisted walkthrough state last, so the re-render sees the
   // already-reset sign-in and install state.
