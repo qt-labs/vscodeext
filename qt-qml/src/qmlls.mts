@@ -424,7 +424,10 @@ export class Qmlls {
 
         const qmllsExeConfig = await findMostRecentExecutableQmlLS();
         if (!qmllsExeConfig) {
-          throw new Error('not found');
+          void vscode.window.showWarningMessage(
+            'No suitable QML Language Server executable found.'
+          );
+          return;
         }
         // Don't start the language server if the version is older than 6.7.2
         // Because older versions of the qmlls are not stable
