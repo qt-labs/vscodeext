@@ -87,13 +87,6 @@ function createDevHeaders() {
   const moduleUri = `http://${host}/src/apps/main.ts`;
 
   return `
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'none';
-        img-src https: data: blob:;
-        style-src 'unsafe-inline' http://${host};
-        script-src http://${host} 'unsafe-eval';
-        connect-src ws://${host} http://${host};
-      ">
     <script type="module" src="${moduleUri}"></script>
   `;
 }
