@@ -1,7 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { ViewColumn } from 'vscode';
+import { ViewColumn, WebviewPanelOptions } from 'vscode';
 import { WebAppId } from '@/webview/shared/types';
 import * as texts from '@/texts';
 
@@ -11,6 +11,7 @@ interface WebAppInfo {
   viewType: string;
   viewColumn: ViewColumn;
   iconPathPrefix: string;
+  panelOptions: WebviewPanelOptions;
 }
 
 export function getWebAppInfo(appId: WebAppId): WebAppInfo {
@@ -24,7 +25,18 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.newItem.tabText,
         viewType: 'ViewTypeNewItem',
         viewColumn,
-        iconPathPrefix
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: false }
+      };
+
+    case 'qt-help':
+      return {
+        appId,
+        title: texts.qtHelp.tabText,
+        viewType: 'ViewTypeQtHelp',
+        viewColumn,
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: true }
       };
 
     case 'doc-viewer':
@@ -33,7 +45,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.docViewer.tabText,
         viewType: 'ViewTypeDocViewer',
         viewColumn,
-        iconPathPrefix
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: true }
       };
 
     case 'ex-browser':
@@ -42,7 +55,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.exBrowser.tabText,
         viewType: 'ViewTypeExBrowser',
         viewColumn,
-        iconPathPrefix
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: true }
       };
 
     case 'welcome-page':
@@ -51,7 +65,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.welcomePage.tabText,
         viewType: 'ViewTypeWelcomePage',
         viewColumn,
-        iconPathPrefix
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: false }
       };
 
     case 'courses-browser':
@@ -60,7 +75,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.coursesBrowser.tabText,
         viewType: 'ViewTypeCoursesBrowser',
         viewColumn,
-        iconPathPrefix
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: true }
       };
 
     case 'ui-file':
@@ -69,7 +85,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.uiFile.tabText,
         viewType: '',
         viewColumn,
-        iconPathPrefix: 'res/icons/qt-ui'
+        iconPathPrefix: 'res/icons/qt-ui',
+        panelOptions: { retainContextWhenHidden: false }
       };
 
     case 'qml-trace':
@@ -78,7 +95,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.qmlTrace.tabText,
         viewType: '',
         viewColumn,
-        iconPathPrefix
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: false }
       };
 
     case 'qrc-editor':
@@ -87,7 +105,8 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         title: texts.qrcEditor.tabText,
         viewType: '',
         viewColumn,
-        iconPathPrefix: 'res/icons/qrc'
+        iconPathPrefix: 'res/icons/qrc',
+        panelOptions: { retainContextWhenHidden: true }
       };
   }
 }

@@ -9,9 +9,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   import '@/styles/components/components.css';
 
+  import DocViewerMask from './DocViewerMask.svelte';
   import DocViewerToolbar from './toolbar/DocViewerToolbar.svelte';
   import DocViewerSidebar from './sidebar/DocViewerSidebar.svelte';
   import DocViewerMainView from './DocViewerMainView.svelte';
+  import DocViewerNavPopover from './others/DocViewerNavPopover.svelte';
   import { ui } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
 
@@ -27,7 +29,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   data-app='doc-viewer'
   class='
     {fullScreen ? 'w-screen h-screen' : 'w-full h-full'}
-    flex flex-col
+    flex flex-col relative
   '
 >
   <DocViewerToolbar />
@@ -46,5 +48,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         <DocViewerSidebar />
       </div>
     {/if}
+
   </div>
+
+  <DocViewerNavPopover />
+  <DocViewerMask />
 </div>

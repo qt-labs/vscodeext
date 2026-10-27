@@ -124,6 +124,11 @@
         "command": "qt-core.openInWidgetsDesigner",
         "title": "%qt-core.command.openInWidgetsDesigner.title%",
         "category": "Qt"
+      },
+      {
+        "command": "qt-core.openQtHelp",
+        "title": "%qt-core.command.openQtHelp.title%",
+        "category": "Qt"
       }
     ],
     "customEditors": [
@@ -394,7 +399,7 @@
   },
   "scripts": {
     "vscode:prepublish": "cross-env NODE_ENV=production npm run compile && git rev-parse HEAD > commit",
-    "compile": "npm run build:webview && node ./esbuild.mjs",
+    "compile": "npm run deploy:sql-wasm && npm run build:webview && node ./esbuild.mjs",
     "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
@@ -409,7 +414,8 @@
     "install:all": "npm run install:webview && npm install",
     "ci:webview": "cd webview-ui && npm ci",
     "build:webview": "cd webview-ui && npm run build",
-    "install:webview": "cd webview-ui && npm install"
+    "install:webview": "cd webview-ui && npm install",
+    "deploy:sql-wasm": "shx cp node_modules/sql.js/dist/sql-wasm.wasm ./res/others/"
   },
   "devDependencies": {
     "@types/chai": "^5.2.2",
@@ -423,6 +429,7 @@
     "@types/node": "^20.17.0",
     "@types/pngjs": "^6.0.5",
     "@types/sinon": "^17.0.4",
+    "@types/sql.js": "^1.4.11",
     "@types/vscode": "^1.94.0",
     "@types/which": "^3.0.4",
     "@types/xml2js": "^0.4.14",
@@ -436,6 +443,7 @@
     "glob": "^11.0.2",
     "mocha": "^11.3.0",
     "prettier": "^3.3.3",
+    "shx": "^0.4.0",
     "sinon": "^21.0.1",
     "typescript": "^5.6.3"
   },
@@ -448,9 +456,13 @@
     "jimp": "^1.6.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
+    "minisearch": "^7.2.0",
     "module-alias": "^2.2.3",
+    "p-limit": "^7.3.3",
     "qt-lib": "file:../qt-lib",
     "rss-parser": "^3.13.0",
+    "sql.js": "^1.15.2",
+    "svelte-tiny-virtual-list": "^4.0.0",
     "which": "^5.0.0"
   },
   "overrides": {

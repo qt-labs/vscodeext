@@ -41,12 +41,12 @@ export function isEnabled(role: Action) {
   switch (role) {
     case 'back':
     case 'forward':
-      return !error && ui.history.canGo(role);
+      return !error && ui.navigation.canGo(role);
 
-      case 'showFindInPage':
-      case 'toggleBookmark':
-      case 'openInNewViewer':
-      case 'openInFileManager':
+    case 'showFindInPage':
+    case 'toggleBookmark':
+    case 'openInNewViewer':
+    case 'openInFileManager':
       return !error && !empty;
 
     case 'bookmarkView':
