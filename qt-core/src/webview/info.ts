@@ -27,6 +27,15 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         iconPathPrefix
       };
 
+    case 'doc-viewer':
+      return {
+        appId,
+        title: texts.docViewer.tabText,
+        viewType: 'ViewTypeDocViewer',
+        viewColumn,
+        iconPathPrefix
+      };
+
     case 'ex-browser':
       return {
         appId,

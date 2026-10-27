@@ -67,3 +67,34 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   background: none;
   font-size: var(--qt-font-m);
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--qt-scrollbar) transparent;
+}
+
+/*
+  styles for lucide icons
+  https://lucide.dev/guide/advanced/global-styling
+*/
+.lucide {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.0;
+}
+
+.lucide * {
+  vector-effect: non-scaling-stroke;
+}
+
+.lucide.medium {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.5;
+}
+
+.lucide.large {
+  width: 36px;
+  height: 36px;
+  stroke-width: 2.0;
+}

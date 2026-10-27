@@ -61,6 +61,16 @@ export enum CommandId {
   UiFileOpenInDesigner,
   UiFileOpenInTextEditor,
 
+  // doc viewer
+  DocViewerGetConfig,
+  DocViewerSetViewerState,
+  DocViewerOpenDoc,
+  DocViewerReloadPage,
+  DocViewerGetBookmarks,
+  DocViewerEditBookmarks,
+  DocViewerGetHistories,
+  DocViewerEditHistories,
+
   // common
   CommonViewClosed,
   CommonRevealFolder,

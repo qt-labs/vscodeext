@@ -17,7 +17,7 @@ export class WebviewChannel {
     return this._webview.onDidReceiveMessage;
   }
 
-  public notify(id: CommandId, payload: unknown) {
+  public notify(id: CommandId, payload: unknown = {}) {
     this._post(id, payload);
   }
 

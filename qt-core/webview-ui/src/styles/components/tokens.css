@@ -19,6 +19,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   --qt-bg-subtle:              var(--vscode-sideBar-background,                #252526);
   --qt-bg-elevated:            var(--vscode-editorWidget-background,           #2d2d2d);
   --qt-bg-input:               var(--vscode-input-background,                  #3c3c3c);
+  --qt-bg-editor-tab:          var(--vscode-tab-activeBackground,              #3c3c3c);
 
   /* Borders */
   --qt-stroke-subtle:          var(--vscode-sideBar-border,                    rgba(204,204,204,0.18));
@@ -68,6 +69,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   /* Spacing & radius — not theme-dependent */
   --qt-radius-s:   4px;
   --qt-radius-m:   8px;
+  --qt-radius-lg:  10px;
 
   --qt-spacing-xs: 4px;
   --qt-spacing-s:  6px;
@@ -88,6 +90,9 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   --qt-info-border: var(--vscode-inputValidation-infoBorder);
 
   /* Texts */
+  --qt-font-2xl: calc(var(--qt-font-m) + 3px);
+  --qt-font-xl:  calc(var(--qt-font-m) + 2px);
+  --qt-font-lg:  calc(var(--qt-font-m) + 1px);
   --qt-font-m:   13px;
   --qt-font-s:   calc(var(--qt-font-m) - 1px);
   --qt-font-xs:  calc(var(--qt-font-m) - 2px);

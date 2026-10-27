@@ -38,6 +38,13 @@ export function dateAsLocaleString(
   }
 }
 
+export function timeAsLocaleString(date: Date) {
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
 export function timeAgo(date: Date): string {
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60_000);
