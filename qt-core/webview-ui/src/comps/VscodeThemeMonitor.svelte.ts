@@ -34,6 +34,21 @@ export function createController() {
     return getComputedStyle(document.body);
   }
 
+  function getAllVscodeCssVars() {
+    const computed = getComputedStyle(document.documentElement);
+    const vars: Record<string, string> = {};
+
+    for (let i = 0; i < computed.length; ++i) {
+      const name = computed[i];
+
+      if (name.startsWith('--vscode-')) {
+        vars[name] = computed.getPropertyValue(name).trim();
+      }
+    }
+
+    return vars;
+  }
+
   function _updateStatesAndExecCallback() {
     states.kind = _getThemeKind();
     states.dark = states.kind.endsWith('dark');
@@ -67,6 +82,7 @@ export function createController() {
   return {
     states,
     getBodyCss,
+    getAllVscodeCssVars,
 
     monitor: {
       start: startMonitor,

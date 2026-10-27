@@ -3,6 +3,7 @@
 
 export type WebAppId =
   | 'new-item'
+  | 'doc-viewer'
   | 'ex-browser'
   | 'welcome-page'
   | 'courses-browser'

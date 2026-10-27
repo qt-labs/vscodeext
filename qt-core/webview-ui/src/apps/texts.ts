@@ -68,7 +68,7 @@ export const qrc = {
     delete: 'Delete the selected group or file',
     clean: 'Delete all the missing files and empty groups',
     sort: 'Sort all groups and files alphabetically',
-    expandCollaps: 'Expand or collapse all',
+    expandCollapse: 'Expand or collapse all',
     openInTextEditor: 'Open in a text editor'
   },
 
@@ -368,4 +368,63 @@ export const uiFile = {
     openDesigner: 'Open with Qt Widgets Designer',
     openAsText: 'Open as text'
   },
+}
+
+export const docBrowser = {
+  empty: {
+    title: 'Qt documentation viewer'
+  },
+
+  error: {
+    title: 'Page not found',
+    guide:
+      'The Qt module may not be installed, ' +
+      'or its documentation may have been removed. ' +
+      'Check your Qt installation.',
+    backButton: 'Back'
+  },
+
+  findInPage: {
+    placeholder: 'Find in page',
+    tooltips: {
+      prev: 'Previous match',
+      next: 'Next match',
+      close: 'Close'
+    }
+  },
+
+  selectedItems(count: number, total: number) {
+    const items = total === 1 ? 'item' : 'items';
+    return count === 0
+      ? `Total ${total} ${items}`
+      : `${count} of ${total} selected`
+  },
+
+  bookmarks: {
+    title: 'Bookmarks'
+  },
+
+  history: {
+    title: 'History'
+  },
+
+  toolbar: {
+    tooltips: {
+      back: 'Go back',
+      forward: 'Go forward',
+      showFindInPage: 'Find in page',
+      openInNewViewer: 'Open in separate tab',
+      openInFileManager: 'Open in file manager',
+      toggleBookmark: 'Add/Remove bookmark',
+      bookmarkView: 'Show bookmarks',
+      historyView: 'Show history'
+    }
+  },
+
+  contextMenuTexts: {
+    back: 'Back',
+    forward: 'Forward',
+    openLink: 'Open link in new tab',
+    copy: 'Copy'
+  } as Record<string, string>
 }
