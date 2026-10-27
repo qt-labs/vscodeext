@@ -27,6 +27,15 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         iconPathPrefix
       };
 
+    case 'qt-help':
+      return {
+        appId,
+        title: texts.qtHelp.tabText,
+        viewType: 'ViewTypeQtHelp',
+        viewColumn,
+        iconPathPrefix
+      };
+
     case 'doc-viewer':
       return {
         appId,

@@ -8,16 +8,19 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     Square,
     TrashIcon,
     SquareMinus,
-    SquareCheck
+    SquareCheck,
+    ArrowDownAZ
   } from "@lucide/svelte";
-
   import { data } from '../states.svelte';
   import * as viewlogic from '../viewlogic.svelte';
   import { createCheckState } from "../types.svelte";
+    import { tooltip } from "@/utils/actions";
 
   let {
     mode = 'bookmark' as 'bookmark' | 'history'
   } = $props();
+
+  type ButtonRole = 'sort' | 'remove';
 
   const bm = $derived(mode === 'bookmark');
   const items = $derived(bm ? data.bookmarks : data.history.raw);
@@ -34,18 +37,45 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     logic.setAllChecked((checker.state === 'empty'));
   }
 
-  function onRemoveClicked() {
-    logic.edit({
-      action: 'remove',
-      selection: $state.snapshot(logic.getSelection())
-    });
+  function onButtonClicked(e: MouseEvent, role: ButtonRole) {
+    if (role === 'sort') {
+      viewlogic.bookmark.edit({ action: 'sort' });
+    } else {
+      logic.edit({
+        action: 'remove',
+        selection: $state.snapshot(logic.getSelection())
+      });
+    }
+
+    e.stopPropagation();
+  }
+
+  function findButtonData(role: ButtonRole) {
+    if (role === 'sort') {
+      return {
+        icon: ArrowDownAZ,
+        tooltip: 'Sort',
+        enabled: true,
+      }
+    } else {
+      return {
+        icon: TrashIcon,
+        tooltip: 'Remove selected items',
+        enabled: checker.state !== 'empty'
+      }
+    }
   }
 </script>
 
-<div class='w-full flex items-center gap-2'>
+<div class='w-full flex items-center gap-1'>
   {@render groupCheckBox()}
   <span class='grow'>{checker.description}</span>
-  {@render removeButton()}
+
+  {#if mode === 'bookmark'}
+    {@render toolButton('sort')}
+  {/if}
+
+  {@render toolButton('remove')}
 </div>
 
 <!-- snippets -->
@@ -60,12 +90,29 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   </button>
 {/snippet}
 
-{#snippet removeButton()}
+{#snippet toolButton(role:  ButtonRole)}
+  {@const data = findButtonData(role) }
   <button
+    use:tooltip={{ text: data.tooltip }}
     class='qt-button flex items-center justify-center'
-    style:visibility={checker.state === 'empty' ? 'hidden' : 'visible'}
-    onclick={onRemoveClicked}
+    disabled={!data.enabled}
+    onclick={(e: MouseEvent) => {
+      onButtonClicked(e, role);
+    }}
   >
-    <TrashIcon />
+    <data.icon />
   </button>
 {/snippet}
+
+<style>
+  .qt-button {
+    height: 28px;
+    padding: 5px;
+
+    &:disabled {
+      cursor: not-allowed;
+      color: var(--qt-text-muted);
+      background: color-mix(in srgb, var(--qt-bg-default) 60%, transparent);
+    }
+  }
+</style>

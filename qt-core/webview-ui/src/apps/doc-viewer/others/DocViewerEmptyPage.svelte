@@ -4,7 +4,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 -->
 
 <script lang="ts">
-  import { ScrollText } from "@lucide/svelte";
+  import { BookText } from "@lucide/svelte";
   import { docBrowser as texts } from '@/apps/texts';
 </script>
 
@@ -13,7 +13,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     data-role='wrapper'
     class='flex flex-col gap-5 items-center select-none'
   >
-    <ScrollText class='large' />
+    <BookText class='large' />
     <span>{texts.empty.title}</span>
   </div>
 </div>

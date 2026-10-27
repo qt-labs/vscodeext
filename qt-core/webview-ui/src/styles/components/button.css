@@ -23,9 +23,15 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   transition-property: color, background;
   transition-duration: var(--qt-duration-fast);
 
-  &:hover,
+  &:hover:not(:disabled),
   &[data-active='true'] {
     border-color: var(--qt-stroke-muted);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    color: var(--qt-text-muted);
+    background: var(--qt-stroke-subtle);
   }
 }
 
@@ -50,11 +56,5 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     &[data-active='true'] {
       background: var(--qt-button-secondary-hover);
     }
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    color: var(--qt-text-muted);
-    background: var(--qt-stroke-subtle);
   }
 }

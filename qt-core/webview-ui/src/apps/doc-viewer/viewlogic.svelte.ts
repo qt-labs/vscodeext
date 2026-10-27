@@ -4,7 +4,11 @@
 import _ from 'lodash';
 
 import { vscode } from '@/apps/vscode';
-import { IframeMessageId, type NamedUri, type OpenInTarget } from '@shared/doc-viewer';
+import {
+  IframeMessageId,
+  type OpenInTarget,
+  type HistoryEntry
+} from '@shared/doc-viewer';
 import { CommandId, type CommandReply } from '@shared/message';
 
 import { data, ui } from './states.svelte';
@@ -36,9 +40,9 @@ export async function onAppDestroy() {
 }
 
 export async function reset() {
-  setLoadState('', 0);
   ui.iframe.uri = '';
-  syncViewerLoadState();
+  resetIframeState();
+  syncIframeState();
 }
 
 export function currentUri() {
@@ -56,23 +60,28 @@ export async function openDoc(uri: string, target: OpenInTarget = 'current') {
 
   switch (kind) {
     case 'load':
-      setLoadState('', 0);
-      ui.iframe.uri = serviceUri;
+      if (ui.iframe.uri !== serviceUri) {
+        resetIframeState();
+        ui.iframe.uri = serviceUri;
+      }
       return;
 
     case 'error':
-      setErrorState(String(_.get(r, 'errorCode', '')).trim());
+      setIframeError(String(_.get(r, 'errorCode', '')).trim());
+      syncIframeState();
       break;
 
     default:
       return;
   }
-
-  syncViewerLoadState();
 }
 
 export function navigate(dir: 'back' | 'forward') {
-  openDoc(ui.history.go(dir)?.uri ?? '');
+  openDoc(ui.navigation.go(dir)?.uri ?? '');
+}
+
+export function navigateTo(e: HistoryEntry) {
+  openDoc(ui.navigation.goTo(e)?.uri ?? '');
 }
 
 export function copySelection() {
@@ -120,21 +129,21 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-function setLoadState(title: string, scrollTop: number) {
-  ui.iframe.title = title;
+function resetIframeState() {
+  ui.iframe.title = '';
   ui.iframe.errorCode = '';
   ui.iframe.hoveredUri = '';
-  ui.iframe.scrollTop = scrollTop;
+  ui.iframe.scrollTop = 0;
 }
 
-function setErrorState(errorCode: string) {
+function setIframeError(errorCode: string) {
   ui.iframe.title = 'Error';
   ui.iframe.errorCode = errorCode;
   ui.iframe.hoveredUri = '';
   ui.iframe.scrollTop = 0;
 }
 
-function syncViewerLoadState() {
+function syncIframeState() {
   void vscode.post(CommandId.DocViewerSetViewerState, {
     uri: helpers.toFileUriIfServer(ui.iframe.uri),
     title: ui.iframe.title,
@@ -147,22 +156,26 @@ function onMessageFromIframe(e: MessageEvent) {
     case IframeMessageId.EventHashChanged: {
       const errorCode = String(_.get(e.data, 'errorCode', '')).trim();
       if (errorCode) {
-        setErrorState(errorCode);
+        setIframeError(errorCode);
       } else {
-        const namedUri: NamedUri = {
+        const h: HistoryEntry = {
           uri: helpers.toFileUriIfServer(e.data.href),
-          title: e.data.title
+          title: e.data.title,
+          timestamp: Date.now()
         };
 
-        setLoadState(namedUri.title, e.data.scrollTop);
-        ui.history.push(namedUri);
-        history.edit({ action: 'add', entry: namedUri });
+        resetIframeState();
+        ui.iframe.title = h.title;
+        ui.iframe.scrollTop = e.data.scrollTop;
+
+        ui.navigation.push(h);
+        history.edit({ action: 'add', entry: h });
         postToIframe(IframeMessageId.RequestApplyVscodeTheme, {
           vars: ui.theme.getAllVscodeCssVars()
         });
       }
 
-      syncViewerLoadState();
+      syncIframeState();
       break;
     }
 
