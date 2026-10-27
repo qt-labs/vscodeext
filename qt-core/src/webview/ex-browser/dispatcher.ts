@@ -23,6 +23,7 @@ import * as helpers from './helpers';
 import { ExDataManager } from './data-manager';
 import { ExImageUriResolver } from './resolvers';
 import { isOpenInPreference } from '../shared/types';
+import { openDocViewer } from '@/webview/doc-viewer/controller';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
@@ -166,8 +167,10 @@ export class ExBrowserDispatcher extends WebviewDispatcher {
       if (action === 'doc-open-external') {
         void file.openExternal();
       } else {
-        await vscode.commands.executeCommand('workbench.action.splitEditor');
-        void file.openInSimpleBrowser();
+        void openDocViewer(file.toUri(), {
+          origin: 'ex-browser',
+          syncPanelTitle: true
+        });
       }
     }
 
