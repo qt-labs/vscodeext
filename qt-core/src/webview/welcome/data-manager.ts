@@ -96,7 +96,8 @@ export class WelcomePageDataManager {
       { name: 'Qt UI', id: 'theqtcompany.qt-ui' },
       { name: 'Qt QML', id: 'theqtcompany.qt-qml' },
       { name: 'Qt C++', id: 'theqtcompany.qt-cpp' },
-      { name: 'Qt Python', id: 'theqtcompany.qt-python' }
+      { name: 'Qt Python', id: 'theqtcompany.qt-python' },
+      { name: 'Qt Bridge C#', id: 'theqtcompany.qt-csharp' }
     ];
 
     for (const ext of extensions) {
