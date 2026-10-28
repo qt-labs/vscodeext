@@ -13,10 +13,14 @@ import assert from 'node:assert/strict';
 import * as net from 'net';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 
-import { JsonRpcDispatcher } from '../../src/jsonrpc';
+import {
+  JsonRpcDispatcher,
+  type JsonRpcDispatcherOptions
+} from '../../src/jsonrpc';
 import {
   ErrorCategory,
   ErrorCode,
+  type ElevationRequest,
   type SmsError,
   type UserPrompt,
   UserPromptType
@@ -46,6 +50,17 @@ describe('JsonRpcDispatcher', () => {
     server.close();
   });
 
+  /** A dispatcher on its own socket, so that only it answers the server. */
+  async function connectDispatcher(
+    options: JsonRpcDispatcherOptions
+  ): Promise<{ socket: net.Socket; dispatcher: JsonRpcDispatcher }> {
+    const socket = await new Promise<net.Socket>((resolve) => {
+      const s = net.createConnection({ path: server.socketPath });
+      s.once('connect', () => resolve(s));
+    });
+    return { socket, dispatcher: new JsonRpcDispatcher(socket, options) };
+  }
+
   // ── Request structure ───────────────────────────────────────────────────────
 
   it('call() sends a JSON-RPC 2.0 request with correct structure', async () => {
@@ -70,7 +85,9 @@ describe('JsonRpcDispatcher', () => {
 
   it('call() stamps userAgent on outbound requests when provided', async () => {
     // Create a dispatcher with a user-agent
-    const uaDispatcher = new JsonRpcDispatcher(clientSocket, 'qt-sm');
+    const uaDispatcher = new JsonRpcDispatcher(clientSocket, {
+      userAgent: 'qt-sm'
+    });
     const msgPromise = server.nextMessage();
     uaDispatcher.call(
       'packages/install',
@@ -509,5 +526,322 @@ describe('JsonRpcDispatcher', () => {
     const prompt = await promptD.promise;
     assert.equal(prompt.placeholderText, 'Type here...');
     assert.equal(prompt.type, UserPromptType.Text);
+  });
+
+  // ── Client descriptor ───────────────────────────────────────────────────────
+
+  it('call() stamps the client descriptor on outbound requests', async () => {
+    const { socket, dispatcher: clientDispatcher } = await connectDispatcher({
+      userAgent: 'my-tool/1.0',
+      client: { author: 'Example Ltd', name: 'my-tool', version: '1.0' }
+    });
+    const msgPromise = server.nextMessage();
+    clientDispatcher.call(
+      'packages/list',
+      {},
+      () => {},
+      () => {}
+    );
+    const { payload } = await msgPromise;
+    assert.equal(payload.userAgent, 'my-tool/1.0');
+    assert.deepEqual(payload.client, {
+      author: 'Example Ltd',
+      name: 'my-tool',
+      version: '1.0'
+    });
+    clientDispatcher.dispose();
+    socket.destroy();
+  });
+
+  it('call() leaves out userAgent and client when not configured', async () => {
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/list',
+      {},
+      () => {},
+      () => {}
+    );
+    const { payload } = await msgPromise;
+    assert.ok(!('userAgent' in payload));
+    assert.ok(!('client' in payload));
+  });
+
+  // ── Error category from the code range ──────────────────────────────────────
+
+  it('derives the error category from the code range when the service sends only code and message', async () => {
+    const errorD = deferred<SmsError>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      (err) => errorD.resolve(err)
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: payload.id,
+      error: { code: 10000, message: 'User canceled' }
+    });
+
+    const err = await errorD.promise;
+    assert.equal(err.code, ErrorCode.UserCancelled);
+    assert.equal(err.category, ErrorCategory.UserCanceled);
+  });
+
+  it('maps an unknown error code to the category of its range', async () => {
+    const errorD = deferred<SmsError>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      (err) => errorD.resolve(err)
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: payload.id,
+      error: { code: 6042, message: 'Some new network error' }
+    });
+
+    const err = await errorD.promise;
+    assert.equal(err.code, 6042);
+    assert.equal(err.category, ErrorCategory.Network);
+  });
+
+  // ── Unknown messages ────────────────────────────────────────────────────────
+
+  it('answers an unknown service request with error 2000', async () => {
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {}
+    );
+    const { conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: 'req-from-service-1',
+      method: 'service/some-future-request',
+      params: {}
+    });
+
+    const { payload: reply } = await replyPromise;
+    assert.equal(reply.id, 'req-from-service-1');
+    const error = reply.error as Record<string, unknown>;
+    assert.equal(error.code, ErrorCode.UnknownCommand);
+  });
+
+  it('ignores unknown notifications and still delivers the response', async () => {
+    const successD = deferred<unknown>();
+
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/list',
+      {},
+      (result) => successD.resolve(result),
+      () => {}
+    );
+
+    const { payload, conn } = await msgPromise;
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      method: 'service/some-future-notification',
+      params: { id: payload.id, detail: 'whatever' }
+    });
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: payload.id,
+      result: { packages: [] }
+    });
+
+    assert.deepEqual(await successD.promise, { packages: [] });
+  });
+
+  // ── Elevation ───────────────────────────────────────────────────────────────
+
+  it('service/elevation-required calls the handler and answers ready: true', async () => {
+    const requestD = deferred<ElevationRequest>();
+    const { socket, dispatcher: elevDispatcher } = await connectDispatcher({
+      onElevationRequired: async (request) => {
+        requestD.resolve(request);
+        return true;
+      }
+    });
+
+    const msgPromise = server.nextMessage();
+    elevDispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {}
+    );
+    const { conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: 'elevation-1',
+      method: 'service/elevation-required',
+      params: {
+        elevatedSocketName: '/tmp/qic_elevated_7a1f',
+        authorizationKey: '3e5b',
+        reason: 'Administrator rights are required to install to "/opt/Qt".'
+      }
+    });
+
+    const request = await requestD.promise;
+    assert.equal(request.elevatedSocketName, '/tmp/qic_elevated_7a1f');
+    assert.equal(request.authorizationKey, '3e5b');
+    assert.ok(request.reason.includes('/opt/Qt'));
+
+    const { payload: reply } = await replyPromise;
+    assert.equal(reply.id, 'elevation-1');
+    assert.deepEqual(reply.result, { ready: true });
+    elevDispatcher.dispose();
+    socket.destroy();
+  });
+
+  it('service/elevation-required answers ready: false without a handler', async () => {
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {}
+    );
+    const { conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: 'elevation-2',
+      method: 'service/elevation-required',
+      params: { elevatedSocketName: '/tmp/x', authorizationKey: 'k' }
+    });
+
+    const { payload: reply } = await replyPromise;
+    assert.equal(reply.id, 'elevation-2');
+    assert.deepEqual(reply.result, { ready: false });
+  });
+
+  it('service/elevation-required answers ready: false when the handler throws', async () => {
+    const { socket, dispatcher: elevDispatcher } = await connectDispatcher({
+      onElevationRequired: async () => {
+        throw new Error('pkexec not found');
+      }
+    });
+
+    const msgPromise = server.nextMessage();
+    elevDispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {}
+    );
+    const { conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: 'elevation-3',
+      method: 'service/elevation-required',
+      params: { elevatedSocketName: '/tmp/x', authorizationKey: 'k' }
+    });
+
+    const { payload: reply } = await replyPromise;
+    assert.deepEqual(reply.result, { ready: false });
+    elevDispatcher.dispose();
+    socket.destroy();
+  });
+
+  it('service/elevation-required with missing parameters answers error 2003', async () => {
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {}
+    );
+    const { conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: 'elevation-4',
+      method: 'service/elevation-required',
+      params: { elevatedSocketName: '/tmp/x' }
+    });
+
+    const { payload: reply } = await replyPromise;
+    assert.equal(reply.id, 'elevation-4');
+    const error = reply.error as Record<string, unknown>;
+    assert.equal(error.code, ErrorCode.InvalidRequestFormat);
+  });
+
+  // ── Questions that cannot be answered ───────────────────────────────────────
+
+  it('cancels a service/question with error 10000 when the call has no prompt handler', async () => {
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {}
+    );
+    const { payload, conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: payload.id,
+      method: 'service/question',
+      params: {
+        type: 'choice',
+        id: 'license',
+        title: 'License',
+        message: '',
+        defaultAnswer: '',
+        choices: 'Accept,Decline'
+      }
+    });
+
+    const { payload: reply } = await replyPromise;
+    assert.equal(reply.id, payload.id);
+    const error = reply.error as Record<string, unknown>;
+    assert.equal(error.code, ErrorCode.UserCancelled);
+  });
+
+  it('cancels a service/question with error 10000 when the prompt type is unknown', async () => {
+    const msgPromise = server.nextMessage();
+    dispatcher.call(
+      'packages/install',
+      {},
+      () => {},
+      () => {},
+      undefined,
+      async () => ({ kind: 'choice', choice: 'Accept' })
+    );
+    const { payload, conn } = await msgPromise;
+
+    const replyPromise = server.nextMessage();
+    server.sendJsonRpc(conn, {
+      jsonrpc: '2.0',
+      id: payload.id,
+      method: 'service/question',
+      params: { type: 'hologram', id: 'q', title: '', message: '' }
+    });
+
+    const { payload: reply } = await replyPromise;
+    const error = reply.error as Record<string, unknown>;
+    assert.equal(error.code, ErrorCode.UserCancelled);
   });
 });

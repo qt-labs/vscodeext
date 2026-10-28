@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 
 import { Settings, Session } from '../../src/client';
 import { SettingsPersistence } from '../../src/types';
-import { MockServer, deferred } from './mockserver';
+import { MockServer } from './mockserver';
 
 describe('Settings', () => {
   let server: MockServer;
@@ -23,7 +23,7 @@ describe('Settings', () => {
   beforeEach(async () => {
     server = new MockServer();
     await server.listen();
-    session = new Session('test', server.socketPath);
+    session = new Session({ userAgent: 'test', socketPath: server.socketPath });
     session.on('error', () => {});
     await session.connectToService();
     settings = new Settings(session);
@@ -231,6 +231,74 @@ describe('Settings', () => {
 
       const result = await resultPromise;
       assert.equal(result, '/opt/qt');
+    });
+  });
+
+  // ── Missing keys ───────────────────────────────────────────────────────────
+
+  describe('getSetting for a key without a value', () => {
+    it('resolves undefined when the key is not in the result', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = settings.getSetting('telemetry');
+
+      const { payload, conn } = await msgPromise;
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: {}
+      });
+
+      assert.equal(await resultPromise, undefined);
+    });
+  });
+
+  // ── Telemetry ──────────────────────────────────────────────────────────────
+
+  describe('getTelemetry', () => {
+    for (const [raw, expected] of [
+      ['true', true],
+      ['false', false],
+      [undefined, undefined]
+    ] as const) {
+      it(`resolves ${String(expected)} for "${String(raw)}"`, async () => {
+        const msgPromise = server.nextMessage();
+        const resultPromise = settings.getTelemetry();
+
+        const { payload, conn } = await msgPromise;
+        const params = payload.params as string[];
+        assert.deepEqual(params, ['telemetry']);
+        server.sendJsonRpc(conn, {
+          jsonrpc: '2.0',
+          id: payload.id,
+          result: raw === undefined ? {} : { telemetry: raw }
+        });
+
+        assert.equal(await resultPromise, expected);
+      });
+    }
+  });
+
+  describe('setTelemetry', () => {
+    it('sends "true" or "false" as a persistent setting', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = settings.setTelemetry(true);
+
+      const { payload, conn } = await msgPromise;
+      const params = payload.params as {
+        key: string;
+        value: string;
+        type: number;
+      }[];
+      assert.equal(params[0]?.key, 'telemetry');
+      assert.equal(params[0]?.value, 'true');
+      assert.equal(params[0]?.type, SettingsPersistence.Persistent);
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { message: 'Settings updated successfully' }
+      });
+      assert.equal(await resultPromise, 'Settings updated successfully');
     });
   });
 });
