@@ -282,9 +282,7 @@ export interface SessionEvents {
 }
 
 export interface SessionOptions {
-  /** Name and version of the application, for example `my-tool/1.0`. */
-  userAgent?: string;
-  /** Author, name and version of the application for usage statistics. */
+  /** Identifies the application to the service for usage statistics. */
   client?: ClientInfo;
   socketPath?: string;
   connectTimeoutMs?: number;
@@ -299,13 +297,11 @@ export class Session extends EventEmitter {
   private _socket: Socket | undefined;
   private readonly _socketPath: string;
   private readonly _connectTimeoutMs: number;
-  private readonly _userAgent: string;
   private readonly _client: ClientInfo | undefined;
   private readonly _onElevationRequired: ElevationHandler | undefined;
 
   constructor(options?: SessionOptions) {
     super();
-    this._userAgent = options?.userAgent ?? 'sms-api';
     this._client = options?.client;
     this._socketPath = options?.socketPath ?? IPC.defaultSocket;
     this._connectTimeoutMs = options?.connectTimeoutMs ?? 5000;
@@ -322,10 +318,6 @@ export class Session extends EventEmitter {
 
   get isConnected(): boolean {
     return this._state === SessionState.Connected;
-  }
-
-  get userAgent(): string {
-    return this._userAgent;
   }
 
   get client(): ClientInfo | undefined {
@@ -355,7 +347,6 @@ export class Session extends EventEmitter {
 
       this._socket = socket;
       this._dispatcher = new JsonRpcDispatcher(socket, {
-        ...(this._userAgent ? { userAgent: this._userAgent } : {}),
         ...(this._client ? { client: this._client } : {}),
         ...(this._onElevationRequired
           ? { onElevationRequired: this._onElevationRequired }

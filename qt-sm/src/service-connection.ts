@@ -14,12 +14,12 @@ import { createLogger, resolveConfiguration } from 'qt-lib';
 import {
   EXTENSION_ID,
   CONF_INSTALLATION_PATH,
-  CONF_USER_AGENT
+  CONF_USER_AGENT,
+  CONF_USER_AGENT_NAME,
+  CLIENT_AUTHOR
 } from '@/constants';
 
 const logger = createLogger('service-connection');
-
-const CLIENT_AUTHOR = 'The Qt Company';
 
 let launcher: ServiceLauncher | undefined;
 let session: Session | undefined;
@@ -95,8 +95,12 @@ export async function ensureConnected(): Promise<Session> {
   if (!session) {
     const version = extensionVersion();
     session = new Session({
-      userAgent: `${CONF_USER_AGENT}/${version}`,
-      client: { author: CLIENT_AUTHOR, name: CONF_USER_AGENT, version },
+      client: {
+        userAgent: CONF_USER_AGENT,
+        author: CLIENT_AUTHOR,
+        name: CONF_USER_AGENT_NAME,
+        version
+      },
       onElevationRequired: startElevatedHelper
     });
   }

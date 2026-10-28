@@ -23,7 +23,7 @@ describe('Settings', () => {
   beforeEach(async () => {
     server = new MockServer();
     await server.listen();
-    session = new Session({ userAgent: 'test', socketPath: server.socketPath });
+    session = new Session({ socketPath: server.socketPath });
     session.on('error', () => {});
     await session.connectToService();
     settings = new Settings(session);

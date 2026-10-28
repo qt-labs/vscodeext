@@ -23,7 +23,6 @@ describe('Session', () => {
     await server.listen();
 
     const session = new Session({
-      userAgent: 'test',
       socketPath: server.socketPath
     });
     const stateChanges: SessionState[] = [];
@@ -50,7 +49,6 @@ describe('Session', () => {
     await server.listen();
 
     const session = new Session({
-      userAgent: 'test',
       socketPath: server.socketPath
     });
     await session.connectToService();
@@ -73,7 +71,6 @@ describe('Session', () => {
 
   it('connect failure sets state to Error and emits error event', async () => {
     const session = new Session({
-      userAgent: 'test',
       socketPath: '/tmp/sms-nonexistent-socket-zzz'
     });
     const stateChanges: SessionState[] = [];
@@ -97,7 +94,6 @@ describe('Session', () => {
     await server.listen();
 
     const session = new Session({
-      userAgent: 'test',
       socketPath: server.socketPath
     });
     await session.connectToService();
@@ -118,7 +114,6 @@ describe('Session', () => {
     await server.listen();
 
     const session = new Session({
-      userAgent: 'test',
       socketPath: server.socketPath
     });
     await session.connectToService();

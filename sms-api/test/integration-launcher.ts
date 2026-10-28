@@ -371,7 +371,12 @@ async function testSessionThroughLauncher(config: TestConfig): Promise<void> {
   }
 
   const session = new Session({
-    userAgent: 'integration-test',
+    client: {
+      userAgent: 'integration-test',
+      author: 'The Qt Company',
+      name: 'sms-api-integration-test',
+      version: '1.0'
+    },
     socketPath: config.socketPath,
     connectTimeoutMs: 10_000
   });
