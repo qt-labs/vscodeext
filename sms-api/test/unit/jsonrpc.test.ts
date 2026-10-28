@@ -83,23 +83,6 @@ describe('JsonRpcDispatcher', () => {
     assert.deepEqual((payload.params as Record<string, unknown>).packages, []);
   });
 
-  it('call() stamps userAgent on outbound requests when provided', async () => {
-    // Create a dispatcher with a user-agent
-    const uaDispatcher = new JsonRpcDispatcher(clientSocket, {
-      userAgent: 'qt-sm'
-    });
-    const msgPromise = server.nextMessage();
-    uaDispatcher.call(
-      'packages/install',
-      { packages: [] },
-      () => {},
-      () => {}
-    );
-    const { payload } = await msgPromise;
-    assert.equal(payload.userAgent, 'qt-sm');
-    uaDispatcher.dispose();
-  });
-
   it('call() returns the generated request id', async () => {
     const msgPromise = server.nextMessage();
     const id = dispatcher.call(
@@ -530,10 +513,14 @@ describe('JsonRpcDispatcher', () => {
 
   // ── Client descriptor ───────────────────────────────────────────────────────
 
-  it('call() stamps the client descriptor on outbound requests', async () => {
+  it('call() sends userAgent and client from the client descriptor', async () => {
     const { socket, dispatcher: clientDispatcher } = await connectDispatcher({
-      userAgent: 'my-tool/1.0',
-      client: { author: 'Example Ltd', name: 'my-tool', version: '1.0' }
+      client: {
+        userAgent: 'my-tool',
+        author: 'Example Ltd',
+        name: 'my-tool',
+        version: '1.0'
+      }
     });
     const msgPromise = server.nextMessage();
     clientDispatcher.call(
@@ -543,7 +530,7 @@ describe('JsonRpcDispatcher', () => {
       () => {}
     );
     const { payload } = await msgPromise;
-    assert.equal(payload.userAgent, 'my-tool/1.0');
+    assert.equal(payload.userAgent, 'my-tool');
     assert.deepEqual(payload.client, {
       author: 'Example Ltd',
       name: 'my-tool',
