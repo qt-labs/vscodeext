@@ -13,6 +13,7 @@ import {
 } from '@/constants';
 import { isAnyVersionInstalledOnDisk } from '@/installed-packages-store';
 import { isLatestFrameworkInstalled } from '@/latest-framework';
+import { setUsageDataConsent } from '@/service-connection';
 import type { SignInPhase } from '@/auth-provider';
 import {
   getAccountLabel,
@@ -105,6 +106,11 @@ function getWalkthroughState(
 ): WalkthroughStateManager {
   walkthroughState ??= new WalkthroughStateManager(context);
   return walkthroughState;
+}
+
+/** The "usage data" opt-in of the Privacy & data card, false until enabled. */
+export function getUsageDataOptIn(context: vscode.ExtensionContext): boolean {
+  return getWalkthroughState(context).privacyUsageData;
 }
 
 interface WalkthroughAction {
@@ -461,6 +467,7 @@ function wirePanel(
           const state = getWalkthroughState(context);
           if (msg.key === 'usage') {
             state.privacyUsageData = msg.enabled === true;
+            setUsageDataConsent(msg.enabled === true);
           } else if (msg.key === 'crash') {
             state.privacyCrashDumps = msg.enabled === true;
           }
@@ -570,6 +577,7 @@ export async function resetWalkthroughState(
   state.signInAcknowledged = false;
   state.privacyUsageData = false;
   state.privacyCrashDumps = false;
+  setUsageDataConsent(false);
   // Await so the re-render below reads the cleared flag.
   await setGetStartedDone(false);
   refreshWalkthrough();
