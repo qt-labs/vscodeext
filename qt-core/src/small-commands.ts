@@ -12,7 +12,14 @@ export function resetCommand() {
     telemetry.sendAction('reset');
     coreAPI?.reset();
     projectManager.reset();
-    const extensions = ['qt-cpp', 'qt-qml', 'qt-ui'];
+    const extensions = [
+      'qt-core',
+      'qt-cpp',
+      'qt-qml',
+      'qt-ui',
+      'qt-python',
+      'qt-csharp'
+    ];
     extensions.forEach((extension) => {
       void vscode.commands.executeCommand(`${extension}.reset`);
     });
@@ -21,7 +28,14 @@ export function resetCommand() {
 
 export function registerOpenSettingsCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
-    const extensions = ['qt-cpp', 'qt-qml', 'qt-ui', 'qt-python', EXTENSION_ID];
+    const extensions = [
+      'qt-cpp',
+      'qt-qml',
+      'qt-ui',
+      'qt-python',
+      'qt-csharp',
+      EXTENSION_ID
+    ];
     telemetry.sendAction('openSettings');
     void vscode.commands.executeCommand(
       'workbench.action.openSettings',
