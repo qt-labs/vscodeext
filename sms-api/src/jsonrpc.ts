@@ -8,12 +8,17 @@ import { randomUUID } from 'crypto';
 
 import { PacketReader, encodeJsonPacket } from './transport';
 import {
+  type ClientInfo,
+  type ElevationHandler,
+  type ElevationRequest,
   type SmsError,
   type UserPrompt,
   type UserPromptReply,
   UserPromptType,
   ErrorCategory,
-  ErrorCode
+  ErrorCode,
+  errorCategoryForCode,
+  IPC
 } from './types';
 
 // ── JSON-RPC 2.0 wire types ─────────────────────────────────────────────────
@@ -40,7 +45,7 @@ interface JsonRpcSuccessResponse {
 interface JsonRpcErrorResponse {
   jsonrpc: '2.0';
   id: string;
-  error: { code: number; category?: number; message: string };
+  error: { code: number; message: string };
 }
 
 type JsonRpcMessage =
@@ -66,6 +71,18 @@ interface PendingCall {
   onPrompt?: PromptHandler | undefined;
 }
 
+export interface JsonRpcDispatcherOptions {
+  /** Sent as the top-level `userAgent` of every request. */
+  userAgent?: string;
+  /** Sent as the top-level `client` of every request. */
+  client?: ClientInfo;
+  /**
+   * Answers `service/elevation-required`. Without it the dispatcher reports
+   * `ready: false` and the operation fails with error 4000.
+   */
+  onElevationRequired?: ElevationHandler;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function isResponse(
@@ -80,6 +97,16 @@ function isNotification(msg: JsonRpcMessage): msg is JsonRpcNotification {
 
 function isRequest(msg: JsonRpcMessage): msg is JsonRpcRequest {
   return 'method' in msg && 'id' in msg;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 function parsePromptType(raw: unknown): UserPromptType | undefined {
@@ -104,11 +131,15 @@ export class JsonRpcDispatcher {
   private readonly reader = new PacketReader();
   private readonly pending = new Map<string, PendingCall>();
   private readonly userAgent: string | undefined;
+  private readonly client: ClientInfo | undefined;
+  private readonly onElevationRequired: ElevationHandler | undefined;
   private disposed = false;
 
-  constructor(socket: net.Socket, userAgent?: string) {
+  constructor(socket: net.Socket, options?: JsonRpcDispatcherOptions) {
     this.socket = socket;
-    this.userAgent = userAgent;
+    this.userAgent = options?.userAgent;
+    this.client = options?.client;
+    this.onElevationRequired = options?.onElevationRequired;
 
     socket.on('data', (chunk: Buffer) => {
       this.reader.feed(chunk);
@@ -118,13 +149,15 @@ export class JsonRpcDispatcher {
       if (pkt.command !== 'JSON') {
         return;
       }
-      let msg: JsonRpcMessage;
+      let msg: unknown;
       try {
-        msg = JSON.parse(pkt.data) as JsonRpcMessage;
+        msg = JSON.parse(pkt.data);
       } catch {
         return; // Unparseable – drop silently
       }
-      this.dispatch(msg);
+      if (asRecord(msg)) {
+        this.dispatch(msg as JsonRpcMessage);
+      }
     });
 
     socket.once('close', () => {
@@ -161,12 +194,19 @@ export class JsonRpcDispatcher {
     const request: Record<string, unknown> = {
       jsonrpc: '2.0',
       id,
-      method,
-      params
+      method
     };
     if (this.userAgent) {
       request.userAgent = this.userAgent;
     }
+    if (this.client) {
+      request.client = {
+        author: this.client.author,
+        name: this.client.name,
+        version: this.client.version
+      };
+    }
+    request.params = params;
     this.pending.set(id, {
       id,
       onSuccess,
@@ -180,7 +220,7 @@ export class JsonRpcDispatcher {
   }
 
   /**
-   * Send a raw JSON-RPC message (used for prompt responses).
+   * Send a raw JSON-RPC message (used for responses to service requests).
    */
   send(msg: JsonRpcMessage): void {
     if (this.disposed) {
@@ -198,45 +238,67 @@ export class JsonRpcDispatcher {
 
   // ── Internal dispatch ────────────────────────────────────────────────────
 
+  /**
+   * Tells the three kinds of messages apart in the order the protocol
+   * requires: notification, service request, then response. A
+   * `service/question` reuses the id of the client request it belongs to,
+   * so `method` must be checked before `id`.
+   */
   private dispatch(msg: JsonRpcMessage): void {
-    // Progress notification: { method: "service/progress", params: { id, progress } }
-    if (isNotification(msg) && msg.method === 'service/progress') {
-      const params = msg.params as Record<string, unknown> | undefined;
-      const callId = params?.id as string | undefined;
-      if (!callId) {
-        return;
-      }
-      const call = this.pending.get(callId);
-      if (call?.onProgress && params) {
-        call.onProgress(params);
-      }
+    if (isNotification(msg)) {
+      this.handleNotification(msg);
       return;
     }
 
-    // Message notification: { method: "service/message", params: { id, message } }
-    if (isNotification(msg) && msg.method === 'service/message') {
-      const params = msg.params as Record<string, unknown> | undefined;
-      const callId = params?.id as string | undefined;
-      if (!callId) {
-        return;
-      }
-      const call = this.pending.get(callId);
-      if (call?.onMessage && params) {
-        call.onMessage(params);
-      }
+    if (isRequest(msg)) {
+      this.handleServiceRequest(msg);
       return;
     }
 
-    // User prompt request from server: { method: "service/question", id, params }
-    if (isRequest(msg) && msg.method === 'service/question') {
-      this.handlePrompt(msg);
-      return;
-    }
-
-    // Standard response
     if (isResponse(msg)) {
       this.handleResponse(msg);
+    }
+  }
+
+  private handleNotification(msg: JsonRpcNotification): void {
+    const params = asRecord(msg.params);
+    const callId = nonEmptyString(params?.id);
+    if (!params || !callId) {
       return;
+    }
+    const call = this.pending.get(callId);
+    if (!call) {
+      return;
+    }
+    switch (msg.method) {
+      case IPC.notifications.progress:
+        call.onProgress?.(params);
+        break;
+      case IPC.notifications.message:
+        call.onMessage?.(params);
+        break;
+      default:
+        // Unknown notifications are ignored.
+        break;
+    }
+  }
+
+  private handleServiceRequest(msg: JsonRpcRequest): void {
+    switch (msg.method) {
+      case IPC.requests.question:
+        this.handlePrompt(msg);
+        break;
+      case IPC.requests.elevationRequired:
+        this.handleElevation(msg);
+        break;
+      default:
+        // Unknown service requests get error 2000.
+        this.sendError(
+          msg.id,
+          ErrorCode.UnknownCommand,
+          `Unknown method: ${msg.method}`
+        );
+        break;
     }
   }
 
@@ -250,32 +312,36 @@ export class JsonRpcDispatcher {
     this.pending.delete(msg.id);
 
     if ('error' in msg) {
+      const error = asRecord(msg.error);
+      const code =
+        typeof error?.code === 'number' ? error.code : ErrorCode.UnknownError;
       call.onError({
-        category:
-          (msg.error.category as ErrorCategory | undefined) ??
-          ErrorCategory.Unknown,
-        code: msg.error.code as ErrorCode,
-        message: msg.error.message
+        category: errorCategoryForCode(code),
+        code: code as ErrorCode,
+        message:
+          typeof error?.message === 'string' ? error.message : 'Unknown error'
       });
     } else if ('result' in msg) {
       call.onSuccess(msg.result);
     }
   }
 
+  /**
+   * `service/question`: its id is the id of the client request it belongs
+   * to. A question that cannot be answered is cancelled with an error
+   * response, otherwise the service would wait forever.
+   */
   private handlePrompt(msg: JsonRpcRequest): void {
-    const params = msg.params as Record<string, unknown> | undefined;
-    if (!params) {
-      return;
-    }
-
-    // The prompt's request id is used to look up the pending call
+    const params = asRecord(msg.params);
     const call = this.pending.get(msg.id);
-    if (!call?.onPrompt) {
-      return;
-    }
+    const promptType = parsePromptType(params?.type);
 
-    const promptType = parsePromptType(params.type);
-    if (!promptType) {
+    if (!params || !call?.onPrompt || !promptType) {
+      this.sendError(
+        msg.id,
+        ErrorCode.UserCancelled,
+        'The client cannot answer this question'
+      );
       return;
     }
 
@@ -295,32 +361,66 @@ export class JsonRpcDispatcher {
       placeholderText: (params.placeHolderText as string | undefined) ?? ''
     };
 
-    void call.onPrompt(prompt).then((reply) => {
-      if (reply.kind === 'cancel') {
-        const errorResp: JsonRpcErrorResponse = {
-          jsonrpc: '2.0',
-          id: msg.id,
-          error: {
-            code: ErrorCode.UserCancelled,
-            message: 'User canceled while answering prompt'
-          }
-        };
-        this.send(errorResp);
-      } else {
+    const onPrompt = call.onPrompt;
+    Promise.resolve()
+      .then(async () => onPrompt(prompt))
+      .then((reply) => {
+        if (reply.kind === 'cancel') {
+          this.sendError(msg.id, ErrorCode.UserCancelled, 'User canceled');
+          return;
+        }
         const result: Record<string, string> = { id: prompt.id };
         if (reply.kind === 'choice') {
           result.replyChoice = reply.choice;
         } else {
           result.replyText = reply.text;
         }
-        const resp: JsonRpcSuccessResponse = {
-          jsonrpc: '2.0',
-          id: msg.id,
-          result
-        };
-        this.send(resp);
-      }
-    });
+        this.send({ jsonrpc: '2.0', id: msg.id, result });
+      })
+      .catch(() => {
+        this.sendError(msg.id, ErrorCode.UserCancelled, 'User canceled');
+      });
+  }
+
+  /**
+   * `service/elevation-required`: has its own id. The client starts the
+   * elevated helper and answers `{ ready }`.
+   */
+  private handleElevation(msg: JsonRpcRequest): void {
+    const params = asRecord(msg.params);
+    const elevatedSocketName = nonEmptyString(params?.elevatedSocketName);
+    const authorizationKey = nonEmptyString(params?.authorizationKey);
+    if (!elevatedSocketName || !authorizationKey) {
+      this.sendError(
+        msg.id,
+        ErrorCode.InvalidRequestFormat,
+        'Missing elevatedSocketName or authorizationKey'
+      );
+      return;
+    }
+
+    const request: ElevationRequest = {
+      elevatedSocketName,
+      authorizationKey,
+      reason: (params?.reason as string | undefined) ?? ''
+    };
+
+    const handler = this.onElevationRequired;
+    void Promise.resolve()
+      .then(async () => (handler ? handler(request) : false))
+      .catch(() => false)
+      .then((ready) => {
+        this.send({ jsonrpc: '2.0', id: msg.id, result: { ready } });
+      });
+  }
+
+  private sendError(id: string, code: ErrorCode, message: string): void {
+    const response: JsonRpcErrorResponse = {
+      jsonrpc: '2.0',
+      id,
+      error: { code, message }
+    };
+    this.send(response);
   }
 
   private rejectAll(error: SmsError): void {

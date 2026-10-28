@@ -417,39 +417,38 @@ async function testInstallPackage(
   log(`  -> Expected output directory: ${INSTALL_OUTPUT_DIR}`);
 
   const result = await withTimeout(
-    packages.install(
-      [ref],
-      { timeoutMs: INSTALL_TIMEOUT_MS },
-      {
-        onProgress: ({ progress, message }) => {
-          const pct = (progress * 100).toFixed(1);
-          const detail = message ? ` — ${message}` : '';
-          log(`  [progress] ${pct}%${detail}`);
-        },
-        onMessage: ({ message }) => {
-          log(`  [message] ${message}`);
-        },
-        onPrompt: async (prompt) => {
-          log(`  [prompt] "${prompt.title}": ${prompt.message}`);
-          if (prompt.choices.length > 0) {
-            const choice = prompt.choices[0] ?? prompt.defaultAnswer;
-            log(
-              `  [prompt] choices: [${prompt.choices.join(', ')}] — auto-selecting "${choice}"`
-            );
-            return { kind: 'choice', choice };
-          }
+    packages.install([ref], undefined, {
+      onProgress: ({ progress, message }) => {
+        const pct = progress.toFixed(1);
+        const detail = message ? ` — ${message}` : '';
+        log(`  [progress] ${pct}%${detail}`);
+      },
+      onMessage: ({ message }) => {
+        log(`  [message] ${message}`);
+      },
+      onPrompt: async (prompt) => {
+        log(`  [prompt] "${prompt.title}": ${prompt.message}`);
+        if (prompt.choices.length > 0) {
+          const choice = prompt.choices[0] ?? prompt.defaultAnswer;
           log(
-            `  [prompt] defaultAnswer: "${prompt.defaultAnswer}" — auto-replying`
+            `  [prompt] choices: [${prompt.choices.join(', ')}] — auto-selecting "${choice}"`
           );
-          return { kind: 'text', text: prompt.defaultAnswer };
+          return { kind: 'choice', choice };
         }
+        log(
+          `  [prompt] defaultAnswer: "${prompt.defaultAnswer}" — auto-replying`
+        );
+        return { kind: 'text', text: prompt.defaultAnswer };
       }
-    ),
+    }),
     INSTALL_TIMEOUT_MS + 5_000,
     `install ${label}`
   );
 
-  log(`  -> Install completed: ${result}`);
+  log(`  -> Install completed: ${result.message}`);
+  for (const item of result.launch) {
+    log(`  -> Launch item: ${item.type} ${item.uri}`);
+  }
 }
 
 async function testVerifyInstallOutput(): Promise<void> {
@@ -681,7 +680,11 @@ async function testReconnect(
   }
 
   // Reconnect with a fresh session
-  const session2 = new Session('integration-test', socketPath, timeoutMs);
+  const session2 = new Session({
+    userAgent: 'integration-test',
+    socketPath,
+    connectTimeoutMs: timeoutMs
+  });
   await session2.connectToService();
   if (session2.state !== SessionState.Connected) {
     throw new Error(`Expected Connected on reconnect, got ${session2.state}`);
@@ -720,11 +723,16 @@ async function main(): Promise<void> {
     }
 
     // ── Connection tests ──
-    const session = new Session(
-      'integration-test',
+    const session = new Session({
+      userAgent: 'integration-test',
+      client: {
+        author: 'The Qt Company',
+        name: 'sms-api-integration-test',
+        version: '1.0'
+      },
       socketPath,
-      config.connectTimeoutMs
-    );
+      connectTimeoutMs: config.connectTimeoutMs
+    });
 
     session.on('stateChanged', (state: SessionState) => {
       log(`  [session] state -> ${state}`);

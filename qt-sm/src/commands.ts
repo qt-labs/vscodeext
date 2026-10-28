@@ -17,7 +17,9 @@ import {
   type LicenseAnswer,
   type UserPrompt,
   type UserPromptReply,
+  ErrorCode,
   InstallState,
+  SmsServiceError,
   UserPromptType,
   ProgressType
 } from 'sms-api';
@@ -95,6 +97,11 @@ function formatSize(bytes: number): string {
     return `${String(bytes)} B`;
   }
   return `${(bytes / Math.pow(1024, index)).toFixed(1)} ${unit}`;
+}
+
+/** The name to show for a package: its display name, else its name or id. */
+function packageLabel(pkg: PackageData): string {
+  return pkg.displayNames[0] ?? (pkg.name || pkg.id);
 }
 
 function installStateLabel(state: InstallState): string {
@@ -198,7 +205,6 @@ export async function searchPackages(): Promise<void> {
       async () =>
         packages.searchAvailablePackages(
           { packagePresentation: 'monolith' },
-          undefined,
           {
             onMessage: (info) => {
               logger.info(`searchAvailablePackages: ${info.message}`);
@@ -215,16 +221,12 @@ export async function searchPackages(): Promise<void> {
 
     // Build installed set from service + local store
     const installedKeys = new Set<string>();
-    const installedList = await packages.listInstalledPackages(
-      undefined,
-      undefined,
-      {
-        onMessage: (info) => {
-          logger.info(`searchPackages.listInstalled: ${info.message}`);
-        },
-        onPrompt: handleUserPrompt
-      }
-    );
+    const installedList = await packages.listInstalledPackages({
+      onMessage: (info) => {
+        logger.info(`searchPackages.listInstalled: ${info.message}`);
+      },
+      onPrompt: handleUserPrompt
+    });
     for (const pkg of installedList) {
       installedKeys.add(`${pkg.id}@${pkg.version}`);
     }
@@ -238,7 +240,7 @@ export async function searchPackages(): Promise<void> {
       isVersionInstalledOnDisk(pkg.version);
 
     const items = results.map((pkg: PackageData) => ({
-      label: pkg.name || pkg.id,
+      label: packageLabel(pkg),
       description: `${pkg.version} — ${isInstalled(pkg) ? '$(check) Installed' : installStateLabel(pkg.installState)}`,
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
       pkg
@@ -253,7 +255,7 @@ export async function searchPackages(): Promise<void> {
     if (selected) {
       const installed = isInstalled(selected.pkg);
       const info = [
-        `**${selected.pkg.name || selected.pkg.id}** v${selected.pkg.version}`,
+        `**${packageLabel(selected.pkg)}** v${selected.pkg.version}`,
         '',
         selected.pkg.description,
         '',
@@ -290,7 +292,7 @@ export async function searchPackages(): Promise<void> {
 //         cancellable: false
 //       },
 //       async () =>
-//         packages.listInstalledPackages(undefined, undefined, {
+//         packages.listInstalledPackages({
 //           onMessage: (info) => {
 //             logger.info(`listInstalledPackages: ${info.message}`);
 //           },
@@ -304,7 +306,7 @@ export async function searchPackages(): Promise<void> {
 //     }
 
 //     const items = results.map((pkg: PackageData) => ({
-//       label: pkg.name || pkg.id,
+//       label: packageLabel(pkg),
 //       description: pkg.version,
 //       detail: pkg.description
 //     }));
@@ -363,7 +365,6 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       async () =>
         packages.searchAvailablePackages(
           { packagePresentation: 'monolith' },
-          undefined,
           {
             onMessage: (info) => {
               logger.info(`searchAvailablePackages: ${info.message}`);
@@ -380,16 +381,12 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     let candidates = [...results];
 
     // Query installed packages from the service and update local store
-    const installedList = await packages.listInstalledPackages(
-      undefined,
-      undefined,
-      {
-        onMessage: (info) => {
-          logger.info(`installPackage.listInstalled: ${info.message}`);
-        },
-        onPrompt: handleUserPrompt
-      }
-    );
+    const installedList = await packages.listInstalledPackages({
+      onMessage: (info) => {
+        logger.info(`installPackage.listInstalled: ${info.message}`);
+      },
+      onPrompt: handleUserPrompt
+    });
 
     // Build a set of installed package keys for fast lookup
     const installedKeys = new Set<string>();
@@ -475,7 +472,7 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     }
 
     const items = uninstalledCandidates.map((pkg: PackageData) => ({
-      label: pkg.name || pkg.id,
+      label: packageLabel(pkg),
       description: pkg.version,
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
       pkg
@@ -522,7 +519,7 @@ async function showInstalledNotification(pkg: PackageData): Promise<void> {
     ? ` Installed in ${path.join(resolveConfiguration(rawInstallRoot), 'QtFramework', pkg.version)}.`
     : '';
   const action = await vscode.window.showInformationMessage(
-    `${pkg.name || pkg.id} ${pkg.version} installed successfully. ` +
+    `${packageLabel(pkg)} ${pkg.version} installed successfully. ` +
       "Your Qt development environment is ready. Open the Qt panel to see what's installed, " +
       'or start the walkthrough to build your first app.' +
       location,
@@ -842,7 +839,7 @@ async function installPackageByIdImpl(
       cancellable: false
     },
     async () =>
-      packages.fetchRequirements([pkgRef], undefined, {
+      packages.fetchRequirements([pkgRef], {
         onMessage: (info) => {
           logger.info(`fetchRequirements: ${info.message}`);
         },
@@ -858,14 +855,15 @@ async function installPackageByIdImpl(
   if (hardBlockers.length > 0) {
     const messages = hardBlockers.map((r) => r.userMessage);
     void vscode.window.showErrorMessage(
-      `Cannot install ${pkg.name || pkg.id}: ${messages.join('; ')}`
+      `Cannot install ${packageLabel(pkg)}: ${messages.join('; ')}`
     );
     return;
   }
 
   for (const agreement of requirements.licenseAgreements) {
-    logger.info(`Accepted license agreement: ${agreement.id}`);
-    logger.info(`Agreement title: ${agreement.title}`);
+    logger.info(
+      `License agreement to accept: ${agreement.id} (${agreement.title})`
+    );
   }
 
   // Present license agreements in a webview panel
@@ -891,7 +889,7 @@ async function installPackageByIdImpl(
   const options =
     preAnswers.length > 0 ? { preAnsweredAgreements: preAnswers } : undefined;
 
-  const pkgLabel = `${pkg.name || pkg.id} ${pkg.version}`;
+  const pkgLabel = `${packageLabel(pkg)} ${pkg.version}`;
 
   // Two separate progress notifications: cancellable download, then non-cancellable install.
   // We track which notification is active and swap when the phase changes.
@@ -961,9 +959,13 @@ async function installPackageByIdImpl(
       },
       onPrompt: handleUserPrompt
     })
-    .then(() => {
+    .then((result) => {
       endDownloadPhase?.();
       endInstallPhase?.();
+      logger.info(`Install result: ${result.message}`);
+      for (const item of result.launch) {
+        logger.info(`Launch item (${item.type}): ${item.uri}`);
+      }
       void showInstalledNotification(pkg);
       // Updates the packageInstalled context and the Installed Packages view.
       syncInstalledPackages();
@@ -984,15 +986,22 @@ async function installPackageByIdImpl(
       if (cancelledByUser) {
         return;
       }
+      if (
+        err instanceof SmsServiceError &&
+        err.code === ErrorCode.UserCancelled
+      ) {
+        logger.info(`Installation cancelled: ${err.message}`);
+        return;
+      }
       const msg = err instanceof Error ? err.message : String(err);
-      const errMsg = `Failed to install ${pkg.name || pkg.id} ${pkg.version} : ${msg}`;
+      const errMsg = `Failed to install ${packageLabel(pkg)} ${pkg.version} : ${msg}`;
       logger.error(errMsg);
       void vscode.window.showErrorMessage(errMsg);
     });
 
   // Start with the download phase notification (cancellable)
   logger.info(
-    `Installing package ${pkg.name || pkg.id} with options: ${JSON.stringify(options)}`
+    `Installing package ${packageLabel(pkg)} with options: ${JSON.stringify(options)}`
   );
   await vscode.window.withProgress(
     {
