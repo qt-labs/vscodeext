@@ -15,3 +15,24 @@ export const CoreKey = {
   QT_TOOLS_PATHS: 'qtToolsPaths',
   GLOBAL_WORKSPACE: 'global'
 };
+
+export const QT_EXTENSION_PUBLISHER = 'theqtcompany';
+
+export interface QtExtensionInfo {
+  // Extension name without the publisher prefix, e.g. 'qt-core'
+  name: string;
+  displayName: string;
+}
+
+export const QtExtensions: readonly QtExtensionInfo[] = [
+  { name: 'qt-core', displayName: 'Qt Core' },
+  { name: 'qt-cpp', displayName: 'Qt C++' },
+  { name: 'qt-qml', displayName: 'Qt QML' },
+  { name: 'qt-ui', displayName: 'Qt UI (Deprecated)' },
+  { name: 'qt-python', displayName: 'Qt Python' },
+  { name: 'qt-csharp', displayName: 'Qt Bridge C#' }
+];
+
+export function getQtExtensionFullId(name: string) {
+  return `${QT_EXTENSION_PUBLISHER}.${name}`;
+}

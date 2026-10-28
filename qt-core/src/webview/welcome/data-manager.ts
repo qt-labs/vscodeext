@@ -5,6 +5,8 @@ import _ from 'lodash';
 import * as vscode from 'vscode';
 import Parser from 'rss-parser';
 
+import { getQtExtensionFullId, QtExtensions } from 'qt-lib';
+
 import {
   ExtInfo,
   DataType,
@@ -91,17 +93,10 @@ export class WelcomePageDataManager {
       return;
     }
 
-    const extensions = [
-      { name: 'Qt Core', id: 'theqtcompany.qt-core' },
-      { name: 'Qt UI', id: 'theqtcompany.qt-ui' },
-      { name: 'Qt QML', id: 'theqtcompany.qt-qml' },
-      { name: 'Qt C++', id: 'theqtcompany.qt-cpp' },
-      { name: 'Qt Python', id: 'theqtcompany.qt-python' },
-      { name: 'Qt Bridge C#', id: 'theqtcompany.qt-csharp' }
-    ];
-
-    for (const ext of extensions) {
-      this._extInfoList.push(readExtInfo(ext.id, ext.name));
+    for (const ext of QtExtensions) {
+      this._extInfoList.push(
+        readExtInfo(getQtExtensionFullId(ext.name), ext.displayName)
+      );
     }
   }
 

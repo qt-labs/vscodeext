@@ -5,41 +5,32 @@ import * as vscode from 'vscode';
 
 import { coreAPI, projectManager } from '@/extension';
 import { EXTENSION_ID, COMMAND_SHOW_LOG } from '@/constants';
-import { getLogOutputChannel, telemetry } from 'qt-lib';
+import {
+  getLogOutputChannel,
+  getQtExtensionFullId,
+  QtExtensions,
+  telemetry
+} from 'qt-lib';
 
 export function resetCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.reset`, () => {
     telemetry.sendAction('reset');
     coreAPI?.reset();
     projectManager.reset();
-    const extensions = [
-      'qt-core',
-      'qt-cpp',
-      'qt-qml',
-      'qt-ui',
-      'qt-python',
-      'qt-csharp'
-    ];
-    extensions.forEach((extension) => {
-      void vscode.commands.executeCommand(`${extension}.reset`);
-    });
+    QtExtensions.filter((extension) => extension.name !== EXTENSION_ID).forEach(
+      (extension) => {
+        void vscode.commands.executeCommand(`${extension.name}.reset`);
+      }
+    );
   });
 }
 
 export function registerOpenSettingsCommand() {
   return vscode.commands.registerCommand(`${EXTENSION_ID}.openSettings`, () => {
-    const extensions = [
-      'qt-cpp',
-      'qt-qml',
-      'qt-ui',
-      'qt-python',
-      'qt-csharp',
-      EXTENSION_ID
-    ];
     telemetry.sendAction('openSettings');
     void vscode.commands.executeCommand(
       'workbench.action.openSettings',
-      extensions.map((e) => `@ext:theqtcompany.${e}`).join(' ')
+      QtExtensions.map((e) => `@ext:${getQtExtensionFullId(e.name)}`).join(' ')
     );
   });
 }
