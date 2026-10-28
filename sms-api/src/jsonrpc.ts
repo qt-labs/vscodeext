@@ -72,9 +72,7 @@ interface PendingCall {
 }
 
 export interface JsonRpcDispatcherOptions {
-  /** Sent as the top-level `userAgent` of every request. */
-  userAgent?: string;
-  /** Sent as the top-level `client` of every request. */
+  /** Sent as the top-level `userAgent` and `client` of every request. */
   client?: ClientInfo;
   /**
    * Answers `service/elevation-required`. Without it the dispatcher reports
@@ -130,14 +128,12 @@ export class JsonRpcDispatcher {
   private readonly socket: net.Socket;
   private readonly reader = new PacketReader();
   private readonly pending = new Map<string, PendingCall>();
-  private readonly userAgent: string | undefined;
   private readonly client: ClientInfo | undefined;
   private readonly onElevationRequired: ElevationHandler | undefined;
   private disposed = false;
 
   constructor(socket: net.Socket, options?: JsonRpcDispatcherOptions) {
     this.socket = socket;
-    this.userAgent = options?.userAgent;
     this.client = options?.client;
     this.onElevationRequired = options?.onElevationRequired;
 
@@ -196,10 +192,8 @@ export class JsonRpcDispatcher {
       id,
       method
     };
-    if (this.userAgent) {
-      request.userAgent = this.userAgent;
-    }
     if (this.client) {
+      request.userAgent = this.client.userAgent;
       request.client = {
         author: this.client.author,
         name: this.client.name,

@@ -681,7 +681,12 @@ async function testReconnect(
 
   // Reconnect with a fresh session
   const session2 = new Session({
-    userAgent: 'integration-test',
+    client: {
+      userAgent: 'integration-test',
+      author: 'The Qt Company',
+      name: 'sms-api-integration-test',
+      version: '1.0'
+    },
     socketPath,
     connectTimeoutMs: timeoutMs
   });
@@ -724,8 +729,8 @@ async function main(): Promise<void> {
 
     // ── Connection tests ──
     const session = new Session({
-      userAgent: 'integration-test',
       client: {
+        userAgent: 'integration-test',
         author: 'The Qt Company',
         name: 'sms-api-integration-test',
         version: '1.0'

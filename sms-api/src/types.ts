@@ -125,10 +125,13 @@ export class SmsServiceError extends Error implements SmsError {
 // ── Client identity ──────────────────────────────────────────────────────────
 
 /**
- * Describes the client application to the service, which uses it for usage
- * statistics. Sent on every request as `client`.
+ * Identifies the client application to the service, which uses it for usage
+ * statistics. `userAgent` is sent as the top-level `userAgent` of every
+ * request, the other fields as the top-level `client` object.
  */
 export interface ClientInfo {
+  /** Short identifier of the application, for example `qt-vscode-sms`. */
+  readonly userAgent: string;
   readonly author: string;
   readonly name: string;
   readonly version: string;
