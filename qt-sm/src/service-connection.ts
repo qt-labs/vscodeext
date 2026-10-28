@@ -24,6 +24,47 @@ const logger = createLogger('service-connection');
 let launcher: ServiceLauncher | undefined;
 let session: Session | undefined;
 
+// The "usage data" opt-in of the walkthrough's Privacy & data card. The
+// service stores it as its telemetry setting and reads it when it starts.
+let usageDataConsent: boolean | undefined;
+
+/**
+ * Remember the usage data opt-in and forward it to the service. A connected
+ * session gets it at once, otherwise the next connect pushes it.
+ */
+export function setUsageDataConsent(enabled: boolean): void {
+  usageDataConsent = enabled;
+  if (session?.isConnected) {
+    void pushUsageDataConsent(session);
+  }
+}
+
+async function pushUsageDataConsent(target: Session): Promise<void> {
+  if (usageDataConsent === undefined) {
+    return;
+  }
+  const enabled = usageDataConsent;
+  try {
+    const settings = new Settings(target);
+    const current = await settings.getTelemetry();
+    if (usageDataConsent !== enabled) {
+      // The opt-in changed while this push was in flight. A newer push
+      // carries the current value.
+      return;
+    }
+    if (current === enabled) {
+      logger.info(`Usage data consent in the service is ${String(enabled)}`);
+      return;
+    }
+    await settings.setTelemetry(enabled);
+    logger.info(`Usage data consent in the service set to ${String(enabled)}`);
+  } catch (err) {
+    logger.warn(
+      `Could not forward the usage data consent to the service: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+}
+
 function extensionVersion(): string {
   const ext = vscode.extensions.getExtension(`theqtcompany.${EXTENSION_ID}`);
   const packageJSON = ext?.packageJSON as Record<string, unknown> | undefined;
@@ -124,6 +165,8 @@ export async function ensureConnected(): Promise<Session> {
       logger.info(`installationPath: "${installPath}"`);
     }
   }
+
+  await pushUsageDataConsent(session);
 
   return session;
 }

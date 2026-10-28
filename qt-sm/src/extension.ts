@@ -33,7 +33,7 @@ import {
   setAuthProvider,
   syncInstalledPackages
 } from '@/commands';
-import { disconnect } from '@/service-connection';
+import { disconnect, setUsageDataConsent } from '@/service-connection';
 import {
   registerAuthenticationProvider,
   type QtAccountAuthenticationProvider,
@@ -47,7 +47,8 @@ import {
   registerWalkthroughSerializer,
   refreshWalkthrough,
   refreshLatestFrameworkState,
-  markSignedOut
+  markSignedOut,
+  getUsageDataOptIn
 } from '@/walkthrough-panel';
 
 import { installBootstrap } from '@/bootstrap';
@@ -217,6 +218,7 @@ export async function activate(context: vscode.ExtensionContext) {
   telemetry.activate(context);
 
   setExtensionContext(context);
+  setUsageDataConsent(getUsageDataOptIn(context));
   initLatestFrameworkState(context);
 
   await ensureCoreVersion();
