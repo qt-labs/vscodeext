@@ -7,6 +7,8 @@
 export {
   ErrorCategory,
   ErrorCode,
+  errorCategoryForCode,
+  SmsServiceError,
   InstallState,
   UserPromptType,
   JobStatus,
@@ -17,17 +19,23 @@ export {
 } from './types';
 export type {
   SmsError,
+  ClientInfo,
   PackageReference,
   PackageData,
   PackageUpdate,
   PackageFilters,
-  PackageRequestOptions,
+  InstallOptions,
+  CreateOfflineOptions,
+  LaunchItem,
+  PackageOperationResult,
   LicenseAgreement,
   UnsatisfiedRule,
   PackageRequirements,
   LicenseAnswer,
   UserPrompt,
   UserPromptReply,
+  ElevationRequest,
+  ElevationHandler,
   ProgressInfo,
   MessageInfo,
   JobCallbacks
@@ -44,10 +52,12 @@ export type { DecodedPacket, TransportOptions } from './transport';
 
 // JSON-RPC dispatcher (for advanced use)
 export { JsonRpcDispatcher } from './jsonrpc';
+export type { JsonRpcDispatcherOptions } from './jsonrpc';
 
 // Public API
-export { Session, ServiceLauncher, Packages, Cache, Settings } from './client';
+export { Session, ServiceLauncher, Packages, Settings } from './client';
 export type {
+  SessionOptions,
   SessionEvents,
   ServiceLauncherOptions,
   ServiceLauncherEvents

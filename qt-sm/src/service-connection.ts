@@ -3,7 +3,12 @@
 
 import * as vscode from 'vscode';
 
-import { Session, ServiceLauncher, Settings } from 'sms-api';
+import {
+  Session,
+  ServiceLauncher,
+  Settings,
+  type ElevationRequest
+} from 'sms-api';
 
 import { createLogger, resolveConfiguration } from 'qt-lib';
 import {
@@ -14,8 +19,44 @@ import {
 
 const logger = createLogger('service-connection');
 
+const CLIENT_AUTHOR = 'The Qt Company';
+
 let launcher: ServiceLauncher | undefined;
 let session: Session | undefined;
+
+function extensionVersion(): string {
+  const ext = vscode.extensions.getExtension(`theqtcompany.${EXTENSION_ID}`);
+  const packageJSON = ext?.packageJSON as Record<string, unknown> | undefined;
+  const version = packageJSON?.version;
+  return typeof version === 'string' ? version : '0.0.0';
+}
+
+/**
+ * Answers `service/elevation-required`: the service needs administrator
+ * rights, for example to install into a directory the user cannot write.
+ * The helper is started through the authorization dialog of the operating
+ * system (pkexec, UAC, or Authorization Services).
+ */
+async function startElevatedHelper(
+  request: ElevationRequest
+): Promise<boolean> {
+  logger.info(
+    `The service needs administrator rights: ${request.reason || 'no reason given'}`
+  );
+  if (request.reason) {
+    void vscode.window.showInformationMessage(request.reason);
+  }
+  if (!launcher) {
+    return false;
+  }
+  const ready = await launcher.startElevatedHelper(request);
+  if (!ready) {
+    logger.error(
+      `The elevated helper was not started: ${launcher.lastError?.message ?? 'unknown error'}`
+    );
+  }
+  return ready;
+}
 
 export async function ensureConnected(): Promise<Session> {
   if (session?.isConnected) {
@@ -52,7 +93,12 @@ export async function ensureConnected(): Promise<Session> {
   }
 
   if (!session) {
-    session = new Session(CONF_USER_AGENT);
+    const version = extensionVersion();
+    session = new Session({
+      userAgent: `${CONF_USER_AGENT}/${version}`,
+      client: { author: CLIENT_AUTHOR, name: CONF_USER_AGENT, version },
+      onElevationRequired: startElevatedHelper
+    });
   }
 
   await session.connectToService();
@@ -66,7 +112,7 @@ export async function ensureConnected(): Promise<Session> {
     const serviceInstallPath = await settings.getInstallationPath();
     if (serviceInstallPath !== installPath) {
       logger.info(
-        `Installation path mismatch: service="${serviceInstallPath}", ` +
+        `Installation path mismatch: service="${serviceInstallPath ?? ''}", ` +
           `setting="${installPath}". Updating service.`
       );
       await settings.setInstallationPath(installPath);

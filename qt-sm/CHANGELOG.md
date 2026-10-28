@@ -8,11 +8,13 @@
 - Sign in with a personal access token for windowless use
 - Show the browser sign-in progress in the walkthrough (waiting, stalled, failed, signed in with privacy opt-ins)
 - Pick up logins and logouts made by other Qt tools from the shared Qt.ini
+- Start the elevated helper when the Qt Software Management Service needs administrator rights
 
 ⚠️ **Changed**
 
 - Store the Qt Account credentials in the shared Qt.ini that the Qt Software Management Service reads and renews
 - Update the walkthrough to the "Install Qt" design
+- Follow the updated service protocol: identify the extension with every request, show package display names, and keep quiet when the user declines a license agreement
 
 🗑️ **Removed**
 

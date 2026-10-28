@@ -370,7 +370,11 @@ async function testSessionThroughLauncher(config: TestConfig): Promise<void> {
     );
   }
 
-  const session = new Session('integration-test', config.socketPath, 10_000);
+  const session = new Session({
+    userAgent: 'integration-test',
+    socketPath: config.socketPath,
+    connectTimeoutMs: 10_000
+  });
   try {
     await session.connectToService();
     if (session.state !== SessionState.Connected) {
