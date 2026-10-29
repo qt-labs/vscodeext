@@ -27,11 +27,12 @@ import {
   getActiveFolder,
   getQtInsRoot,
   getQtPathsExe,
-  getSelectedKit
+  getSelectedKit,
+  IsQtKit
 } from '@cmd/register-qt-path';
 import { analyzeKit, Kit as CMakeKit } from '@/kit-manager';
 import * as cmakeFileApi from '@/cmake-file-api';
-import { getMajorQtVersion, isValidAndString } from '@/util/util';
+import { QtVersionFromKit, isValidAndString } from '@/util/util';
 import { hasCMakeSources } from '@/util/cmake-sources';
 
 const logger = createLogger('project');
@@ -377,8 +378,8 @@ export class CppProject implements Project {
       if (isEmpty(modules)) {
         continue;
       }
-      if (IsMacOS && this._type === CppProjectType.Kit) {
-        const majorVersion = await getMajorQtVersion();
+      if (IsMacOS) {
+        const majorVersion = await this.getMajorQtVersion();
         if (majorVersion) {
           modules = modules.map((module) => {
             module = module.replace('Qt', `Qt${majorVersion}`);
@@ -429,6 +430,22 @@ export class CppProject implements Project {
     if (targetsToDelete.length > 0) {
       await this.getStateManager().setModules(currentModules);
     }
+  }
+  async getMajorQtVersion() {
+    let version: string | undefined;
+    if (this._type === CppProjectType.Presets) {
+      const qtpaths = await this.getQtPaths();
+      if (qtpaths) {
+        version = coreAPI?.getQtInfoFromPath(qtpaths).info?.get('QT_VERSION');
+      }
+    } else {
+      // CppProjectType.Kit
+      const kit = await getSelectedKit(this.folder, true);
+      if (kit && IsQtKit(kit)) {
+        version = QtVersionFromKit(kit);
+      }
+    }
+    return version?.split('.')[0];
   }
   private static parseCmakeFileApi(file: string, buildType: string) {
     try {
