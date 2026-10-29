@@ -66,7 +66,7 @@ class WalkthroughStateManager extends BaseStateManager {
   }
 
   get privacyUsageData(): boolean {
-    return this._get<boolean>(STATE_PRIVACY_USAGE_DATA, false);
+    return this._get<boolean>(STATE_PRIVACY_USAGE_DATA, true);
   }
 
   set privacyUsageData(value: boolean) {
@@ -74,7 +74,7 @@ class WalkthroughStateManager extends BaseStateManager {
   }
 
   get privacyCrashDumps(): boolean {
-    return this._get<boolean>(STATE_PRIVACY_CRASH_DUMPS, false);
+    return this._get<boolean>(STATE_PRIVACY_CRASH_DUMPS, true);
   }
 
   set privacyCrashDumps(value: boolean) {
@@ -108,7 +108,7 @@ function getWalkthroughState(
   return walkthroughState;
 }
 
-/** The "usage data" opt-in of the Privacy & data card, false until enabled. */
+/** The "usage data" opt-in of the Privacy & data card, true until disabled. */
 export function getUsageDataOptIn(context: vscode.ExtensionContext): boolean {
   return getWalkthroughState(context).privacyUsageData;
 }
@@ -575,9 +575,9 @@ export async function resetWalkthroughState(
   const state = getWalkthroughState(context);
   state.firstAppDone = false;
   state.signInAcknowledged = false;
-  state.privacyUsageData = false;
-  state.privacyCrashDumps = false;
-  setUsageDataConsent(false);
+  state.privacyUsageData = true;
+  state.privacyCrashDumps = true;
+  setUsageDataConsent(true);
   // Await so the re-render below reads the cleared flag.
   await setGetStartedDone(false);
   refreshWalkthrough();
