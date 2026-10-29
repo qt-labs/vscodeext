@@ -370,20 +370,24 @@ export class CppProject implements Project {
         }
       }
     }
+    // macOS framework names (e.g. QtCore) do not contain the major version
+    const majorVersion = host.isMacOS
+      ? await this.getMajorQtVersion()
+      : undefined;
+    if (host.isMacOS && !majorVersion) {
+      logger.warn('Cannot determine the major Qt version for Qt modules.');
+    }
     let changed = false;
     for (const t of targetJsonFiles) {
       let modules = CppProject.parseCmakeFileApi(t.filePath, buildType);
       if (isEmpty(modules)) {
         continue;
       }
-      if (host.isMacOS) {
-        const majorVersion = await this.getMajorQtVersion();
-        if (majorVersion) {
-          modules = modules.map((module) => {
-            module = module.replace('Qt', `Qt${majorVersion}`);
-            return module;
-          });
-        }
+      if (majorVersion) {
+        // Skip names that already have a version (Qt6Core), but not Qt3DCore
+        modules = modules.map((module) =>
+          module.replace(/^Qt(?![56])/, `Qt${majorVersion}`)
+        );
       }
 
       const qtModules = modules.filter((module) => module.startsWith('Qt'));
