@@ -433,7 +433,7 @@ export class CppProject implements Project {
       await this.getStateManager().setModules(currentModules);
     }
   }
-  async getMajorQtVersion() {
+  async getMajorQtVersion(silent = true) {
     let version: string | undefined;
     if (this._type === CppProjectType.Presets) {
       const qtpaths = await this.getQtPaths();
@@ -442,7 +442,7 @@ export class CppProject implements Project {
       }
     } else {
       // CppProjectType.Kit
-      const kit = await getSelectedKit(this.folder, true);
+      const kit = await getSelectedKit(this.folder, silent);
       if (kit && IsQtKit(kit)) {
         version = QtVersionFromKit(kit);
       }
