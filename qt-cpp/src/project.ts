@@ -383,12 +383,11 @@ export class CppProject implements Project {
       if (isEmpty(modules)) {
         continue;
       }
-      if (majorVersion) {
-        // Skip names that already have a version (Qt6Core), but not Qt3DCore
-        modules = modules.map((module) =>
-          module.replace(/^Qt(?![56])/, `Qt${majorVersion}`)
-        );
-      }
+      modules = modules.map((module) =>
+        CppProject.refineModuleName(module, majorVersion)
+      );
+      // Remove duplicates
+      modules = [...new Set(modules)];
 
       const qtModules = modules.filter((module) => module.startsWith('Qt'));
       if (qtModules.length > 0) {
@@ -449,6 +448,37 @@ export class CppProject implements Project {
     }
     return version?.split('.')[0];
   }
+  private static refineModuleName(name: string, majorVersion?: string) {
+    let refinedName = name;
+    // Remove "lib" prefix
+    if (refinedName.startsWith('lib')) {
+      refinedName = refinedName.slice(3);
+    }
+    // Remove architecture suffix
+    const architectureSuffixes = [
+      '_arm64-v8a',
+      '_armeabi-v7a',
+      '_x86_64',
+      '_x86'
+    ];
+    for (const suffix of architectureSuffixes) {
+      if (refinedName.endsWith(suffix)) {
+        refinedName = refinedName.slice(0, -suffix.length);
+        break;
+      }
+    }
+    // Qt6Xml_TP should be refined to Qt6Xml
+    // We should remove any trailing suffixes after an underscore
+    const underscoreIndex = refinedName.indexOf('_');
+    if (underscoreIndex !== -1) {
+      refinedName = refinedName.slice(0, underscoreIndex);
+    }
+    if (majorVersion) {
+      // Skip names that already have a version (Qt6Core), but not Qt3DCore
+      refinedName = refinedName.replace(/^Qt(?![56])/, `Qt${majorVersion}`);
+    }
+    return refinedName;
+  }
   private static parseCmakeFileApi(file: string, buildType: string) {
     try {
       const fileContent = fs.readFileSync(file, 'utf8');
@@ -464,9 +494,6 @@ export class CppProject implements Project {
           buildType
         );
       }
-
-      // Remove duplicates
-      frameworks = [...new Set(frameworks)];
       return frameworks;
     } catch (error) {
       logger.info(
@@ -524,45 +551,16 @@ export class CppProject implements Project {
           return fragment.includes('Qt6') || fragment.includes('Qt5');
         });
         const refinedFragments = filteredFragment.map((fragment) => {
-          // Remove the path and extension and get the name without lib prefix
+          // Remove the path and extension
           const name = path.parse(fragment).name;
-
-          let refinedName = name;
-
-          // Remove "lib" prefix
-          if (refinedName.startsWith('lib')) {
-            refinedName = refinedName.slice(3);
-          }
-
           // Remove debug suffix
           if (
             (buildType === 'Debug' || buildType === 'RelWithDebInfo') &&
-            refinedName.endsWith('d')
+            name.endsWith('d')
           ) {
-            refinedName = refinedName.slice(0, -1);
+            return name.slice(0, -1);
           }
-
-          // Remove architecture suffix
-          const architectureSuffixes = [
-            '_arm64-v8a',
-            '_armeabi-v7a',
-            '_x86_64',
-            '_x86'
-          ];
-
-          for (const suffix of architectureSuffixes) {
-            if (refinedName.endsWith(suffix)) {
-              refinedName = refinedName.slice(0, -suffix.length);
-              break;
-            }
-          }
-          // Qt6Xml_TP should be refined to Qt6Xml
-          // We should remove any trailing suffixes after an underscore
-          const underscoreIndex = refinedName.indexOf('_');
-          if (underscoreIndex !== -1) {
-            refinedName = refinedName.slice(0, underscoreIndex);
-          }
-          return refinedName;
+          return name;
         });
         frameworks.push(...refinedFragments);
       }
