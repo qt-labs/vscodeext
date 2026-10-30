@@ -3,12 +3,7 @@
 
 import * as path from 'path';
 
-import {
-  getQtInsRoot,
-  getQtPathsExe,
-  getSelectedKit,
-  IsQtKit
-} from '@/commands/register-qt-path';
+import { getQtInsRoot, getQtPathsExe } from '@/commands/register-qt-path';
 import { coreAPI } from '@/extension';
 import { Kit } from '@/kit-manager';
 
@@ -39,19 +34,6 @@ export function QtVersionFromKit(kit: Kit) {
   if (qtPathsExe) {
     const qtInfo = coreAPI?.getQtInfoFromPath(qtPathsExe);
     return qtInfo?.info?.get('QT_VERSION');
-  }
-  return undefined;
-}
-
-export async function getMajorQtVersion() {
-  const kit = await getSelectedKit();
-  if (!kit || !IsQtKit(kit)) {
-    return undefined;
-  }
-  const version = QtVersionFromKit(kit);
-  if (version) {
-    const majorVersion = version.split('.')[0];
-    return majorVersion;
   }
   return undefined;
 }

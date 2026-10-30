@@ -27,11 +27,12 @@ import {
   getActiveFolder,
   getQtInsRoot,
   getQtPathsExe,
-  getSelectedKit
+  getSelectedKit,
+  IsQtKit
 } from '@cmd/register-qt-path';
 import { analyzeKit, Kit as CMakeKit } from '@/kit-manager';
 import * as cmakeFileApi from '@/cmake-file-api';
-import { getMajorQtVersion, isValidAndString } from '@/util/util';
+import { QtVersionFromKit, isValidAndString } from '@/util/util';
 import { hasCMakeSources } from '@/util/cmake-sources';
 
 const logger = createLogger('project');
@@ -371,21 +372,22 @@ export class CppProject implements Project {
         }
       }
     }
+    // macOS framework names (e.g. QtCore) do not contain the major version
+    const majorVersion = IsMacOS ? await this.getMajorQtVersion() : undefined;
+    if (IsMacOS && !majorVersion) {
+      logger.warn('Cannot determine the major Qt version for Qt modules.');
+    }
     let changed = false;
     for (const t of targetJsonFiles) {
       let modules = CppProject.parseCmakeFileApi(t.filePath, buildType);
       if (isEmpty(modules)) {
         continue;
       }
-      if (IsMacOS && this._type === CppProjectType.Kit) {
-        const majorVersion = await getMajorQtVersion();
-        if (majorVersion) {
-          modules = modules.map((module) => {
-            module = module.replace('Qt', `Qt${majorVersion}`);
-            return module;
-          });
-        }
-      }
+      modules = modules.map((module) =>
+        CppProject.refineModuleName(module, majorVersion)
+      );
+      // Remove duplicates
+      modules = [...new Set(modules)];
 
       const qtModules = modules.filter((module) => module.startsWith('Qt'));
       if (qtModules.length > 0) {
@@ -430,6 +432,53 @@ export class CppProject implements Project {
       await this.getStateManager().setModules(currentModules);
     }
   }
+  async getMajorQtVersion(silent = true) {
+    let version: string | undefined;
+    if (this._type === CppProjectType.Presets) {
+      const qtpaths = await this.getQtPaths();
+      if (qtpaths) {
+        version = coreAPI?.getQtInfoFromPath(qtpaths).info?.get('QT_VERSION');
+      }
+    } else {
+      // CppProjectType.Kit
+      const kit = await getSelectedKit(this.folder, silent);
+      if (kit && IsQtKit(kit)) {
+        version = QtVersionFromKit(kit);
+      }
+    }
+    return version?.split('.')[0];
+  }
+  private static refineModuleName(name: string, majorVersion?: string) {
+    let refinedName = name;
+    // Remove "lib" prefix
+    if (refinedName.startsWith('lib')) {
+      refinedName = refinedName.slice(3);
+    }
+    // Remove architecture suffix
+    const architectureSuffixes = [
+      '_arm64-v8a',
+      '_armeabi-v7a',
+      '_x86_64',
+      '_x86'
+    ];
+    for (const suffix of architectureSuffixes) {
+      if (refinedName.endsWith(suffix)) {
+        refinedName = refinedName.slice(0, -suffix.length);
+        break;
+      }
+    }
+    // Qt6Xml_TP should be refined to Qt6Xml
+    // We should remove any trailing suffixes after an underscore
+    const underscoreIndex = refinedName.indexOf('_');
+    if (underscoreIndex !== -1) {
+      refinedName = refinedName.slice(0, underscoreIndex);
+    }
+    if (majorVersion) {
+      // Skip names that already have a version (Qt6Core), but not Qt3DCore
+      refinedName = refinedName.replace(/^Qt(?![56])/, `Qt${majorVersion}`);
+    }
+    return refinedName;
+  }
   private static parseCmakeFileApi(file: string, buildType: string) {
     try {
       const fileContent = fs.readFileSync(file, 'utf8');
@@ -445,9 +494,6 @@ export class CppProject implements Project {
           buildType
         );
       }
-
-      // Remove duplicates
-      frameworks = [...new Set(frameworks)];
       return frameworks;
     } catch (error) {
       logger.info(
@@ -505,13 +551,14 @@ export class CppProject implements Project {
           return fragment.includes('Qt6') || fragment.includes('Qt5');
         });
         const refinedFragments = filteredFragment.map((fragment) => {
-          // Remove the path and extension and get the name without lib prefix
+          // Remove the path and extension
           const name = path.parse(fragment).name;
-          if (buildType === 'Debug' || buildType === 'RelWithDebInfo') {
-            // Check if the name contains 'd' at the end
-            if (name.endsWith('d')) {
-              return name.slice(0, -1);
-            }
+          // Remove debug suffix
+          if (
+            (buildType === 'Debug' || buildType === 'RelWithDebInfo') &&
+            name.endsWith('d')
+          ) {
+            return name.slice(0, -1);
           }
           return name;
         });
