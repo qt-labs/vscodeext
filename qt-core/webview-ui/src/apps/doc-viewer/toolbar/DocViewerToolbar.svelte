@@ -41,15 +41,21 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   {@const hash = helpers.extractHash(ui.iframe.uri)}
 
   <div
+    bind:this={ui.popovers.navigation.refEl}
     data-role='title-section'
     class='grow flex flex-row justify-around relative'
   >
     {#if ui.iframe.errorCode.length === 0}
-      <div class='flex flex-row items-center gap-2'>
-        {@render actionButton('openInFileManager')}
+      {@render actionButton('openInFileManager')}
+      <button
+        class='w-full flex flex-row items-center justify-center gap-2'
+        onclick={() => {
+          ui.popovers.navigation.toggle();
+        }}
+      >
         {@render titleSectionText(value)}
         {@render titleSectionHash(hash)}
-      </div>
+      </button>
     {/if}
 
     <div class='qt-absolute-cy right-[4px] flex flex-row'>

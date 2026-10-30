@@ -51,7 +51,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
           data-variant='primary'
           class='qt-button flex flex-row items-center justify-center'
           onclick={() => {
-            viewlogic.openDoc(ui.history.currentEntry.uri);
+            viewlogic.openDoc(ui.navigation.currentEntry.uri);
           }}
         >
           <ArrowLeft />{texts.error.backButton}

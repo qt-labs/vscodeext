@@ -15,7 +15,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 }
 
 .qt-popover {
-  background: var(--qt-bg-subtle);
+  background: var(--qt-bg-elevated);
   border: 1px solid var(--qt-stroke-subtle);
   border-radius: var(--qt-radius-s);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
@@ -81,20 +81,23 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   width: 18px;
   height: 18px;
   stroke-width: 1.0;
-}
-
-.lucide * {
   vector-effect: non-scaling-stroke;
-}
 
-.lucide.medium {
-  width: 24px;
-  height: 24px;
-  stroke-width: 1.5;
-}
+  &.small {
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.0;
+  }
 
-.lucide.large {
-  width: 36px;
-  height: 36px;
-  stroke-width: 2.0;
+  &.medium {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.5;
+  }
+
+  &.large {
+    width: 36px;
+    height: 36px;
+    stroke-width: 2.0;
+  }
 }

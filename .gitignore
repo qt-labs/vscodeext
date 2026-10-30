@@ -15,4 +15,5 @@ src/test/util/dependencies
 .eslintcache
 tsconfig.tsbuildinfo
 qt-core/res/qtcli/*
+qt-core/res/others/sql-wasm.wasm
 qt-cpp/res/natvis/*

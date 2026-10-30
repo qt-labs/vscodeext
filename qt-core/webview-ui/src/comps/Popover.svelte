@@ -30,7 +30,16 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     controller.hide();
     e.stopPropagation();
   }
+
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape' && controller.visible) {
+      controller.hide();
+      e.stopPropagation();
+    }
+  }
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 {#if controller.visible}
   <div

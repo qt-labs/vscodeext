@@ -48,13 +48,17 @@ export function createCheckState(items: () => { checked: boolean }[]) {
 // find in page
 export type FindAction = 'new' | 'prev' | 'next' | 'clear';
 
-// history
-export class HistoryManager {
-  private _history = $state([] as HistoryEntry[]);
+// per-view navigation
+export class NavigationStack {
+  private _entries = $state([] as HistoryEntry[]);
   private _currentIndex = $state(-1);
 
+  public get entries() {
+    return this._entries;
+  }
+
   public get currentEntry() {
-    return this._history[this._currentIndex];
+    return this._entries[this._currentIndex];
   }
 
   public canGo(dir: 'back' | 'forward') {
@@ -62,9 +66,8 @@ export class HistoryManager {
       return this._currentIndex > 0;
     }
 
-    return this._currentIndex + 1 < this._history.length;
+    return this._currentIndex + 1 < this._entries.length;
   }
-
 
   public go(dir: 'back' | 'forward') {
     if (dir === 'back') {
@@ -75,7 +78,7 @@ export class HistoryManager {
     }
 
     if (dir === 'forward') {
-      if (this._currentIndex + 1 < this._history.length) {
+      if (this._currentIndex + 1 < this._entries.length) {
         this._currentIndex++;
         return this.currentEntry;
       }
@@ -84,18 +87,28 @@ export class HistoryManager {
     return undefined;
   }
 
+  public goTo(entry: HistoryEntry) {
+    const index = this._entries.indexOf(entry);
+    if (index < 0) {
+      return undefined;
+    }
+
+    this._currentIndex = index;
+    return this.currentEntry;
+  }
+
   public push(entry: HistoryEntry) {
     if ((entry.uri.length === 0)
       || (this.currentEntry && (entry.uri === this.currentEntry.uri))) {
       return;
     }
 
-    this._history = [
-      ...this._history.slice(0, this._currentIndex + 1),
+    this._entries = [
+      ...this._entries.slice(0, this._currentIndex + 1),
       entry
     ];
 
-    this._currentIndex = this._history.length - 1;
+    this._currentIndex = this._entries.length - 1;
   }
 
   public pushUrl(url: URL) {

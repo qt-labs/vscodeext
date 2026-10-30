@@ -48,6 +48,13 @@ export class DocViewerBookmarkManager extends UriStore<BookmarkEntry> {
         return true;
       }
 
+      case 'sort': {
+        this._entries.sort((a: BookmarkEntry, b: BookmarkEntry) => {
+          return a.title.localeCompare(b.title);
+        });
+        return true;
+      }
+
       case 'clear':
         this._entries = [];
         return true;

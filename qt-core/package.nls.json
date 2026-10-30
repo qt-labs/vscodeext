@@ -14,5 +14,6 @@
   "qt-core.command.reportIssue.title": "Report an issue",
   "qt-core.command.openExamplesBrowser.title": "Open Qt examples",
   "qt-core.command.openCoursesBrowser.title": "Open Qt Academy courses",
-  "qt-core.command.openWelcomePage.title": "Welcome"
+  "qt-core.command.openWelcomePage.title": "Welcome",
+  "qt-core.command.openQtHelp.title": "Open Qt help"
 }

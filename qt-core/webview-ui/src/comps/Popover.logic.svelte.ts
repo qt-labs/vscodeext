@@ -12,7 +12,7 @@ function createPopoverBase() {
       _visible = visible;
 
       if (_refEl === undefined && _visible) {
-        console.warn("Invalid reference element while make it visible");
+        console.warn('Cannot show popover: reference element is undefined.');
       }
     }
   }
