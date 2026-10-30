@@ -96,7 +96,7 @@
     "@types/node": "^20.17.0",
     "@types/vscode": "1.94.0",
     "@vscode/test-electron": "^2.5.2",
-    "@vscode/vsce": "^3.9.1",
+    "@vscode/vsce": "^4.1.0",
     "chai": "^6.2.2",
     "cross-env": "^7.0.3",
     "esbuild": "^0.25.0",
