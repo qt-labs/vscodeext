@@ -13,9 +13,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import * as viewlogic from '../viewlogic.svelte';
   import * as toolbar from './DocViewerToolbar';
 
-  const value = $derived(
-    ui.iframe.errorCode ? '' : ui.iframe.title
-  );
+  const value = $derived(ui.iframe.errorCode ? '' : ui.iframe.title);
   const bookmarked = $derived(viewlogic.bookmark.has(
     helpers.toFileUriIfServer(ui.iframe.uri)
   ));
@@ -39,24 +37,26 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 <!-- snippets -->
 {#snippet titleSection()}
   {@const hash = helpers.extractHash(ui.iframe.uri)}
+  {@const error = (ui.iframe.errorCode.length !== 0)}
 
   <div
     data-role='title-section'
     class='grow flex flex-row justify-around relative'
   >
-    {#if ui.iframe.errorCode.length === 0}
-      <div class='flex flex-row items-center gap-2'>
-        {@render actionButton('openInFileManager')}
+    {#if !error}
+      {@render actionButton('openInFileManager')}
+
+      <div class='w-full flex flex-row items-center justify-center gap-2'>
         {@render titleSectionText(value)}
         {@render titleSectionHash(hash)}
       </div>
-    {/if}
 
-    <div class='qt-absolute-cy right-[4px] flex flex-row'>
-      {@render actionButton('showFindInPage')}
-      {@render actionButton('toggleBookmark')}
+      <div class='qt-absolute-cy right-[4px] flex flex-row'>
+        {@render actionButton('showFindInPage')}
+        {@render actionButton('toggleBookmark')}
+      </div>
+    {/if}
     </div>
-  </div>
 {/snippet}
 
 {#snippet titleSectionText(text: string)}

@@ -12,6 +12,8 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   import DocViewerToolbar from './toolbar/DocViewerToolbar.svelte';
   import DocViewerSidebar from './sidebar/DocViewerSidebar.svelte';
   import DocViewerMainView from './DocViewerMainView.svelte';
+  import DocViewerErrorPage from './others/DocViewerErrorPage.svelte';
+
   import { ui } from './states.svelte';
   import * as viewlogic from './viewlogic.svelte';
 
@@ -27,15 +29,19 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   data-app='doc-viewer'
   class='
     {fullScreen ? 'w-screen h-screen' : 'w-full h-full'}
-    flex flex-col
+    flex flex-col relative
   '
 >
   <DocViewerToolbar />
 
   <div class="w-full h-full relative">
-    <div class="absolute inset-0">
-      <DocViewerMainView />
-    </div>
+    <DocViewerMainView />
+
+    {#if ui.iframe.errorCode.length !== 0}
+      <div class="absolute inset-0">
+        <DocViewerErrorPage />
+      </div>
+    {/if}
 
     {#if ui.sidebar.mode !== undefined}
       <div
@@ -46,5 +52,6 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
         <DocViewerSidebar />
       </div>
     {/if}
+
   </div>
 </div>

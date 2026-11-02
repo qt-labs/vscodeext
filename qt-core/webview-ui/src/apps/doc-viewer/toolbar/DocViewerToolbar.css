@@ -5,7 +5,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 @scope ([data-area='toolbar']) {
   :scope {
-    padding: 8px;
+    padding: 7px;
     background: var(--qt-bg-editor-tab);
     border-bottom: 1px solid var(--qt-stroke-subtle);
 
@@ -52,7 +52,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   [data-role='openInFileManager'] {
     border: none;
     background: none;
-    padding: 4px;
+    padding: 2px;
     color: var(--qt-text-muted);
 
     &:disabled {
@@ -63,6 +63,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
   [data-role='title-section'] {
     background: var(--qt-bg-subtle);
     border-radius: var(--qt-radius-s);
+    padding-left: 5px;
     padding-right: 60px;
 
     & [data-role='title'] {

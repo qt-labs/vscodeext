@@ -13,7 +13,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <button
   data-role='scroll-to-top'
-  class='absolute flex items-center justify-center'
+  class='flex items-center justify-center'
   onclick={(e: MouseEvent) => {
     onClicked(e);
     e.stopPropagation();
