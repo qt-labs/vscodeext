@@ -22,7 +22,7 @@ export default defineConfig({
       }
     },
     cssCodeSplit: false,
-    chunkSizeWarningLimit: 600
+    chunkSizeWarningLimit: 1024
   },
   resolve: {
     alias: {

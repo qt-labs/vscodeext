@@ -9,6 +9,10 @@ export const newItem = {
   workingDirDialogTitle: 'Select directory'
 };
 
+export const qtHelp = {
+  tabText: 'Qt help'
+};
+
 export const docViewer = {
   tabText: 'Qt documentation'
 };

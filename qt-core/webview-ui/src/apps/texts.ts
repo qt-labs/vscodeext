@@ -1,6 +1,8 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import { countAsLocaleString } from "@/utils/format";
+
 export const wizard = {
   title: 'Create a new project or file',
   buttons: {
@@ -427,4 +429,65 @@ export const docBrowser = {
     openLink: 'Open link in new tab',
     copy: 'Copy'
   } as Record<string, string>
+}
+
+export const qtHelp = {
+  busy: {
+    search: 'Searching...',
+    loading: 'Loading...'
+  },
+
+  toolbar: {
+    qtVersions: {
+      annotation: (count: number) =>
+        (count === 0)
+          ? 'No Qt versions found'
+          : `Total ${count} Qt version${count > 1 ? 's' : ''}`,
+      reveal: {
+        tooltip: 'Reveal in the file manager'
+      }
+    },
+
+    tooltips: {
+      toc: 'Browse by table of contents',
+      text: 'Search the full text',
+      index: 'Look up by keyword index',
+    } as Record<string, string>
+  },
+
+  totalItems(count: number) {
+    return count === 0
+      ? 'No items'
+      : `Total ${countAsLocaleString(count)} ${count === 1 ? 'item' : 'items'}`
+  },
+
+  toc: {
+    title: 'Table of contents',
+    tooltips: {
+      collapseAll: 'Collapse all'
+    }
+  },
+
+  search: {
+    title: 'Search',
+    placeholder: 'keyword...',
+    empty: {
+      default: {
+        title: (_: string) => 'Enter a keyword to search',
+        guide: ''
+      },
+      noResult: {
+        title: (k: string) => `No results for '${k}'`,
+        guide: 'Check the spelling or try another keyword',
+      }
+    }
+  },
+
+  index: {
+    title: 'Index',
+    placeholder: 'filter...',
+    sectionPopover: {
+      title: 'Select a letter to jump'
+    }
+  }
 }
