@@ -24,12 +24,6 @@ export interface NamedUri {
   title: string;
 }
 
-export interface Uri {
-  uri: string;
-  title: string;
-  timestamp: number;
-}
-
 export type BookmarkEntry = NamedUri;
 export interface HistoryEntry extends NamedUri {
   timestamp?: number;
@@ -39,6 +33,7 @@ export type BookmarkEdit =
   | { action: 'toggle'; entry: BookmarkEntry }
   | { action: 'remove'; selection: BookmarkEntry[] }
   | { action: 'move'; from: number; to: number }
+  | { action: 'sort' }
   | { action: 'clear' };
 
 export type HistoryEdit =
@@ -114,6 +109,7 @@ export function isBookmarkEdit(x: unknown): x is BookmarkEdit {
     case 'remove':
       return Array.isArray(e.selection) && e.selection.every(isBookmarkEntry);
 
+    case 'sort':
     case 'clear':
       return true;
 

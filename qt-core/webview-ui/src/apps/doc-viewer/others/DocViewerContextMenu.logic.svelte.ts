@@ -49,7 +49,7 @@ export function isEnabled(id: ItemId) {
   switch (id) {
     case 'back':
     case 'forward':
-      return ui.history.canGo(id);
+      return ui.navigation.canGo(id);
 
     case 'openLink':
       return ui.popovers.contextMenu.hoveredUri;

@@ -5,7 +5,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ArrowLeft, TriangleAlert } from '@lucide/svelte';
+  import { TriangleAlert } from '@lucide/svelte';
 
   import { docBrowser as texts } from '@/apps/texts';
   import { ui } from '../states.svelte';
@@ -31,7 +31,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 <svelte:window onkeydown={onKeydown} />
 
-<div class='w-full h-full flex items-center justify-center'>
+<div
+  data-role='area'
+  class='w-full h-full flex items-center justify-center'
+>
   <div data-role='card' class='grid'>
     <TriangleAlert class='large [grid-area:1/1] self-center' />
     <div class='[grid-area:1/2] flex flex-col gap-2'>
@@ -51,10 +54,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
           data-variant='primary'
           class='qt-button flex flex-row items-center justify-center'
           onclick={() => {
-            viewlogic.openDoc(ui.history.currentEntry.uri);
+            viewlogic.clearError();
           }}
         >
-          <ArrowLeft />{texts.error.backButton}
+          {texts.error.closeButton}
         </button>
       </div>
     </div>
@@ -62,6 +65,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 </div>
 
 <style>
+  [data-role='area'] {
+    background: var(--qt-bg-default);
+    opacity: 0.9;
+  }
+
   [data-role='card'] {
     max-width: 450px;
     grid-template-rows: auto auto;

@@ -4,7 +4,7 @@
 import * as VscodeThemeMonitor from '@/comps/VscodeThemeMonitor.svelte';
 import { createPopoverController } from '@/comps/Popover.logic.svelte';
 import {
-  HistoryManager,
+  NavigationStack,
   type HistoryItemGroup,
   type HistoryItem,
   type BookmarkItem,
@@ -24,20 +24,15 @@ export const data = $state({
 
 export const ui = $state({
   theme: VscodeThemeMonitor.createController(),
-  history: new HistoryManager(),
+  navigation: new NavigationStack(),
 
   iframe: {
     el: undefined as HTMLIFrameElement | undefined,
     uri: '', // http://127.0.0.1:<port>/.../...html#anchor
-
-    // load state
     title: '',
-    filePath: '',
-    errorCode: '',
-
-    // ui state
     scrollTop: 0,
     hoveredUri: '',
+    errorCode: '',
   },
 
   sidebar: {

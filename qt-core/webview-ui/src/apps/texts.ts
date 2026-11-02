@@ -381,7 +381,7 @@ export const docBrowser = {
       'The Qt module may not be installed, ' +
       'or its documentation may have been removed. ' +
       'Check your Qt installation.',
-    backButton: 'Back'
+    closeButton: 'Close'
   },
 
   findInPage: {
