@@ -14,6 +14,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     forceHidden = false,
     busyText = 'Loading...',
     closeText = 'Close',
+    direction = 'row' as 'row' | 'col',
     backgroundOpacity = 2.5
   } = $props();
 </script>
@@ -33,7 +34,10 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
   <!-- contents -->
   {#if busy}
-    <div class="flex w-full justify-center items-center gap-6">
+    <div class={`
+      flex ${direction === 'row' ? 'flex-row' : 'flex-col'}
+      w-full justify-center items-center gap-6
+    `}>
       <Spinner class="qt-spinner" size="20" color="custom" />
       <P class="qt-spinner-text">{busyText}</P>
     </div>

@@ -71,6 +71,14 @@ export enum CommandId {
   DocViewerGetHistories,
   DocViewerEditHistories,
 
+  // qt help
+  QtHelpGetDocRoots,
+  QtHelpSelectDocRoot,
+  QtHelpRevealDocRootFolder,
+  QtHelpReadToc,
+  QtHelpReadIndexes,
+  QtHelpSearchFullText,
+
   // common
   CommonViewClosed,
   CommonRevealFolder,

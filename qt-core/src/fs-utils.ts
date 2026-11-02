@@ -93,6 +93,19 @@ class DirWrapper {
     return vscode.env.openExternal(this.toUri());
   }
 
+  public findFiles(pattern: string): string[] {
+    const regex = globToRegex(pattern);
+    const found: string[] = [];
+
+    this._walkAllDirs((fullPath: string, e: fs.Dirent) => {
+      if (e.isFile() && regex.test(e.name)) {
+        found.push(fullPath);
+      }
+    });
+
+    return found;
+  }
+
   // private methods
   private _walkAllDirs(task: (fullPath: string, e: fs.Dirent) => void) {
     function walk(dir: string) {
@@ -200,4 +213,13 @@ class FileWrapper {
 function resolvePath(first: string | vscode.Uri, ...rest: string[]) {
   const base = first instanceof vscode.Uri ? first.fsPath : first;
   return path.join(base, ...rest);
+}
+
+function globToRegex(pattern: string): RegExp {
+  const escaped = pattern
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
+
+  return new RegExp(`^${escaped}$`);
 }

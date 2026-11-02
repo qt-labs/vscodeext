@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 export interface TaskBusyRunnerOptions {
+  name?: string;
   debounceTime_ms: number;
 }
 
@@ -10,6 +11,7 @@ export class TaskBusyRunner {
   private _error = $state(undefined as unknown);
   private _isDebouncing = $state(false);
   private _pendingTimer = $state(null as ReturnType<typeof setTimeout> | null);
+  private _recentOptions = $state<TaskBusyRunnerOptions | undefined>();
 
   get busy() {
     return this._busy;
@@ -23,13 +25,19 @@ export class TaskBusyRunner {
     return this._isDebouncing
   }
 
+  get recentOptions() {
+    return this._recentOptions;
+  }
+
   public async run<T>(
     task: () => Promise<T> | T,
-    option?: TaskBusyRunnerOptions
+    options?: TaskBusyRunnerOptions
   ) {
+    this._recentOptions = options;
+
     try {
       this._resetAll();
-      this._start(option?.debounceTime_ms ?? 0);
+      this._start(options?.debounceTime_ms ?? 0);
       return await task();
     } catch (e) {
       this._error = e;
@@ -60,6 +68,4 @@ export class TaskBusyRunner {
       this._pendingTimer = null;
     }
   }
-
 }
-
