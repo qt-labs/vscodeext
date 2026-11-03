@@ -5,7 +5,8 @@ export * from 'qt-lib/src/constants';
 export const EXTENSION_ID = 'qt-sm';
 export const CONF_INSTALLATION_PATH = 'installationPath';
 export const CLIENT_AUTHOR = 'The Qt Company';
-export const CONF_USER_AGENT = 'qt-vscode-sms';
+// TODO: CONF_USER_AGENT will be `vscode-qtcore` when we migrate to qt-core
+export const CONF_USER_AGENT = 'vscode-sms';
 export const CONF_USER_AGENT_NAME = 'Qt Software Management VS Code';
 export const CONF_RESET_LICENSE_AFTER_INSTALL = 'resetLicenseBeforeInstall';
 // Global flag (ConfigurationTarget.Global) that the "Get Started with Qt"
