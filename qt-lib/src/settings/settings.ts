@@ -29,6 +29,14 @@ export const coreSettings = {
   defaultProjectDir: core.itemString('defaultProjectDirectory'),
   openDocExt: core.itemBool('openOnlineDocumentationInExternalBrowser'),
 
+  profiler: (() => {
+    const section = new SettingSection(`${core.name}.profiler`);
+    return {
+      openSourceFile: section.itemBool('openSourceOnSelect'),
+      additionalBuildDirs: section.itemStringArray('additionalBuildDirs')
+    };
+  })(),
+
   forScope: (scope?: ConfigurationScope) => {
     const scoped = new SettingSection(core.name, scope);
     return {

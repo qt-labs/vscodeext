@@ -13,6 +13,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     controller: PopoverControllerBase;
     offset?: number;
     placement?: Placement;
+    zIndex?: number;
     onClose?: (e: MouseEvent) => void;
     children: Snippet;
   }
@@ -21,6 +22,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     controller,
     placement = 'bottom-start',
     offset = 0,
+    zIndex = 1,
     onClose,
     children,
   }: Props = $props();
@@ -46,7 +48,7 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     use:portal
     use:placeNear={{ ref: controller.refEl, placement, offset }}
     use:clickOutside={onClickOutside}
-    class="z-1"
+    style:z-index={zIndex}
   >
     {@render children()}
   </div>

@@ -39,6 +39,16 @@ export function getWebAppInfo(appId: WebAppId): WebAppInfo {
         panelOptions: { retainContextWhenHidden: true }
       };
 
+    case 'qt-profiler':
+      return {
+        appId,
+        title: texts.qtProfiler.tabText,
+        viewType: 'ViewTypeQtProfiler',
+        viewColumn,
+        iconPathPrefix,
+        panelOptions: { retainContextWhenHidden: true }
+      };
+
     case 'doc-viewer':
       return {
         appId,

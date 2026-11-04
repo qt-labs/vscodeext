@@ -1,6 +1,13 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+export interface ThemeInfo {
+  kind: string,
+  dark: boolean
+}
+
+type ChangeCallbackType = (_prev: ThemeInfo, _current: ThemeInfo) => void;
+
 export function createController() {
   const states = $state({
     kind: '',
@@ -50,10 +57,16 @@ export function createController() {
   }
 
   function _updateStatesAndExecCallback() {
-    states.kind = _getThemeKind();
-    states.dark = states.kind.endsWith('dark');
+    const kind = _getThemeKind();
+    const dark = kind.endsWith('dark');
 
-    _onChangedCallback();
+    const prev = { kind: states.kind, dark: states.dark };
+    const current = { kind, dark };
+
+    states.kind = kind;
+    states.dark = dark;
+
+    _onChangedCallback(prev, current);
   }
 
   function _getThemeKind() {
@@ -73,11 +86,11 @@ export function createController() {
     return 'dark';
   }
 
-  function onChanged(callback: () => void) {
+  function onChanged(callback: ChangeCallbackType) {
     _onChangedCallback = callback;
   }
 
-  let _onChangedCallback = () => {}
+  let _onChangedCallback = (_prev: ThemeInfo, _current: ThemeInfo) => {}
 
   return {
     states,
