@@ -87,6 +87,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private _lastLoadedUrl?: URL;
   private readonly _settings: QmlPreviewManagerSettings = {};
   private _buildDirs: string[] = [];
+  private _hotReloadEnabled = true;
   // Input events preserved from a previous session, replayed after the
   // debug service has answered the configuration request. Maps to the
   // event storage in Qt Creator's QmlPreviewPlugin.
@@ -137,6 +138,20 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
   get onHotReloadFailure() {
     return this._onHotReloadFailure.event;
+  }
+
+  /**
+   * Whether hot reload (in-place updates) should be requested from the
+   * debug service. Must be set before the connection is created. Without
+   * it, the service keeps the classic preview handler, which shows every
+   * loaded URL in a window of its own and reloads it on every change.
+   */
+  set hotReloadEnabled(enabled: boolean) {
+    this._hotReloadEnabled = enabled;
+  }
+
+  get hotReloadEnabled() {
+    return this._hotReloadEnabled;
   }
 
   /**
@@ -252,7 +267,10 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
    */
   private createPreviewClient(connection: QmlDebugConnection) {
     logger.info('Creating QmlPreviewClient');
-    this._previewClient = new QmlPreviewClient(connection);
+    this._previewClient = new QmlPreviewClient(
+      connection,
+      this._hotReloadEnabled
+    );
 
     // Maybe we are starting after a restart, so we already have the events
     // to replay. Hand them to the client, so that they can be replayed as

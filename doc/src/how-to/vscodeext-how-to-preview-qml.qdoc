@@ -19,10 +19,10 @@
 
     \section1 Hot reload
 
-    When the application runs with Qt 6.12 or later, the preview uses hot
-    reload: the components you change are updated in place and the
-    application keeps its state. If a change cannot be applied in place,
-    the application restarts.
+    When you preview the whole application and it runs with Qt 6.12 or
+    later, the preview uses hot reload: the components you change are
+    updated in place and the application keeps its state. If a change
+    cannot be applied in place, the application restarts.
 
     To turn off hot reload, set the \c QMLPREVIEW_HOTRELOAD environment
     variable to \c 0 for the application. Then every change reloads the
@@ -66,6 +66,8 @@
         \li Go to \uicontrol {Command Palette}, and select
             \uicontrol {Qt: Preview current QML file live}.
     \endlist
+
+    The file is shown in a window of its own and reloaded on every change.
 
     \section1 Attach to a running application for live preview
 
