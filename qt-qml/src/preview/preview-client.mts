@@ -10,6 +10,19 @@ import {
   QmlDebugConnectionState
 } from '@debug/debug-connection.mjs';
 import { Packet } from '@debug/packet.mjs';
+import { Timer } from '@debug/timer.js';
+import {
+  InputEventType,
+  ProfileEvent,
+  ProfileEventType,
+  ProfileFeature,
+  ProfileMessage,
+  QmlProfilerClient
+} from '@/profiler/profiler-client.mjs';
+import {
+  QmlPreviewEventReplayClient,
+  RecordedInputEvent
+} from '@preview/preview-event-replay-client.mjs';
 import { createLogger } from 'qt-lib';
 
 const logger = createLogger('qml-preview-client');
@@ -18,17 +31,30 @@ const logger = createLogger('qml-preview-client');
  * QML Preview protocol commands
  * Maps to QmlPreview::QmlPreviewClient::Command from Qt Creator
  */
-enum QmlPreviewCommand {
-  File,
-  Load,
-  Request,
-  Error,
-  Rerun,
-  Directory,
-  ClearCache,
-  Zoom,
-  Fps,
-  AnimationSpeed
+export enum QmlPreviewCommand {
+  File = 0,
+  Load = 1,
+  Request = 2,
+  Error = 3,
+  // Deprecated. Qt 6.12+ ignores it when hot reload (in-place updates)
+  // is active.
+  Rerun = 4,
+  Directory = 5,
+  ClearCache = 6,
+  Zoom = 7,
+  Fps = 8,
+  AnimationSpeed = 9,
+  Configuration = 10,
+  Confirmation = 11,
+  HotReloadFailure = 12
+}
+
+/**
+ * QML Preview settings negotiated with the debug service
+ * Maps to QmlPreview::QmlPreviewClient::Settings from Qt Creator
+ */
+export interface QmlPreviewSettings {
+  enableInPlaceUpdates: boolean;
 }
 
 /**
@@ -64,10 +90,39 @@ export class QmlPreviewClient
   private readonly _errorReported = new vscode.EventEmitter<string>();
   private readonly _fpsReported = new vscode.EventEmitter<FpsInfo>();
   private readonly _debugServiceUnavailable = new vscode.EventEmitter<void>();
+  private readonly _confirmationReported =
+    new vscode.EventEmitter<QmlPreviewSettings>();
+  private readonly _hotReloadFailureReported =
+    new vscode.EventEmitter<string>();
 
-  constructor(connection: QmlDebugConnection) {
+  private readonly _requestInPlaceUpdates: boolean;
+  private _confirmedSettings: QmlPreviewSettings | undefined;
+
+  // Event replay infrastructure. Created lazily once the service has
+  // answered our configuration request, like Qt Creator's
+  // QmlPreviewClient::configureEventReplay().
+  private _recordClient: QmlProfilerClient | undefined;
+  private _recordSubscription: vscode.Disposable | undefined;
+  private _replayClient: QmlPreviewEventReplayClient | undefined;
+  private _replayTimer: Timer | undefined;
+  private _events: RecordedInputEvent[] = [];
+  private _numExpectedEvents = 0;
+
+  /**
+   * @param requestInPlaceUpdates Request hot reload (in-place updates) from
+   * the service, like Qt Creator always does. Without the request, the
+   * service keeps its classic preview handler, which instantiates every
+   * loaded URL in a window of its own. That is what previewing a single
+   * file needs: the in-place handler never instantiates a loaded URL, it
+   * only patches the objects the application has created itself.
+   */
+  constructor(connection: QmlDebugConnection, requestInPlaceUpdates = true) {
     super('QmlPreview', connection);
-    logger.info('QmlPreviewClient created');
+    this._requestInPlaceUpdates = requestInPlaceUpdates;
+    logger.info(
+      'QmlPreviewClient created',
+      `(in-place updates ${requestInPlaceUpdates ? 'requested' : 'not requested'})`
+    );
   }
 
   get onPathRequested() {
@@ -86,15 +141,103 @@ export class QmlPreviewClient
     return this._debugServiceUnavailable.event;
   }
 
+  get onConfirmationReported() {
+    return this._confirmationReported.event;
+  }
+
+  get onHotReloadFailureReported() {
+    return this._hotReloadFailureReported.event;
+  }
+
   /**
-   * Load a QML file URL
+   * The settings confirmed by the debug service, or undefined if the
+   * service has not confirmed anything (yet). Qt versions without hot
+   * reload support never send a confirmation.
+   */
+  get confirmedSettings() {
+    return this._confirmedSettings;
+  }
+
+  /**
+   * Input events recorded since the last load or replay (or seeded via
+   * setRecordedEvents). Used to preserve the events across a preview
+   * restart, like QmlPreviewPlugin::events() in Qt Creator.
+   */
+  get recordedEvents(): RecordedInputEvent[] {
+    return [...this._events];
+  }
+
+  /**
+   * Seed recorded input events, e.g. the ones preserved from the session
+   * that ended with a restart. They are replayed as soon as the event
+   * replay is configured, see configureEventReplay().
+   * Maps to QmlPreview::QmlPreviewClient::setEvents() from Qt Creator.
+   */
+  setRecordedEvents(events: RecordedInputEvent[]) {
+    this._events = [...events];
+  }
+
+  /**
+   * Whether there are recorded input events and the EventReplay service
+   * is available to replay them.
+   * Maps to QmlPreview::QmlPreviewClient::canReplayEvents()
+   */
+  canReplayEvents() {
+    return (
+      this._events.length > 0 &&
+      this._replayClient?.getState() === QmlDebugConnectionState.Enabled
+    );
+  }
+
+  /**
+   * Load a QML file URL.
    * Maps to QmlPreview::QmlPreviewClient::loadUrl()
+   *
+   * Without hot reload, the load replaces the whole application, so the
+   * recorded input events are replayed afterwards to restore the UI state.
+   * With hot reload, the application keeps its state and replaying the
+   * events would only duplicate the input, so they are dropped instead.
+   */
+  loadUrl(url: string) {
+    if (
+      !this._confirmedSettings?.enableInPlaceUpdates &&
+      this.canReplayEvents()
+    ) {
+      this.replayEventsForUrl(url);
+      return;
+    }
+    // Deviation from Qt Creator, which always drops the events here: as
+    // long as the event replay is not configured, the events can only be
+    // the ones seeded from a previous session. Keep them until the service
+    // has answered the configuration request, because the initial load of
+    // a restarted session can be sent before that.
+    if (this._replayClient) {
+      this._events = [];
+    }
+    this.doLoad(url);
+  }
+
+  /**
+   * Send the Load command for the given URL. An undefined URL asks the
+   * service to reload the last loaded URL.
+   * Maps to QmlPreview::QmlPreviewClient::doLoad()
    *
    * Note: Qt serializes QUrl as QByteArray (via url.toEncoded()), NOT QString!
    * See Qt's qurl.cpp: operator<<(QDataStream &out, const QUrl &url)
    * Also, local file paths must be converted to file:// URL format.
    */
-  loadUrl(url: string) {
+  private doLoad(url?: string) {
+    const packet = new Packet();
+    packet.writeInt8(QmlPreviewCommand.Load);
+
+    if (url === undefined) {
+      logger.info('Sending Load command for the last loaded URL');
+      // An empty QByteArray deserializes into an empty QUrl.
+      packet.writeUInt32BE(0);
+      void this.sendMessage(packet);
+      return;
+    }
+
     // Convert local file path to proper file:// URL format
     // Similar to Qt's QUrl::fromLocalFile()
     let fileUrl = url;
@@ -110,8 +253,6 @@ export class QmlPreviewClient
     }
 
     logger.info('Sending Load command for URL:', `"${fileUrl}"`);
-    const packet = new Packet();
-    packet.writeInt8(QmlPreviewCommand.Load);
     packet.writeStringUTF8(fileUrl);
     void this.sendMessage(packet);
   }
@@ -187,6 +328,24 @@ export class QmlPreviewClient
   }
 
   /**
+   * Ask the debug service to enable hot reload (in-place updates).
+   * Maps to QmlPreview::QmlPreviewClient::announceConfiguration()
+   *
+   * We always request in-place updates but the service has to confirm them
+   * with a Confirmation message. This allows the service to refuse if it
+   * does not support them: Qt versions before 6.12, and Qt 6.12 or later
+   * with hot reload disabled through the QMLPREVIEW_HOTRELOAD environment
+   * variable, reply with an "Invalid command: 10" error instead.
+   */
+  announceConfiguration() {
+    logger.info('Sending Configuration command (requesting in-place updates)');
+    const packet = new Packet();
+    packet.writeInt8(QmlPreviewCommand.Configuration);
+    packet.writeBoolean(true);
+    void this.sendMessage(packet);
+  }
+
+  /**
    * Clear the preview cache
    * Maps to QmlPreview::QmlPreviewClient::clearCache()
    */
@@ -200,13 +359,116 @@ export class QmlPreviewClient
   /**
    * Set animation speed factor
    * Maps to QmlPreview::QmlPreviewClient::setAnimationSpeed()
+   *
+   * QDataStream serializes float with double precision (big-endian) for
+   * the stream versions negotiated by the debug connection.
    */
   setAnimationSpeed(factor: number) {
     logger.info('Sending AnimationSpeed command:', String(factor));
     const packet = new Packet();
     packet.writeInt8(QmlPreviewCommand.AnimationSpeed);
-    packet.writeFloatLE(factor);
+    packet.writeDoubleBE(factor);
     void this.sendMessage(packet);
+  }
+
+  /**
+   * Configure the event replay infrastructure. Called once the debug
+   * service has answered the Configuration message, either with a
+   * Confirmation (Qt 6.12+ with hot reload) or with an "Invalid command"
+   * error (older Qt versions, or hot reload disabled through the
+   * QMLPREVIEW_HOTRELOAD environment variable).
+   * Maps to QmlPreview::QmlPreviewClient::configureEventReplay()
+   *
+   * Input events are recorded through the QML Profiler service and can be
+   * re-injected through the EventReplay service (Qt 6.12+) to restore the
+   * UI state after a full reload or an application restart. Without the
+   * EventReplay service, the events are recorded but never replayed.
+   */
+  configureEventReplay() {
+    if (!this._recordClient) {
+      this._recordClient = new QmlProfilerClient(this.connection);
+      this._recordClient.requestedFeatures =
+        BigInt(1) << BigInt(ProfileFeature.InputEvents);
+      this._recordClient.flushInterval = 1;
+      this._recordSubscription = this._recordClient.onEvent((event) => {
+        this.recordInputEvent(event);
+      });
+      this._recordClient.setRecording(true);
+
+      this._replayClient = new QmlPreviewEventReplayClient(this.connection);
+
+      this._replayTimer = new Timer(100);
+      this._replayTimer.onTimeout(() => {
+        // Wait until all replayed events have been re-recorded, then let
+        // the animations run at normal speed again.
+        if (this._events.length < this._numExpectedEvents) {
+          return;
+        }
+        this.setAnimationSpeed(1);
+        this._replayTimer?.stop();
+      });
+    }
+
+    // We want to start the replay as soon as possible after the
+    // configuration is answered, e.g. to restore the UI state after a
+    // restart of the application.
+    if (this.canReplayEvents()) {
+      this.replayEventsForUrl(undefined);
+    }
+  }
+
+  /**
+   * Reload the given URL (or the last loaded one) and replay the recorded
+   * input events to restore the UI state. Animations are sped up during
+   * the replay so the UI settles immediately.
+   * Maps to QmlPreview::QmlPreviewClient::replayEventsForUrl()
+   */
+  private replayEventsForUrl(url?: string) {
+    const recorded = this._events;
+    this._events = [];
+    this._numExpectedEvents = recorded.length;
+    logger.info(
+      'Replaying',
+      String(recorded.length),
+      'recorded input events for URL:',
+      `"${url ?? '<last loaded>'}"`
+    );
+    this.setAnimationSpeed(1000);
+    this.doLoad(url);
+    for (const event of recorded) {
+      this._replayClient?.sendEvent(event);
+    }
+    this._replayTimer?.start();
+  }
+
+  /**
+   * Record an input event reported by the QML Profiler service.
+   * Maps to QmlPreview::QmlPreviewClient::appendEvent()
+   */
+  private recordInputEvent(event: ProfileEvent) {
+    if (event.message !== ProfileMessage.Event) {
+      return;
+    }
+    const subtype = event.subtype as ProfileEventType;
+    if (
+      subtype !== ProfileEventType.Mouse &&
+      subtype !== ProfileEventType.Key
+    ) {
+      return;
+    }
+    const fallbackInputType =
+      subtype === ProfileEventType.Key
+        ? InputEventType.InputKeyUnknown
+        : InputEventType.InputMouseUnknown;
+    this._events.push({
+      // Compress the time stamps so that the events are replayed in quick
+      // succession.
+      timestamp: BigInt(this._events.length),
+      detailType: subtype,
+      inputType: Number(event.numbers[0] ?? fallbackInputType),
+      a: Number(event.numbers[1] ?? -1),
+      b: Number(event.numbers[2] ?? -1)
+    });
   }
 
   /**
@@ -249,6 +511,25 @@ export class QmlPreviewClient
         this._fpsReported.fire(info);
         break;
       }
+      case QmlPreviewCommand.Confirmation: {
+        const settings: QmlPreviewSettings = {
+          enableInPlaceUpdates: packet.readInt8() !== 0
+        };
+        logger.info(
+          '<=== Confirmation received, in-place updates:',
+          settings.enableInPlaceUpdates ? 'enabled' : 'disabled'
+        );
+        this._confirmedSettings = settings;
+        this.configureEventReplay();
+        this._confirmationReported.fire(settings);
+        break;
+      }
+      case QmlPreviewCommand.HotReloadFailure: {
+        const reason = packet.readStringUTF16LE();
+        logger.info('<=== Hot reload failure received:', `"${reason}"`);
+        this._hotReloadFailureReported.fire(reason);
+        break;
+      }
       default:
         logger.warn(
           '<=== Invalid command received:',
@@ -269,14 +550,28 @@ export class QmlPreviewClient
     logger.info('QmlPreview state changed:', QmlDebugConnectionState[state]);
     if (state === QmlDebugConnectionState.Unavailable) {
       this._debugServiceUnavailable.fire();
+    } else if (
+      state === QmlDebugConnectionState.Enabled &&
+      this._requestInPlaceUpdates
+    ) {
+      this.announceConfiguration();
     }
   }
 
   dispose() {
     logger.info('Disposing QmlPreviewClient');
+    this._replayTimer?.dispose();
+    this._recordSubscription?.dispose();
+    if (this._recordClient) {
+      // Best effort: the message is dropped if the connection is gone.
+      this._recordClient.setRecording(false);
+      this._recordClient.dispose();
+    }
     this._pathRequested.dispose();
     this._errorReported.dispose();
     this._fpsReported.dispose();
     this._debugServiceUnavailable.dispose();
+    this._confirmationReported.dispose();
+    this._hotReloadFailureReported.dispose();
   }
 }
