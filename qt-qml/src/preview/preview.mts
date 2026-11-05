@@ -71,12 +71,28 @@ function cleanupSession() {
   ui.setPreviewStopped();
 }
 
-function createPreviewManager() {
-  return createPreviewManagerForBuildDirs(projectManager.getBuildDirs());
+/**
+ * Create the connection manager for a preview session.
+ *
+ * Hot reload (in-place updates) only applies to the running application:
+ * the service patches the objects the application created itself and never
+ * instantiates a loaded URL. Previewing a single file therefore needs the
+ * classic preview, which shows the loaded file in a window of its own and
+ * reloads it on every change.
+ */
+function createPreviewManager(hotReload: boolean) {
+  return createPreviewManagerForBuildDirs(
+    projectManager.getBuildDirs(),
+    hotReload
+  );
 }
 
-function createPreviewManagerForBuildDirs(projectBuildDirs: readonly string[]) {
+function createPreviewManagerForBuildDirs(
+  projectBuildDirs: readonly string[],
+  hotReload: boolean
+) {
   const manager = new QmlPreviewConnectionManager();
+  manager.hotReloadEnabled = hotReload;
   manager.setupFileWatcher();
 
   const additionalBuildDirs = getPreviewConfig().get<string[]>(
@@ -182,7 +198,8 @@ async function launchCMakePreview(qmlFile?: string) {
   }
   logger.info(`Host: ${host}, Port: ${port.toString()}`);
 
-  const manager = createPreviewManager();
+  // A single file is shown by the classic preview, see createPreviewManager.
+  const manager = createPreviewManager(qmlFile === undefined);
 
   manager.onConnectionClosed(() => {
     logger.info('QML Preview connection closed');
@@ -298,7 +315,9 @@ async function launchQtBridgePreview(
       return false;
     }
 
-    manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs);
+    // The application loads its root QML itself and the current file is
+    // only registered for hot reload, so in-place updates always apply.
+    manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs, true);
     manager.setSourceRedirect(
       createQtBridgeSourceRedirect(metadata, path.dirname(launch.executable))
     );
@@ -403,7 +422,8 @@ async function launchPySidePreview(
   }
   logger.info(`Host: ${host}, Port: ${String(port)}`);
 
-  const manager = createPreviewManager();
+  // A single file is shown by the classic preview, see createPreviewManager.
+  const manager = createPreviewManager(qmlFile === undefined);
   manager.onConnectionClosed(() => {
     logger.info('QML Preview connection closed');
     cleanupSession();
@@ -669,7 +689,7 @@ async function restartPreviewSession(manager: QmlPreviewConnectionManager) {
 function attachPreview(host: string, port: number) {
   logger.info(`Attaching to ${host}:${port.toString()}...`);
 
-  const manager = createPreviewManager();
+  const manager = createPreviewManager(true);
 
   manager.onConnectionClosed(() => {
     logger.info('QML Preview connection closed in attach mode');

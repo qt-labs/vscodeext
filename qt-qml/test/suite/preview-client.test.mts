@@ -37,7 +37,7 @@ class PreviewTestRig {
   readonly client: QmlPreviewClient;
   private readonly _messages: SentMessage[] = [];
 
-  constructor() {
+  constructor(requestInPlaceUpdates = true) {
     this.connection = new QmlDebugConnection();
     sinon.stub(this.connection, 'isConnected').returns(true);
     sinon.stub(this.connection, 'serviceVersion').returns(1);
@@ -50,7 +50,7 @@ class PreviewTestRig {
         });
         return Promise.resolve(true);
       });
-    this.client = new QmlPreviewClient(this.connection);
+    this.client = new QmlPreviewClient(this.connection, requestInPlaceUpdates);
   }
 
   get messageCount() {
@@ -232,6 +232,14 @@ describe('QmlPreviewClient', () => {
     expect(packet.readInt8()).to.equal(QmlPreviewCommand.Configuration);
     expect(packet.readInt8()).to.equal(1);
     expect(packet.atEnd()).to.equal(true);
+    expect(rig.messageCount).to.equal(0);
+  });
+
+  it('does not request in-place updates when hot reload is disabled', () => {
+    // The classic preview is needed to show a single file in its own window.
+    rig = new PreviewTestRig(false);
+    rig.client.stateChanged(QmlDebugConnectionState.Enabled);
+
     expect(rig.messageCount).to.equal(0);
   });
 

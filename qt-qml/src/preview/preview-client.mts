@@ -95,6 +95,7 @@ export class QmlPreviewClient
   private readonly _hotReloadFailureReported =
     new vscode.EventEmitter<string>();
 
+  private readonly _requestInPlaceUpdates: boolean;
   private _confirmedSettings: QmlPreviewSettings | undefined;
 
   // Event replay infrastructure. Created lazily once the service has
@@ -107,9 +108,21 @@ export class QmlPreviewClient
   private _events: RecordedInputEvent[] = [];
   private _numExpectedEvents = 0;
 
-  constructor(connection: QmlDebugConnection) {
+  /**
+   * @param requestInPlaceUpdates Request hot reload (in-place updates) from
+   * the service, like Qt Creator always does. Without the request, the
+   * service keeps its classic preview handler, which instantiates every
+   * loaded URL in a window of its own. That is what previewing a single
+   * file needs: the in-place handler never instantiates a loaded URL, it
+   * only patches the objects the application has created itself.
+   */
+  constructor(connection: QmlDebugConnection, requestInPlaceUpdates = true) {
     super('QmlPreview', connection);
-    logger.info('QmlPreviewClient created');
+    this._requestInPlaceUpdates = requestInPlaceUpdates;
+    logger.info(
+      'QmlPreviewClient created',
+      `(in-place updates ${requestInPlaceUpdates ? 'requested' : 'not requested'})`
+    );
   }
 
   get onPathRequested() {
@@ -537,7 +550,10 @@ export class QmlPreviewClient
     logger.info('QmlPreview state changed:', QmlDebugConnectionState[state]);
     if (state === QmlDebugConnectionState.Unavailable) {
       this._debugServiceUnavailable.fire();
-    } else if (state === QmlDebugConnectionState.Enabled) {
+    } else if (
+      state === QmlDebugConnectionState.Enabled &&
+      this._requestInPlaceUpdates
+    ) {
       this.announceConfiguration();
     }
   }
