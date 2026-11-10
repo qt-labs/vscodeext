@@ -44,6 +44,7 @@ export enum ErrorCode {
 
   // Authentication [3000-3999]
   MissingToken = 3000,
+  TokenRejected = 3001,
 
   // Authorization [4000-4999]
   ElevatedProcessFailed = 4000,
@@ -59,8 +60,9 @@ export enum ErrorCode {
   SslVerifyError = 6002,
   ProxyError = 6003,
 
-  // Cache [7000-7999]
+  // Cache and installation journal [7000-7999]
   InvalidCache = 7000,
+  IncompatibleJournal = 7001,
 
   // Filesystem [8000-8999]
   NotEnoughDiskSpace = 8000,
@@ -68,6 +70,7 @@ export enum ErrorCode {
 
   // Configuration [9000-9999]
   InvalidManagedDirectory = 9000,
+  InstallationNotNamed = 9001,
 
   // Cancellation [10000-10999]
   UserCancelled = 10000,
@@ -150,6 +153,14 @@ export enum InstallState {
   UpdateAvailable = 2
 }
 
+/** Why a package is installed. Meaningful only in `packages/list`. */
+export enum InstallReason {
+  /** The package was requested by name. */
+  Manual = 'manual',
+  /** The package was installed as a dependency. */
+  Automatic = 'automatic'
+}
+
 export interface PackageData {
   readonly id: string;
   readonly version: string;
@@ -163,10 +174,54 @@ export interface PackageData {
   readonly productId: string;
   readonly productVersion: string;
   readonly productName: string;
+  /** Type of the package, for example `alias`. */
+  readonly packageType: string;
   readonly compressedSize: number;
   readonly uncompressedSize: number;
-  /** `packages/list` only. The service currently always reports 0. */
+  /**
+   * `packages/list` reports `Installed`. `packages/search` reports
+   * `Installed` for a package installed with the same id and version in the
+   * installation the request names, and leaves the field out otherwise,
+   * which reads as `Uninstalled`.
+   */
   readonly installState: InstallState;
+  /** `Manual` unless the service says `automatic`. */
+  readonly installReason: InstallReason;
+}
+
+// ── Installations ────────────────────────────────────────────────────────────
+
+/**
+ * The installation a request works on. The service keeps no current
+ * installation between requests, so every request that works on one names
+ * it: outright with `installRoot`, or with a `workingDirectory` inside a
+ * recorded installation. `installRoot` takes precedence. A request that
+ * names neither fails with error 9001 (`InstallationNotNamed`), except
+ * `packages/search`, which then reports every package as not installed.
+ */
+export interface InstallationTarget {
+  /** Absolute path of the installation directory, used as given. */
+  readonly installRoot?: string;
+  /**
+   * Absolute path of a directory inside a recorded installation, usually
+   * the working directory of the client. The innermost installation that
+   * contains it is used.
+   */
+  readonly workingDirectory?: string;
+}
+
+/** An installation the service records, from `packages/installations`. */
+export interface Installation {
+  readonly installationPath: string;
+  /** Number of packages installed in it. */
+  readonly packages: number;
+}
+
+/** Result of `packages/list`. */
+export interface InstalledPackages {
+  /** The installation, as the service resolved it. */
+  readonly installRoot: string;
+  readonly packages: PackageData[];
 }
 
 export interface PackageUpdate {
@@ -206,6 +261,7 @@ export interface PackageFilters {
   author?: string;
   product?: string;
   module?: string;
+  searchText?: string;
   [key: string]: string | undefined;
 }
 
@@ -379,8 +435,10 @@ export const IPC = {
     install: 'packages/install',
     createOffline: 'packages/create-offline',
     fetchRequirements: 'packages/requirements',
+    validateRoot: 'packages/validate-root',
     search: 'packages/search',
     listInstalled: 'packages/list',
+    listInstallations: 'packages/installations',
     cancel: 'packages/cancel',
     setSetting: 'settings/set',
     getSetting: 'settings/get',
