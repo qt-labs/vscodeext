@@ -52,8 +52,7 @@
         },
         {
           "id": "qt-sm.installedPackagesView",
-          "name": "%qt-sm.view.installedPackages.name%",
-          "when": "qt-sm.packageInstalled"
+          "name": "%qt-sm.view.installedPackages.name%"
         },
         {
           "type": "webview",
@@ -66,6 +65,16 @@
       {
         "view": "qt-sm.getStartedView",
         "contents": "%qt-sm.view.getStarted.welcome%"
+      },
+      {
+        "view": "qt-sm.installedPackagesView",
+        "contents": "%qt-sm.view.installedPackages.loading%",
+        "when": "qt-sm.installedPackagesState == 'loading'"
+      },
+      {
+        "view": "qt-sm.installedPackagesView",
+        "contents": "%qt-sm.view.installedPackages.empty%",
+        "when": "qt-sm.installedPackagesState == 'loaded'"
       }
     ],
     "commands": [
@@ -149,6 +158,12 @@
         "icon": "$(trash)"
       },
       {
+        "command": "qt-sm.refreshInstalledPackages",
+        "title": "%qt-sm.command.refreshInstalledPackages.title%",
+        "category": "Qt",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "qt-sm.resetTestState",
         "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"
@@ -194,6 +209,13 @@
           "command": "qt-sm.removePackage",
           "when": "view == qt-sm.installedPackagesView && viewItem == installedPackage",
           "group": "inline"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "qt-sm.refreshInstalledPackages",
+          "when": "view == qt-sm.installedPackagesView",
+          "group": "navigation"
         }
       ]
     },
