@@ -116,20 +116,43 @@ function installStateLabel(state: InstallState): string {
   }
 }
 
+// Entries of the removal confirmation shown in the dialog; the rest is
+// counted. With autoRemove the list holds every module of a version.
+const REMOVAL_CONFIRMATION_SHOWN_ENTRIES = 6;
+
 /**
  * The removal_confirmation question of packages/remove: the removal takes
- * packages the user did not name, listed in the message with the reason.
- * A modal dialog shows the list; its buttons are the choices other than
+ * packages the user did not name, listed in the message one per line with
+ * the reason. The extension confirms a removal before it sends the request
+ * and says so with confirmRemoval, so this is only reached for a service
+ * that asks anyway. The dialog shows the count and the first entries, and
+ * the full list goes to the log; its buttons are the choices other than
  * the default answer, which is the cancel choice and what dismissing the
  * dialog answers.
  */
 async function confirmRemoval(prompt: UserPrompt): Promise<UserPromptReply> {
+  logger.info(`Removal confirmation asked:\n${prompt.message}`);
+  const lines = prompt.message
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  // The first line introduces the list.
+  const entries = lines.slice(1);
+  const shown = entries.slice(0, REMOVAL_CONFIRMATION_SHOWN_ENTRIES);
+  const rest = entries.length - shown.length;
+  const detail = [
+    `${String(entries.length)} package(s) will be removed:`,
+    ...shown,
+    ...(rest > 0 ? [`and ${String(rest)} more`] : []),
+    'The Qt Software Management log lists them all.'
+  ].join('\n');
+
   const buttons = prompt.choices.filter(
     (choice) => choice !== prompt.defaultAnswer
   );
   const picked = await vscode.window.showWarningMessage(
     prompt.title || 'Confirm removal',
-    { modal: true, detail: prompt.message },
+    { modal: true, detail },
     ...buttons
   );
   if (picked) {
@@ -687,7 +710,8 @@ export async function removePackage(
       modal: true,
       detail:
         `The packages of Qt ${version} are removed from ${installRoot}, ` +
-        'together with the packages that nothing else needs any more.'
+        'together with the packages that nothing else needs any more. ' +
+        'The Qt Software Management log lists what was removed.'
     },
     'Remove'
   );
@@ -755,10 +779,14 @@ async function removeVersion(
       },
       async (progress) => {
         let lastPct = 0;
+        // The user confirmed the removal in the dialog above, which said
+        // that the packages nothing else needs go too, so the service is
+        // told not to ask its removal_confirmation question: with
+        // autoRemove it would list every module of the version.
         const removal = packages.remove(
           target,
           refs,
-          { autoRemove: true },
+          { autoRemove: true, confirmRemoval: true },
           {
             onProgress: (info) => {
               const pct = Math.round(info.progress);
