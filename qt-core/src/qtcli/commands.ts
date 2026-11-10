@@ -5,15 +5,19 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { exists, IsArm64, IsLinux, IsMacOS, IsWindows } from 'qt-lib';
-import { EXTENSION_ID } from '@/constants';
+import {
+  exists,
+  IsArm64,
+  IsLinux,
+  IsMacOS,
+  IsWindows,
+  coreSettings
+} from 'qt-lib';
 import {
   qtcliExeName,
   findActiveTabUri,
   fallbackWorkingDir
 } from '@/qtcli/common';
-
-const ConfigDefaultProjectDirectory = 'defaultProjectDirectory';
 
 export async function findQtcliExePath(extensionUri: vscode.Uri) {
   const prefix = findQtcliOsPrefix();
@@ -33,23 +37,12 @@ export function getNewFileBaseDir() {
 }
 
 export function getNewProjectBaseDir(): string {
-  return getDefaultProjectDir() ?? fallbackWorkingDir();
+  const value = coreSettings.defaultProjectDir.inspect()?.globalValue;
+  return value ?? fallbackWorkingDir();
 }
 
 export async function setDefaultProjectDir(dir: string) {
-  const scope = vscode.ConfigurationTarget.Global;
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  await config.update(
-    ConfigDefaultProjectDirectory,
-    path.normalize(dir),
-    scope
-  );
-}
-
-function getDefaultProjectDir(): string | undefined {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const readback = config.inspect<string>(ConfigDefaultProjectDirectory);
-  return readback?.globalValue;
+  await coreSettings.defaultProjectDir.updateGlobal(path.normalize(dir));
 }
 
 function findQtcliOsPrefix(): string {

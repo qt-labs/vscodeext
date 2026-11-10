@@ -4,6 +4,7 @@
 import _ from 'lodash';
 import * as vscode from 'vscode';
 
+import { coreSettings } from 'qt-lib';
 import { DataType } from '@/webview/shared/welcome';
 import { WebviewDispatcher } from '@/webview/dispatcher';
 import { Command, CommandId } from '@/webview/shared/message';
@@ -39,21 +40,20 @@ export class WelcomePageDispatcher extends WebviewDispatcher {
   };
 
   private readonly _onHandleConfig = async (cmd: Command) => {
-    const key = consts.CONFIG_KEY_SHOW_ON_ACTIVATION;
-    const config = vscode.workspace.getConfiguration(consts.EXTENSION_ID);
+    const config = coreSettings.showWelcomePage;
     const access = String(_.get(cmd.payload, 'access', ''))
       .trim()
       .toLowerCase();
 
     if (access === 'set') {
       const v = _.get(cmd.payload, 'showOnActivation', true);
-      await config.update(key, v, vscode.ConfigurationTarget.Global);
+      await config.updateGlobal(v);
       this.channel.replyDone(cmd);
     }
 
     if (access === 'get') {
       this.channel.replyData(cmd, {
-        showOnActivation: config.get<boolean>(key) ?? true
+        showOnActivation: config.get() ?? true
       });
     }
   };

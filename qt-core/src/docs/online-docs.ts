@@ -4,7 +4,13 @@
 import * as vscode from 'vscode';
 
 import { EXTENSION_ID } from '@/constants';
-import { telemetry, createLogger, isError, fetchWithAbort } from 'qt-lib';
+import {
+  telemetry,
+  createLogger,
+  isError,
+  fetchWithAbort,
+  coreSettings
+} from 'qt-lib';
 
 const QtDocHostUrl = 'https://doc.qt.io';
 const SearchHostUrl = 'https://d24zn9cw9ofw9u.cloudfront.net';
@@ -78,11 +84,7 @@ async function fetchUrl(url: string, token?: vscode.CancellationToken) {
 }
 
 function browseUrl(url: string) {
-  const useExternal = vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .get<boolean>('openOnlineDocumentationInExternalBrowser');
-
-  if (useExternal) {
+  if (coreSettings.openDocExt.get(false)) {
     void vscode.env.openExternal(vscode.Uri.parse(url));
   } else {
     const cmd = 'simpleBrowser.api.open';

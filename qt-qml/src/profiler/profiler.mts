@@ -14,7 +14,8 @@ import {
   CoreKey,
   getQtQmlApi,
   type QtBridgePreviewLaunch,
-  type QtBridgeProject
+  type QtBridgeProject,
+  qmlSettings
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
@@ -92,10 +93,6 @@ function resolveTraceOutputDir(folder?: vscode.WorkspaceFolder): string {
 
 function buildProfilerArgs(host: string, port: number) {
   return `-qmljsdebugger=host:${host},port:${String(port)},block,services:CanvasFrameRate`;
-}
-
-function getProfilerConfig() {
-  return vscode.workspace.getConfiguration('qt-qml.profiler');
 }
 
 async function resolveCMakeProgram() {
@@ -275,7 +272,7 @@ async function launchCMakeProfiler(
 
   const manager = createProfilerManager();
   const profilerArgs = buildProfilerArgs(host, port);
-  const additionalArgs = getProfilerConfig().get<string[]>('args', []);
+  const additionalArgs = qmlSettings.profiler.args.get([]);
   const command = `${program} ${profilerArgs}`;
   logger.info(`Command: ${command} ${additionalArgs.join(' ')}`);
 
@@ -340,8 +337,7 @@ async function launchPySideProfiler(
 
   const manager = createProfilerManager();
   const profilerArgs = buildProfilerArgs(host, port);
-  const additionalArgs = getProfilerConfig().get<string[]>('args', []);
-  const allArgs = [profilerArgs, ...additionalArgs];
+  const allArgs = [profilerArgs, ...qmlSettings.profiler.args.get([])];
 
   try {
     const project = projectManager.getProject(folder);
@@ -451,7 +447,7 @@ async function launchQtBridgeProfiler(
     }
 
     const profilerArgs = buildProfilerArgs(host, port);
-    const additionalArgs = getProfilerConfig().get<string[]>('args', []);
+    const additionalArgs = qmlSettings.profiler.args.get([]);
     const processArgs = [profilerArgs, ...additionalArgs];
     logger.info(`Command: ${launch.executable} ${processArgs.join(' ')}`);
 

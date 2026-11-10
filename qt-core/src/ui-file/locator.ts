@@ -16,7 +16,8 @@ import {
   CoreAPI,
   CoreKey,
   PySideEnvData,
-  QtWorkspaceFeatures
+  QtWorkspaceFeatures,
+  coreSettings
 } from 'qt-lib';
 import { coreAPI } from '@/extension';
 import * as consts from './constants';
@@ -110,9 +111,7 @@ export class UiDesignerLocator {
   private async getExpectedExePath(origin: UiDesignerOrigin) {
     switch (origin) {
       case 'custom':
-        return vscode.workspace
-          .getConfiguration(consts.CONF_SECTION, this._folder)
-          .get<string>(consts.CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH);
+        return coreSettings.forScope(this._folder).customUiDesigner.get();
 
       case 'qtpaths': {
         const core = new QtCoreValueReader(coreAPI, this._folder);

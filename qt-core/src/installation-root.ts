@@ -9,8 +9,6 @@ import {
   Home,
   IsUnix,
   IsWindows,
-  QtInsRootConfigName,
-  AdditionalQtPathsName,
   createLogger,
   isPathToQtPathsOrQMake,
   QtWorkspaceConfigMessage,
@@ -18,7 +16,8 @@ import {
   IsMacOS,
   telemetry,
   resolveConfiguration,
-  CoreKey
+  CoreKey,
+  coreSettings
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { coreAPI } from '@/extension';
@@ -28,43 +27,21 @@ import { warnAboutMissingQtPath } from '@/qtpaths';
 const logger = createLogger('installation-root');
 
 async function setDoNotAskForDefaultQtInstallationRoot(value: boolean) {
-  await vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .update(
-      'doNotAskForDefaultQtInstallationRoot',
-      value,
-      vscode.ConfigurationTarget.Global
-    );
+  await coreSettings.skipDefaultInsRootPrompt.updateGlobal(value);
 }
 
 function getDoNotAskForDefaultQtInstallationRoot(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(EXTENSION_ID)
-      .get<boolean>('doNotAskForDefaultQtInstallationRoot') ?? false
-  );
+  return coreSettings.skipDefaultInsRootPrompt.get() ?? false;
 }
 
 export function getCurrentGlobalQtInstallationRoot(): string {
-  const qtInsRootConfig =
-    getConfiguration().inspect<string>(QtInsRootConfigName);
-  const insRoot = qtInsRootConfig?.globalValue;
+  const insRoot = coreSettings.insRoot.inspect()?.globalValue;
   return insRoot ? resolveConfiguration(insRoot) : '';
 }
 
 export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
-  const config = getConfiguration().inspect<(string | object)[]>(
-    AdditionalQtPathsName
-  );
-  if (config?.globalValue) {
-    return convertAdditionalQtPaths(config.globalValue);
-  }
-
-  return [];
-}
-
-function getConfiguration() {
-  return vscode.workspace.getConfiguration(EXTENSION_ID);
+  const value = coreSettings.additionalQtPaths.inspect()?.globalValue;
+  return value ? convertAdditionalQtPaths(value) : [];
 }
 
 export function getDefaultQtRootCandidates(): string[] {
@@ -205,12 +182,7 @@ async function registerQt() {
 
 async function setGlobalQtInstallationRoot(qtInsRoot: string) {
   logger.info(`Setting global Qt installation root to: ${qtInsRoot}`);
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  await config.update(
-    QtInsRootConfigName,
-    qtInsRoot,
-    vscode.ConfigurationTarget.Global
-  );
+  await coreSettings.insRoot.updateGlobal(qtInsRoot);
 }
 
 export function onQtInsRootUpdated(

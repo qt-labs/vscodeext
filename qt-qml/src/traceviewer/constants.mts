@@ -57,8 +57,6 @@ export const INSTALL_DIR_NAME = 'qmltraceviewer';
 export const INSTALL_INFO_FILE = 'installation.json';
 export const RELEASE_INFO_FILE = 'release.json';
 
-export const CONF_SECTION = 'qt-qml.profiler';
-export const CONF_CUSTOM_TRACE_VIEWER_EXE_PATH = 'customTraceViewerExePath';
 export const COMMAND_DOWNLOAD_VIEWER = 'downloadQmlTraceViewer';
 export const COMMAND_DOWNLOAD_VIEWER_FULL = `${EXTENSION_ID}.${COMMAND_DOWNLOAD_VIEWER}`;
 

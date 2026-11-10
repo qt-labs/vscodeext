@@ -12,7 +12,8 @@ import {
   createLogger,
   OSExeSuffix,
   QtInsRootConfigName,
-  compareVersions
+  compareVersions,
+  pythonSettings
 } from 'qt-lib';
 import { PySideEnv } from './env.mjs';
 import { PySideProject } from './project.mjs';
@@ -127,13 +128,9 @@ async function showMessageOrInstall(result: CheckResult) {
     const btnCreateUv = texts.install.popup.buttonCreateUvEnv;
     const btnSelect = texts.install.popup.buttonSelectEnv;
 
-    const preferUv = vscode.workspace
-      .getConfiguration(consts.COMMAND_PREFIX)
-      .get<boolean>(consts.CONFIG_PREFER_UV, false);
-
     const uvAvailable = isUvAvailable();
     const buttons = uvAvailable
-      ? preferUv
+      ? pythonSettings.preferUv.get(false)
         ? [btnCreateUv, btnCreate, btnSelect]
         : [btnCreate, btnCreateUv, btnSelect]
       : [btnCreate, btnSelect];

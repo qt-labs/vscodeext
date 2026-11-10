@@ -7,16 +7,15 @@ import * as vscode from 'vscode';
 import {
   CoreKey,
   createLogger,
+  csharpSettings,
   findQtKits,
   resolveConfiguration,
   type CoreAPI,
   type QtAdditionalPath
 } from 'qt-lib';
-import { EXTENSION_ID } from '@/constants.js';
 
 const logger = createLogger('qt-dir');
 
-const QT_DIR_SETTING = 'qtDir';
 const QT_DIR_VARIABLE = 'QtDir';
 
 /**
@@ -210,9 +209,7 @@ export async function selectQtDir(
     }
   }
 
-  await vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .update(QT_DIR_SETTING, qtDir, vscode.ConfigurationTarget.Global);
+  await csharpSettings.qtDir.updateGlobal(qtDir);
   logger.info(`Selected Qt for Qt Bridge projects: ${qtDir}`);
   return qtDir;
 }
@@ -230,7 +227,7 @@ export class QtDirTerminalEnvironment implements vscode.Disposable {
     this.update();
     this.disposables.push(
       vscode.workspace.onDidChangeConfiguration((event) => {
-        if (event.affectsConfiguration(`${EXTENSION_ID}.${QT_DIR_SETTING}`)) {
+        if (csharpSettings.qtDir.affectedBy(event)) {
           this.update();
         }
       }),
@@ -245,15 +242,13 @@ export class QtDirTerminalEnvironment implements vscode.Disposable {
     for (const folder of vscode.workspace.workspaceFolders ?? []) {
       const scoped = this.collection.getScoped({ workspaceFolder: folder });
       scoped.clear();
-      const configured = vscode.workspace
-        .getConfiguration(EXTENSION_ID, folder.uri)
-        .get<string>(QT_DIR_SETTING)
-        ?.trim();
+      const config = csharpSettings.forScope(folder.uri).qtDir;
+      const configured = config.get()?.trim();
       if (!configured) {
         continue;
       }
       const qtDir = resolveConfiguration(configured);
-      scoped.description = `QtDir from the ${EXTENSION_ID}.${QT_DIR_SETTING} setting`;
+      scoped.description = `QtDir from the ${config.name} setting`;
       scoped.replace(QT_DIR_VARIABLE, qtDir);
       logger.info(`Exporting QtDir=${qtDir} to terminals of ${folder.name}`);
     }

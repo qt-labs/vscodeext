@@ -12,17 +12,14 @@ import {
   QtWorkspaceConfigMessage,
   QtWorkspaceFeatures,
   createColorProvider,
-  CoreKey
+  CoreKey,
+  qmlSettings
 } from 'qt-lib';
 import { registerRestartQmllsCommand } from '@cmd/restart-qmlls.mjs';
 import { registerDownloadQmllsCommand } from '@cmd/download-qmlls.mjs';
 import { registerDebugPort } from '@cmd/debug.mjs';
 import { registerCheckQmllsUpdateCommand } from '@cmd/check-qmlls-update.mjs';
-import {
-  getDoNotAskForDownloadingQmlls,
-  Qmlls,
-  registerQmllsManifestWatcher
-} from '@/qmlls.mjs';
+import { Qmlls, registerQmllsManifestWatcher } from '@/qmlls.mjs';
 import * as installer from '@/installer.mjs';
 import * as consts from '@/constants.js';
 import {
@@ -139,8 +136,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 function checkQmllsReleaseInBackground() {
   // Perform the release check asynchronously in the background
-  const shouldCheck = !getDoNotAskForDownloadingQmlls();
-  if (shouldCheck) {
+  if (!qmlSettings.skipQmllsDownload.get(false)) {
     Qmlls.checkAssetAndDecide();
   }
 }

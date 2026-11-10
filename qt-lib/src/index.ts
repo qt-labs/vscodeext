@@ -19,3 +19,4 @@ export * from './qtbridge-csharp-api';
 export * from './msvc';
 export * from './disposable';
 export * from './dotnet';
+export * from './settings/settings';

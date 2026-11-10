@@ -12,7 +12,8 @@ import {
   CoreKey,
   QtAdditionalPath,
   telemetry,
-  compareVersions
+  compareVersions,
+  cppSettings
 } from 'qt-lib';
 import { registerMinGWgdbCommand } from '@cmd/mingw-gdb';
 import { registerResetCommand } from '@cmd/reset-qt-ext';
@@ -206,12 +207,7 @@ function checkCMakeToolsVersion(): void {
     return;
   }
 
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const disableWarning = config.get<boolean>(
-    'doNotWarnOutdatedCMakeTools',
-    false
-  );
-  if (disableWarning) {
+  if (cppSettings.skipOldCMakeWarning.get() ?? false) {
     return;
   }
 
@@ -229,11 +225,7 @@ function checkCMakeToolsVersion(): void {
           'ms-vscode.cmake-tools'
         );
       } else if (selection === doNotShowBtn) {
-        void config.update(
-          'doNotWarnOutdatedCMakeTools',
-          true,
-          vscode.ConfigurationTarget.Global
-        );
+        void cppSettings.skipOldCMakeWarning.updateGlobal(true);
       }
     });
 }

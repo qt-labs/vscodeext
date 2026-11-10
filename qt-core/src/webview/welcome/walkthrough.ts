@@ -3,6 +3,7 @@
 
 import * as vscode from 'vscode';
 
+import { smSettings } from 'qt-lib';
 import * as consts from './constants';
 
 export function isWalkthroughAvailable() {
@@ -14,11 +15,7 @@ export function isWalkthroughAvailable() {
 // Reads the qt-sm.getStartedDone flag, which qt-sm sets once the user
 // completes or dismisses the "Get Started with Qt" walkthrough.
 export function isGetStartedDone() {
-  return (
-    vscode.workspace
-      .getConfiguration(consts.QT_SM_CONFIG_SECTION)
-      .get<boolean>(consts.QT_SM_CONFIG_GET_STARTED_DONE) ?? false
-  );
+  return smSettings.getStartedDone.get(false);
 }
 
 export async function openWalkthrough() {

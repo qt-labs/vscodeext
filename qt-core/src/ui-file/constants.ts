@@ -10,9 +10,4 @@ export const COMMAND_OPEN_IN_WIDGETS_DESIGNER = 'openInWidgetsDesigner';
 // contributes > customEditors
 export const CUSTOM_EDITOR_TYPE = `${EXTENSION_ID}.uiFile`;
 
-// contributes > configuration
-export const CONF_SECTION = EXTENSION_ID;
-export const CONF_CUSTOM_WIDGETS_DESIGNER_EXE_PATH =
-  'customWidgetsDesignerExePath';
-
 export { EXTENSION_ID, COMMAND_SHOW_LOG };
