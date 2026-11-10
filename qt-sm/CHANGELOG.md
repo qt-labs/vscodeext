@@ -10,6 +10,7 @@
 - Pick up logins and logouts made by other Qt tools from the shared Qt.ini
 - Start the elevated helper when the Qt Software Management Service needs administrator rights
 - Forward the usage data opt-in of the walkthrough to the Qt Software Management Service as its telemetry setting
+- Offer to sign in when the Qt Software Management Service has no valid Qt Account credentials
 
 ⚠️ **Changed**
 
