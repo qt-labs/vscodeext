@@ -28,11 +28,11 @@
 
 import { spawn, type ChildProcess } from 'child_process';
 import * as net from 'net';
-import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 
 import {
+  IPC,
   Session,
   Packages,
   ServiceLauncher,
@@ -101,13 +101,6 @@ function log(msg: string): void {
 function fail(msg: string): never {
   log(`FAIL: ${msg}`);
   process.exit(1);
-}
-
-function defaultSocketPath(): string {
-  if (process.platform === 'win32') {
-    return '\\\\.\\pipe\\qtclient_socket';
-  }
-  return path.join(os.tmpdir(), 'qtclient_socket');
 }
 
 /** Wraps a promise with a timeout so tests can't hang */
@@ -711,7 +704,7 @@ async function main(): Promise<void> {
   const config = parseArgs();
   let serviceProcess: ChildProcess | undefined;
 
-  const socketPath = config.socketPath ?? defaultSocketPath();
+  const socketPath = config.socketPath ?? IPC.defaultSocket;
   log(`Socket path: ${socketPath}`);
 
   try {

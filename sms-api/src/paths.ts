@@ -12,6 +12,41 @@
 import * as os from 'os';
 import * as path from 'path';
 
+// sockaddr_un::sun_path holds 104 bytes on macOS and 108 on Linux, including
+// the terminating NUL byte.
+const MAX_SOCKET_PATH_BYTES = 103;
+
+/**
+ * The local socket of the service, section 3.1 of the IPC protocol. On
+ * Windows it is the named pipe `\\.\pipe\<name>`. On Linux and macOS it is
+ * `<name>` in the temporary directory, unless that path is too long for a
+ * Unix socket: then it is in `$XDG_RUNTIME_DIR`, or in `/tmp` with the user
+ * ID appended when that is not set or is also too long. This mirrors
+ * `QInstaller::IPC::localSocketPath()`, so the client and the service
+ * resolve the same path.
+ */
+export function localSocketPath(name = 'qtclient_socket'): string {
+  if (process.platform === 'win32') {
+    return `\\\\.\\pipe\\${name}`;
+  }
+  const fits = (candidate: string) =>
+    Buffer.byteLength(candidate) <= MAX_SOCKET_PATH_BYTES;
+
+  const inTemp = path.join(os.tmpdir(), name);
+  if (fits(inTemp)) {
+    return inTemp;
+  }
+  const runtimeDir = process.env.XDG_RUNTIME_DIR;
+  if (runtimeDir) {
+    const inRuntime = `${runtimeDir}/${name}`;
+    if (fits(inRuntime)) {
+      return inRuntime;
+    }
+  }
+  const uid = process.getuid?.();
+  return `/tmp/${name}-${uid === undefined ? '' : String(uid)}`;
+}
+
 /**
  * `QStandardPaths::GenericDataLocation`:
  *   Linux:   `$XDG_DATA_HOME` or `~/.local/share`

@@ -364,21 +364,15 @@ export enum SettingsPersistence {
 
 // ── IPC Constants ────────────────────────────────────────────────────────────
 
-import * as os from 'os';
-import * as path from 'path';
-
-/**
- * Default IPC socket/pipe path.
- * Qt's QLocalServer uses named pipes on Windows (`\\.\pipe\<name>`)
- * and Unix domain sockets in the temp directory on Linux/macOS.
- */
-const defaultSocketPath =
-  process.platform === 'win32'
-    ? '\\\\.\\pipe\\qtclient_socket'
-    : path.join(os.tmpdir(), 'qtclient_socket');
+import { localSocketPath } from './paths';
 
 export const IPC = {
-  defaultSocket: defaultSocketPath,
+  /**
+   * The socket of the service: the named pipe on Windows, `qtclient_socket`
+   * in the temporary directory on Linux and macOS, or its fallback location
+   * when that path is too long for a Unix socket (see `localSocketPath`).
+   */
+  defaultSocket: localSocketPath(),
 
   /** Client requests. `planned` ones answer with error 12000 for now. */
   methods: {
