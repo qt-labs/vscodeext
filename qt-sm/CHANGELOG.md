@@ -11,6 +11,7 @@
 - Start the elevated helper when the Qt Software Management Service needs administrator rights
 - Forward the usage data opt-in of the walkthrough to the Qt Software Management Service as its telemetry setting
 - Offer to sign in when the Qt Software Management Service has no valid Qt Account credentials
+- Add the `qt-sm.autoRemoveUnneeded` setting, on by default: a removal also takes the packages that nothing else needs any more
 
 ⚠️ **Changed**
 
@@ -18,7 +19,7 @@
 - Update the walkthrough to the "Install Qt" design
 - Follow the updated service protocol: identify the extension with every request, show package display names, and keep quiet when the user declines a license agreement
 - Name the installation root in every service request instead of storing it in the service, which keeps no installation root any more, and check a new installation path with the service before saving it
-- Remove installed Qt versions through the Qt Software Management Service, which also removes what nothing else needs any more; the removal is confirmed once, before it starts
+- Remove installed Qt versions through the Qt Software Management Service; the removal is confirmed once, with a short dialog, before it starts
 - List the installed Qt versions and their packages from the Qt Software Management Service instead of the disk; the service is started when the extension activates, without blocking it, and the Installed Packages view shows a progress bar until the versions arrive
 - Show the running install or removal at the top of the Installed Packages view, with its progress bar, instead of an empty view while the first version downloads
 
