@@ -53,7 +53,12 @@ import {
 
 import { installBootstrap } from '@/bootstrap';
 import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
-import { registerInstalledPackagesView } from '@/installed-packages-view';
+import {
+  loadInstalledPackagesAfter,
+  refreshInstalledPackages,
+  registerInstalledPackagesView,
+  scheduleInstalledPackagesRefresh
+} from '@/installed-packages-view';
 import { publishQtToolsPaths, watchQtToolsOnDisk } from '@/qt-tools-store';
 import { initLatestFrameworkState } from '@/latest-framework';
 
@@ -242,11 +247,16 @@ export async function activate(context: vscode.ExtensionContext) {
   watchInstalledPackagesOnDisk(context, () => {
     refreshWalkthrough();
     void refreshLatestFrameworkState();
-    // Keep the Installed Packages view and its context key in sync too.
-    syncInstalledPackages();
+    // An install or removal made outside the extension changed the
+    // service's records too; re-read them once the events settle.
+    scheduleInstalledPackagesRefresh();
   });
 
-  void installBootstrap();
+  // The Installed Packages view lists what the service has installed. Start
+  // the service now, without blocking the activation: the view shows a
+  // progress bar until the service is connected and has answered.
+  registerInstalledPackagesView(context);
+  loadInstalledPackagesAfter(installBootstrap());
 
   coreAPI = await getCoreApi();
   if (!coreAPI) {
@@ -269,10 +279,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // Activity bar account view
   const accountViewProvider = registerAccountView(context);
 
-  // Activity bar installed packages view (visible while packages exist)
-  registerInstalledPackagesView(context);
-  syncInstalledPackages();
-
   // Update both the account view and the walkthrough's account label.
   const setAccountSession = (
     session: vscode.AuthenticationSession | undefined
@@ -288,7 +294,6 @@ export async function activate(context: vscode.ExtensionContext) {
     logger.info(`Already logged in as ${sessions[0].account.label}`);
     setLoggedIn(true);
     setAccountSession(sessions[0]);
-    syncInstalledPackages();
   } else {
     logger.info('No stored credentials found, user is not logged in');
     setLoggedIn(false);
@@ -306,7 +311,6 @@ export async function activate(context: vscode.ExtensionContext) {
         // Re-render (after the account label is known) so the sign-in step
         // shows the signed-in account and its Sign Out action.
         refreshWalkthrough();
-        syncInstalledPackages();
       } else if (e.removed && e.removed.length > 0) {
         setLoggedIn(false);
         setAccountSession(undefined);
@@ -372,6 +376,10 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.removePackage`,
       removePackage
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.refreshInstalledPackages`,
+      async () => refreshInstalledPackages()
     ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.installRequiredExtensions`,

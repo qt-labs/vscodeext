@@ -98,7 +98,17 @@ async function startElevatedHelper(
   return ready;
 }
 
-export async function ensureConnected(): Promise<Session> {
+export interface ConnectOptions {
+  /**
+   * Start the service without the "Starting..." notification. For callers
+   * that show their own progress, such as the Installed Packages view.
+   */
+  silent?: boolean;
+}
+
+export async function ensureConnected(
+  options?: ConnectOptions
+): Promise<Session> {
   if (session?.isConnected) {
     logger.info('Already connected to service');
     return session;
@@ -116,14 +126,16 @@ export async function ensureConnected(): Promise<Session> {
     });
   }
 
-  const started = await vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: 'Starting Qt Software Management Service...',
-      cancellable: false
-    },
-    async () => launcher?.startService()
-  );
+  const started = options?.silent
+    ? await launcher.startService()
+    : await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Starting Qt Software Management Service...',
+          cancellable: false
+        },
+        async () => launcher?.startService()
+      );
 
   if (!started) {
     const err = launcher.lastError;
