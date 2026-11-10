@@ -695,14 +695,12 @@ export async function removePackage(
   const autoRemove = vscode.workspace
     .getConfiguration(EXTENSION_ID)
     .get<boolean>(CONF_AUTO_REMOVE_UNNEEDED, true);
+  // The dialog only asks about the version. Whether the packages nothing
+  // else needs go too is the autoRemoveUnneeded setting, and the log says
+  // what the removal took.
   const confirm = await vscode.window.showWarningMessage(
     `Remove Qt ${version}?`,
-    {
-      modal: true,
-      ...(autoRemove
-        ? { detail: 'Packages that nothing else needs are removed too.' }
-        : {})
-    },
+    { modal: true },
     'Remove'
   );
   if (confirm !== 'Remove') {
