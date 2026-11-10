@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import { resolveConfiguration } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
-import { isInstalling } from '@/install-state';
+import { isPackageOperationRunning } from '@/install-state';
 
 /**
  * Check whether a Qt version is installed on disk.
@@ -86,11 +86,11 @@ export function watchInstalledPackagesOnDisk(
     }
     const installRoot = resolveConfiguration(rawPath);
 
-    // Ignore disk churn while an install is writing into the folder — the
-    // intermediate states are noise. The install flow refreshes the
-    // walkthrough itself once it completes.
+    // Ignore disk churn while an install or a removal is changing the
+    // folder — the intermediate states are noise. The operation refreshes
+    // the walkthrough itself once it completes.
     const handle = () => {
-      if (isInstalling()) {
+      if (isPackageOperationRunning()) {
         return;
       }
       onChange();

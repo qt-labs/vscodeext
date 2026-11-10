@@ -15,7 +15,7 @@ import {
   type QtToolsPaths
 } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
-import { isInstalling } from '@/install-state';
+import { isPackageOperationRunning } from '@/install-state';
 import { coreAPI } from '@/extension';
 
 const logger = createLogger('qt-tools-store');
@@ -138,9 +138,9 @@ export function watchQtToolsOnDisk(
     const pattern = new vscode.RelativePattern(vscode.Uri.file(tools), '*');
     const watcher = vscode.workspace.createFileSystemWatcher(pattern);
     const handle = () => {
-      // qt-sm's own installs publish explicitly once finished; ignore the
-      // intermediate disk churn they produce.
-      if (isInstalling()) {
+      // qt-sm's own installs and removals publish explicitly once finished;
+      // ignore the intermediate disk churn they produce.
+      if (isPackageOperationRunning()) {
         return;
       }
       onChange();
