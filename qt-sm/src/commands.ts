@@ -16,6 +16,7 @@ import {
   type LicenseAnswer,
   type UserPrompt,
   type UserPromptReply,
+  ErrorCategory,
   ErrorCode,
   InstallState,
   SmsServiceError,
@@ -210,6 +211,24 @@ async function handleUserPrompt(prompt: UserPrompt): Promise<UserPromptReply> {
   }
 }
 
+/**
+ * The service has no valid credentials (error 3000), or the backend
+ * rejected them (3001). Signing in again is what helps, so offer it.
+ */
+function offerSignIn(err: SmsServiceError): void {
+  const signIn = 'Sign In';
+  void vscode.window
+    .showErrorMessage(
+      `Sign in to your Qt Account to continue: ${err.message}`,
+      signIn
+    )
+    .then((pick) => {
+      if (pick === signIn && authProviderInstance) {
+        void login(authProviderInstance);
+      }
+    });
+}
+
 async function withService<T>(
   action: (packages: Packages) => Promise<T>
 ): Promise<T | undefined> {
@@ -218,6 +237,13 @@ async function withService<T>(
     const packages = new Packages(session);
     return await action(packages);
   } catch (err) {
+    if (
+      err instanceof SmsServiceError &&
+      err.category === ErrorCategory.Authentication
+    ) {
+      offerSignIn(err);
+      return undefined;
+    }
     const msg = err instanceof Error ? err.message : String(err);
     void vscode.window.showErrorMessage(`Service error: ${msg}`);
     return undefined;
