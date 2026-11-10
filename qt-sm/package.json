@@ -235,6 +235,12 @@
           "description": "Reset license agreement consents after each install so the license review is always shown (alpha testing)",
           "scope": "machine"
         },
+        "qt-sm.autoRemoveUnneeded": {
+          "type": "boolean",
+          "default": true,
+          "description": "When removing a Qt version, also remove the packages that nothing else needs any more, such as its modules and the build tools it brought along.",
+          "scope": "machine"
+        },
         "qt-sm.getStartedDone": {
           "type": "boolean",
           "default": false,

@@ -9,6 +9,9 @@ export const CLIENT_AUTHOR = 'The Qt Company';
 export const CONF_USER_AGENT = 'vscode-sms';
 export const CONF_USER_AGENT_NAME = 'Qt Software Management VS Code';
 export const CONF_RESET_LICENSE_AFTER_INSTALL = 'resetLicenseBeforeInstall';
+// Whether a removal also takes the packages nothing else needs any more
+// (the autoRemove option of packages/remove).
+export const CONF_AUTO_REMOVE_UNNEEDED = 'autoRemoveUnneeded';
 // Global flag (ConfigurationTarget.Global) that the "Get Started with Qt"
 // walkthrough sets when the user marks it done. Other extensions (e.g. qt-core)
 // read it via workspace.getConfiguration('qt-sm').get('getStartedDone').
