@@ -15,7 +15,7 @@ import {
   openWalkthrough
 } from './walkthrough';
 import * as consts from './constants';
-import { createWrappedLogger } from 'qt-lib';
+import { createWrappedLogger, coreSettings } from 'qt-lib';
 
 type Panel = vscode.WebviewPanel;
 type Context = vscode.ExtensionContext;
@@ -58,10 +58,7 @@ export async function showEntryPage(context: Context) {
     return;
   }
 
-  const key = consts.CONFIG_KEY_SHOW_ON_ACTIVATION;
-  const config = vscode.workspace.getConfiguration(consts.EXTENSION_ID);
-
-  if (config.get<boolean>(key) ?? true) {
+  if (coreSettings.showWelcomePage.get() ?? true) {
     WelcomePageController.render(context);
   }
 }

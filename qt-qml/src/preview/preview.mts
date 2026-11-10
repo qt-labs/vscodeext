@@ -13,7 +13,8 @@ import {
   QtWorkspaceFeatures,
   CoreKey,
   type QtBridgePreviewLaunch,
-  type QtBridgeProject
+  type QtBridgeProject,
+  qmlSettings
 } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
@@ -69,12 +70,10 @@ function createPreviewManager() {
 function createPreviewManagerForBuildDirs(projectBuildDirs: readonly string[]) {
   const manager = new QmlPreviewConnectionManager();
   manager.setupFileWatcher();
-
-  const additionalBuildDirs = getPreviewConfig().get<string[]>(
-    'additionalBuildDirs',
-    []
-  );
-  manager.buildDirs = [...projectBuildDirs, ...additionalBuildDirs];
+  manager.buildDirs = [
+    ...projectBuildDirs,
+    ...qmlSettings.preview.additionalBuildDirs.get([])
+  ];
 
   return manager;
 }
@@ -86,10 +85,6 @@ async function resolveCMakeProgram() {
 
 function buildPreviewArgs(host: string, port: number) {
   return `-qmljsdebugger=host:${host},port:${port.toString()},block,services:QmlPreview,DebugTranslation`;
-}
-
-function getPreviewConfig() {
-  return vscode.workspace.getConfiguration('qt-qml.preview');
 }
 
 /**
@@ -174,7 +169,7 @@ async function launchCMakePreview(qmlFile?: string) {
   });
 
   const previewArgs = buildPreviewArgs(host, port);
-  const additionalArgs = getPreviewConfig().get<string[]>('args', []);
+  const additionalArgs = qmlSettings.preview.args.get([]);
   const command = `${program} ${previewArgs}`;
   logger.info(`Command: ${command} ${additionalArgs.join(' ')}`);
 
@@ -256,7 +251,7 @@ async function launchQtBridgePreview(
   // Keep Bridge startup paused until the preview client attaches. Qt consumes
   // this argument before the remaining argv is forwarded to managed Main.
   const previewArgs = buildPreviewArgs(host, port);
-  const additionalArgs = getPreviewConfig().get<string[]>('args', []);
+  const additionalArgs = qmlSettings.preview.args.get([]);
   let launch: QtBridgePreviewLaunch | undefined;
   let manager: QmlPreviewConnectionManager | undefined;
 
@@ -391,7 +386,7 @@ async function launchPySidePreview(
   });
 
   const previewArgs = buildPreviewArgs(host, port);
-  const additionalArgs = getPreviewConfig().get<string[]>('args', []);
+  const additionalArgs = qmlSettings.preview.args.get([]);
   const allArgs = [previewArgs, ...additionalArgs];
 
   try {

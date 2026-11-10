@@ -9,16 +9,16 @@ import {
   QtAdditionalPath,
   getVCPKGRoot,
   searchForQtPathsInVCPKG,
-  telemetry
+  telemetry,
+  coreSettings
 } from 'qt-lib';
 import { getCurrentGlobalAdditionalQtPaths } from '@/installation-root';
-import { EXTENSION_ID } from '@/constants';
 import { addQtPathToSettings } from '@/qtpaths';
 
 const logger = createLogger('vcpkg');
 
 export function checkVcpkg() {
-  if (getDoNotAskForVCPKG()) {
+  if (coreSettings.skipVcpkgPrompt.get(false)) {
     logger.info('Do not ask for vcpkg');
     return;
   }
@@ -52,7 +52,7 @@ export function checkVcpkg() {
           addQtPathToSettings({ path: qtPath, isVCPKG: true });
         } else if (value === doNotShowAgain) {
           telemetry.sendConfig('doNotAskForVCPKG');
-          void setDoNotAskForVCPKG(true);
+          void coreSettings.skipVcpkgPrompt.updateGlobal(true);
           logger.info('setting doNotAskForVCPKG to true');
         }
       });
@@ -70,18 +70,4 @@ function containsQtPath(qtPath: string, additionalQtPaths: QtAdditionalPath[]) {
 
 function isVCPKGInstalled(): boolean {
   return commandExists.sync('vcpkg');
-}
-
-function getDoNotAskForVCPKG(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(EXTENSION_ID)
-      .get<boolean>('doNotAskForVCPKG') ?? false
-  );
-}
-
-async function setDoNotAskForVCPKG(value: boolean) {
-  await vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .update('doNotAskForVCPKG', value, vscode.ConfigurationTarget.Global);
 }

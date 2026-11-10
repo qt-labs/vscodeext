@@ -16,12 +16,12 @@ import {
   IsWindows,
   IsMacOS,
   IsLinux,
-  IsArm64
+  IsArm64,
+  qmlSettings
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
 import * as downloader from '@/downloader.js';
 import { sha256OfFile, digestMatches } from '@/integrity.js';
-import { setDoNotAskForDownloadingQmlls } from '@/qmlls.mjs';
 import {
   VersionedInstallations,
   type InstallVersion
@@ -286,7 +286,7 @@ export async function getUserConsent(isNewInstall: boolean): Promise<boolean> {
     doNotShowAgain
   );
   if (ans === doNotShowAgain) {
-    void setDoNotAskForDownloadingQmlls(true);
+    await qmlSettings.skipQmllsDownload.updateGlobal(true);
   }
   return ans === prompt;
 }

@@ -20,11 +20,7 @@ export const BUG_REPORT_URL =
 
 export const FALLBACK_IMAGE_FILE_IN_RES = 'qt-blog.jpg';
 
-export const CONFIG_KEY_SHOW_ON_ACTIVATION = 'showWelcomePageOnActivation';
-
 export const QT_SM_EXTENSION_ID = 'theqtcompany.qt-sm';
-export const QT_SM_CONFIG_SECTION = 'qt-sm';
-export const QT_SM_CONFIG_GET_STARTED_DONE = 'getStartedDone';
 export const QT_SM_WALKTHROUGH_COMMAND = 'qt-sm.openWalkthrough';
 
 export { EXTENSION_ID } from '@/constants';

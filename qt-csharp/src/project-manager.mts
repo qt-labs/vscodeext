@@ -10,7 +10,8 @@ import {
   resolveConfiguration,
   type CoreAPI,
   type QtBridgeMetadataChangeEvent,
-  type QtBridgeProject
+  type QtBridgeProject,
+  csharpSettings
 } from 'qt-lib';
 import {
   discoverQtBridgeMetadata,
@@ -72,7 +73,8 @@ export class QtBridgeProjectManager implements vscode.Disposable {
       }),
       vscode.workspace.onDidChangeConfiguration((event) => {
         for (const folder of vscode.workspace.workspaceFolders ?? []) {
-          if (event.affectsConfiguration(`${EXTENSION_ID}.qtDir`, folder.uri)) {
+          const config = csharpSettings.forScope(folder.uri).qtDir;
+          if (config.affectedBy(event)) {
             this.scheduleRefresh(folder);
           }
         }
@@ -383,10 +385,7 @@ export class QtBridgeProjectManager implements vscode.Disposable {
   private getQtDirFallbacks(
     folder: vscode.WorkspaceFolder
   ): QtBridgeQtDirFallbacks {
-    const qtDir = vscode.workspace
-      .getConfiguration(EXTENSION_ID, folder.uri)
-      .get<string>('qtDir')
-      ?.trim();
+    const qtDir = csharpSettings.forScope(folder.uri).qtDir.get()?.trim();
     const configuredQtDir = qtDir ? resolveConfiguration(qtDir) : undefined;
     const selectedQtPaths =
       this.coreApi?.getValue<string>(folder, CoreKey.SELECTED_QT_PATHS) ??

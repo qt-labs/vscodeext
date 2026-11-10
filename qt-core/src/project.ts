@@ -6,17 +6,16 @@ import * as vscode from 'vscode';
 import { isEmpty, isEqual } from 'lodash';
 
 import {
-  AdditionalQtPathsName,
   createLogger,
   CoreKey,
-  QtInsRootConfigName,
   QtAdditionalPath,
   compareQtAdditionalPath,
   telemetry,
-  resolveConfiguration
+  resolveConfiguration,
+  coreSettings
 } from 'qt-lib';
 import { Project, ProjectManager } from 'qt-lib';
-import { convertAdditionalQtPaths, getConfiguration } from '@/util';
+import { convertAdditionalQtPaths } from '@/util';
 import { GlobalStateManager, WorkspaceStateManager } from '@/state';
 import {
   getCurrentGlobalQtInstallationRoot,
@@ -188,40 +187,33 @@ export class CoreProjectManager extends ProjectManager<CoreProject> {
     );
   }
   public static getWorkspaceFolderQtInsRoot(folder: vscode.WorkspaceFolder) {
-    const qtInsRootConfig =
-      getConfiguration(folder).inspect<string>(QtInsRootConfigName);
-    const workspaceFolderValue = qtInsRootConfig?.workspaceFolderValue;
-    return workspaceFolderValue
-      ? resolveConfiguration(workspaceFolderValue)
-      : '';
+    const v = coreSettings
+      .forScope(folder)
+      .insRoot.inspect()?.workspaceFolderValue;
+
+    return v ? resolveConfiguration(v) : '';
   }
 
   public static getWorkspaceFolderAdditionalQtPaths(
     folder: vscode.WorkspaceFolder
   ): QtAdditionalPath[] {
-    const config = getConfiguration(folder).inspect<(string | object)[]>(
-      AdditionalQtPathsName
-    );
-    if (config?.workspaceFolderValue) {
-      return convertAdditionalQtPaths(config.workspaceFolderValue);
-    }
-    return [];
+    const v = coreSettings
+      .forScope(folder)
+      .additionalQtPaths.inspect()?.workspaceFolderValue;
+
+    return v ? convertAdditionalQtPaths(v) : [];
   }
   public addWorkspaceFile(workspaceFile: vscode.Uri) {
     this.workspaceFile = workspaceFile;
     this.watchWorkspaceFileConfig(this.context);
   }
   private getWorkspaceFileQtInsRoot() {
-    const qtInsRootConfig = getConfiguration(
-      this.workspaceFile
-    ).inspect<string>(QtInsRootConfigName);
-    return qtInsRootConfig?.workspaceValue ?? '';
+    const config = coreSettings.forScope(this.workspaceFile).insRoot;
+    return config.inspect()?.workspaceValue ?? '';
   }
   private getWorkspaceFileQtAdditionalPaths() {
-    const additionalQtPaths = getConfiguration(
-      this.workspaceFile
-    ).inspect<string>(AdditionalQtPathsName);
-    return additionalQtPaths?.workspaceValue ?? '';
+    const config = coreSettings.forScope(this.workspaceFile).additionalQtPaths;
+    return config.inspect()?.workspaceValue ?? '';
   }
   private watchWorkspaceFileConfig(context: vscode.ExtensionContext) {
     context.subscriptions.push(

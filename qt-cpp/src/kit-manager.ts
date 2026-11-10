@@ -29,14 +29,14 @@ import {
   MsvcToolchainNoArchRegexp,
   MsvcYearInNameRegexp,
   VsMajorVersionRegexp,
-  VsMajorVersionToYear
+  VsMajorVersionToYear,
+  cppSettings
 } from 'qt-lib';
 import * as qtPath from '@util/get-qt-paths';
 import { CppProject, CppProjectType } from '@/project';
 import { coreAPI } from '@/extension';
 import { GlobalStateManager } from '@/state';
 import { IsQtKit } from '@cmd/register-qt-path';
-import { EXTENSION_ID } from '@/constants';
 import { QtVersionFromKit } from '@util/util';
 
 const logger = createLogger('kit-manager');
@@ -167,24 +167,13 @@ export class KitManager {
     return path.join(folder.uri.fsPath, '.vscode', 'cmake-kits.json');
   }
 
-  private static isAutoKitGenerationDisabled(
-    workspaceFolder?: vscode.WorkspaceFolder
-  ): boolean {
-    const config = vscode.workspace.getConfiguration(
-      EXTENSION_ID,
-      workspaceFolder
-    );
-    return config.get<boolean>('disableAutoKitGenerationOnOpen', false);
-  }
-
   private static shouldSkipAutoKitGeneration(
     force: boolean,
     workspaceFolder?: vscode.WorkspaceFolder
   ): boolean {
-    if (force) {
-      return false;
-    }
-    return KitManager.isAutoKitGenerationDisabled(workspaceFolder);
+    return force
+      ? false
+      : cppSettings.forScope(workspaceFolder).skipAutoKitGen.get(false);
   }
 
   public async checkForAllQtInstallations(force = false) {
@@ -924,7 +913,7 @@ export async function tryToUseCMakeFromQtTools() {
     return;
   }
 
-  if (getDoNotAskForCMakePath()) {
+  if (cppSettings.skipCMakePathPrompt.get(false)) {
     logger.info('doNotAskForCMakePath is set');
     return;
   }
@@ -957,7 +946,7 @@ export async function tryToUseCMakeFromQtTools() {
       if (selection === use) {
         setCMakePath();
       } else if (selection === 'Do not ask again') {
-        void setDoNotAskForCMakePath(true);
+        void cppSettings.skipCMakePathPrompt.updateGlobal(true);
       }
     });
 }
@@ -1010,17 +999,4 @@ function analyzeToolchain(kit: Kit) {
   }
 
   return undefined;
-}
-async function setDoNotAskForCMakePath(value: boolean) {
-  await vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .update('doNotAskForCMakePath', value, vscode.ConfigurationTarget.Global);
-}
-
-function getDoNotAskForCMakePath(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(EXTENSION_ID)
-      .get<boolean>('doNotAskForCMakePath') ?? false
-  );
 }

@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 
-import { createLogger, telemetry } from 'qt-lib';
+import { cppSettings, createLogger, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
 import { getActiveProject } from '@/project';
 
@@ -23,25 +23,16 @@ export function registerSourceDirectoryCommand() {
       }
       const sourceDir = await project.getSourceDirectory();
       if (!sourceDir) {
-        const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-        const doNotWarn = config.get<boolean>(
-          'doNotWarnMissingSourceDir',
-          false
-        );
         const message =
           'Source directory cannot be determined for the active project.';
         logger.error(message);
-        if (!doNotWarn) {
+        if (!cppSettings.skipMissingSrcDirWarning.get(false)) {
           const doNotAskBtn = 'Do not show again';
           void vscode.window
             .showWarningMessage(message, doNotAskBtn)
             .then((result) => {
               if (result === doNotAskBtn) {
-                void config.update(
-                  'doNotWarnMissingSourceDir',
-                  true,
-                  vscode.ConfigurationTarget.Global
-                );
+                void cppSettings.skipMissingSrcDirWarning.updateGlobal(true);
               }
             });
         }

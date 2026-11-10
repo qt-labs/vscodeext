@@ -22,16 +22,15 @@ import {
   telemetry,
   resolveConfiguration,
   PySideEnvData,
-  QtWorkspaceFeatures
+  QtWorkspaceFeatures,
+  qmlSettings
 } from 'qt-lib';
 import { coreAPI, projectManager } from '@/extension.mjs';
-import { EXTENSION_ID } from '@/constants.js';
 import * as installer from '@/installer.mjs';
 import { QmllsOperationType } from '@/qmlls-queue.mjs';
 import type { QtBridgeQmllsSessionConfig } from '@/qtbridge-qmlls-update.mjs';
 
 const logger = createLogger('qmlls');
-const QMLLS_CONFIG = `${EXTENSION_ID}.qmlls`;
 const QmllsStopTimeoutMs = 5000;
 
 interface QmllsExeConfig {
@@ -77,24 +76,6 @@ function normalizeQmllsPath(filePath: string | undefined): string | undefined {
   }
 
   return normalizedPath;
-}
-
-export async function setDoNotAskForDownloadingQmlls(value: boolean) {
-  await vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .update(
-      'doNotAskForQmllsDownload',
-      value,
-      vscode.ConfigurationTarget.Global
-    );
-}
-
-export function getDoNotAskForDownloadingQmlls(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(EXTENSION_ID)
-      .get<boolean>('doNotAskForQmllsDownload') ?? false
-  );
 }
 
 export async function fetchAssetAndDecide(options?: {
@@ -248,7 +229,8 @@ export class Qmlls {
 
   constructor(readonly _folder: vscode.WorkspaceFolder) {
     const eventHandler = vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration(QMLLS_CONFIG, _folder)) {
+      const configs = qmlSettings.qmllsFor(_folder).section;
+      if (configs.affectedBy(event)) {
         void this.restart();
       }
     });
@@ -372,15 +354,12 @@ export class Qmlls {
   }
 
   public async start() {
-    const configs = vscode.workspace.getConfiguration(
-      QMLLS_CONFIG,
-      this._folder
-    );
+    const config = qmlSettings.qmllsFor(this._folder);
     if (this._client?.needsStop()) {
       logger.info('QML Language Server is already running or starting');
       return;
     }
-    if (!configs.get<boolean>('enabled', false)) {
+    if (!config.enabled.get(false)) {
       telemetry.sendConfig('QmllsDisabled');
       logger.info('QML Language Server is disabled in the settings');
       Qmlls.runningInstalledVersion = undefined;
@@ -393,8 +372,8 @@ export class Qmlls {
       // leaving the previously adopted identity behind, which would make the
       // manifest watcher restart clients that are not running that install.
       Qmlls.runningInstalledVersion = undefined;
-      if (configs.get<string>('customExePath')) {
-        const customPath = configs.get<string>('customExePath') ?? '';
+      if (config.customExePath.get()) {
+        const customPath = config.customExePath.get() ?? '';
         const resolvedCustomPath = resolveConfiguration(customPath);
         const res = spawnSync(resolvedCustomPath, ['--help'], {
           timeout: 1000
@@ -456,12 +435,9 @@ export class Qmlls {
   }
 
   private startLanguageClient(qmllsPath: string) {
-    const configs = vscode.workspace.getConfiguration(
-      QMLLS_CONFIG,
-      this._folder
-    );
-    const verboseOutput = configs.get<boolean>('verboseOutput', false);
-    const traceLsp = configs.get<string>('traceLsp', 'off');
+    const config = qmlSettings.qmllsFor(this._folder);
+    const verboseOutput = config.verboseOutput.get() ?? false;
+    const traceLsp = config.traceLsp.get() ?? 'off';
 
     if (!this._channel) {
       this._channel = vscode.window.createOutputChannel(
@@ -470,7 +446,7 @@ export class Qmlls {
       );
     }
     let args: string[] = [];
-    const customArgs = configs.get<string[]>('customArgs', []);
+    const customArgs = config.customArgs.get() ?? [];
     if (customArgs.length > 0) {
       args = customArgs.map((arg) => {
         return resolveConfiguration(arg);
@@ -480,11 +456,7 @@ export class Qmlls {
         args.push('--verbose');
       }
 
-      const useQmlImportPathEnvVar = configs.get<boolean>(
-        'useQmlImportPathEnvVar',
-        false
-      );
-      if (useQmlImportPathEnvVar) {
+      if (config.useQmlImportPathEnvVar.get(false)) {
         args.push('-E');
       }
 
@@ -492,10 +464,7 @@ export class Qmlls {
         args.push(`-b${this._buildDir}`);
       }
 
-      const additionalImportPaths = configs.get<string[]>(
-        'additionalImportPaths',
-        []
-      );
+      const additionalImportPaths = config.additionalImportPaths.get([]);
 
       if (coreAPI) {
         const workspaceFeatures = coreAPI.getValue<QtWorkspaceFeatures>(
@@ -516,7 +485,7 @@ export class Qmlls {
         }
       }
 
-      let docsPath = configs.get<string>('customDocsPath', '');
+      let docsPath = config.customDocsPath.get('');
       if (docsPath) {
         // If qt-qml.qmlls.customDocsPath is set, use it instead of the path from the kit
         docsPath = resolveConfiguration(docsPath);
@@ -554,9 +523,7 @@ export class Qmlls {
         args.push(toImportParam(importPath));
       });
 
-      const useNoCMakeCalls =
-        this._useNoCMakeCalls || configs.get<boolean>('useNoCMakeCalls', false);
-      if (useNoCMakeCalls) {
+      if (this._useNoCMakeCalls || config.useNoCMakeCalls.get(false)) {
         args.push('--no-cmake-calls');
       }
     }

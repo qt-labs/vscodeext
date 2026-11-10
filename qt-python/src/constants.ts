@@ -33,7 +33,3 @@ export const PYSIDE_PROJECT_TOOL = 'pyside6-project';
 export const MAINT_WHEEL_DIR_NAME = 'QtForPython';
 
 export const UV_DEFAULT_VENV_DIR = '.venv';
-
-// contributes > configruation
-export const CONFIG_PREFER_UV = 'preferUv';
-export const CONFIG_DO_NOT_WARN_OLD_PROJECTS = 'doNotWarnAboutOldStyleProjects';

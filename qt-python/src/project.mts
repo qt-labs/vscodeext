@@ -14,7 +14,8 @@ import {
   ConfigType,
   QtWorkspaceConfigMessage,
   CoreKey,
-  QtWorkspaceFeatures
+  QtWorkspaceFeatures,
+  pythonSettings
 } from 'qt-lib';
 import { PySideEnv } from './env.mjs';
 import { PySideProjectInfo } from './types.js';
@@ -88,7 +89,7 @@ export class PySideProject implements Project {
       path.join(this._folder.uri.fsPath, consts.TOML_PROJECT_FILE_NAME)
     );
 
-    if (!this._info && !getDoNotWarnOldStyleProjects()) {
+    if (!this._info && !pythonSettings.skipOldStyleWarning.get(false)) {
       await checkOldStyleProject(this._folder);
     }
 
@@ -159,25 +160,7 @@ async function checkOldStyleProject(folder: Folder) {
 
       void vscode.env.openExternal(vscode.Uri.parse(docUrl));
     } else if (value === btnOpt) {
-      void setDoNotWarnOldStyleProjects(true);
+      void pythonSettings.skipOldStyleWarning.updateGlobal(true);
     }
   });
-}
-
-async function setDoNotWarnOldStyleProjects(value: boolean) {
-  await vscode.workspace
-    .getConfiguration(consts.EXTENSION_ID)
-    .update(
-      consts.CONFIG_DO_NOT_WARN_OLD_PROJECTS,
-      value,
-      vscode.ConfigurationTarget.Global
-    );
-}
-
-function getDoNotWarnOldStyleProjects(): boolean {
-  return (
-    vscode.workspace
-      .getConfiguration(consts.EXTENSION_ID)
-      .get<boolean>(consts.CONFIG_DO_NOT_WARN_OLD_PROJECTS) ?? false
-  );
 }
