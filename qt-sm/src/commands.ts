@@ -51,12 +51,13 @@ import {
 } from '@/auth-provider';
 import { showLicenseAgreementPanel } from '@/license-panel';
 import {
+  isFrameworkPackage,
   isVersionInstalledOnDisk,
-  isAnyVersionInstalledOnDisk
+  packageLabel
 } from '@/installed-packages-store';
 import {
   type InstalledPackageItem,
-  refreshInstalledPackagesView
+  refreshInstalledPackages
 } from '@/installed-packages-view';
 import {
   isWalkthroughOpen,
@@ -101,11 +102,6 @@ function formatSize(bytes: number): string {
     return `${String(bytes)} B`;
   }
   return `${(bytes / Math.pow(1024, index)).toFixed(1)} ${unit}`;
-}
-
-/** The name to show for a package: its display name, else its name or id. */
-function packageLabel(pkg: PackageData): string {
-  return pkg.displayNames[0] ?? (pkg.name || pkg.id);
 }
 
 function installStateLabel(state: InstallState): string {
@@ -363,19 +359,12 @@ export async function searchPackages(): Promise<void> {
 //   });
 // }
 
+/**
+ * Read the installed versions from the service again, after an install or
+ * a removal, or when the installation root changed.
+ */
 export function syncInstalledPackages() {
-  const hasInstalled = isAnyVersionInstalledOnDisk();
-  if (hasInstalled) {
-    logger.info('Found installed Qt version(s) on disk');
-  }
-  // Always set the context (also to false) so the Installed Packages view
-  // hides again when the last version is removed.
-  void vscode.commands.executeCommand(
-    'setContext',
-    `${EXTENSION_ID}.packageInstalled`,
-    hasInstalled
-  );
-  refreshInstalledPackagesView();
+  void refreshInstalledPackages();
 }
 
 async function requireLogin(): Promise<boolean> {
@@ -664,17 +653,6 @@ function unregisterInstalledQtPaths(version: string): void {
   coreAPI?.notify(message);
 }
 
-const QT_FRAMEWORK_PRODUCT = 'qtframework';
-
-/** Whether an installed package is part of the Qt Framework of `version`. */
-function isFrameworkPackage(pkg: PackageData, version: string): boolean {
-  return (
-    pkg.version === version &&
-    (pkg.product === QT_FRAMEWORK_PRODUCT ||
-      pkg.id.includes(`.${QT_FRAMEWORK_PRODUCT}.`))
-  );
-}
-
 /**
  * Remove an installed Qt version. Invoked from the trash icon in the
  * Installed Packages view.
@@ -684,10 +662,6 @@ function isFrameworkPackage(pkg: PackageData, version: string): boolean {
  * autoRemove, the dependencies nothing needs any more, such as the build
  * tools. When that reaches beyond the named packages, the service asks the
  * removal_confirmation question, shown as a dialog that lists them.
- *
- * A version the service does not record, for example one installed by
- * another tool, cannot be removed through it. Its folder is then deleted
- * from disk after an explicit warning, as before the service could remove.
  */
 export async function removePackage(
   item?: InstalledPackageItem
@@ -756,7 +730,13 @@ async function removeVersion(
   }
 
   if (refs.length === 0) {
-    await removeVersionDirectory(installRoot, version);
+    // The view lists what the service records, so this means the version
+    // went away between the listing and the click.
+    void vscode.window.showErrorMessage(
+      `Qt ${version} is not recorded by the Qt Software Management Service ` +
+        `in ${installRoot}, so it cannot be removed.`
+    );
+    syncInstalledPackages();
     return;
   }
 
@@ -819,58 +799,10 @@ async function removeVersion(
   afterVersionRemoved(version);
 }
 
-/**
- * Delete the folder of a version the service does not record. The user is
- * told so and asked again, because this takes the folder with everything
- * in it, also what the service did not put there.
- */
-async function removeVersionDirectory(
-  installRoot: string,
-  version: string
-): Promise<void> {
-  const versionDir = path.join(installRoot, 'QtFramework', version);
-  const deleteFolder = 'Delete Folder';
-  const confirm = await vscode.window.showWarningMessage(
-    `Qt ${version} is not recorded by the Qt Software Management Service.`,
-    {
-      modal: true,
-      detail:
-        'It cannot be removed through the service. ' +
-        `Delete the folder ${versionDir} with everything in it instead?`
-    },
-    deleteFolder
-  );
-  if (confirm !== deleteFolder) {
-    return;
-  }
-
-  try {
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: `Removing Qt ${version}...`,
-        cancellable: false
-      },
-      async () => fs.promises.rm(versionDir, { recursive: true, force: true })
-    );
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    logger.error(`Failed to remove Qt ${version}: ${msg}`);
-    void vscode.window.showErrorMessage(
-      `Failed to remove Qt ${version}: ${msg}`
-    );
-    return;
-  }
-
-  logger.info(`Removed Qt ${version} from disk: ${versionDir}`);
-  void vscode.window.showInformationMessage(`Removed Qt ${version}.`);
-  afterVersionRemoved(version);
-}
-
 /** What the rest of the extension needs to know after a version is gone. */
 function afterVersionRemoved(version: string): void {
   unregisterInstalledQtPaths(version);
-  // Updates the packageInstalled context and the Installed Packages view.
+  // Re-read the installed versions from the service.
   syncInstalledPackages();
   // The framework step (and "Get latest") may have regressed.
   refreshWalkthrough();
@@ -1164,7 +1096,7 @@ async function installPackageByIdImpl(
         logger.info(`Launch item (${item.type}): ${item.uri}`);
       }
       void showInstalledNotification(pkg);
-      // Updates the packageInstalled context and the Installed Packages view.
+      // Re-read the installed versions from the service.
       syncInstalledPackages();
       // Re-render so the framework step's install button is recomputed as
       // disabled now that a version is installed.
@@ -1475,6 +1407,10 @@ export async function resetTestState(): Promise<void> {
   if (extensionContext) {
     await resetWalkthroughState(extensionContext);
   }
+
+  // The Installed Packages view shows what the service records; read it
+  // again now that the installation and the service are gone.
+  syncInstalledPackages();
 }
 
 function getServiceLockFilePath(): string {

@@ -4,10 +4,78 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { PackageData } from 'sms-api';
 
 import { resolveConfiguration } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import { isPackageOperationRunning } from '@/install-state';
+
+const QT_FRAMEWORK_PRODUCT = 'qtframework';
+
+/** The name to show for a package: its display name, else its name or id. */
+export function packageLabel(pkg: PackageData): string {
+  return pkg.displayNames[0] ?? (pkg.name || pkg.id);
+}
+
+/**
+ * Whether a package is part of the Qt Framework, and of `version` when one
+ * is given. The backend names the product; the id carries it too, for
+ * packages the journal recorded without one.
+ */
+export function isFrameworkPackage(
+  pkg: PackageData,
+  version?: string
+): boolean {
+  if (version !== undefined && pkg.version !== version) {
+    return false;
+  }
+  return (
+    pkg.product === QT_FRAMEWORK_PRODUCT ||
+    pkg.id.includes(`.${QT_FRAMEWORK_PRODUCT}.`)
+  );
+}
+
+/** A Qt version the service has installed, with its packages. */
+export interface InstalledQtVersion {
+  readonly version: string;
+  /** The packages of the version, sorted by label. */
+  readonly packages: PackageData[];
+}
+
+/**
+ * Group the Qt Framework packages of a `packages/list` answer by version,
+ * newest first. Packages of other products, such as the build tools, are
+ * left out: the view lists Qt versions.
+ */
+export function groupFrameworkVersions(
+  packages: readonly PackageData[]
+): InstalledQtVersion[] {
+  const byVersion = new Map<string, PackageData[]>();
+  for (const pkg of packages) {
+    if (!isFrameworkPackage(pkg)) {
+      continue;
+    }
+    const group = byVersion.get(pkg.version);
+    if (group) {
+      group.push(pkg);
+    } else {
+      byVersion.set(pkg.version, [pkg]);
+    }
+  }
+  return [...byVersion.entries()]
+    .map(([version, group]) => ({
+      version,
+      packages: group.sort((a, b) =>
+        packageLabel(a).localeCompare(packageLabel(b))
+      )
+    }))
+    .sort((a, b) =>
+      b.version.localeCompare(a.version, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      })
+    );
+}
 
 /**
  * Check whether a Qt version is installed on disk.
