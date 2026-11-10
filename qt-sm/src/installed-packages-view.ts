@@ -66,6 +66,8 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   private versions: InstalledQtVersion[] = [];
   private installRoot = '';
   private errorMessage = '';
+  // Label of the install or removal that runs, shown at the top of the view.
+  private operation: string | undefined;
 
   private refreshing: Promise<void> | undefined;
   private refreshAgain = false;
@@ -118,6 +120,31 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
     );
   }
 
+  /**
+   * Show a running install or removal: an item with a spinner at the top
+   * of the view and the progress bar of the view, until `operation`
+   * settles. The view would otherwise say that nothing is installed while
+   * the first version downloads, because the disk watcher stays quiet
+   * during the operation and the service lists it only once it is done.
+   */
+  showOperation(label: string, operation: Promise<unknown>): void {
+    this.operation = label;
+    this._onDidChangeTreeData.fire(undefined);
+    void vscode.window.withProgress(
+      { location: { viewId: VIEW_ID } },
+      async () => {
+        await operation.then(
+          () => undefined,
+          () => undefined
+        );
+        if (this.operation === label) {
+          this.operation = undefined;
+          this._onDidChangeTreeData.fire(undefined);
+        }
+      }
+    );
+  }
+
   dispose(): void {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
@@ -141,6 +168,13 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
     if (element) {
       return [];
     }
+    const items = this.rootItems();
+    return this.operation
+      ? [this.operationItem(this.operation), ...items]
+      : items;
+  }
+
+  private rootItems(): vscode.TreeItem[] {
     switch (this.state) {
       case 'loading':
         // The welcome content says what is happening.
@@ -215,6 +249,16 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   }
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  private operationItem(label: string): vscode.TreeItem {
+    const item = new vscode.TreeItem(
+      `${label}...`,
+      vscode.TreeItemCollapsibleState.None
+    );
+    item.iconPath = new vscode.ThemeIcon('loading~spin');
+    return item;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private retryItem(): vscode.TreeItem {
     const item = new vscode.TreeItem(
       'Retry',
@@ -273,4 +317,15 @@ export async function refreshInstalledPackages(): Promise<void> {
 /** Like refreshInstalledPackages, once a burst of change events is over. */
 export function scheduleInstalledPackagesRefresh(): void {
   provider?.scheduleRefresh();
+}
+
+/**
+ * Show a running install or removal in the view until `operation` settles.
+ * `label` is what runs, for example "Installing Qt 6.9.0".
+ */
+export function showInstalledPackagesOperation(
+  label: string,
+  operation: Promise<unknown>
+): void {
+  provider?.showOperation(label, operation);
 }

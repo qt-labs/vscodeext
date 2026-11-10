@@ -57,7 +57,8 @@ import {
 } from '@/installed-packages-store';
 import {
   type InstalledPackageItem,
-  refreshInstalledPackages
+  refreshInstalledPackages,
+  showInstalledPackagesOperation
 } from '@/installed-packages-view';
 import {
   isWalkthroughOpen,
@@ -754,7 +755,7 @@ async function removeVersion(
       },
       async (progress) => {
         let lastPct = 0;
-        return packages.remove(
+        const removal = packages.remove(
           target,
           refs,
           { autoRemove: true },
@@ -776,6 +777,8 @@ async function removeVersion(
             onPrompt: handleUserPrompt
           }
         );
+        showInstalledPackagesOperation(`Removing Qt ${version}`, removal);
+        return removal;
       }
     );
     logger.info(`Remove result: ${result.message}`);
@@ -1127,6 +1130,8 @@ async function installPackageByIdImpl(
       logger.error(errMsg);
       void vscode.window.showErrorMessage(errMsg);
     });
+
+  showInstalledPackagesOperation(`Installing ${pkgLabel}`, installDone);
 
   // Start with the download phase notification (cancellable)
   logger.info(
