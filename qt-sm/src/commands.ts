@@ -9,7 +9,6 @@ import * as path from 'path';
 
 import {
   Packages,
-  Settings,
   IPC,
   legacyQtAccountIniPath,
   qtCompanyIniPath,
@@ -42,6 +41,7 @@ import {
   TROUBLESHOOT_URL
 } from '@/constants';
 import { ensureConnected, disconnect } from '@/service-connection';
+import { getInstallRoot, installationTarget } from '@/install-root';
 import { coreAPI } from '@/extension';
 import {
   AUTH_PROVIDER_ID,
@@ -204,6 +204,7 @@ export async function searchPackages(): Promise<void> {
       },
       async () =>
         packages.searchAvailablePackages(
+          installationTarget(),
           { packagePresentation: 'monolith' },
           {
             onMessage: (info) => {
@@ -219,24 +220,11 @@ export async function searchPackages(): Promise<void> {
       return;
     }
 
-    // Build installed set from service + local store
-    const installedKeys = new Set<string>();
-    const installedList = await packages.listInstalledPackages({
-      onMessage: (info) => {
-        logger.info(`searchPackages.listInstalled: ${info.message}`);
-      },
-      onPrompt: handleUserPrompt
-    });
-    for (const pkg of installedList) {
-      installedKeys.add(`${pkg.id}@${pkg.version}`);
-    }
-    for (const pkg of results) {
-      if (pkg.installState === InstallState.Installed) {
-        installedKeys.add(`${pkg.id}@${pkg.version}`);
-      }
-    }
+    // The search names the installation root, so the service reports the
+    // packages installed there. The disk check covers versions the
+    // service does not know about.
     const isInstalled = (pkg: PackageData) =>
-      installedKeys.has(`${pkg.id}@${pkg.version}`) ||
+      pkg.installState === InstallState.Installed ||
       isVersionInstalledOnDisk(pkg.version);
 
     const items = results.map((pkg: PackageData) => ({
@@ -364,6 +352,7 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       },
       async () =>
         packages.searchAvailablePackages(
+          installationTarget(),
           { packagePresentation: 'monolith' },
           {
             onMessage: (info) => {
@@ -379,26 +368,6 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     findLatestFramework(results);
 
     let candidates = [...results];
-
-    // Query installed packages from the service and update local store
-    const installedList = await packages.listInstalledPackages({
-      onMessage: (info) => {
-        logger.info(`installPackage.listInstalled: ${info.message}`);
-      },
-      onPrompt: handleUserPrompt
-    });
-
-    // Build a set of installed package keys for fast lookup
-    const installedKeys = new Set<string>();
-    for (const pkg of installedList) {
-      installedKeys.add(`${pkg.id}@${pkg.version}`);
-    }
-    // Also include packages the backend reports as installed
-    for (const pkg of candidates) {
-      if (pkg.installState === InstallState.Installed) {
-        installedKeys.add(`${pkg.id}@${pkg.version}`);
-      }
-    }
 
     if (args?.product) {
       candidates = candidates.filter(
@@ -420,9 +389,12 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       return;
     }
 
+    // The search named the installation root, so the service reports the
+    // packages installed there. The disk check covers versions the service
+    // does not know about.
     const uninstalledCandidates = candidates.filter(
       (pkg: PackageData) =>
-        !installedKeys.has(`${pkg.id}@${pkg.version}`) &&
+        pkg.installState !== InstallState.Installed &&
         !isVersionInstalledOnDisk(pkg.version)
     );
 
@@ -512,11 +484,9 @@ function platformArch(): string {
 async function showInstalledNotification(pkg: PackageData): Promise<void> {
   const openPanel = 'Open Qt Panel';
   const startWalkthrough = 'Start Walkthrough';
-  const rawInstallRoot = vscode.workspace
-    .getConfiguration(EXTENSION_ID)
-    .get<string>(CONF_INSTALLATION_PATH);
-  const location = rawInstallRoot
-    ? ` Installed in ${path.join(resolveConfiguration(rawInstallRoot), 'QtFramework', pkg.version)}.`
+  const installRoot = getInstallRoot();
+  const location = installRoot
+    ? ` Installed in ${path.join(installRoot, 'QtFramework', pkg.version)}.`
     : '';
   const action = await vscode.window.showInformationMessage(
     `${packageLabel(pkg)} ${pkg.version} installed successfully. ` +
@@ -536,14 +506,7 @@ async function showInstalledNotification(pkg: PackageData): Promise<void> {
 }
 
 function registerInstalledQtPaths(version: string): void {
-  const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawInstallRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawInstallRoot) {
-    logger.warn('Installation path not set, skipping Qt registration');
-    return;
-  }
-  const installRoot = resolveConfiguration(rawInstallRoot);
-
+  const installRoot = getInstallRoot();
   if (!installRoot || !fs.existsSync(installRoot)) {
     logger.warn(
       'Installation path not set or does not exist, skipping Qt registration'
@@ -607,12 +570,10 @@ function registerInstalledQtPaths(version: string): void {
  * qt-cpp via coreAPI so the kit disappears immediately.
  */
 function unregisterInstalledQtPaths(version: string): void {
-  const smsConfig = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawInstallRoot = smsConfig.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawInstallRoot) {
+  const installRoot = getInstallRoot();
+  if (!installRoot) {
     return;
   }
-  const installRoot = resolveConfiguration(rawInstallRoot);
   const versionDir = path.join(installRoot, 'QtFramework', version);
 
   const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
@@ -799,11 +760,35 @@ async function postConsentReset(
   });
 }
 
+/**
+ * The installation root every package request names. Offers to set it
+ * when the setting is empty.
+ */
+async function requireInstallRoot(): Promise<string | undefined> {
+  const installRoot = getInstallRoot();
+  if (installRoot) {
+    return installRoot;
+  }
+  const setPath = 'Set Installation Path';
+  const pick = await vscode.window.showErrorMessage(
+    'The Qt installation path is not set.',
+    setPath
+  );
+  if (pick === setPath) {
+    await setInstallationPath();
+  }
+  return undefined;
+}
+
 async function installPackageById(
   packages: Packages,
   pkg: PackageData
 ): Promise<void> {
   if (!(await requireLogin())) {
+    return;
+  }
+  const installRoot = await requireInstallRoot();
+  if (!installRoot) {
     return;
   }
 
@@ -816,7 +801,7 @@ async function installPackageById(
   }
   setInstalling(true);
   try {
-    await installPackageByIdImpl(packages, pkg);
+    await installPackageByIdImpl(packages, pkg, installRoot);
   } finally {
     setInstalling(false);
   }
@@ -824,11 +809,15 @@ async function installPackageById(
 
 async function installPackageByIdImpl(
   packages: Packages,
-  pkg: PackageData
+  pkg: PackageData,
+  installRoot: string
 ): Promise<void> {
   await resetLicenseConsents();
 
   const pkgRef = { id: pkg.id, version: pkg.version };
+  // Every request names the installation it works on; the service keeps
+  // none of its own.
+  const target = { installRoot };
 
   // Fetch requirements (license agreements, unsatisfied rules).
   const preAnswers: LicenseAnswer[] = [];
@@ -839,7 +828,7 @@ async function installPackageByIdImpl(
       cancellable: false
     },
     async () =>
-      packages.fetchRequirements([pkgRef], {
+      packages.fetchRequirements(target, [pkgRef], {
         onMessage: (info) => {
           logger.info(`fetchRequirements: ${info.message}`);
         },
@@ -908,7 +897,7 @@ async function installPackageByIdImpl(
   let endInstallPhase: (() => void) | undefined;
 
   const installDone = packages
-    .install([pkgRef], options, {
+    .install(target, [pkgRef], options, {
       onProgress: (info) => {
         const pct = Math.round(info.progress);
         const phase = info.type;
@@ -1001,7 +990,7 @@ async function installPackageByIdImpl(
 
   // Start with the download phase notification (cancellable)
   logger.info(
-    `Installing package ${packageLabel(pkg)} with options: ${JSON.stringify(options)}`
+    `Installing package ${packageLabel(pkg)} into ${installRoot} with options: ${JSON.stringify(options)}`
   );
   await vscode.window.withProgress(
     {
@@ -1047,15 +1036,14 @@ async function installPackageByIdImpl(
 }
 
 export async function setInstallationPath(): Promise<void> {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const currentPath = config.get<string>(CONF_INSTALLATION_PATH) ?? '';
+  const currentRoot = getInstallRoot();
 
   const dirUris = await vscode.window.showOpenDialog({
     title: 'Select installation directory',
     canSelectFiles: false,
     canSelectFolders: true,
     canSelectMany: false,
-    ...(currentPath ? { defaultUri: vscode.Uri.file(currentPath) } : {})
+    ...(currentRoot ? { defaultUri: vscode.Uri.file(currentRoot) } : {})
   });
   const dirUri = dirUris?.[0];
   if (!dirUri) {
@@ -1065,31 +1053,56 @@ export async function setInstallationPath(): Promise<void> {
   await validateAndSetInstallationPath(dirUri.fsPath);
 }
 
+/**
+ * The installation path setting changed, for example in settings.json.
+ * The service stores no installation root, every request names its own,
+ * so there is nothing to push. The new directory is checked with the
+ * service instead, so that a directory that cannot be installed into is
+ * reported now rather than with the next install. Failures to reach the
+ * service are only logged: they say nothing about the directory.
+ */
 export async function onInstallationPathChanged(): Promise<void> {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawPath) {
+  const installRoot = getInstallRoot();
+  if (!installRoot) {
     return;
   }
-  const installPath = resolveConfiguration(rawPath);
-  const session = await ensureConnected();
-  const settings = new Settings(session);
-  await settings.setInstallationPath(installPath);
+  try {
+    const session = await ensureConnected();
+    const resolved = await new Packages(session).validateInstallRoot({
+      installRoot
+    });
+    logger.info(`Installation path: "${resolved}"`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Installation path "${installRoot}" was not accepted: ${msg}`);
+    if (err instanceof SmsServiceError) {
+      void vscode.window.showWarningMessage(
+        `The installation path ${installRoot} cannot be used: ${msg}`
+      );
+    }
+  }
 }
 
+/**
+ * Check the directory with the service (`packages/validate-root`, which
+ * stores nothing) and save it as the installation path when it can be
+ * installed into.
+ */
 async function validateAndSetInstallationPath(insPath: string): Promise<void> {
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   try {
     const session = await ensureConnected();
-    const settings = new Settings(session);
-    await settings.setInstallationPath(insPath);
+    const installRoot =
+      (await new Packages(session).validateInstallRoot({
+        installRoot: insPath
+      })) || insPath;
     await config.update(
       CONF_INSTALLATION_PATH,
-      insPath,
+      installRoot,
       vscode.ConfigurationTarget.Global
     );
     void vscode.window.showInformationMessage(
-      `Installation path set to: ${insPath}`
+      `Installation path set to: ${installRoot}`
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

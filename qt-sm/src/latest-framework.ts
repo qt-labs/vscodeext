@@ -7,6 +7,7 @@ import { Packages, InstallState, type PackageData } from 'sms-api';
 import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 import { STATE_LATEST_FRAMEWORK_VERSION } from '@/constants';
 import { getSession } from '@/service-connection';
+import { installationTarget } from '@/install-root';
 import { isVersionInstalledOnDisk } from '@/installed-packages-store';
 
 const logger = createLogger('latest-framework');
@@ -96,9 +97,10 @@ export async function isLatestFrameworkInstalled(): Promise<
   }
   try {
     const packages = new Packages(session);
-    const available = await packages.searchAvailablePackages({
-      packagePresentation: 'monolith'
-    });
+    const available = await packages.searchAvailablePackages(
+      installationTarget(),
+      { packagePresentation: 'monolith' }
+    );
     const latest = findLatestFramework(available);
     if (!latest) {
       return undefined;
