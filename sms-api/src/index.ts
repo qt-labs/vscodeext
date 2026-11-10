@@ -66,6 +66,7 @@ export type {
 // Settings file locations
 export {
   genericDataLocation,
+  localSocketPath,
   qtIniPath,
   qtCompanyIniPath,
   legacyQtAccountIniPath
