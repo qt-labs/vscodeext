@@ -67,6 +67,7 @@ export enum ErrorCode {
   // Filesystem [8000-8999]
   NotEnoughDiskSpace = 8000,
   OperationNotPermitted = 8001,
+  CannotRemove = 8002,
 
   // Configuration [9000-9999]
   InvalidManagedDirectory = 9000,
@@ -244,6 +245,8 @@ export interface PackageOperationResult {
   readonly message: string;
   /** Sorted by `order`. Only `packages/install` fills it. */
   readonly launch: LaunchItem[];
+  /** The installations left. Only `packages/purge` fills it. */
+  readonly remainingInstallations: Installation[];
 }
 
 // ── Filters & Options ────────────────────────────────────────────────────────
@@ -276,6 +279,20 @@ export interface InstallOptions {
 export interface CreateOfflineOptions {
   /** Absolute path of a vendor configuration file for the installer. */
   vendorConfig?: string;
+}
+
+export interface RemoveOptions {
+  /**
+   * Also remove the packages that were installed only as dependencies and
+   * that nothing needs any more.
+   */
+  autoRemove?: boolean;
+  /**
+   * The user has already confirmed the removal, so the service does not
+   * ask `service/question` when the removal takes packages that were not
+   * named.
+   */
+  confirmRemoval?: boolean;
 }
 
 // ── Requirements types ───────────────────────────────────────────────────────
@@ -439,16 +456,27 @@ export const IPC = {
     search: 'packages/search',
     listInstalled: 'packages/list',
     listInstallations: 'packages/installations',
+    remove: 'packages/remove',
+    purge: 'packages/purge',
     cancel: 'packages/cancel',
     setSetting: 'settings/set',
     getSetting: 'settings/get',
     // Planned
     download: 'packages/download',
     update: 'packages/update',
-    remove: 'packages/remove',
-    purge: 'packages/purge',
     listUpdates: 'packages/updates',
     showInfo: 'packages/info'
+  },
+
+  /** Question ids of `service/question` besides license agreement ids. */
+  questionIds: {
+    /**
+     * Asked by `packages/remove` when the removal takes packages the client
+     * did not name. The message lists them, one per line, with the reason.
+     * The choices are the confirm choice first and the cancel choice, which
+     * is also the default answer.
+     */
+    removalConfirmation: 'removal_confirmation'
   },
 
   /** Service notifications. They carry the client request id in `params.id`. */

@@ -26,6 +26,7 @@ import {
   type Installation,
   type InstallationTarget,
   type InstalledPackages,
+  type RemoveOptions,
   type SmsError,
   type PackageReference,
   type PackageData,
@@ -234,7 +235,8 @@ function parseOperationResult(result: unknown): PackageOperationResult {
   const obj = (result as Record<string, unknown> | null) ?? {};
   return {
     message: stringField(obj, 'message'),
-    launch: parseLaunchItems(obj.launch)
+    launch: parseLaunchItems(obj.launch),
+    remainingInstallations: parseInstallations(obj.remainingInstallations)
   };
 }
 
@@ -969,21 +971,67 @@ export class Packages {
     return this.performOperation(IPC.methods.update, params, callbacks);
   }
 
-  /** Planned. The service answers with error 12000. */
+  /**
+   * `packages/remove`. Removes the packages from the installation that
+   * `target` names. The packages that depend on a removed package are
+   * removed too. With `options.autoRemove`, the dependencies that nothing
+   * needs any more are removed as well. When the removal takes packages
+   * that were not named, the service asks the `removal_confirmation`
+   * question (see `IPC.questionIds`) through `callbacks.onPrompt`, unless
+   * `options.confirmRemoval` says the user has confirmed already. A
+   * reference without a version must match exactly one installed package.
+   * Fails with error 10000 when the removal is not confirmed, 5000 when a
+   * package is not installed in the installation, and 9001 when `target`
+   * names no installation.
+   */
   async remove(
+    target: InstallationTarget,
     packages: PackageReference[],
+    options?: RemoveOptions,
+    callbacks?: JobCallbacks
+  ): Promise<PackageOperationResult> {
+    const params: Record<string, unknown> = {
+      ...targetToParams(target),
+      packages: packages.map(formatPackageRef)
+    };
+    Packages.addRemoveOptions(params, options);
+    return this.performOperation(IPC.methods.remove, params, callbacks);
+  }
+
+  /**
+   * `packages/remove` without packages: removes the packages of the
+   * installation that `target` names that were installed only as
+   * dependencies and that nothing needs any more. Finding nothing to remove
+   * is a success, the message says so. The confirmation question is asked
+   * as for `remove`.
+   */
+  async removeOrphans(
+    target: InstallationTarget,
+    options?: Omit<RemoveOptions, 'autoRemove'>,
+    callbacks?: JobCallbacks
+  ): Promise<PackageOperationResult> {
+    const params: Record<string, unknown> = targetToParams(target);
+    Packages.addRemoveOptions(params, { ...options, autoRemove: true });
+    return this.performOperation(IPC.methods.remove, params, callbacks);
+  }
+
+  /**
+   * `packages/purge`. Removes the complete installation that `target`
+   * names: all its packages, then the directory with everything in it,
+   * also files that belong to no package. The service does not ask for a
+   * confirmation, so ask the user first. The result lists the remaining
+   * installations. Fails with error 5000 when the directory is not a
+   * recorded installation.
+   */
+  async purge(
+    target: InstallationTarget,
     callbacks?: JobCallbacks
   ): Promise<PackageOperationResult> {
     return this.performOperation(
-      IPC.methods.remove,
-      { packages: packages.map(formatPackageRef) },
+      IPC.methods.purge,
+      targetToParams(target),
       callbacks
     );
-  }
-
-  /** Planned. The service answers with error 12000. */
-  async purge(callbacks?: JobCallbacks): Promise<PackageOperationResult> {
-    return this.performOperation(IPC.methods.purge, {}, callbacks);
   }
 
   /**
@@ -1167,6 +1215,22 @@ export class Packages {
   }
 
   // ── Internals ──────────────────────────────────────────────────────────
+
+  /**
+   * The removal options are sent only when they are true, so that a
+   * service reading the params cannot mistake the default for a request.
+   */
+  private static addRemoveOptions(
+    params: Record<string, unknown>,
+    options: RemoveOptions | undefined
+  ): void {
+    if (options?.autoRemove) {
+      params.autoRemove = true;
+    }
+    if (options?.confirmRemoval) {
+      params.confirmRemoval = true;
+    }
+  }
 
   private async performOperation(
     method: string,
