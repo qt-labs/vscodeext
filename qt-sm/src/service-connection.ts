@@ -10,10 +10,9 @@ import {
   type ElevationRequest
 } from 'sms-api';
 
-import { createLogger, resolveConfiguration } from 'qt-lib';
+import { createLogger } from 'qt-lib';
 import {
   EXTENSION_ID,
-  CONF_INSTALLATION_PATH,
   CONF_USER_AGENT,
   CONF_USER_AGENT_NAME,
   CLIENT_AUTHOR
@@ -148,24 +147,8 @@ export async function ensureConnected(): Promise<Session> {
 
   await session.connectToService();
 
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawInstallPath = config.get<string>(CONF_INSTALLATION_PATH);
-  const settings = new Settings(session);
-
-  if (rawInstallPath) {
-    const installPath = resolveConfiguration(rawInstallPath);
-    const serviceInstallPath = await settings.getInstallationPath();
-    if (serviceInstallPath !== installPath) {
-      logger.info(
-        `Installation path mismatch: service="${serviceInstallPath ?? ''}", ` +
-          `setting="${installPath}". Updating service.`
-      );
-      await settings.setInstallationPath(installPath);
-    } else {
-      logger.info(`installationPath: "${installPath}"`);
-    }
-  }
-
+  // The service keeps no installation root: every request names the
+  // installation it works on, see installationTarget().
   await pushUsageDataConsent(session);
 
   return session;

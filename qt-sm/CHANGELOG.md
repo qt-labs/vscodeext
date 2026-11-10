@@ -16,6 +16,7 @@
 - Store the Qt Account credentials in the shared Qt.ini that the Qt Software Management Service reads and renews
 - Update the walkthrough to the "Install Qt" design
 - Follow the updated service protocol: identify the extension with every request, show package display names, and keep quiet when the user declines a license agreement
+- Name the installation root in every service request instead of storing it in the service, which keeps no installation root any more, and check a new installation path with the service before saving it
 
 🗑️ **Removed**
 
