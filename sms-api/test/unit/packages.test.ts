@@ -17,9 +17,11 @@ import { Packages, Session } from '../../src/client';
 import {
   ErrorCategory,
   ErrorCode,
+  InstallReason,
   InstallState,
   ProgressType,
   SmsServiceError,
+  type InstallationTarget,
   type JobCallbacks,
   type PackageData,
   type PackageOperationResult,
@@ -32,6 +34,8 @@ import { MockServer, deferred } from './mockserver';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+const TARGET: InstallationTarget = { installRoot: '/home/user/Qt' };
+
 interface PackageCommand {
   name: string;
   method: string;
@@ -43,7 +47,7 @@ const COMMANDS: PackageCommand[] = [
     name: 'install',
     method: 'packages/install',
     invoke: (p, cb) =>
-      p.install([{ id: 'qt6-base', version: '6.10' }], undefined, cb)
+      p.install(TARGET, [{ id: 'qt6-base', version: '6.10' }], undefined, cb)
   },
   {
     name: 'download',
@@ -329,7 +333,7 @@ describe('Packages', () => {
     it('sends packages/cancel and resolves on success', async () => {
       // Start an install so there is an in-flight operation
       const installMsgPromise = server.nextMessage();
-      const installPromise = packages.install([
+      const installPromise = packages.install(TARGET, [
         { id: 'qt6-base', version: '6.10' }
       ]);
 
@@ -404,7 +408,7 @@ describe('Packages', () => {
       ];
 
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.install(pkgs);
+      const resultPromise = packages.install(TARGET, pkgs);
 
       const { payload, conn } = await msgPromise;
       const params = payload.params as Record<string, unknown>;
@@ -420,7 +424,7 @@ describe('Packages', () => {
 
     it('install without version sends the package id with a trailing @', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.install([{ id: 'qt6-base' }]);
+      const resultPromise = packages.install(TARGET, [{ id: 'qt6-base' }]);
 
       const { payload, conn } = await msgPromise;
       const params = payload.params as Record<string, unknown>;
@@ -462,6 +466,7 @@ describe('Packages', () => {
 
       const msgPromise = server.nextMessage();
       const resultPromise = packages.install(
+        TARGET,
         [{ id: 'qt6-base', version: '6.10' }],
         undefined,
         {
@@ -499,6 +504,7 @@ describe('Packages', () => {
 
       const msgPromise = server.nextMessage();
       const resultPromise = packages.install(
+        TARGET,
         [{ id: 'qt6-base', version: '6.10' }],
         undefined,
         {
@@ -549,6 +555,7 @@ describe('Packages', () => {
 
         const msgPromise = server.nextMessage();
         const resultPromise = packages.install(
+          TARGET,
           [{ id: 'qt6-base', version: '6.10' }],
           undefined,
           {
@@ -583,6 +590,7 @@ describe('Packages', () => {
 
       const msgPromise = server.nextMessage();
       const resultPromise = packages.install(
+        TARGET,
         [{ id: 'qt6-base', version: '6.10' }],
         undefined,
         {
@@ -616,6 +624,7 @@ describe('Packages', () => {
 
       const msgPromise = server.nextMessage();
       const resultPromise = packages.install(
+        TARGET,
         [{ id: 'qt6-base', version: '6.10' }],
         undefined,
         {
@@ -649,7 +658,7 @@ describe('Packages', () => {
   describe('fetchRequirements', () => {
     it('sends packages/requirements and parses agreements and rules', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.fetchRequirements([
+      const resultPromise = packages.fetchRequirements(TARGET, [
         { id: 'qt6-base', version: '6.10' }
       ]);
 
@@ -712,7 +721,9 @@ describe('Packages', () => {
 
     it('returns empty arrays when service has no requirements', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.fetchRequirements([{ id: 'qt6-base' }]);
+      const resultPromise = packages.fetchRequirements(TARGET, [
+        { id: 'qt6-base' }
+      ]);
 
       const { payload, conn } = await msgPromise;
       assert.equal(payload.method, 'packages/requirements');
@@ -731,6 +742,7 @@ describe('Packages', () => {
     it('sends preAnsweredAgreements in install when provided', async () => {
       const msgPromise = server.nextMessage();
       const resultPromise = packages.install(
+        TARGET,
         [{ id: 'qt6-base', version: '6.10' }],
         {
           preAnsweredAgreements: [{ id: 'gplv3', answer: 'Accept' }]
@@ -762,11 +774,14 @@ describe('Packages', () => {
   describe('searchAvailablePackages', () => {
     it('sends filters and parses the packages array', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.searchAvailablePackages({
-        author: 'MyAuthor',
-        module: 'MyModule',
-        hostOs: 'Linux'
-      });
+      const resultPromise = packages.searchAvailablePackages(
+        {},
+        {
+          author: 'MyAuthor',
+          module: 'MyModule',
+          hostOs: 'Linux'
+        }
+      );
 
       const { payload, conn } = await msgPromise;
       assert.equal(payload.method, 'packages/search');
@@ -798,10 +813,13 @@ describe('Packages', () => {
 
     it('sends packageVersion and packageId filter keys', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.searchAvailablePackages({
-        packageVersion: '6.10',
-        packageId: 'qt6-base'
-      });
+      const resultPromise = packages.searchAvailablePackages(
+        {},
+        {
+          packageVersion: '6.10',
+          packageId: 'qt6-base'
+        }
+      );
 
       const { payload, conn } = await msgPromise;
       const params = payload.params as Record<string, unknown>;
@@ -828,7 +846,7 @@ describe('Packages', () => {
   describe('listInstalledPackages', () => {
     it('sends correct method and parses installed packages', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.listInstalledPackages();
+      const resultPromise = packages.listInstalledPackages(TARGET);
 
       const { payload, conn } = await msgPromise;
       assert.equal(payload.method, 'packages/list');
@@ -837,14 +855,16 @@ describe('Packages', () => {
         jsonrpc: '2.0',
         id: payload.id,
         result: {
+          installRoot: '/home/user/Qt',
           packages: [{ id: 'qt6-base', version: '6.9', name: 'Qt6 Base' }]
         }
       });
 
       const result = await resultPromise;
-      assert.equal(result.length, 1);
-      assert.equal(result[0].id, 'qt6-base');
-      assert.equal(result[0].version, '6.9');
+      assert.equal(result.installRoot, '/home/user/Qt');
+      assert.equal(result.packages.length, 1);
+      assert.equal(result.packages[0].id, 'qt6-base');
+      assert.equal(result.packages[0].version, '6.9');
     });
   });
 
@@ -923,7 +943,7 @@ describe('Packages', () => {
   describe('error responses', () => {
     it('rejects with an SmsServiceError that carries the code and category', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.install([{ id: 'qt6-base' }]);
+      const resultPromise = packages.install(TARGET, [{ id: 'qt6-base' }]);
 
       const { payload, conn } = await msgPromise;
       server.sendJsonRpc(conn, {
@@ -950,7 +970,7 @@ describe('Packages', () => {
       pkg: Record<string, unknown>
     ): Promise<PackageData> {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.searchAvailablePackages();
+      const resultPromise = packages.searchAvailablePackages({});
       const { payload, conn } = await msgPromise;
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
@@ -995,7 +1015,7 @@ describe('Packages', () => {
   describe('install result', () => {
     it('parses launch items sorted by order', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.install([{ id: 'qt6-base' }]);
+      const resultPromise = packages.install(TARGET, [{ id: 'qt6-base' }]);
 
       const { payload, conn } = await msgPromise;
       server.sendJsonRpc(conn, {
@@ -1028,7 +1048,7 @@ describe('Packages', () => {
 
     it('has an empty launch list when the service sends none', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.install([{ id: 'qt6-base' }]);
+      const resultPromise = packages.install(TARGET, [{ id: 'qt6-base' }]);
 
       const { payload, conn } = await msgPromise;
       server.sendJsonRpc(conn, {
@@ -1086,20 +1106,287 @@ describe('Packages', () => {
   // ── packages/list params ───────────────────────────────────────────────────
 
   describe('listInstalledPackages params', () => {
-    it('sends an empty params object', async () => {
+    it('names the installation and sends the filters', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.listInstalledPackages();
+      const resultPromise = packages.listInstalledPackages(TARGET, {
+        packageType: 'alias'
+      });
 
       const { payload, conn } = await msgPromise;
+      assert.deepEqual(payload.params, {
+        installRoot: '/home/user/Qt',
+        filters: [{ packageType: 'alias' }]
+      });
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { installRoot: '/home/user/Qt', packages: [] }
+      });
+      const result = await resultPromise;
+      assert.deepEqual(result.packages, []);
+    });
+
+    it('sends an empty filters array without filters', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.listInstalledPackages({
+        workingDirectory: '/home/user/Qt/project'
+      });
+
+      const { payload, conn } = await msgPromise;
+      assert.deepEqual(payload.params, {
+        workingDirectory: '/home/user/Qt/project',
+        filters: []
+      });
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { installRoot: '/home/user/Qt', packages: [] }
+      });
+      await resultPromise;
+    });
+
+    it('parses the package type and the install reason', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.listInstalledPackages(TARGET);
+
+      const { payload, conn } = await msgPromise;
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: {
+          installRoot: '/home/user/Qt',
+          packages: [
+            {
+              id: 'qt6-base',
+              version: '6.9',
+              packageType: 'alias',
+              installState: 1,
+              installReason: 'automatic'
+            },
+            { id: 'qt6-charts', version: '6.9', installReason: 'manual' },
+            { id: 'qt6-svg', version: '6.9' }
+          ]
+        }
+      });
+
+      const { packages: listed } = await resultPromise;
+      assert.equal(listed[0]?.packageType, 'alias');
+      assert.equal(listed[0]?.installState, InstallState.Installed);
+      assert.equal(listed[0]?.installReason, InstallReason.Automatic);
+      assert.equal(listed[1]?.packageType, '');
+      assert.equal(listed[1]?.installReason, InstallReason.Manual);
+      // A missing reason counts as manual, like the C++ client reads it.
+      assert.equal(listed[2]?.installReason, InstallReason.Manual);
+    });
+  });
+
+  // ── Installation target ────────────────────────────────────────────────────
+
+  describe('installation target', () => {
+    async function paramsOf(
+      start: () => Promise<unknown>,
+      result: unknown = { message: 'OK' }
+    ): Promise<Record<string, unknown>> {
+      const msgPromise = server.nextMessage();
+      const pending = start();
+      const { payload, conn } = await msgPromise;
+      server.sendJsonRpc(conn, { jsonrpc: '2.0', id: payload.id, result });
+      await pending;
+      return payload.params as Record<string, unknown>;
+    }
+
+    it('install names the installation root', async () => {
+      const params = await paramsOf(async () =>
+        packages.install(TARGET, [{ id: 'qt6-base' }])
+      );
+      assert.equal(params.installRoot, '/home/user/Qt');
+      assert.ok(!('workingDirectory' in params));
+    });
+
+    it('install can name the installation by a directory inside it', async () => {
+      const params = await paramsOf(async () =>
+        packages.install({ workingDirectory: '/home/user/Qt/project' }, [
+          { id: 'qt6-base' }
+        ])
+      );
+      assert.equal(params.workingDirectory, '/home/user/Qt/project');
+      assert.ok(!('installRoot' in params));
+    });
+
+    it('install sends both fields when both are given', async () => {
+      const params = await paramsOf(async () =>
+        packages.install(
+          { installRoot: '/opt/Qt', workingDirectory: '/home/user/project' },
+          [{ id: 'qt6-base' }]
+        )
+      );
+      assert.equal(params.installRoot, '/opt/Qt');
+      assert.equal(params.workingDirectory, '/home/user/project');
+    });
+
+    it('install leaves out empty fields', async () => {
+      const params = await paramsOf(async () =>
+        packages.install({ installRoot: '', workingDirectory: '' }, [
+          { id: 'qt6-base' }
+        ])
+      );
+      assert.ok(!('installRoot' in params));
+      assert.ok(!('workingDirectory' in params));
+    });
+
+    it('fetchRequirements names the installation', async () => {
+      const params = await paramsOf(
+        async () => packages.fetchRequirements(TARGET, [{ id: 'qt6-base' }]),
+        { agreements: [], unsatisfiedRules: [] }
+      );
+      assert.equal(params.installRoot, '/home/user/Qt');
+      assert.deepEqual(params.packages, ['qt6-base@']);
+    });
+
+    it('searchAvailablePackages names the installation when one is given', async () => {
+      const params = await paramsOf(
+        async () =>
+          packages.searchAvailablePackages(TARGET, { hostOs: 'linux' }),
+        { packages: [] }
+      );
+      assert.equal(params.installRoot, '/home/user/Qt');
+      assert.deepEqual(params.filters, [{ hostOs: 'linux' }]);
+    });
+
+    it('searchAvailablePackages names no installation for an empty target', async () => {
+      const params = await paramsOf(
+        async () => packages.searchAvailablePackages({}),
+        { packages: [] }
+      );
+      assert.deepEqual(params, { filters: [] });
+    });
+  });
+
+  // ── packages/installations ─────────────────────────────────────────────────
+
+  describe('listInstallations', () => {
+    it('sends packages/installations and parses the entries', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.listInstallations();
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/installations');
       assert.deepEqual(payload.params, {});
 
       server.sendJsonRpc(conn, {
         jsonrpc: '2.0',
         id: payload.id,
-        result: { packages: [] }
+        result: {
+          installations: [
+            { installationPath: '/home/user/Qt', packages: 12 },
+            { installationPath: '/opt/Qt', packages: 3 }
+          ]
+        }
       });
-      await resultPromise;
+
+      const result = await resultPromise;
+      assert.deepEqual(result, [
+        { installationPath: '/home/user/Qt', packages: 12 },
+        { installationPath: '/opt/Qt', packages: 3 }
+      ]);
     });
+
+    it('resolves an empty list when nothing is installed', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.listInstallations();
+
+      const { payload, conn } = await msgPromise;
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { installations: [] }
+      });
+
+      assert.deepEqual(await resultPromise, []);
+    });
+  });
+
+  // ── packages/validate-root ─────────────────────────────────────────────────
+
+  describe('validateInstallRoot', () => {
+    it('sends packages/validate-root and resolves the root as the service resolved it', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.validateInstallRoot({
+        workingDirectory: '/home/user/Qt/project'
+      });
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/validate-root');
+      assert.deepEqual(payload.params, {
+        workingDirectory: '/home/user/Qt/project'
+      });
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { installRoot: '/home/user/Qt' }
+      });
+
+      assert.equal(await resultPromise, '/home/user/Qt');
+    });
+
+    it('rejects with the error of an invalid directory', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.validateInstallRoot({
+        installRoot: 'relative/path'
+      });
+
+      const { payload, conn } = await msgPromise;
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        error: {
+          code: 9000,
+          category: 9,
+          message: 'The installation directory must be an absolute path'
+        }
+      });
+
+      const err = await resultPromise.then(
+        () => null,
+        (e: unknown) => e
+      );
+      assert.ok(err instanceof SmsServiceError);
+      assert.equal(err.code, ErrorCode.InvalidManagedDirectory);
+      assert.equal(err.category, ErrorCategory.Configuration);
+    });
+  });
+
+  // ── New error codes ────────────────────────────────────────────────────────
+
+  describe('error codes of the installation handling', () => {
+    for (const [code, expectedCode, category] of [
+      [3001, ErrorCode.TokenRejected, ErrorCategory.Authentication],
+      [7001, ErrorCode.IncompatibleJournal, ErrorCategory.Cache],
+      [9001, ErrorCode.InstallationNotNamed, ErrorCategory.Configuration]
+    ] as const) {
+      it(`maps ${String(code)} to its code and category`, async () => {
+        const msgPromise = server.nextMessage();
+        const resultPromise = packages.listInstalledPackages({});
+
+        const { payload, conn } = await msgPromise;
+        server.sendJsonRpc(conn, {
+          jsonrpc: '2.0',
+          id: payload.id,
+          error: { code, message: 'failed' }
+        });
+
+        const err = await resultPromise.then(
+          () => null,
+          (e: unknown) => e
+        );
+        assert.ok(err instanceof SmsServiceError);
+        assert.equal(err.code, expectedCode);
+        assert.equal(err.category, category);
+      });
+    }
   });
 
   // ── fetchRequirements params ───────────────────────────────────────────────
@@ -1107,7 +1394,9 @@ describe('Packages', () => {
   describe('fetchRequirements params', () => {
     it('always sends the @ separator, also without a version', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.fetchRequirements([{ id: 'qt6-base' }]);
+      const resultPromise = packages.fetchRequirements(TARGET, [
+        { id: 'qt6-base' }
+      ]);
 
       const { payload, conn } = await msgPromise;
       const params = payload.params as Record<string, unknown>;

@@ -23,6 +23,9 @@ import {
   type ElevationHandler,
   type ElevationRequest,
   type InstallOptions,
+  type Installation,
+  type InstallationTarget,
+  type InstalledPackages,
   type SmsError,
   type PackageReference,
   type PackageData,
@@ -39,6 +42,7 @@ import {
   SessionState,
   ErrorCategory,
   ErrorCode,
+  InstallReason,
   InstallState,
   ProgressType,
   SettingsPersistence,
@@ -51,6 +55,21 @@ import {
 /** `<id>@<version>`. The `@` is sent even without a version, like the C++ client. */
 function formatPackageRef(pkg: PackageReference): string {
   return `${pkg.id}${IPC.nameVersionSeparator}${pkg.version ?? ''}`;
+}
+
+/**
+ * The `installRoot` and `workingDirectory` fields of a request. Empty
+ * fields are left out, so that the service sees only what the caller named.
+ */
+function targetToParams(target: InstallationTarget): Record<string, unknown> {
+  const params: Record<string, unknown> = {};
+  if (target.installRoot) {
+    params.installRoot = target.installRoot;
+  }
+  if (target.workingDirectory) {
+    params.workingDirectory = target.workingDirectory;
+  }
+  return params;
 }
 
 function filtersToJson(filters?: PackageFilters): unknown[] {
@@ -126,6 +145,11 @@ function parsePackageData(obj: Record<string, unknown>): PackageData {
     rawState === InstallState.UpdateAvailable
       ? rawState
       : InstallState.Uninstalled;
+  // Like the C++ client: anything but `automatic` is manual.
+  const installReason =
+    obj.installReason === InstallReason.Automatic
+      ? InstallReason.Automatic
+      : InstallReason.Manual;
   return {
     id: stringField(obj, 'id'),
     version: stringField(obj, 'version'),
@@ -138,9 +162,11 @@ function parsePackageData(obj: Record<string, unknown>): PackageData {
     productId: stringField(obj, 'productId'),
     productVersion: stringField(obj, 'productVersion'),
     productName: stringField(obj, 'productName'),
+    packageType: stringField(obj, 'packageType'),
     compressedSize: numberField(obj, 'compressedSize'),
     uncompressedSize: numberField(obj, 'uncompressedSize'),
-    installState
+    installState,
+    installReason
   };
 }
 
@@ -218,6 +244,29 @@ function parsePackageList(result: unknown): PackageData[] {
     ? (obj.packages as Record<string, unknown>[])
     : [];
   return packages.map(parsePackageData);
+}
+
+function parseInstalledPackages(result: unknown): InstalledPackages {
+  const obj = (result as Record<string, unknown> | null) ?? {};
+  return {
+    installRoot: stringField(obj, 'installRoot'),
+    packages: parsePackageList(result)
+  };
+}
+
+function parseInstallations(raw: unknown): Installation[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .filter(
+      (entry): entry is Record<string, unknown> =>
+        typeof entry === 'object' && entry !== null
+    )
+    .map((entry) => ({
+      installationPath: stringField(entry, 'installationPath'),
+      packages: numberField(entry, 'packages')
+    }));
 }
 
 /**
@@ -851,16 +900,21 @@ export class Packages {
   // ── Operations ───────────────────────────────────────────────────────────
 
   /**
-   * `packages/install`. Agreements answered in `options` are not asked
-   * again; the service asks the others with `service/question`, answered
-   * through `callbacks.onPrompt`.
+   * `packages/install`. Installs the packages into the installation that
+   * `target` names; a new installation is created by naming its directory
+   * as `installRoot`. Agreements answered in `options` are not asked again;
+   * the service asks the others with `service/question`, answered through
+   * `callbacks.onPrompt`. Fails with error 9001 when `target` names no
+   * installation and with 9000 when the directory cannot be installed into.
    */
   async install(
+    target: InstallationTarget,
     packages: PackageReference[],
     options?: InstallOptions,
     callbacks?: JobCallbacks
   ): Promise<PackageOperationResult> {
     const params: Record<string, unknown> = {
+      ...targetToParams(target),
       packages: packages.map(formatPackageRef)
     };
     if (options?.preAnsweredAgreements) {
@@ -951,16 +1005,23 @@ export class Packages {
 
   /**
    * `packages/requirements`. The license agreements and the unsatisfied
-   * rules of the packages, to show before `packages/install`.
+   * rules of the packages, to show before `packages/install`. `target` is
+   * the installation the install will work on: the service checks it first,
+   * so that the user is not asked to accept agreements for an installation
+   * that would fail.
    */
   async fetchRequirements(
+    target: InstallationTarget,
     packages: PackageReference[],
     callbacks?: JobCallbacks
   ): Promise<PackageRequirements> {
     return callService<PackageRequirements>(
       this.session,
       IPC.methods.fetchRequirements,
-      { packages: packages.map(formatPackageRef) },
+      {
+        ...targetToParams(target),
+        packages: packages.map(formatPackageRef)
+      },
       (result) => {
         const obj = (result as Record<string, unknown> | null) ?? {};
         const agreements = Array.isArray(obj.agreements)
@@ -981,30 +1042,80 @@ export class Packages {
   /**
    * `packages/search`. Filters that are not given use the defaults of the
    * service: `packageType` alias, `packagePresentation` module_group, and
-   * the host OS and architecture of the service.
+   * the host OS and architecture of the service. When `target` names an
+   * installation, the packages installed in it have `installState`
+   * `Installed`. An empty target does not fail the search.
    */
   async searchAvailablePackages(
+    target: InstallationTarget,
     filters?: PackageFilters,
     callbacks?: JobCallbacks
   ): Promise<PackageData[]> {
     return callService<PackageData[]>(
       this.session,
       IPC.methods.search,
-      { filters: filtersToJson(filters) },
+      { ...targetToParams(target), filters: filtersToJson(filters) },
       parsePackageList,
       callbacks
     );
   }
 
-  /** `packages/list`. The installed packages. */
+  /**
+   * `packages/list`. The packages installed in the installation that
+   * `target` names. Only the `packageType` filter is used, for example
+   * `{ packageType: 'alias' }` lists the alias packages alone. Fails with
+   * error 9001 when `target` names no installation.
+   */
   async listInstalledPackages(
+    target: InstallationTarget,
+    filters?: PackageFilters,
     callbacks?: JobCallbacks
-  ): Promise<PackageData[]> {
-    return callService<PackageData[]>(
+  ): Promise<InstalledPackages> {
+    return callService<InstalledPackages>(
       this.session,
       IPC.methods.listInstalled,
+      { ...targetToParams(target), filters: filtersToJson(filters) },
+      parseInstalledPackages,
+      callbacks
+    );
+  }
+
+  /**
+   * `packages/installations`. The installations the service records,
+   * sorted by directory. Empty when nothing is installed.
+   */
+  async listInstallations(callbacks?: JobCallbacks): Promise<Installation[]> {
+    return callService<Installation[]>(
+      this.session,
+      IPC.methods.listInstallations,
       {},
-      parsePackageList,
+      (result) => {
+        const obj = (result as Record<string, unknown> | null) ?? {};
+        return parseInstallations(obj.installations);
+      },
+      callbacks
+    );
+  }
+
+  /**
+   * `packages/validate-root`. Checks that packages can be installed into
+   * the installation that `target` names, without storing anything, and
+   * resolves the installation root as the service resolved it. Fails with
+   * error 9001 when `target` names no installation and with 9000 when the
+   * directory cannot be installed into.
+   */
+  async validateInstallRoot(
+    target: InstallationTarget,
+    callbacks?: JobCallbacks
+  ): Promise<string> {
+    return callService<string>(
+      this.session,
+      IPC.methods.validateRoot,
+      targetToParams(target),
+      (result) => {
+        const obj = (result as Record<string, unknown> | null) ?? {};
+        return stringField(obj, 'installRoot');
+      },
       callbacks
     );
   }
@@ -1128,7 +1239,11 @@ export class Settings {
     );
   }
 
-  /** The installation directory, or `undefined` when none is set. */
+  /**
+   * The stored `installationPath` setting, or `undefined` when none is set.
+   * No request of the service uses it: each request names the installation
+   * it works on (see `InstallationTarget`).
+   */
   async getInstallationPath(
     callbacks?: JobCallbacks
   ): Promise<string | undefined> {
@@ -1136,16 +1251,17 @@ export class Settings {
   }
 
   /**
-   * Set the installation directory. Only a persistent value takes effect,
-   * so it is always saved to disk.
+   * Store the `installationPath` setting. The service only stores it, it
+   * does not check it and no request uses it: name the installation in each
+   * request instead (see `InstallationTarget`).
    */
   async setInstallationPath(
-    InsPath: string,
+    installationPath: string,
     callbacks?: JobCallbacks
   ): Promise<string> {
     return this.setSetting(
       IPC.settingsKeys.installationPath,
-      InsPath,
+      installationPath,
       SettingsPersistence.Persistent,
       callbacks
     );

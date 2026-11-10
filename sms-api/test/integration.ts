@@ -18,12 +18,13 @@
  *   2. Connect via sms-api Session
  *   3. Exercise the transport layer (packet encode/decode)
  *   4. Send JSON-RPC requests via the dispatcher
- *   5. Test search (implemented), install, and error responses
+ *   5. Test search, install, list and error responses
  *   6. Test createOffline method
  *   7. Disconnect and shut down
  *
+ * Every request names the installation it works on (INSTALL_OUTPUT_DIR).
  * The service returns proper JSON-RPC error responses for methods not yet
- * implemented (download, update, remove, purge, list).
+ * implemented (download, update, updates, info).
  */
 
 import { spawn, type ChildProcess } from 'child_process';
@@ -32,11 +33,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {
+  ErrorCode,
   IPC,
   Session,
   Packages,
   ServiceLauncher,
   SessionState,
+  SmsServiceError,
   encodeJsonPacket,
   PacketReader,
   type DecodedPacket,
@@ -373,7 +376,7 @@ async function testInstallFirstAvailablePackage(
   let available: PackageData[];
   try {
     available = await withTimeout(
-      packages.searchAvailablePackages({}),
+      packages.searchAvailablePackages({ installRoot: INSTALL_OUTPUT_DIR }),
       DEFAULT_CALL_TIMEOUT_MS,
       'search available'
     );
@@ -410,7 +413,7 @@ async function testInstallPackage(
   log(`  -> Expected output directory: ${INSTALL_OUTPUT_DIR}`);
 
   const result = await withTimeout(
-    packages.install([ref], undefined, {
+    packages.install({ installRoot: INSTALL_OUTPUT_DIR }, [ref], undefined, {
       onProgress: ({ progress, message }) => {
         const pct = progress.toFixed(1);
         const detail = message ? ` — ${message}` : '';
@@ -539,7 +542,9 @@ async function testInstallNonExistentPackage(
   const callTimeout = DEFAULT_CALL_TIMEOUT_MS;
   try {
     const result = await withTimeout(
-      packages.install([{ id: 'nonexistent.test.package' }]),
+      packages.install({ installRoot: INSTALL_OUTPUT_DIR }, [
+        { id: 'nonexistent.test.package' }
+      ]),
       callTimeout,
       'install nonexistent'
     );
@@ -556,7 +561,7 @@ async function testInstallNonExistentPackage(
 
 async function testListAllPackages(packages: Packages): Promise<void> {
   const result = await withTimeout(
-    packages.searchAvailablePackages({}),
+    packages.searchAvailablePackages({ installRoot: INSTALL_OUTPUT_DIR }),
     DEFAULT_CALL_TIMEOUT_MS,
     'list all packages'
   );
@@ -574,7 +579,7 @@ async function testSearchAvailablePackages(packages: Packages): Promise<void> {
   const callTimeout = DEFAULT_CALL_TIMEOUT_MS;
   try {
     const result = await withTimeout(
-      packages.searchAvailablePackages(),
+      packages.searchAvailablePackages({}),
       callTimeout,
       'search available'
     );
@@ -610,12 +615,84 @@ async function testCreateOfflinePackage(packages: Packages): Promise<void> {
   }
 }
 
+async function testListInstalledPackages(packages: Packages): Promise<void> {
+  const result = await withTimeout(
+    packages.listInstalledPackages({ installRoot: INSTALL_OUTPUT_DIR }),
+    DEFAULT_CALL_TIMEOUT_MS,
+    'list installed'
+  );
+  log(
+    `  -> ${String(result.packages.length)} package(s) installed in ${result.installRoot}`
+  );
+  if (path.resolve(result.installRoot) !== path.resolve(INSTALL_OUTPUT_DIR)) {
+    throw new Error(
+      `Expected installRoot ${INSTALL_OUTPUT_DIR}, got ${result.installRoot}`
+    );
+  }
+  if (
+    installedPackageId &&
+    !result.packages.some((pkg) => pkg.id === installedPackageId)
+  ) {
+    throw new Error(
+      `Installed package ${installedPackageId} is not in the list`
+    );
+  }
+  for (const pkg of result.packages.slice(0, 10)) {
+    log(
+      `     ${pkg.id}@${pkg.version} (${pkg.packageType || 'no type'}, ${pkg.installReason})`
+    );
+  }
+}
+
+async function testListInstallations(packages: Packages): Promise<void> {
+  const installations = await withTimeout(
+    packages.listInstallations(),
+    DEFAULT_CALL_TIMEOUT_MS,
+    'list installations'
+  );
+  for (const entry of installations) {
+    log(`     ${entry.installationPath}: ${String(entry.packages)} package(s)`);
+  }
+  const found = installations.some(
+    (entry) =>
+      path.resolve(entry.installationPath) === path.resolve(INSTALL_OUTPUT_DIR)
+  );
+  if (!found) {
+    throw new Error(`${INSTALL_OUTPUT_DIR} is not a recorded installation`);
+  }
+}
+
+async function testListWithoutInstallationFails(
+  packages: Packages
+): Promise<void> {
+  // A request that names no installation fails with error 9001.
+  try {
+    await withTimeout(
+      packages.listInstalledPackages({}),
+      DEFAULT_CALL_TIMEOUT_MS,
+      'list without installation'
+    );
+  } catch (err) {
+    if (err instanceof SmsServiceError) {
+      if (err.code !== ErrorCode.InstallationNotNamed) {
+        throw new Error(
+          `Expected error 9001, got ${String(err.code)}: ${err.message}`
+        );
+      }
+      log(`  -> Got expected error 9001: ${err.message}`);
+      return;
+    }
+    throw err;
+  }
+  throw new Error('packages/list without an installation did not fail');
+}
+
 async function testUnimplementedMethodReturnsError(
   session: Session
 ): Promise<void> {
-  // The server now sends proper JSON-RPC error responses for unimplemented
-  // methods (download, update, remove, purge, list) instead of silently
-  // ignoring them.
+  // The server sends proper JSON-RPC error responses for unimplemented
+  // methods (download, update, updates, info) instead of silently ignoring
+  // them.
   const dispatcher = session.dispatcher;
   const callTimeout = DEFAULT_CALL_TIMEOUT_MS;
 
@@ -623,7 +700,7 @@ async function testUnimplementedMethodReturnsError(
     await withTimeout(
       new Promise<unknown>((resolve, reject) => {
         dispatcher.call(
-          'packages/list',
+          'packages/updates',
           { filters: [] },
           (res) => {
             resolve(res);
@@ -634,7 +711,7 @@ async function testUnimplementedMethodReturnsError(
         );
       }),
       callTimeout,
-      'packages/list'
+      'packages/updates'
     );
     log(`  -> Got a response (server may implement this now)`);
   } catch (err) {
@@ -764,6 +841,15 @@ async function main(): Promise<void> {
       );
       await runTest('Verify: install output directory has content', () =>
         testVerifyInstallOutput()
+      );
+      await runTest('API: list the installed packages', () =>
+        testListInstalledPackages(packages)
+      );
+      await runTest('API: list the installations', () =>
+        testListInstallations(packages)
+      );
+      await runTest('API: list without an installation fails with 9001', () =>
+        testListWithoutInstallationFails(packages)
       );
       await runTest('API: install non-existent package', () =>
         testInstallNonExistentPackage(packages)
