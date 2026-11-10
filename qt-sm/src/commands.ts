@@ -63,7 +63,10 @@ import {
   refreshLatestFrameworkState,
   resetWalkthroughState
 } from '@/walkthrough-panel';
-import { isInstalling, setInstalling } from '@/install-state';
+import {
+  isPackageOperationRunning,
+  setPackageOperationRunning
+} from '@/install-state';
 import { publishQtToolsPaths } from '@/qt-tools-store';
 import {
   findLatestFramework,
@@ -115,9 +118,36 @@ function installStateLabel(state: InstallState): string {
   }
 }
 
+/**
+ * The removal_confirmation question of packages/remove: the removal takes
+ * packages the user did not name, listed in the message with the reason.
+ * A modal dialog shows the list; its buttons are the choices other than
+ * the default answer, which is the cancel choice and what dismissing the
+ * dialog answers.
+ */
+async function confirmRemoval(prompt: UserPrompt): Promise<UserPromptReply> {
+  const buttons = prompt.choices.filter(
+    (choice) => choice !== prompt.defaultAnswer
+  );
+  const picked = await vscode.window.showWarningMessage(
+    prompt.title || 'Confirm removal',
+    { modal: true, detail: prompt.message },
+    ...buttons
+  );
+  if (picked) {
+    return { kind: 'choice', choice: picked };
+  }
+  return prompt.defaultAnswer
+    ? { kind: 'choice', choice: prompt.defaultAnswer }
+    : { kind: 'cancel' };
+}
+
 async function handleUserPrompt(prompt: UserPrompt): Promise<UserPromptReply> {
   switch (prompt.type) {
     case UserPromptType.Choice: {
+      if (prompt.id === IPC.questionIds.removalConfirmation) {
+        return confirmRemoval(prompt);
+      }
       const items = prompt.choices.map((choice) => ({
         label: choice,
         picked: choice === prompt.defaultAnswer
@@ -608,13 +638,30 @@ function unregisterInstalledQtPaths(version: string): void {
   coreAPI?.notify(message);
 }
 
+const QT_FRAMEWORK_PRODUCT = 'qtframework';
+
+/** Whether an installed package is part of the Qt Framework of `version`. */
+function isFrameworkPackage(pkg: PackageData, version: string): boolean {
+  return (
+    pkg.version === version &&
+    (pkg.product === QT_FRAMEWORK_PRODUCT ||
+      pkg.id.includes(`.${QT_FRAMEWORK_PRODUCT}.`))
+  );
+}
+
 /**
  * Remove an installed Qt version. Invoked from the trash icon in the
  * Installed Packages view.
  *
- * TODO: Use the service's `packages/remove` once it is implemented — it
- * currently fails with "packages/remove is not yet implemented", so the
- * version directory is deleted from disk directly instead.
+ * The version is removed through the service: its alias packages are the
+ * ones named, the service takes everything that depends on them and, with
+ * autoRemove, the dependencies nothing needs any more, such as the build
+ * tools. When that reaches beyond the named packages, the service asks the
+ * removal_confirmation question, shown as a dialog that lists them.
+ *
+ * A version the service does not record, for example one installed by
+ * another tool, cannot be removed through it. Its folder is then deleted
+ * from disk after an explicit warning, as before the service could remove.
  */
 export async function removePackage(
   item?: InstalledPackageItem
@@ -623,26 +670,153 @@ export async function removePackage(
   if (!version) {
     return;
   }
+  const installRoot = await requireInstallRoot();
+  if (!installRoot) {
+    return;
+  }
+  if (isPackageOperationRunning()) {
+    void vscode.window.showWarningMessage(
+      'A package operation is already in progress. Please wait for it to finish.'
+    );
+    return;
+  }
   const confirm = await vscode.window.showWarningMessage(
-    `Remove Qt ${version}? This deletes the installed files from disk.`,
-    { modal: true },
+    `Remove Qt ${version}?`,
+    {
+      modal: true,
+      detail:
+        `The packages of Qt ${version} are removed from ${installRoot}, ` +
+        'together with the packages that nothing else needs any more.'
+    },
     'Remove'
   );
   if (confirm !== 'Remove') {
     return;
   }
 
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawPath) {
-    void vscode.window.showErrorMessage('Installation path is not set.');
+  setPackageOperationRunning(true);
+  try {
+    await removeVersion(installRoot, version);
+  } finally {
+    setPackageOperationRunning(false);
+  }
+}
+
+async function removeVersion(
+  installRoot: string,
+  version: string
+): Promise<void> {
+  const target = { installRoot };
+  let packages: Packages;
+  let refs: { id: string; version: string }[];
+  try {
+    packages = new Packages(await ensureConnected());
+    // The alias packages are what an install names, so they are what a
+    // removal names. The service takes their dependencies along.
+    const { packages: installed } = await packages.listInstalledPackages(
+      target,
+      { packageType: 'alias' }
+    );
+    refs = installed
+      .filter((pkg) => isFrameworkPackage(pkg, version))
+      .map((pkg) => ({ id: pkg.id, version: pkg.version }));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Cannot list the packages of Qt ${version}: ${msg}`);
+    void vscode.window.showErrorMessage(
+      `Failed to remove Qt ${version}: ${msg}`
+    );
     return;
   }
-  const versionDir = path.join(
-    resolveConfiguration(rawPath),
-    'QtFramework',
-    version
+
+  if (refs.length === 0) {
+    await removeVersionDirectory(installRoot, version);
+    return;
+  }
+
+  logger.info(
+    `Removing Qt ${version} from ${installRoot}: ${refs
+      .map((ref) => `${ref.id}@${ref.version}`)
+      .join(', ')}`
   );
+  try {
+    const result = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Removing Qt ${version}`,
+        cancellable: false
+      },
+      async (progress) => {
+        let lastPct = 0;
+        return packages.remove(
+          target,
+          refs,
+          { autoRemove: true },
+          {
+            onProgress: (info) => {
+              const pct = Math.round(info.progress);
+              progress.report({
+                message: `${String(pct)}%`,
+                increment: pct - lastPct
+              });
+              lastPct = pct;
+            },
+            onMessage: (info) => {
+              // The service says what a removal that succeeded anyway could
+              // not do, for example files it left behind.
+              logger.warn(`remove: ${info.message}`);
+              void vscode.window.showWarningMessage(info.message);
+            },
+            onPrompt: handleUserPrompt
+          }
+        );
+      }
+    );
+    logger.info(`Remove result: ${result.message}`);
+  } catch (err) {
+    if (
+      err instanceof SmsServiceError &&
+      err.code === ErrorCode.UserCancelled
+    ) {
+      logger.info(`Removal of Qt ${version} cancelled: ${err.message}`);
+      return;
+    }
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Failed to remove Qt ${version}: ${msg}`);
+    void vscode.window.showErrorMessage(
+      `Failed to remove Qt ${version}: ${msg}`
+    );
+    return;
+  }
+
+  void vscode.window.showInformationMessage(`Removed Qt ${version}.`);
+  afterVersionRemoved(version);
+}
+
+/**
+ * Delete the folder of a version the service does not record. The user is
+ * told so and asked again, because this takes the folder with everything
+ * in it, also what the service did not put there.
+ */
+async function removeVersionDirectory(
+  installRoot: string,
+  version: string
+): Promise<void> {
+  const versionDir = path.join(installRoot, 'QtFramework', version);
+  const deleteFolder = 'Delete Folder';
+  const confirm = await vscode.window.showWarningMessage(
+    `Qt ${version} is not recorded by the Qt Software Management Service.`,
+    {
+      modal: true,
+      detail:
+        'It cannot be removed through the service. ' +
+        `Delete the folder ${versionDir} with everything in it instead?`
+    },
+    deleteFolder
+  );
+  if (confirm !== deleteFolder) {
+    return;
+  }
 
   try {
     await vscode.window.withProgress(
@@ -663,13 +837,21 @@ export async function removePackage(
   }
 
   logger.info(`Removed Qt ${version} from disk: ${versionDir}`);
-  unregisterInstalledQtPaths(version);
   void vscode.window.showInformationMessage(`Removed Qt ${version}.`);
+  afterVersionRemoved(version);
+}
+
+/** What the rest of the extension needs to know after a version is gone. */
+function afterVersionRemoved(version: string): void {
+  unregisterInstalledQtPaths(version);
   // Updates the packageInstalled context and the Installed Packages view.
   syncInstalledPackages();
   // The framework step (and "Get latest") may have regressed.
   refreshWalkthrough();
   void refreshLatestFrameworkState();
+  // The removal may have taken CMake/Ninja under Tools/ along; re-detect
+  // and inform qt-core/qt-cpp via CoreAPI.
+  publishQtToolsPaths();
 }
 
 // Known license agreement IDs from the backend (alpha testing).
@@ -792,18 +974,18 @@ async function installPackageById(
     return;
   }
 
-  // Restrict to a single installation at a time.
-  if (isInstalling()) {
+  // The service runs one package operation at a time.
+  if (isPackageOperationRunning()) {
     void vscode.window.showWarningMessage(
-      'An installation is already in progress. Please wait for it to finish.'
+      'A package operation is already in progress. Please wait for it to finish.'
     );
     return;
   }
-  setInstalling(true);
+  setPackageOperationRunning(true);
   try {
     await installPackageByIdImpl(packages, pkg, installRoot);
   } finally {
-    setInstalling(false);
+    setPackageOperationRunning(false);
   }
 }
 
