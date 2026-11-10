@@ -17,6 +17,7 @@ import { Packages, Session } from '../../src/client';
 import {
   ErrorCategory,
   ErrorCode,
+  IPC,
   InstallReason,
   InstallState,
   ProgressType,
@@ -63,7 +64,13 @@ const COMMANDS: PackageCommand[] = [
   {
     name: 'remove',
     method: 'packages/remove',
-    invoke: (p, cb) => p.remove([{ id: 'qt6-base', version: '6.10' }], cb)
+    invoke: (p, cb) =>
+      p.remove(TARGET, [{ id: 'qt6-base', version: '6.10' }], undefined, cb)
+  },
+  {
+    name: 'removeOrphans',
+    method: 'packages/remove',
+    invoke: (p, cb) => p.removeOrphans(TARGET, undefined, cb)
   },
   {
     name: 'update',
@@ -73,7 +80,7 @@ const COMMANDS: PackageCommand[] = [
   {
     name: 'purge',
     method: 'packages/purge',
-    invoke: (p, cb) => p.purge(cb)
+    invoke: (p, cb) => p.purge(TARGET, cb)
   }
 ];
 
@@ -438,12 +445,13 @@ describe('Packages', () => {
       await resultPromise;
     });
 
-    it('purge sends no packages key in params', async () => {
+    it('purge names the installation and sends no packages key', async () => {
       const msgPromise = server.nextMessage();
-      const resultPromise = packages.purge();
+      const resultPromise = packages.purge(TARGET);
 
       const { payload, conn } = await msgPromise;
       const params = payload.params as Record<string, unknown>;
+      assert.equal(params.installRoot, '/home/user/Qt');
       assert.ok(
         !('packages' in params),
         'purge should not include a packages key'
@@ -1359,12 +1367,241 @@ describe('Packages', () => {
     });
   });
 
+  // ── packages/remove ────────────────────────────────────────────────────────
+
+  describe('remove params', () => {
+    async function removeParams(
+      start: () => Promise<PackageOperationResult>
+    ): Promise<Record<string, unknown>> {
+      const msgPromise = server.nextMessage();
+      const pending = start();
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/remove');
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { message: 'Removed qt6-base@6.10' }
+      });
+      await pending;
+      return payload.params as Record<string, unknown>;
+    }
+
+    it('sends the packages and the installation, and no removal options by default', async () => {
+      const params = await removeParams(async () =>
+        packages.remove(TARGET, [{ id: 'qt6-base', version: '6.10' }])
+      );
+      assert.deepEqual(params, {
+        installRoot: '/home/user/Qt',
+        packages: ['qt6-base@6.10']
+      });
+    });
+
+    it('sends autoRemove and confirmRemoval only when they are true', async () => {
+      const both = await removeParams(async () =>
+        packages.remove(TARGET, [{ id: 'qt6-base' }], {
+          autoRemove: true,
+          confirmRemoval: true
+        })
+      );
+      assert.equal(both.autoRemove, true);
+      assert.equal(both.confirmRemoval, true);
+
+      const neither = await removeParams(async () =>
+        packages.remove(TARGET, [{ id: 'qt6-base' }], {
+          autoRemove: false,
+          confirmRemoval: false
+        })
+      );
+      assert.ok(!('autoRemove' in neither));
+      assert.ok(!('confirmRemoval' in neither));
+    });
+
+    it('removeOrphans sends autoRemove and no packages', async () => {
+      const params = await removeParams(async () =>
+        packages.removeOrphans({ workingDirectory: '/home/user/Qt/project' })
+      );
+      assert.deepEqual(params, {
+        workingDirectory: '/home/user/Qt/project',
+        autoRemove: true
+      });
+    });
+
+    it('removeOrphans can skip the confirmation', async () => {
+      const params = await removeParams(async () =>
+        packages.removeOrphans(TARGET, { confirmRemoval: true })
+      );
+      assert.equal(params.autoRemove, true);
+      assert.equal(params.confirmRemoval, true);
+    });
+  });
+
+  describe('removal confirmation', () => {
+    it('passes the removal_confirmation question to onPrompt and sends the choice back', async () => {
+      const promptD = deferred<UserPrompt>();
+
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.remove(
+        TARGET,
+        [{ id: 'qtcompany.example.a', version: '1.0' }],
+        { autoRemove: true },
+        {
+          onPrompt: async (prompt) => {
+            promptD.resolve(prompt);
+            return { kind: 'choice', choice: 'Remove' };
+          }
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      const reqId = payload.id as string;
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        method: 'service/question',
+        params: {
+          type: 'choice',
+          id: 'removal_confirmation',
+          title: 'Confirm removal',
+          message:
+            'The following packages will be removed:\n' +
+            '  qtcompany.example.b@1.0 (depends on a package being removed)\n' +
+            '  qtcompany.example.a@1.0 (requested)',
+          defaultAnswer: 'Cancel',
+          choices: 'Remove,Cancel',
+          placeHolderText: ''
+        }
+      });
+
+      const prompt = await promptD.promise;
+      assert.equal(prompt.id, IPC.questionIds.removalConfirmation);
+      assert.equal(prompt.type, UserPromptType.Choice);
+      assert.deepEqual(prompt.choices, ['Remove', 'Cancel']);
+      assert.equal(prompt.defaultAnswer, 'Cancel');
+      assert.ok(prompt.message.includes('qtcompany.example.b@1.0'));
+
+      const { payload: reply } = await server.nextMessage();
+      assert.equal(reply.id, reqId);
+      assert.deepEqual(reply.result, {
+        id: 'removal_confirmation',
+        replyChoice: 'Remove'
+      });
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        method: 'service/progress',
+        params: { id: reqId, progress: 50, type: 'remove', message: 'Removing' }
+      });
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        result: { message: 'Removed 2 packages' }
+      });
+
+      const result = await resultPromise;
+      assert.equal(result.message, 'Removed 2 packages');
+    });
+
+    it('fails with error 10000 when the confirmation is declined', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.remove(
+        TARGET,
+        [{ id: 'qtcompany.example.a' }],
+        undefined,
+        {
+          onPrompt: async (prompt) => ({
+            kind: 'choice',
+            choice: prompt.defaultAnswer
+          })
+        }
+      );
+
+      const { payload, conn } = await msgPromise;
+      const reqId = payload.id as string;
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        method: 'service/question',
+        params: {
+          type: 'choice',
+          id: 'removal_confirmation',
+          title: 'Confirm removal',
+          message: 'The following packages will be removed:',
+          defaultAnswer: 'Cancel',
+          choices: 'Remove,Cancel'
+        }
+      });
+
+      const { payload: reply } = await server.nextMessage();
+      assert.deepEqual(reply.result, {
+        id: 'removal_confirmation',
+        replyChoice: 'Cancel'
+      });
+
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: reqId,
+        error: { code: 10000, category: 10, message: 'Removal not confirmed' }
+      });
+
+      const err = await resultPromise.then(
+        () => null,
+        (e: unknown) => e
+      );
+      assert.ok(err instanceof SmsServiceError);
+      assert.equal(err.code, ErrorCode.UserCancelled);
+    });
+  });
+
+  // ── packages/purge ─────────────────────────────────────────────────────────
+
+  describe('purge result', () => {
+    it('parses the remaining installations', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.purge(TARGET);
+
+      const { payload, conn } = await msgPromise;
+      assert.equal(payload.method, 'packages/purge');
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: {
+          message: 'Removed 12 packages and /home/user/Qt',
+          remainingInstallations: [{ installationPath: '/opt/Qt', packages: 3 }]
+        }
+      });
+
+      const result = await resultPromise;
+      assert.equal(result.message, 'Removed 12 packages and /home/user/Qt');
+      assert.deepEqual(result.remainingInstallations, [
+        { installationPath: '/opt/Qt', packages: 3 }
+      ]);
+      assert.deepEqual(result.launch, []);
+    });
+
+    it('install results have no remaining installations', async () => {
+      const msgPromise = server.nextMessage();
+      const resultPromise = packages.install(TARGET, [{ id: 'qt6-base' }]);
+
+      const { payload, conn } = await msgPromise;
+      server.sendJsonRpc(conn, {
+        jsonrpc: '2.0',
+        id: payload.id,
+        result: { message: 'OK' }
+      });
+
+      const result = await resultPromise;
+      assert.deepEqual(result.remainingInstallations, []);
+    });
+  });
+
   // ── New error codes ────────────────────────────────────────────────────────
 
   describe('error codes of the installation handling', () => {
     for (const [code, expectedCode, category] of [
       [3001, ErrorCode.TokenRejected, ErrorCategory.Authentication],
       [7001, ErrorCode.IncompatibleJournal, ErrorCategory.Cache],
+      [8002, ErrorCode.CannotRemove, ErrorCategory.Filesystem],
       [9001, ErrorCode.InstallationNotNamed, ErrorCategory.Configuration]
     ] as const) {
       it(`maps ${String(code)} to its code and category`, async () => {

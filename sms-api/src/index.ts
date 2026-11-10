@@ -30,6 +30,7 @@ export type {
   InstalledPackages,
   InstallOptions,
   CreateOfflineOptions,
+  RemoveOptions,
   LaunchItem,
   PackageOperationResult,
   LicenseAgreement,
