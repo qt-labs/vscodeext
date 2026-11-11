@@ -22,6 +22,7 @@
 - Name the installation root in every service request instead of storing it in the service, which keeps no installation root any more, and check a new installation path with the service before saving it
 - Remove installed Qt versions through the Qt Software Management Service; the removal is confirmed once, with a short dialog, before it starts
 - List the installed Qt versions and their packages from the Qt Software Management Service instead of the disk; the service is started when the extension activates, without blocking it, and the Installed Packages view shows a progress bar until the versions arrive
+- Show the installation root next to the title of the Installed Packages view
 - Show the running install or removal at the top of the Installed Packages view, with its progress bar, instead of an empty view while the first version downloads
 
 🗑️ **Removed**
