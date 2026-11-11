@@ -2,6 +2,8 @@
 
 Supercharge your Qt development in Visual Studio Code with advanced QML support, intelligent code completion, and integrated debugging — all in one streamlined extension.
 
+**Trying the beta?** We'd love to hear how it went. [Take the 3-minute survey ↗](https://install.qt.io/beta-survey)
+
 ## Get started
 
 1. Install Qt extension
