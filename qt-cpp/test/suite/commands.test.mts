@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
-import { delay, IsWindows } from 'qt-lib';
+import { delay, host } from 'qt-lib';
 
 import {
   setupSandboxLifecycleHooks,
@@ -62,7 +62,7 @@ describe('command: scanForQtKits', () => {
   }
 
   it('calls for cmake scan for kits command, on Windows', async function () {
-    if (!IsWindows) {
+    if (!host.isWindows) {
       this.skip(); // Only meaningful on Windows
     }
 

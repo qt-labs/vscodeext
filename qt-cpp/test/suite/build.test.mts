@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { delay, OSExeSuffix } from 'qt-lib';
+import { delay, host } from 'qt-lib';
 import {
   setupSandboxLifecycleHooks,
   waitForVSCodeIdle,
@@ -77,7 +77,7 @@ describe('build: minimal Qt project (index-build)', function () {
 
     await delay(400); // flush to disk
 
-    const bin = 'hello' + OSExeSuffix;
+    const bin = 'hello' + host.exeSuffix;
     const outPath = path.join(buildDir, bin);
     console.log('Checking for binary at', outPath);
 

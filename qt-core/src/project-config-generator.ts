@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { createLogger, IsWindows } from 'qt-lib';
+import { createLogger, host } from 'qt-lib';
 
 const logger = createLogger('project-config-generator');
 
@@ -256,7 +256,7 @@ function launchConfigurations(qml: boolean): {
   const configs: LaunchConfiguration[] = [cppdbgLaunchConfig()];
   const compounds: CompoundConfiguration[] = [];
 
-  if (IsWindows) {
+  if (host.isWindows) {
     configs.push(cppvsdbgLaunchConfig());
   }
 
@@ -265,7 +265,7 @@ function launchConfigurations(qml: boolean): {
     const qmlAttach = qmlAttachLaunchConfig();
     configs.push(cppQmlCppdbg, qmlAttach);
 
-    if (IsWindows) {
+    if (host.isWindows) {
       const cppQmlVsdbg = cppQmlCppvsdbgLaunchConfig();
       configs.push(cppQmlVsdbg);
 

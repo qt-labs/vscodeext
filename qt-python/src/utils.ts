@@ -1,14 +1,14 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { IsWindows } from 'qt-lib';
+import { host } from 'qt-lib';
 
 export function toForwardSlash(path: string): string {
   return path.replace(/\\/g, '/');
 }
 
 export function normalizeDriveLetter(p: string): string {
-  if (!IsWindows || p.length < 2) {
+  if (!host.isWindows || p.length < 2) {
     return p;
   }
 

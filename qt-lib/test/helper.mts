@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { delay, IsMacOS, IsWindows, UserLocalDir } from '../src/util.js';
+import { delay, host } from '../src/util.js';
 
 /** Let VS Code flush microtasks (useful between command execution and assertions). */
 export async function waitForVSCodeIdle(): Promise<void> {
@@ -391,10 +391,10 @@ export function prepareStandardCMakeArgs(
  *    ~/.local/share)/CMakeTools/cmake-tools-kits.json
  */
 function kitsPath(): string {
-  if (!UserLocalDir) {
+  if (!host.userLocalDir) {
     throw new Error('Cannot determine the user local data directory');
   }
-  return path.join(UserLocalDir, 'CMakeTools', 'cmake-tools-kits.json');
+  return path.join(host.userLocalDir, 'CMakeTools', 'cmake-tools-kits.json');
 }
 
 type KitLike = { name?: string; label?: string };
@@ -430,9 +430,9 @@ function readKitsFromDisk(): KitLike[] {
 function pickKit(list: KitLike[]): string | undefined {
   if (!Array.isArray(list) || list.length === 0) return undefined;
 
-  const preferences: RegExp[] = IsMacOS
+  const preferences: RegExp[] = host.isMacOS
     ? [/Clang.*arm64/i, /AppleClang/i, /Clang/i, /GCC/i]
-    : IsWindows
+    : host.isWindows
       ? [/MSVC|Visual Studio|Clang-cl/i, /Clang/i, /GCC|MinGW/i]
       : [/GCC/i, /Clang/i];
 

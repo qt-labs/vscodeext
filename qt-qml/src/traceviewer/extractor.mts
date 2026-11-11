@@ -7,7 +7,7 @@ import * as yauzl from 'yauzl';
 import * as vscode from 'vscode';
 import { Writable } from 'stream';
 
-import { IsWindows } from 'qt-lib';
+import { host } from 'qt-lib';
 import { DownloadResult } from './downloader.mts';
 import { InstalledRelease } from './installation-manager.mts';
 
@@ -116,7 +116,7 @@ export async function unzipV2(
           reader.pipe(provider.stream);
 
           provider.stream.on('finish', () => {
-            if (!IsWindows) {
+            if (!host.isWindows) {
               const mode = unixAttrs & 0o777;
               if (mode !== 0) {
                 fs.chmodSync(provider.fullPath, mode);

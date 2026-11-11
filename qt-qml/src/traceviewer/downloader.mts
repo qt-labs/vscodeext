@@ -9,7 +9,7 @@ import * as crypto from 'crypto';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-import { IsMacOS, IsLinux, IsWindows, Isx64, IsArm64 } from 'qt-lib';
+import { host } from 'qt-lib';
 import { Progress, ProgressUpdater } from './helpers/progress.mts';
 import { createWrappedLogger } from './helpers/logger-wrapper.ts';
 import * as consts from './constants.mts';
@@ -83,8 +83,14 @@ export async function downloadWithProgress(latestId: string | undefined) {
 
 // helpers
 export function resolvePackageUrls() {
-  const os_ = IsMacOS ? 'mac' : IsWindows ? 'windows' : IsLinux ? 'linux' : '';
-  const arch = Isx64 || IsMacOS ? 'x64' : IsArm64 ? 'arm64' : '';
+  const os_ = host.isMacOS
+    ? 'mac'
+    : host.isWindows
+      ? 'windows'
+      : host.isLinux
+        ? 'linux'
+        : '';
+  const arch = host.isX64 || host.isMacOS ? 'x64' : host.isArm64 ? 'arm64' : '';
   if (!os_ || !arch) {
     throw new Error('Unsupported platform');
   }

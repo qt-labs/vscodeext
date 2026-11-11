@@ -16,7 +16,7 @@ import {
   createLogger,
   findQtKits,
   isError,
-  OSExeSuffix,
+  host,
   compareVersions,
   CoreKey,
   telemetry,
@@ -764,7 +764,7 @@ async function findMostRecentExecutableQmlLS(): Promise<
 
       found.push({
         qtVersion: version,
-        qmllsPath: path.join(qt, 'bin', 'qmlls' + OSExeSuffix)
+        qmllsPath: path.join(qt, 'bin', 'qmlls' + host.exeSuffix)
       });
     }
   }

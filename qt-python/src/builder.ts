@@ -4,7 +4,7 @@
 import * as path from 'path';
 import * as childProcess from 'child_process';
 
-import { IsWindows } from 'qt-lib';
+import { host } from 'qt-lib';
 
 export class PySideCommandBuilder {
   private _venvBinPath: string | undefined;
@@ -39,7 +39,7 @@ export class PySideCommandBuilder {
 
     return {
       shellPath: resolveShellPath(),
-      shellArgs: [IsWindows ? '/c' : '-c'],
+      shellArgs: [host.isWindows ? '/c' : '-c'],
       commandLine: all.join(' && ')
     };
   }
@@ -47,7 +47,7 @@ export class PySideCommandBuilder {
 
 // helpers
 function resolveShellPath(): string {
-  if (IsWindows) {
+  if (host.isWindows) {
     return process.env.ComSpec ?? 'C:\\Windows\\System32\\cmd.exe';
   }
 
@@ -58,12 +58,12 @@ function resolveShellPath(): string {
 
 function makeVenvActivationCommand(venvBinPath: string): string {
   const script = enclosePath(
-    path.join(venvBinPath, IsWindows ? 'activate.bat' : 'activate')
+    path.join(venvBinPath, host.isWindows ? 'activate.bat' : 'activate')
   );
 
-  return IsWindows ? script : `source ${script}`;
+  return host.isWindows ? script : `source ${script}`;
 }
 
 function enclosePath(s: string) {
-  return IsWindows ? `"${s}"` : `'${s}'`;
+  return host.isWindows ? `"${s}"` : `'${s}'`;
 }

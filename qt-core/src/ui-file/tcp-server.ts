@@ -3,7 +3,7 @@
 
 import * as net from 'net';
 
-import { createWrappedLogger, IsWindows } from 'qt-lib';
+import { createWrappedLogger, host } from 'qt-lib';
 
 interface WriteOption {
   addNewLine: boolean;
@@ -67,7 +67,7 @@ export class UiDesignerTcpServer {
     this._clientSocket.write(text);
 
     if (option.addNewLine) {
-      this._clientSocket.write(IsWindows ? '\r\n' : '\n');
+      this._clientSocket.write(host.isWindows ? '\r\n' : '\n');
     }
   }
 

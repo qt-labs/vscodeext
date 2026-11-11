@@ -6,13 +6,13 @@ import * as fsSync from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { createLogger, Home, OSExeSuffix, vscodeSettings } from 'qt-lib';
+import { createLogger, host, vscodeSettings } from 'qt-lib';
 
-export const qtcliExeName = 'qtcli' + OSExeSuffix;
+export const qtcliExeName = 'qtcli' + host.exeSuffix;
 const logger = createLogger('qtcli');
 
 export function fallbackWorkingDir(): string {
-  const docs = path.join(Home, 'Documents');
+  const docs = path.join(host.userHome, 'Documents');
 
   try {
     const o = vscodeSettings.dialogDefaultPath.get()?.trim() ?? '';

@@ -6,14 +6,11 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import {
-  Home,
-  IsUnix,
-  IsWindows,
   createLogger,
   isPathToQtPathsOrQMake,
   QtWorkspaceConfigMessage,
   QtAdditionalPath,
-  IsMacOS,
+  host,
   telemetry,
   resolveConfiguration,
   CoreKey,
@@ -45,18 +42,18 @@ export function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
 }
 
 export function getDefaultQtRootCandidates(): string[] {
-  if (!IsUnix && !IsWindows) {
+  if (!host.isUnix && !host.isWindows) {
     const errorMessage = 'Unsupported OS';
     logger.error(errorMessage);
     throw new Error(errorMessage);
   }
   const defaultQtInsRootName = 'Qt';
-  if (!Home) {
+  if (!host.userHome) {
     throw new Error('Home is undefined');
   }
   const unixDefaultPaths = [
-    path.join(Home, defaultQtInsRootName),
-    path.join(Home, 'dev', defaultQtInsRootName),
+    path.join(host.userHome, defaultQtInsRootName),
+    path.join(host.userHome, 'dev', defaultQtInsRootName),
     path.join('/', 'opt', defaultQtInsRootName)
   ];
   const winRoot =
@@ -91,13 +88,13 @@ export function getDefaultQtRootCandidates(): string[] {
       )
     );
   }
-  if (IsMacOS) {
+  if (host.isMacOS) {
     unixDefaultPaths.push(path.join('/', 'Applications', defaultQtInsRootName));
     unixDefaultPaths.push(
-      path.join(Home, 'Applications', defaultQtInsRootName)
+      path.join(host.userHome, 'Applications', defaultQtInsRootName)
     );
   }
-  const defaultPaths = IsUnix ? unixDefaultPaths : winDefaultPaths;
+  const defaultPaths = host.isUnix ? unixDefaultPaths : winDefaultPaths;
   return defaultPaths;
 }
 

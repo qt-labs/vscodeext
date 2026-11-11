@@ -14,9 +14,7 @@ import {
   CoreKey,
   createLogger,
   findQtPathsInInstallationPath,
-  IsLinux,
-  IsMacOS,
-  IsWindows,
+  host,
   QtWorkspaceConfigMessage,
   QtWorkspaceFeatures,
   searchForQtPathsInVCPKG,
@@ -377,7 +375,7 @@ export class CppProject implements Project {
       if (isEmpty(modules)) {
         continue;
       }
-      if (IsMacOS && this._type === CppProjectType.Kit) {
+      if (host.isMacOS && this._type === CppProjectType.Kit) {
         const majorVersion = await getMajorQtVersion();
         if (majorVersion) {
           modules = modules.map((module) => {
@@ -435,11 +433,11 @@ export class CppProject implements Project {
       const fileContent = fs.readFileSync(file, 'utf8');
       const jsonContent = JSON.parse(fileContent) as cmakeFileApi.Target;
       let frameworks: string[] = [];
-      if (IsMacOS) {
+      if (host.isMacOS) {
         frameworks = CppProject.parseCmakeFileApiContentMacOS(jsonContent);
-      } else if (IsLinux) {
+      } else if (host.isLinux) {
         frameworks = CppProject.parseCmakeFileApiContentLinux(jsonContent);
-      } else if (IsWindows) {
+      } else if (host.isWindows) {
         frameworks = CppProject.parseCmakeFileApiContentWindows(
           jsonContent,
           buildType

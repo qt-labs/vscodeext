@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import { IsWindows, telemetry } from 'qt-lib';
+import { host, telemetry } from 'qt-lib';
 import { kitManager } from '@/extension';
 import { EXTENSION_ID } from '@/constants';
 
@@ -11,7 +11,7 @@ export function registerScanForQtKitsCommand() {
     `${EXTENSION_ID}.scanForQtKits`,
     async () => {
       telemetry.sendAction('scanForQtKits');
-      if (IsWindows) {
+      if (host.isWindows) {
         await vscode.commands.executeCommand('cmake.scanForKits');
       }
       await kitManager.checkForAllQtInstallations(true);

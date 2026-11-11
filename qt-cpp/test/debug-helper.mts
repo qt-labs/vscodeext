@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { IsLinux, IsMacOS, IsWindows } from 'qt-lib';
+import { host } from 'qt-lib';
 
 /**
  * Debug-session utilities for qt-cpp NatVis integration tests.
@@ -108,7 +108,11 @@ export function addBreakpoints(bps: vscode.SourceBreakpoint[]) {
 export function offscreenPlatformEnvironment(
   existing: readonly { name: string; value: string }[] = []
 ): { name: string; value: string }[] {
-  const nativePlatform = IsWindows ? 'windows' : IsMacOS ? 'cocoa' : 'xcb';
+  const nativePlatform = host.isWindows
+    ? 'windows'
+    : host.isMacOS
+      ? 'cocoa'
+      : 'xcb';
   const merged = [...existing];
   if (!merged.some((e) => e.name === 'QT_QPA_PLATFORM')) {
     merged.push({
@@ -151,7 +155,7 @@ export function offscreenPlatformEnvironment(
  * @throws Error if required launch paths or the NatVis file cannot be resolved.
  */
 export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
-  const miMode = process.env.MIMODE || (IsMacOS ? 'lldb' : 'gdb');
+  const miMode = process.env.MIMODE || (host.isMacOS ? 'lldb' : 'gdb');
 
   // Resolve what ${command:...} would have produced
   const program = await vscode.commands.executeCommand<string>(
@@ -174,9 +178,9 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   }
   const cfg: vscode.DebugConfiguration = {
     name: 'natvis-test-launch',
-    type: IsWindows ? 'cppvsdbg' : 'cppdbg',
+    type: host.isWindows ? 'cppvsdbg' : 'cppdbg',
     request: 'launch',
-    ...(IsWindows ? {} : { MIMode: miMode }),
+    ...(host.isWindows ? {} : { MIMode: miMode }),
     // Always the correct binary/dir for the *selected configuration* and *build type*
     program: program, //'${command:cmake.launchTargetPath}', // built binary
     cwd: cwd, //'${command:cmake.getLaunchTargetDirectory}', // correct working dir
@@ -190,11 +194,11 @@ export async function makeCppDebugConfig(): Promise<vscode.DebugConfiguration> {
   };
 
   // Non-Windows: set MI mode, and on Linux also force the debugger path.
-  if (!IsWindows) {
+  if (!host.isWindows) {
     (cfg as any).MIMode = miMode;
 
     // On Ubuntu CI, cpptools can't infer the MI debugger, so we point it at gdb explicitly.
-    if (IsLinux && !(cfg as any).miDebuggerPath) {
+    if (host.isLinux && !(cfg as any).miDebuggerPath) {
       (cfg as any).miDebuggerPath = 'gdb';
     }
   }
@@ -390,7 +394,7 @@ export async function warmUpNatvisDisplay(
   session: vscode.DebugSession,
   frameId: number
 ): Promise<void> {
-  if (!IsWindows) return;
+  if (!host.isWindows) return;
 
   const topLocals = await getLocals(session, frameId);
 
@@ -610,7 +614,7 @@ export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
 
   let snippet: DebugConfigurationSnippet | undefined;
 
-  if (IsWindows) {
+  if (host.isWindows) {
     // Windows: use the Visual Studio debugger snippet
     snippet = allSnippets.find((s) => s.body?.type === 'cppvsdbg');
   } else {
@@ -636,7 +640,7 @@ export function getQtCppSnippetDebugConfiguration(): vscode.DebugConfiguration {
   if (!normalized.name) {
     normalized.name =
       snippet.label ??
-      (IsWindows ? 'Qt snippet (cppvsdbg)' : 'Qt snippet (cppdbg)');
+      (host.isWindows ? 'Qt snippet (cppvsdbg)' : 'Qt snippet (cppdbg)');
   }
 
   return normalized;

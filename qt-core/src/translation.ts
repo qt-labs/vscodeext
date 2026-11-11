@@ -9,9 +9,7 @@ import {
   CoreKey,
   createLogger,
   exists,
-  IsMacOS,
-  IsWindows,
-  OSExeSuffix,
+  host,
   searchForExeInQtInfo,
   telemetry,
   QtWorkspaceFeatures,
@@ -107,7 +105,7 @@ async function openInLinguistCommand() {
   openInLinguist(linguistPath, activeDocument.fsPath);
 }
 
-const LinguistExeName = IsMacOS ? 'Linguist' : 'linguist' + OSExeSuffix;
+const LinguistExeName = host.isMacOS ? 'Linguist' : 'linguist' + host.exeSuffix;
 
 function getLinguistExePath(selectedQtBinPath: string) {
   const macOSPath = path.join(
@@ -116,7 +114,7 @@ function getLinguistExePath(selectedQtBinPath: string) {
     'MacOS',
     LinguistExeName
   );
-  return IsMacOS
+  return host.isMacOS
     ? path.join(selectedQtBinPath, macOSPath)
     : path.join(selectedQtBinPath, LinguistExeName);
 }
@@ -137,7 +135,7 @@ async function locateLinguist(qtPaths: string) {
     }
   }
 
-  if (!IsWindows) {
+  if (!host.isWindows) {
     const linguistExePath = '/usr/bin/linguist';
     if (await exists(linguistExePath)) {
       return linguistExePath;
@@ -148,7 +146,7 @@ async function locateLinguist(qtPaths: string) {
 }
 
 async function locateLinguistFromVenvBinPaths(venvBinPath: string) {
-  const candidate = path.join(venvBinPath, 'pyside6-linguist' + OSExeSuffix);
+  const candidate = path.join(venvBinPath, 'pyside6-linguist' + host.exeSuffix);
   return (await exists(candidate)) ? candidate : undefined;
 }
 

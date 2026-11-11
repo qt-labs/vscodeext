@@ -5,13 +5,13 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { IsWindows, telemetry } from 'qt-lib';
+import { host, telemetry } from 'qt-lib';
 import { getQtInsRoot, getSelectedKit } from '@cmd/register-qt-path';
 import { EXTENSION_ID } from '@/constants';
 
 async function findMinGWgdbPath(): Promise<string | undefined> {
   telemetry.sendAction('minGWgdb');
-  if (!IsWindows) {
+  if (!host.isWindows) {
     throw new Error('MinGW gdb is only available on Windows');
   }
   const kit = await getSelectedKit();
