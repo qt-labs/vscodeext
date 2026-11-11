@@ -11,6 +11,7 @@
 - Start the elevated helper when the Qt Software Management Service needs administrator rights
 - Forward the usage data opt-in of the walkthrough to the Qt Software Management Service as its telemetry setting
 - Offer to sign in when the Qt Software Management Service has no valid Qt Account credentials
+- Leave the usage data and crash dump opt-ins of the walkthrough off until the user enables them
 - Add the `qt-sm.autoRemoveUnneeded` setting, on by default: a removal also takes the packages that nothing else needs any more
 
 ⚠️ **Changed**
