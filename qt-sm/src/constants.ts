@@ -43,7 +43,7 @@ export const SIGN_IN_STALL_MS = 25_000;
 export const SIGN_IN_EXPIRY_MS = 10 * 60_000;
 
 // Survey popup constants
-export const SURVEY_URL = 'https://www.surveymonkey.com/r/QZH56YS';
+export const SURVEY_URL = 'https://install.qt.io/beta-survey';
 // TODO: Make this 30 minutes before the alpha release
 export const SURVEY_DELAY_MS = 30 * 60 * 1000; // 30 minutes
 
