@@ -62,6 +62,7 @@ import {
   showInstalledPackagesOperation
 } from '@/installed-packages-view';
 import {
+  isWalkthroughActive,
   isWalkthroughOpen,
   refreshWalkthrough,
   refreshLatestFrameworkState,
@@ -545,13 +546,18 @@ async function showInstalledNotification(pkg: PackageData): Promise<void> {
   const location = installRoot
     ? ` Installed in ${path.join(installRoot, 'QtFramework', pkg.version)}.`
     : '';
+  // The walkthrough is already in front of the user when it is the active
+  // editor, so the notification does not offer to start it.
+  const offerWalkthrough = !isWalkthroughActive();
   const action = await vscode.window.showInformationMessage(
     `${packageLabel(pkg)} ${pkg.version} installed successfully. ` +
-      "Your Qt development environment is ready. Open the Qt panel to see what's installed, " +
-      'or start the walkthrough to build your first app.' +
+      "Your Qt development environment is ready. Open the Qt panel to see what's installed" +
+      (offerWalkthrough
+        ? ', or start the walkthrough to build your first app.'
+        : '.') +
       location,
     openPanel,
-    startWalkthrough
+    ...(offerWalkthrough ? [startWalkthrough] : [])
   );
   if (action === openPanel) {
     await vscode.commands.executeCommand(
