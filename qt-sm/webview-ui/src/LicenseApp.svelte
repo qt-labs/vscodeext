@@ -2,6 +2,7 @@
 <!-- SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only -->
 
 <script lang="ts">
+  import { tick } from 'svelte';
   import type {
     LicenseAgreement,
     MessageToWebview,
@@ -48,6 +49,17 @@
 
   function onCancel() {
     postMessage({ type: 'cancel' });
+  }
+
+  // Ticking the checkbox moves the focus to Continue, so that Enter on the
+  // checkbox and Enter again accepts everything. The button is enabled by
+  // the same change, so wait for the DOM before focusing it.
+  async function onAcceptedChange() {
+    if (!accepted) {
+      return;
+    }
+    await tick();
+    acceptBtn?.focus();
   }
 
   function handleGlobalKeydown(event: KeyboardEvent) {
@@ -136,6 +148,7 @@
             type="checkbox"
             bind:this={acceptCheckbox}
             bind:checked={accepted}
+            onchange={onAcceptedChange}
           />
           I have read these and accept the license agreements
         </label>
@@ -319,7 +332,8 @@
     outline: none;
   }
 
-  .btn:focus-visible {
+  .btn:focus-visible,
+  .btn-primary:focus {
     outline: 1px solid var(--vscode-focusBorder);
     outline-offset: 1px;
   }
