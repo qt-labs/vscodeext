@@ -1,6 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+import * as os from 'os';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { Packages, type PackageData } from 'sms-api';
 
@@ -62,6 +64,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
+  private view: vscode.TreeView<vscode.TreeItem> | undefined;
   private state: LoadState = 'loading';
   private versions: InstalledQtVersion[] = [];
   private installRoot = '';
@@ -231,10 +234,32 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
     );
   }
 
+  /** The tree view of this provider, which shows the root in its title. */
+  attachView(view: vscode.TreeView<vscode.TreeItem>): void {
+    this.view = view;
+    this.showInstallRoot();
+  }
+
   private setState(state: LoadState): void {
     this.state = state;
     void vscode.commands.executeCommand('setContext', STATE_CONTEXT_KEY, state);
+    this.showInstallRoot();
     this._onDidChangeTreeData.fire(undefined);
+  }
+
+  /**
+   * Show the installation root next to the view title: the root the
+   * service resolved once it answered, the configured one before that.
+   */
+  private showInstallRoot(): void {
+    if (!this.view) {
+      return;
+    }
+    const root =
+      this.state === 'loaded' && this.installRoot
+        ? this.installRoot
+        : getInstallRoot();
+    this.view.description = root ? shortenHome(root) : 'No installation path';
   }
 
   private errorItem(): vscode.TreeItem {
@@ -287,6 +312,15 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   }
 }
 
+/** `~/QtAlpha` instead of `/home/user/QtAlpha`, like VS Code shows paths. */
+function shortenHome(dir: string): string {
+  const home = os.homedir();
+  if (dir === home) {
+    return '~';
+  }
+  return dir.startsWith(home + path.sep) ? `~${dir.slice(home.length)}` : dir;
+}
+
 let provider: InstalledPackagesViewProvider | undefined;
 
 export function registerInstalledPackagesView(
@@ -296,6 +330,7 @@ export function registerInstalledPackagesView(
   const treeView = vscode.window.createTreeView(VIEW_ID, {
     treeDataProvider: provider
   });
+  provider.attachView(treeView);
   context.subscriptions.push(treeView, provider);
 }
 
