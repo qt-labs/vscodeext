@@ -1370,7 +1370,7 @@ export async function resetTestState(): Promise<void> {
 
   const config = vscode.workspace.getConfiguration(EXTENSION_ID);
   const rawInstallPath =
-    config.get<string>(CONF_INSTALLATION_PATH) ?? '~/QtAlpha';
+    config.get<string>(CONF_INSTALLATION_PATH) ?? '~/QtBeta';
   const installPath = resolveConfiguration(rawInstallPath);
 
   const pathsToRemove = [

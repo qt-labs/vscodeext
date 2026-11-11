@@ -225,7 +225,7 @@
       "properties": {
         "qt-sm.installationPath": {
           "type": "string",
-          "default": "~/QtAlpha",
+          "default": "~/QtBeta",
           "description": "Default installation path for Qt packages",
           "scope": "machine"
         },
