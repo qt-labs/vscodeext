@@ -4,9 +4,7 @@
 import * as path from 'path';
 
 import {
-  IsMacOS,
-  IsWindows,
-  OSExeSuffix,
+  host,
   exists,
   searchForExeInQtInfo,
   findQtPathsInInstallationPath
@@ -35,7 +33,7 @@ export async function locateDesignerFromKit(
     }
   }
 
-  if (!IsWindows) {
+  if (!host.isWindows) {
     exe = '/usr/bin/designer';
     if (await exists(exe)) {
       return exe;
@@ -55,13 +53,15 @@ export async function locateDesignerFromQtPaths(qtPaths: string) {
 }
 
 export async function locateDesignerFromVenvBinPaths(venvBinPath: string) {
-  const candidate = path.join(venvBinPath, 'pyside6-designer' + OSExeSuffix);
+  const candidate = path.join(venvBinPath, 'pyside6-designer' + host.exeSuffix);
   return (await exists(candidate)) ? candidate : undefined;
 }
 
 function getDesignerExePathFromBin(selectedQtBinPath: string) {
   return path.join(
     selectedQtBinPath,
-    IsMacOS ? 'Designer.app/Contents/MacOS/Designer' : 'designer' + OSExeSuffix
+    host.isMacOS
+      ? 'Designer.app/Contents/MacOS/Designer'
+      : 'designer' + host.exeSuffix
   );
 }

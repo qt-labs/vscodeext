@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 import {
   CoreKey,
   createLogger,
-  OSExeSuffix,
+  host,
   QtInsRootConfigName,
   compareVersions,
   pythonSettings
@@ -387,7 +387,7 @@ async function createUvVenv(folder: vscode.WorkspaceFolder) {
           cwd,
           venvDir,
           consts.VENV_BIN_DIR,
-          'python' + OSExeSuffix
+          'python' + host.exeSuffix
         );
         await pyApi.environments.updateActiveEnvironmentPath(
           pythonPath,

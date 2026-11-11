@@ -7,15 +7,14 @@ import type { Dirent } from 'fs';
 
 import {
   exists,
-  OSExeSuffix,
-  IsMacOS,
+  host,
   findQtPathsInInstallationPath,
   getArchInfoFromQtInfo
 } from 'qt-lib';
 import { coreAPI } from '@/extension';
 
 const QtToolchainCMakeFileName = 'qt.toolchain.cmake';
-const NinjaFileName = 'ninja' + OSExeSuffix;
+const NinjaFileName = 'ninja' + host.exeSuffix;
 
 async function pathOfDirectoryIfExists(
   dirPath: string
@@ -147,9 +146,9 @@ export async function locateCMakeExecutable(rootIns: string) {
     rootIns,
     `Tools`,
     'CMake',
-    IsMacOS ? path.join('CMake.app', 'Contents') : '',
+    host.isMacOS ? path.join('CMake.app', 'Contents') : '',
     'bin',
-    `cmake${OSExeSuffix}`
+    `cmake${host.exeSuffix}`
   );
   if (await exists(cmakeExePath)) {
     return cmakeExePath;

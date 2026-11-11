@@ -8,8 +8,7 @@ import * as fs from 'fs/promises';
 import commandExists from 'command-exists';
 
 import {
-  OSExeSuffix,
-  UserLocalDir,
+  host,
   createLogger,
   CoreKey,
   compareVersions,
@@ -19,7 +18,6 @@ import {
   QtAdditionalPath,
   QtToolsPaths,
   generateDefaultQtPathsName,
-  IsWindows,
   getVCPKGRoot,
   telemetry,
   TelemetryEventProperties,
@@ -53,10 +51,10 @@ function cmakeGlobalKitsFilepath() {
 }
 
 function cmakeToolsDir() {
-  if (!UserLocalDir) {
+  if (!host.userLocalDir) {
     return undefined;
   }
-  return path.join(UserLocalDir, 'CMakeTools');
+  return path.join(host.userLocalDir, 'CMakeTools');
 }
 
 const envPath = '${env:PATH}';
@@ -303,7 +301,7 @@ export class KitManager {
     qtPaths: QtAdditionalPath[]
   ) {
     const kits: Kit[] = [];
-    const cmakeKits = IsWindows
+    const cmakeKits = host.isWindows
       ? KitManager.getKitsByCMakeExtension()
       : undefined;
     for (const p of qtPaths) {
@@ -513,7 +511,7 @@ export class KitManager {
   }
 
   private static generateEnvPathForQtInstallation(installation: string) {
-    if (!IsWindows) {
+    if (!host.isWindows) {
       return envPath;
     }
     const installationBinDir = path.join(installation, 'bin');
@@ -590,8 +588,8 @@ export class KitManager {
             ...newKit,
             ...{
               compilers: {
-                C: path.join(mingwDirPath, 'gcc' + OSExeSuffix),
-                CXX: path.join(mingwDirPath, 'g++' + OSExeSuffix)
+                C: path.join(mingwDirPath, 'gcc' + host.exeSuffix),
+                CXX: path.join(mingwDirPath, 'g++' + host.exeSuffix)
               }
             }
           };

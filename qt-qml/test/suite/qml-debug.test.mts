@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { delay, IsWindows } from 'qt-lib';
+import { delay, host } from 'qt-lib';
 import {
   setupSandboxLifecycleHooks,
   activateQtCore,
@@ -153,7 +153,7 @@ describe('QML Debugger integration', function () {
     await delay(DISK_FLUSH_DELAY_MS);
 
     // Check for binary
-    const bin = IsWindows
+    const bin = host.isWindows
       ? path.join('Debug', 'qml-debug-app.exe')
       : 'qml-debug-app';
     const outPath = path.join(buildDir, bin);

@@ -12,7 +12,7 @@ import {
   findQtPathsInInstallationPath,
   generateDefaultQtPathsName,
   getMsvcInfo,
-  IsWindows,
+  host,
   QtInfo,
   QtToolsPaths,
   CoreKey
@@ -222,7 +222,7 @@ export async function resolveQtInstallation(
     });
 
     // On Windows, prefer MSVC installations over MinGW
-    if (IsWindows) {
+    if (host.isWindows) {
       matchingInstallations.sort((a, b) => {
         const aIsMsvc = path.basename(a).startsWith('msvc');
         const bIsMsvc = path.basename(b).startsWith('msvc');
@@ -304,7 +304,7 @@ function generateCMakePresets(
     }
   };
 
-  const msvcInfo = IsWindows ? getMsvcInfo(qtInfo.prefixPath) : undefined;
+  const msvcInfo = host.isWindows ? getMsvcInfo(qtInfo.prefixPath) : undefined;
 
   const insName = qtInfo.name;
 

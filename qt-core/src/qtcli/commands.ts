@@ -5,14 +5,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import {
-  exists,
-  IsArm64,
-  IsLinux,
-  IsMacOS,
-  IsWindows,
-  coreSettings
-} from 'qt-lib';
+import { exists, host, coreSettings } from 'qt-lib';
 import {
   qtcliExeName,
   findActiveTabUri,
@@ -46,11 +39,11 @@ export async function setDefaultProjectDir(dir: string) {
 }
 
 function findQtcliOsPrefix(): string {
-  if (IsWindows) {
-    return `qtcli-windows-${IsArm64 ? 'arm64-' : 'amd64-'}`;
-  } else if (IsLinux) {
-    return `qtcli-linux-${IsArm64 ? 'arm64-' : 'amd64-'}`;
-  } else if (IsMacOS) {
+  if (host.isWindows) {
+    return `qtcli-windows-${host.isArm64 ? 'arm64-' : 'amd64-'}`;
+  } else if (host.isLinux) {
+    return `qtcli-linux-${host.isArm64 ? 'arm64-' : 'amd64-'}`;
+  } else if (host.isMacOS) {
     return 'qtcli-darwin-all-';
   } else {
     throw new Error(`Platform '${process.platform}' is not supported`);

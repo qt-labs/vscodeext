@@ -7,11 +7,11 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { OSExeSuffix } from 'qt-lib';
+import { host } from 'qt-lib';
 import * as installer from '@/installer.mjs';
 import { VersionedInstallations } from '@/versioned-installations.mjs';
 
-const QmllsExeName = 'qmlls' + OSExeSuffix;
+const QmllsExeName = 'qmlls' + host.exeSuffix;
 
 const BASE_ASSET: installer.AssetWithTag = {
   id: '101',
@@ -65,7 +65,7 @@ describe('installer: qmlls runnable probe', () => {
   it('rejects an executable that cannot be started', async () => {
     const missing = path.join(
       os.tmpdir(),
-      `qmlls-does-not-exist-${String(process.pid)}${OSExeSuffix}`
+      `qmlls-does-not-exist-${String(process.pid)}${host.exeSuffix}`
     );
 
     expect(await installer.isRunnable(missing)).to.equal(false);

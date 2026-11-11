@@ -11,24 +11,33 @@ import * as async from 'async';
 import { QtInfo } from './core-api';
 import { telemetry } from './telemetry';
 
-export const Home = userHome();
-export const IsWindows = process.platform === 'win32';
-export const IsMacOS = process.platform === 'darwin';
-export const IsLinux = process.platform === 'linux';
-export const IsUnix = IsMacOS || IsLinux;
-export const IsArm64 = os.arch() === 'arm64';
-export const IsArm32 = os.arch() === 'arm';
-export const Isx86 = os.arch() === 'x86' || os.arch() === 'ia32';
-export const Isx64 = os.arch() === 'x64';
+export const host = (() => {
+  const isWindows = process.platform === 'win32';
+  const isMacOS = process.platform === 'darwin';
+  const isLinux = process.platform === 'linux';
+  const arch = os.arch();
+  const home = userHome();
 
-export const OSExeSuffix = IsWindows ? '.exe' : '';
-export const UserLocalDir = userLocalDir();
+  return {
+    isWindows,
+    isMacOS,
+    isLinux,
+    isUnix: isMacOS || isLinux,
+    isArm64: arch === 'arm64',
+    isArm32: arch === 'arm',
+    isX86: arch === 'x86' || arch === 'ia32',
+    isX64: arch === 'x64',
+    userHome: home,
+    userLocalDir: userLocalDir(home),
+    exeSuffix: isWindows ? '.exe' : ''
+  };
+})();
 
 export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function userLocalDir() {
+function userLocalDir(home: string) {
   if (process.platform === 'win32') {
     return localAppData();
   } else {
@@ -36,8 +45,8 @@ function userLocalDir() {
     if (xdg_dir) {
       return xdg_dir;
     }
-    if (Home) {
-      return path.join(Home, '.local/share');
+    if (home) {
+      return path.join(home, '.local/share');
     }
     return undefined;
   }
@@ -68,7 +77,7 @@ export async function exists(filePath: string) {
 }
 
 export function normalizeDriveLetter(fsPath: string): string {
-  if (IsWindows && /^[a-z]:/.test(fsPath)) {
+  if (host.isWindows && /^[a-z]:/.test(fsPath)) {
     return fsPath.charAt(0).toUpperCase() + fsPath.slice(1);
   }
   return fsPath;
@@ -275,8 +284,8 @@ export async function fetchWithAbort(
 
 export function findQtPathsInInstallationPath(dir: string): string | undefined {
   const qtpathsVersions = ['qtpaths', 'qtpaths6'];
-  const suffixes = [OSExeSuffix];
-  if (IsWindows) {
+  const suffixes = [host.exeSuffix];
+  if (host.isWindows) {
     suffixes.push('.bat');
   }
   for (const qtpaths of qtpathsVersions) {

@@ -8,15 +8,10 @@ import * as os from 'os';
 import { spawn } from 'child_process';
 
 import {
-  OSExeSuffix,
   fetchWithAbort,
   createLogger,
-  UserLocalDir,
   FetchAbortReason,
-  IsWindows,
-  IsMacOS,
-  IsLinux,
-  IsArm64,
+  host,
   qmlSettings
 } from 'qt-lib';
 import * as unzipper from '@/unzipper.js';
@@ -35,7 +30,7 @@ export type { InstallVersion } from '@/versioned-installations.mjs';
 const ReleaseInfoUrl = 'https://qtccache.qt.io/QMLLS/LatestRelease';
 const ReleaseInfoTimeout = 10 * 1000;
 const DownloadDir = os.tmpdir();
-const QmllsExeName = 'qmlls' + OSExeSuffix;
+const QmllsExeName = 'qmlls' + host.exeSuffix;
 
 let InstallDir: string;
 let installations: VersionedInstallations;
@@ -137,11 +132,11 @@ function collectGarbage() {
  * which polluted the user's file system. We now use VS Code's globalStorageUri.
  */
 function cleanupOldInstallation() {
-  if (!UserLocalDir) {
+  if (!host.userLocalDir) {
     return;
   }
 
-  const oldInstallDir = path.join(UserLocalDir, 'qmlls');
+  const oldInstallDir = path.join(host.userLocalDir, 'qmlls');
 
   // Only attempt cleanup if the old directory exists and is different from the new one
   if (oldInstallDir === InstallDir) {
@@ -417,15 +412,15 @@ export async function fetchAssetToInstall(controller: AbortController) {
     let platform = '';
     let arch = '';
 
-    if (IsWindows) {
+    if (host.isWindows) {
       platform = 'windows';
-      arch = IsArm64 ? 'arm64' : 'x64';
-    } else if (IsMacOS) {
+      arch = host.isArm64 ? 'arm64' : 'x64';
+    } else if (host.isMacOS) {
       platform = 'macos';
       arch = 'universal'; // macOS uses universal binaries
-    } else if (IsLinux) {
+    } else if (host.isLinux) {
       platform = 'linux';
-      arch = IsArm64 ? 'arm64' : 'x64';
+      arch = host.isArm64 ? 'arm64' : 'x64';
     } else {
       throw new Error(`Platform is not supported`);
     }

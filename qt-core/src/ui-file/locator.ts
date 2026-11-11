@@ -7,9 +7,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import {
-  IsMacOS,
-  IsWindows,
-  OSExeSuffix,
+  host,
   createWrappedLogger,
   resolveConfiguration,
   searchForExeInQtInfo,
@@ -127,7 +125,7 @@ export class UiDesignerLocator {
         const core = new QtCoreValueReader(coreAPI, this._folder);
         const venvBin = core.pysideEnvData?.venvBinPath;
         if (venvBin) {
-          return path.join(venvBin, 'pyside6-designer' + OSExeSuffix);
+          return path.join(venvBin, 'pyside6-designer' + host.exeSuffix);
         }
         break;
       }
@@ -165,7 +163,9 @@ export class UiDesignerLocator {
 function getDesignerExePathFromBin(selectedQtBinPath: string) {
   return path.join(
     selectedQtBinPath,
-    IsMacOS ? 'Designer.app/Contents/MacOS/Designer' : 'designer' + OSExeSuffix
+    host.isMacOS
+      ? 'Designer.app/Contents/MacOS/Designer'
+      : 'designer' + host.exeSuffix
   );
 }
 
@@ -203,7 +203,7 @@ async function checkExeStatus(input: string): Promise<ExeCheckResult> {
     return ExeCheckResult.NotAFile;
   }
 
-  if (IsWindows) {
+  if (host.isWindows) {
     const args = ['.exe', '.cmd', '.bat', '.com'];
     if (!args.includes(path.extname(normalized).toLowerCase())) {
       return ExeCheckResult.NotExecutableExtension;

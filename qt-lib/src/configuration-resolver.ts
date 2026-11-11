@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 import untildify from 'untildify';
 
-import { Home } from './util';
+import { host } from './util';
 
 /**
  * Resolves configuration in a string, such as ${workspaceFolder}
@@ -14,7 +14,7 @@ export function resolveConfiguration(input: string): string {
   const configurationResolvers: Record<string, () => string | undefined> = {
     workspaceFolder: () =>
       vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? undefined,
-    userHome: () => Home
+    userHome: () => host.userHome
   };
 
   // Resolve keys in configurationResolvers with values from the configurationResolvers object

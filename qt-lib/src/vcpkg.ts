@@ -3,14 +3,7 @@
 
 import * as path from 'path';
 
-import {
-  IsLinux,
-  IsMacOS,
-  IsWindows,
-  OSExeSuffix,
-  IsArm64,
-  Isx64
-} from './util';
+import { host } from './util';
 import { spawnSync } from 'child_process';
 
 export function getQueryOutput(exePath: string) {
@@ -28,22 +21,22 @@ export function searchForQtPathsInVCPKG(root: string): string | undefined {
   if (!root) {
     return;
   }
-  const exeNames = [`qtpaths${OSExeSuffix}`, `qmake${OSExeSuffix}`];
-  if (IsWindows) {
+  const exeNames = [`qtpaths${host.exeSuffix}`, `qmake${host.exeSuffix}`];
+  if (host.isWindows) {
     exeNames.push('qmake.bat');
   }
 
   const osPath = () => {
-    const arch = Isx64 ? 'x64' : 'x86';
-    if (IsLinux) {
+    const arch = host.isX64 ? 'x64' : 'x86';
+    if (host.isLinux) {
       return `${arch}-linux`;
-    } else if (IsMacOS) {
-      if (IsArm64) {
+    } else if (host.isMacOS) {
+      if (host.isArm64) {
         return 'arm64-osx';
       } else {
         return `x64-osx`;
       }
-    } else if (IsWindows) {
+    } else if (host.isWindows) {
       return `${arch}-windows`;
     } else {
       throw new Error('Not supported');

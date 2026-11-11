@@ -8,7 +8,7 @@ import {
   ResolvedEnvironment as PyEnv
 } from '@vscode/python-extension';
 
-import { isError, OSExeSuffix, createLogger } from 'qt-lib';
+import { isError, host, createLogger } from 'qt-lib';
 import { PipPackageInfo } from './types.js';
 import { PySideCommandRunner } from './runner.mjs';
 import * as utils from './utils.js';
@@ -84,7 +84,7 @@ export class PySideEnv {
     const pythonPathRel = path.join(
       '.venv',
       consts.VENV_BIN_DIR,
-      'python' + OSExeSuffix
+      'python' + host.exeSuffix
     );
     const pattern = new vscode.RelativePattern(folder.uri, pythonPathRel);
     const watcher = vscode.workspace.createFileSystemWatcher(pattern);

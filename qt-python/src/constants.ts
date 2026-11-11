@@ -1,7 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { IsWindows } from 'qt-lib';
+import { host } from 'qt-lib';
 
 export const EXTENSION_ID = 'qt-python';
 export const MS_PYTHON_ID = 'ms-python.python';
@@ -22,8 +22,9 @@ export const DEBUG_TYPE = 'pyside'; // contributes > debuggers
 export const DEBUG_DELEGATE_TYPE = 'debugpy';
 export const DEBUG_DEFAULT_ENTRY_POINT = 'main.py';
 
-export const VENV_BIN_DIR = IsWindows ? 'Scripts' : 'bin';
-export const QML_IMPORT_SUBDIR = 'PySide6/' + (IsWindows ? 'qml' : 'Qt/qml');
+export const VENV_BIN_DIR = host.isWindows ? 'Scripts' : 'bin';
+export const QML_IMPORT_SUBDIR =
+  'PySide6/' + (host.isWindows ? 'qml' : 'Qt/qml');
 
 export const TOML_PROJECT_FILE_NAME = 'pyproject.toml';
 export const TOML_KEY_PROJECT_NAME = 'project.name';

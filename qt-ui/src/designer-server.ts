@@ -3,7 +3,7 @@
 
 import * as net from 'net';
 
-import { IsWindows, createLogger } from 'qt-lib';
+import { host, createLogger } from 'qt-lib';
 
 const logger = createLogger('designer-server');
 
@@ -11,7 +11,7 @@ export class DesignerServer {
   private readonly server: net.Server;
   private client: net.Socket | undefined;
   private readonly port: number;
-  private static readonly newLine = IsWindows ? '\r\n' : '\n';
+  private static readonly newLine = host.isWindows ? '\r\n' : '\n';
 
   constructor(port = 0) {
     this.port = port;

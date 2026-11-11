@@ -6,7 +6,7 @@ import * as childProcess from 'child_process';
 import { randomUUID } from 'crypto';
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 
-import { createLogger, IsWindows } from 'qt-lib';
+import { createLogger, host } from 'qt-lib';
 import { findQtcliExePath } from '@/qtcli/commands';
 import { isErrorResponse, Issue } from '@/webview/shared/message';
 
@@ -32,7 +32,7 @@ export class QtcliRestClient {
     this._api = axios.create({
       baseURL: 'http://unix',
       timeout: 15 * 1000,
-      socketPath: !IsWindows
+      socketPath: !host.isWindows
         ? `/tmp/qtcli/${socketName}.sock`
         : String.raw`\\.\pipe\qtcli` + `\\${socketName}.pipe`
     });

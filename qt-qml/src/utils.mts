@@ -4,13 +4,13 @@
 import * as vscode from 'vscode';
 import { spawn, SpawnOptions, ChildProcess, execSync } from 'child_process';
 
-import { createLogger, IsWindows, IsLinux } from 'qt-lib';
+import { createLogger, host } from 'qt-lib';
 
 const logger = createLogger('utils');
 
 export function normalizePathForComparison(filePath: string) {
   const normalized = filePath.replace(/\\/g, '/');
-  return IsWindows ? normalized.toLowerCase() : normalized;
+  return host.isWindows ? normalized.toLowerCase() : normalized;
 }
 
 /**
@@ -79,7 +79,7 @@ export class QtProcess extends ChildProcess {
 
     logger.info('Killing process:', this.pid.toString());
 
-    if (IsWindows) {
+    if (host.isWindows) {
       try {
         execSync(`taskkill /pid ${this.pid.toString()} /T /F`, {
           stdio: 'ignore'
@@ -88,7 +88,7 @@ export class QtProcess extends ChildProcess {
       } catch {
         return false;
       }
-    } else if (IsLinux) {
+    } else if (host.isLinux) {
       try {
         process.kill(-this.pid, signal);
         return true;
@@ -154,7 +154,7 @@ async function createSpawnOptions(
     };
   }
 
-  if (IsLinux) {
+  if (host.isLinux) {
     options = {
       ...options,
       detached: true
@@ -188,7 +188,7 @@ async function createSpawnOptions(
     }
   }
 
-  if (IsWindows && optionsOverrides?.useQtCppPath !== false) {
+  if (host.isWindows && optionsOverrides?.useQtCppPath !== false) {
     try {
       const dllDirs = await vscode.commands.executeCommand(`qt-cpp.qtDir`);
       if (typeof dllDirs === 'string' && dllDirs.length > 0) {

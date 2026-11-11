@@ -1,7 +1,7 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import { IsLinux, IsMacOS, IsWindows } from 'qt-lib';
+import { host } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants.js';
 
 // Note
@@ -24,7 +24,7 @@ export interface PackageCandidate {
 // and the executable inside it. Candidates are tried in order, newest name
 // first, so the download keeps working with whichever release "latest"
 // serves. Drop the old name once Qt Creator 21 is the oldest release here.
-export const PACKAGE_CANDIDATES: PackageCandidate[] = IsMacOS
+export const PACKAGE_CANDIDATES: PackageCandidate[] = host.isMacOS
   ? [
       {
         file: 'qtprofiler-signed.zip',
@@ -35,12 +35,12 @@ export const PACKAGE_CANDIDATES: PackageCandidate[] = IsMacOS
         exeRelPath: 'qmltraceviewer.app/Contents/MacOS/qmltraceviewer'
       }
     ]
-  : IsWindows
+  : host.isWindows
     ? [
         { file: 'qtprofiler.zip', exeRelPath: 'bin\\qtprofiler.exe' },
         { file: 'qmltraceviewer.zip', exeRelPath: 'bin\\qmltraceviewer.exe' }
       ]
-    : IsLinux
+    : host.isLinux
       ? [
           {
             file: 'qtprofiler.zip',
