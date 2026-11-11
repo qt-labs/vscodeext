@@ -597,6 +597,11 @@ export function isWalkthroughOpen(): boolean {
   return currentPanel !== undefined;
 }
 
+/** True while the walkthrough is the active editor tab. */
+export function isWalkthroughActive(): boolean {
+  return currentPanel?.active === true;
+}
+
 /**
  * Asynchronously refresh whether the latest Qt Framework is installed and
  * re-render if it changed. Safe to fire-and-forget; a no-op when no panel is
