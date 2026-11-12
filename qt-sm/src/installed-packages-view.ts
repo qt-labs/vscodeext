@@ -4,7 +4,7 @@
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { Packages, type PackageData } from 'sms-api';
+import { Packages } from 'sms-api';
 
 import { createLogger } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
@@ -12,7 +12,6 @@ import { getInstallRoot } from '@/install-root';
 import { ensureConnected } from '@/service-connection';
 import {
   groupFrameworkVersions,
-  packageLabel,
   type InstalledQtVersion
 } from '@/installed-packages-store';
 
@@ -33,19 +32,10 @@ export class InstalledPackageItem extends vscode.TreeItem {
     readonly version: string,
     installRoot: string
   ) {
-    super(`Qt ${version}`, vscode.TreeItemCollapsibleState.Collapsed);
+    super(`Qt ${version}`, vscode.TreeItemCollapsibleState.None);
     this.contextValue = 'installedPackage';
-    this.tooltip = `Qt ${version} in ${installRoot}`;
-  }
-}
-
-/** Tree item for one package of a Qt version, for example its add-ons. */
-class InstalledQtPackageItem extends vscode.TreeItem {
-  constructor(pkg: PackageData) {
-    super(packageLabel(pkg), vscode.TreeItemCollapsibleState.None);
-    this.contextValue = 'installedQtPackage';
-    this.tooltip = `${pkg.id}@${pkg.version}`;
     this.iconPath = new vscode.ThemeIcon('package');
+    this.tooltip = `Qt ${version} in ${installRoot}`;
   }
 }
 
@@ -186,12 +176,6 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   }
 
   getChildren(element?: vscode.TreeItem): vscode.TreeItem[] {
-    if (element instanceof InstalledPackageItem) {
-      const group = this.versions.find((v) => v.version === element.version);
-      return (group?.packages ?? []).map(
-        (pkg) => new InstalledQtPackageItem(pkg)
-      );
-    }
     if (element) {
       return [];
     }
