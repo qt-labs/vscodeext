@@ -59,7 +59,8 @@ import {
 import {
   type InstalledPackageItem,
   refreshInstalledPackages,
-  showInstalledPackagesOperation
+  showInstalledPackagesOperation,
+  reportInstalledPackagesProgress
 } from '@/installed-packages-view';
 import {
   isWalkthroughActive,
@@ -784,6 +785,7 @@ async function removeVersion(
           {
             onProgress: (info) => {
               const pct = Math.round(info.progress);
+              reportInstalledPackagesProgress(`Removing Qt ${version}`, pct);
               progress.report({
                 message: `${String(pct)}%`,
                 increment: pct - lastPct
@@ -1066,6 +1068,10 @@ async function installPackageByIdImpl(
       onProgress: (info) => {
         const pct = Math.round(info.progress);
         const phase = info.type;
+        reportInstalledPackagesProgress(
+          `${phase === ProgressType.Install ? 'Installing' : 'Downloading'} ${pkgLabel}`,
+          pct
+        );
 
         // Switch from download to install notification when phase changes
         if (phase !== currentPhase) {

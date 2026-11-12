@@ -69,8 +69,9 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   private versions: InstalledQtVersion[] = [];
   private installRoot = '';
   private errorMessage = '';
-  // Label of the install or removal that runs, shown at the top of the view.
-  private operation: string | undefined;
+  // The item of the install or removal that runs, shown at the top of the
+  // view. Kept across renders so that a progress update re-renders only it.
+  private operation: vscode.TreeItem | undefined;
 
   private refreshing: Promise<void> | undefined;
   private refreshAgain = false;
@@ -131,7 +132,8 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
    * during the operation and the service lists it only once it is done.
    */
   showOperation(label: string, operation: Promise<unknown>): void {
-    this.operation = label;
+    const item = operationItem(label);
+    this.operation = item;
     this._onDidChangeTreeData.fire(undefined);
     void vscode.window.withProgress(
       { location: { viewId: VIEW_ID } },
@@ -140,12 +142,34 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
           () => undefined,
           () => undefined
         );
-        if (this.operation === label) {
+        if (this.operation === item) {
           this.operation = undefined;
           this._onDidChangeTreeData.fire(undefined);
         }
       }
     );
+  }
+
+  /**
+   * Show how far the running operation is: `label` says what it does now,
+   * for example "Downloading Qt 6.9.0", and `percent` how far that is.
+   * The item says what runs only once the service reports progress, so a
+   * report that does not change what the item shows renders nothing.
+   */
+  reportOperationProgress(label: string, percent: number): void {
+    const item = this.operation;
+    if (!item) {
+      return;
+    }
+    const pct = Math.min(100, Math.max(0, Math.round(percent)));
+    const description = progressText(pct);
+    if (item.label === label && item.description === description) {
+      return;
+    }
+    item.label = label;
+    item.description = description;
+    item.tooltip = `${label}: ${String(pct)}%`;
+    this._onDidChangeTreeData.fire(item);
   }
 
   dispose(): void {
@@ -172,9 +196,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
       return [];
     }
     const items = this.rootItems();
-    return this.operation
-      ? [this.operationItem(this.operation), ...items]
-      : items;
+    return this.operation ? [this.operation, ...items] : items;
   }
 
   private rootItems(): vscode.TreeItem[] {
@@ -274,16 +296,6 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   }
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  private operationItem(label: string): vscode.TreeItem {
-    const item = new vscode.TreeItem(
-      `${label}...`,
-      vscode.TreeItemCollapsibleState.None
-    );
-    item.iconPath = new vscode.ThemeIcon('loading~spin');
-    return item;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   private retryItem(): vscode.TreeItem {
     const item = new vscode.TreeItem(
       'Retry',
@@ -354,6 +366,27 @@ export function scheduleInstalledPackagesRefresh(): void {
   provider?.scheduleRefresh();
 }
 
+// Number of cells of the text progress bar of a running operation.
+const PROGRESS_BAR_CELLS = 10;
+
+/** A text progress bar, for example `▰▰▰▰▱▱▱▱▱▱ 42%`. */
+function progressText(percent: number): string {
+  const filled = Math.floor((percent * PROGRESS_BAR_CELLS) / 100);
+  return `${'▰'.repeat(filled)}${'▱'.repeat(
+    PROGRESS_BAR_CELLS - filled
+  )} ${String(percent)}%`;
+}
+
+/** The item of a running install or removal, before progress is known. */
+function operationItem(label: string): vscode.TreeItem {
+  const item = new vscode.TreeItem(
+    `${label}...`,
+    vscode.TreeItemCollapsibleState.None
+  );
+  item.iconPath = new vscode.ThemeIcon('loading~spin');
+  return item;
+}
+
 /**
  * Show a running install or removal in the view until `operation` settles.
  * `label` is what runs, for example "Installing Qt 6.9.0".
@@ -363,4 +396,16 @@ export function showInstalledPackagesOperation(
   operation: Promise<unknown>
 ): void {
   provider?.showOperation(label, operation);
+}
+
+/**
+ * Show the progress of the operation shown with
+ * showInstalledPackagesOperation in its item. `label` says what runs now,
+ * for example "Downloading Qt 6.9.0", and `percent` how far it is.
+ */
+export function reportInstalledPackagesProgress(
+  label: string,
+  percent: number
+): void {
+  provider?.reportOperationProgress(label, percent);
 }
