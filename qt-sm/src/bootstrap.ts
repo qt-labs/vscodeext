@@ -19,6 +19,8 @@ import {
 } from 'qt-lib';
 import { ServiceLauncher, qtCompanyIniPath } from 'sms-api';
 
+import { getInstallRoot } from '@/install-root';
+
 const logger = createLogger('bootstrap');
 
 const BOOTSTRAP_BASE_URL = 'https://cdn.qt.io/install/public/bootstrap';
@@ -196,9 +198,25 @@ async function unzipFile(zipPath: string, destDir: string): Promise<void> {
 }
 
 /**
+ * Command line arguments for the bootstrap installer. The configured
+ * installation root is passed with `--install-folder`, otherwise the
+ * bootstrap falls back to its own default folder.
+ */
+function bootstrapArgs(): string[] {
+  const args = ['install', '--accept-telemetry'];
+  const installRoot = getInstallRoot();
+  if (installRoot) {
+    args.push('--install-folder', installRoot);
+  }
+  return args;
+}
+
+/**
  * Run the bootstrap installer after extracting it.
  */
 async function runBootstrap(extractDir: string): Promise<void> {
+  const args = bootstrapArgs();
+  logger.info(`Bootstrap arguments: ${args.join(' ')}`);
   return new Promise((resolve, reject) => {
     if (IsMacOS) {
       // Find the .app inside the extracted dir
@@ -213,17 +231,13 @@ async function runBootstrap(extractDir: string): Promise<void> {
         }
         const appPath = path.join(extractDir, appBundle);
         logger.info(`Running bootstrap app directly: ${appPath}`);
-        execFile(
-          'open',
-          ['-n', '-W', appPath, '--args', 'install', '--accept-telemetry'],
-          (err) => {
-            if (err) {
-              reject(new Error(err.message));
-            } else {
-              resolve();
-            }
+        execFile('open', ['-n', '-W', appPath, '--args', ...args], (err) => {
+          if (err) {
+            reject(new Error(err.message));
+          } else {
+            resolve();
           }
-        );
+        });
         return;
       }
       // Mount the DMG, find the app inside, run it
@@ -262,7 +276,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
           logger.info(`Running bootstrap app from DMG: ${appPath}`);
           execFile(
             'open',
-            ['-n', '-W', appPath, '--args', 'install', '--accept-telemetry'],
+            ['-n', '-W', appPath, '--args', ...args],
             (runErr) => {
               // Always try to detach the DMG
               execFile(
@@ -293,7 +307,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
       const runPath = path.join(extractDir, runFile);
       fs.chmodSync(runPath, 0o755);
       logger.info(`Running bootstrap: ${runPath}`);
-      execFile(runPath, ['install', '--accept-telemetry'], (err) => {
+      execFile(runPath, args, (err) => {
         if (err) {
           reject(new Error(err.message));
         } else {
@@ -309,7 +323,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
       }
       const exePath = path.join(extractDir, exeFile);
       logger.info(`Running bootstrap: ${exePath}`);
-      execFile(exePath, ['install', '--accept-telemetry'], (err) => {
+      execFile(exePath, args, (err) => {
         if (err) {
           reject(new Error(err.message));
         } else {
