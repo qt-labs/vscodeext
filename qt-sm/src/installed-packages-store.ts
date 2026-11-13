@@ -1,0 +1,208 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+import type { PackageData } from 'sms-api';
+
+import { resolveConfiguration } from 'qt-lib';
+import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
+import { isPackageOperationRunning } from '@/install-state';
+
+const QT_FRAMEWORK_PRODUCT = 'qtframework';
+
+/** The name to show for a package: its display name, else its name or id. */
+export function packageLabel(pkg: PackageData): string {
+  return pkg.displayNames[0] ?? (pkg.name || pkg.id);
+}
+
+/**
+ * Whether a package is part of the Qt Framework, and of `version` when one
+ * is given. The backend names the product; the id carries it too, for
+ * packages the journal recorded without one.
+ */
+export function isFrameworkPackage(
+  pkg: PackageData,
+  version?: string
+): boolean {
+  if (version !== undefined && pkg.version !== version) {
+    return false;
+  }
+  return (
+    pkg.product === QT_FRAMEWORK_PRODUCT ||
+    pkg.id.includes(`.${QT_FRAMEWORK_PRODUCT}.`)
+  );
+}
+
+/** A Qt version the service has installed, with its packages. */
+export interface InstalledQtVersion {
+  readonly version: string;
+  /** The packages of the version, sorted by label. */
+  readonly packages: PackageData[];
+}
+
+/**
+ * Group the Qt Framework packages of a `packages/list` answer by version,
+ * newest first. Packages of other products, such as the build tools, are
+ * left out: the view lists Qt versions.
+ */
+export function groupFrameworkVersions(
+  packages: readonly PackageData[]
+): InstalledQtVersion[] {
+  const byVersion = new Map<string, PackageData[]>();
+  for (const pkg of packages) {
+    if (!isFrameworkPackage(pkg)) {
+      continue;
+    }
+    const group = byVersion.get(pkg.version);
+    if (group) {
+      group.push(pkg);
+    } else {
+      byVersion.set(pkg.version, [pkg]);
+    }
+  }
+  return [...byVersion.entries()]
+    .map(([version, group]) => ({
+      version,
+      packages: group.sort((a, b) =>
+        packageLabel(a).localeCompare(packageLabel(b))
+      )
+    }))
+    .sort((a, b) =>
+      b.version.localeCompare(a.version, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      })
+    );
+}
+
+/**
+ * Check whether a Qt version is installed on disk.
+ * Folder structure: <installationPath>/QtFramework/<version>/
+ */
+export function isVersionInstalledOnDisk(version: string): boolean {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawPath) {
+    return false;
+  }
+  const installPath = resolveConfiguration(rawPath);
+  const versionDir = path.join(installPath, 'QtFramework', version);
+  return fs.existsSync(versionDir) && fs.statSync(versionDir).isDirectory();
+}
+
+/**
+ * Check whether any Qt version is installed on disk.
+ * Returns true if <installationPath>/QtFramework/ contains at least one
+ * subdirectory.
+ */
+export function isAnyVersionInstalledOnDisk(): boolean {
+  return listInstalledVersionsOnDisk().length > 0;
+}
+
+/**
+ * List the Qt versions installed on disk, sorted newest first.
+ * Each subdirectory of <installationPath>/QtFramework/ is a version.
+ */
+export function listInstalledVersionsOnDisk(): string[] {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
+  if (!rawPath) {
+    return [];
+  }
+  const installPath = resolveConfiguration(rawPath);
+  const frameworkDir = path.join(installPath, 'QtFramework');
+  if (!fs.existsSync(frameworkDir)) {
+    return [];
+  }
+  try {
+    const entries = fs.readdirSync(frameworkDir, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort((a, b) =>
+        b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' })
+      );
+  } catch {
+    return [];
+  }
+}
+
+let diskWatchers: vscode.FileSystemWatcher[] = [];
+
+/**
+ * Watch the Qt framework installation directory on disk and invoke `onChange`
+ * whenever a version folder is added or removed — e.g. an install/uninstall
+ * done outside the extension, or a manual change. The watcher re-targets
+ * automatically when the installation-root setting changes.
+ */
+export function watchInstalledPackagesOnDisk(
+  context: vscode.ExtensionContext,
+  onChange: () => void
+): void {
+  const retarget = () => {
+    diskWatchers.forEach((w) => {
+      w.dispose();
+    });
+    diskWatchers = [];
+
+    const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+    const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
+    if (!rawPath) {
+      return;
+    }
+    const installRoot = resolveConfiguration(rawPath);
+
+    // Ignore disk churn while an install or a removal is changing the
+    // folder — the intermediate states are noise. The operation refreshes
+    // the walkthrough itself once it completes.
+    const handle = () => {
+      if (isPackageOperationRunning()) {
+        return;
+      }
+      onChange();
+    };
+
+    const addWatcher = (base: string, glob: string) => {
+      const watcher = vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(vscode.Uri.file(base), glob)
+      );
+      watcher.onDidCreate(handle);
+      watcher.onDidDelete(handle);
+      diskWatchers.push(watcher);
+    };
+
+    // Non-recursive watch of the immediate children (the version folders),
+    // which is exactly what isAnyVersionInstalledOnDisk() looks at.
+    addWatcher(path.join(installRoot, 'QtFramework'), '*');
+
+    // The watcher above is anchored inside the installation root, so it cannot
+    // observe the root itself being removed. Deleting the installation root
+    // wipes QtFramework along with it, which must also refresh the walkthrough.
+    // Watch the root entry from its parent so its deletion (and re-creation) is
+    // reported. Skip when the root has no parent (e.g. a filesystem root).
+    const installRootParent = path.dirname(installRoot);
+    if (installRootParent && installRootParent !== installRoot) {
+      addWatcher(installRootParent, path.basename(installRoot));
+    }
+  };
+
+  retarget();
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {
+        retarget();
+      }
+    }),
+    {
+      dispose: () => {
+        diskWatchers.forEach((w) => {
+          w.dispose();
+        });
+        diskWatchers = [];
+      }
+    }
+  );
+}
