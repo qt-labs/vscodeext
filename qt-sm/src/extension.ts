@@ -40,7 +40,7 @@ import {
   type SignInState
 } from '@/auth-provider';
 import { registerAccountView } from '@/account-view';
-import { initSurvey, disposeSurvey } from '@/survey';
+import { initSurvey, disposeSurvey, shareFeedback } from '@/survey';
 import {
   showWalkthroughPanel,
   getStepCompletion,
@@ -366,6 +366,10 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.openTelemetryStatement`,
       () => vscode.env.openExternal(vscode.Uri.parse(TELEMETRY_STATEMENT_URL))
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.shareFeedback`,
+      shareFeedback
     ),
     vscode.commands.registerCommand(`${EXTENSION_ID}.resetPassword`, () =>
       vscode.env.openExternal(vscode.Uri.parse(RESET_PASSWORD_URL))
