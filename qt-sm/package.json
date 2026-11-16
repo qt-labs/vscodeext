@@ -58,6 +58,10 @@
           "type": "webview",
           "id": "qt-sm.accountView",
           "name": "%qt-sm.view.account.name%"
+        },
+        {
+          "id": "qt-sm.feedbackView",
+          "name": "%qt-sm.view.feedback.name%"
         }
       ]
     },
@@ -75,6 +79,10 @@
         "view": "qt-sm.installedPackagesView",
         "contents": "%qt-sm.view.installedPackages.empty%",
         "when": "qt-sm.installedPackagesState == 'loaded'"
+      },
+      {
+        "view": "qt-sm.feedbackView",
+        "contents": "%qt-sm.view.feedback.welcome%"
       }
     ],
     "commands": [
@@ -140,6 +148,11 @@
         "title": "%qt-sm.command.logout.title%",
         "category": "Qt",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "qt-sm.shareFeedback",
+        "title": "%qt-sm.command.shareFeedback.title%",
+        "category": "Qt"
       },
       {
         "command": "qt-sm.resetPassword",

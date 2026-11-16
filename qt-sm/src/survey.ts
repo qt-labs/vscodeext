@@ -150,6 +150,19 @@ async function showSurveyPrompt(): Promise<void> {
 }
 
 /**
+ * Open the survey from the Feedback view in the sidebar. The popup is not
+ * shown any more once the user opened the survey this way.
+ */
+export function shareFeedback(): void {
+  logger.info('User opened the survey from the sidebar');
+  if (surveyState) {
+    surveyState.surveyCompleted = true;
+  }
+  disposeSurvey();
+  void vscode.env.openExternal(vscode.Uri.parse(SURVEY_URL));
+}
+
+/**
  * Clean up the survey timer when the extension deactivates.
  */
 export function disposeSurvey(): void {
