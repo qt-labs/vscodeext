@@ -1,8 +1,7 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
-import * as os from 'os';
-import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { Packages } from 'sms-api';
 
@@ -18,8 +17,8 @@ import {
 const logger = createLogger('installed-packages-view');
 
 const VIEW_ID = `${EXTENSION_ID}.installedPackagesView`;
-// Read by the welcome content of the view: 'loading', 'loaded' or 'failed'.
-const STATE_CONTEXT_KEY = `${EXTENSION_ID}.installedPackagesState`;
+// Context value of the installation root item, which has the reveal button.
+const INSTALL_ROOT_CONTEXT = 'installRoot';
 // Disk events of an install made outside the extension arrive in bursts;
 // one refresh after the last of them is enough.
 const REFRESH_DEBOUNCE_MS = 500;
@@ -43,8 +42,10 @@ export class InstalledPackageItem extends vscode.TreeItem {
  * The installed Qt versions as the Qt Software Management Service records
  * them for the configured installation root, read with `packages/list`.
  *
- * The view starts in the loading state, with a progress bar, until the
- * service is connected and has answered. A failure, for example a journal
+ * The first item is always the installation root, with a button that
+ * reveals it in the file explorer. Below it the view says that it is
+ * loading, with a progress bar, until the service is connected and has
+ * answered. A failure, for example a journal
  * the service cannot use, is shown in the view with a Retry item instead
  * of a notification.
  */
@@ -54,7 +55,6 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  private view: vscode.TreeView<vscode.TreeItem> | undefined;
   private state: LoadState = 'loading';
   private versions: InstalledQtVersion[] = [];
   private installRoot = '';
@@ -180,26 +180,59 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
       return [];
     }
     const items = this.rootItems();
-    return this.operation ? [this.operation, ...items] : items;
+    if (this.operation) {
+      items.unshift(this.operation);
+    }
+    return [this.installRootItem(), ...items];
+  }
+
+  /** The root the service resolved once it answered, the configured one before that. */
+  currentInstallRoot(): string | undefined {
+    return this.state === 'loaded' && this.installRoot
+      ? this.installRoot
+      : getInstallRoot();
+  }
+
+  private installRootItem(): vscode.TreeItem {
+    const root = this.currentInstallRoot();
+    if (!root) {
+      const item = new vscode.TreeItem(
+        'Set the installation path',
+        vscode.TreeItemCollapsibleState.None
+      );
+      item.iconPath = new vscode.ThemeIcon('folder');
+      item.tooltip = 'The installation path is not set.';
+      item.command = {
+        command: `${EXTENSION_ID}.setInstallationPath`,
+        title: 'Set the installation path'
+      };
+      return item;
+    }
+    const item = new vscode.TreeItem(
+      root,
+      vscode.TreeItemCollapsibleState.None
+    );
+    item.contextValue = INSTALL_ROOT_CONTEXT;
+    item.iconPath = new vscode.ThemeIcon('folder');
+    item.tooltip = `Installation root: ${root}`;
+    return item;
   }
 
   private rootItems(): vscode.TreeItem[] {
     switch (this.state) {
       case 'loading':
-        // The welcome content says what is happening.
-        return [];
+        return [loadingItem()];
       case 'failed':
         return [this.errorItem(), this.retryItem()];
       case 'loaded':
         if (this.versions.length === 0) {
-          // The welcome content offers to install Qt.
-          return [];
+          return [noVersionsItem(), this.installItem('Install Qt')];
         }
         return [
           ...this.versions.map(
             (v) => new InstalledPackageItem(v.version, this.installRoot)
           ),
-          this.installOtherItem()
+          this.installItem('Install other versions')
         ];
     }
   }
@@ -240,32 +273,9 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
     );
   }
 
-  /** The tree view of this provider, which shows the root in its title. */
-  attachView(view: vscode.TreeView<vscode.TreeItem>): void {
-    this.view = view;
-    this.showInstallRoot();
-  }
-
   private setState(state: LoadState): void {
     this.state = state;
-    void vscode.commands.executeCommand('setContext', STATE_CONTEXT_KEY, state);
-    this.showInstallRoot();
     this._onDidChangeTreeData.fire(undefined);
-  }
-
-  /**
-   * Show the installation root next to the view title: the root the
-   * service resolved once it answered, the configured one before that.
-   */
-  private showInstallRoot(): void {
-    if (!this.view) {
-      return;
-    }
-    const root =
-      this.state === 'loaded' && this.installRoot
-        ? this.installRoot
-        : getInstallRoot();
-    this.view.description = root ? shortenHome(root) : 'No installation path';
   }
 
   private errorItem(): vscode.TreeItem {
@@ -294,27 +304,59 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   }
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  private installOtherItem(): vscode.TreeItem {
+  private installItem(label: string): vscode.TreeItem {
     const item = new vscode.TreeItem(
-      'Install other versions',
+      label,
       vscode.TreeItemCollapsibleState.None
     );
     item.iconPath = new vscode.ThemeIcon('add');
     item.command = {
       command: `${EXTENSION_ID}.installPackage`,
-      title: 'Install other versions'
+      title: label
     };
     return item;
   }
 }
 
-/** `~/QtAlpha` instead of `/home/user/QtAlpha`, like VS Code shows paths. */
-function shortenHome(dir: string): string {
-  const home = os.homedir();
-  if (dir === home) {
-    return '~';
+/** Shown below the installation root until the service has answered. */
+function loadingItem(): vscode.TreeItem {
+  const item = new vscode.TreeItem(
+    'Reading the installed Qt versions...',
+    vscode.TreeItemCollapsibleState.None
+  );
+  item.iconPath = new vscode.ThemeIcon('loading~spin');
+  item.tooltip =
+    'Connecting to the Qt Software Management Service and reading the installed Qt versions';
+  return item;
+}
+
+function noVersionsItem(): vscode.TreeItem {
+  const item = new vscode.TreeItem(
+    'No Qt versions are installed',
+    vscode.TreeItemCollapsibleState.None
+  );
+  item.iconPath = new vscode.ThemeIcon('info');
+  return item;
+}
+
+/**
+ * Show the installation root in the file explorer of the operating
+ * system. Reached from the button of the installation root item.
+ */
+async function revealInstallRoot(): Promise<void> {
+  const root = provider?.currentInstallRoot() ?? getInstallRoot();
+  if (!root) {
+    return;
   }
-  return dir.startsWith(home + path.sep) ? `~${dir.slice(home.length)}` : dir;
+  try {
+    await fs.promises.access(root);
+  } catch {
+    void vscode.window.showWarningMessage(
+      `The installation root ${root} does not exist yet.`
+    );
+    return;
+  }
+  await vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(root));
 }
 
 let provider: InstalledPackagesViewProvider | undefined;
@@ -326,8 +368,14 @@ export function registerInstalledPackagesView(
   const treeView = vscode.window.createTreeView(VIEW_ID, {
     treeDataProvider: provider
   });
-  provider.attachView(treeView);
-  context.subscriptions.push(treeView, provider);
+  context.subscriptions.push(
+    treeView,
+    provider,
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.revealInstallRoot`,
+      revealInstallRoot
+    )
+  );
 }
 
 /**
