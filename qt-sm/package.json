@@ -71,16 +71,6 @@
         "contents": "%qt-sm.view.getStarted.welcome%"
       },
       {
-        "view": "qt-sm.installedPackagesView",
-        "contents": "%qt-sm.view.installedPackages.loading%",
-        "when": "qt-sm.installedPackagesState == 'loading'"
-      },
-      {
-        "view": "qt-sm.installedPackagesView",
-        "contents": "%qt-sm.view.installedPackages.empty%",
-        "when": "qt-sm.installedPackagesState == 'loaded'"
-      },
-      {
         "view": "qt-sm.feedbackView",
         "contents": "%qt-sm.view.feedback.welcome%"
       }
@@ -177,6 +167,12 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "qt-sm.revealInstallRoot",
+        "title": "%qt-sm.command.revealInstallRoot.title%",
+        "category": "Qt",
+        "icon": "$(folder-opened)"
+      },
+      {
         "command": "qt-sm.resetTestState",
         "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"
@@ -201,6 +197,10 @@
           "when": "false"
         },
         {
+          "command": "qt-sm.revealInstallRoot",
+          "when": "false"
+        },
+        {
           "command": "qt-sm.reopenSignIn",
           "when": "false"
         },
@@ -221,6 +221,11 @@
         {
           "command": "qt-sm.removePackage",
           "when": "view == qt-sm.installedPackagesView && viewItem == installedPackage",
+          "group": "inline"
+        },
+        {
+          "command": "qt-sm.revealInstallRoot",
+          "when": "view == qt-sm.installedPackagesView && viewItem == installRoot",
           "group": "inline"
         }
       ],
