@@ -13,6 +13,7 @@ import {
   legacyQtAccountIniPath,
   qtCompanyIniPath,
   type PackageData,
+  type JobCallbacks,
   type LicenseAnswer,
   type UserPrompt,
   type UserPromptReply,
@@ -55,7 +56,8 @@ import { showLicenseAgreementPanel } from '@/license-panel';
 import {
   isFrameworkPackage,
   isVersionInstalledOnDisk,
-  packageLabel
+  packageLabel,
+  removalEmptiesInstallation
 } from '@/installed-packages-store';
 import {
   type InstalledPackageItem,
@@ -683,6 +685,12 @@ function unregisterInstalledQtPaths(version: string): void {
  * autoRemove, the dependencies nothing needs any more, such as the build
  * tools. When that reaches beyond the named packages, the service asks the
  * removal_confirmation question, shown as a dialog that lists them.
+ *
+ * When the removal leaves no package in the installation, the installation
+ * is purged instead: the service removes the folder too, with the files
+ * that belong to no package, such as the settings a tool wrote. The
+ * service forgets an installation without packages, and it refuses to
+ * install into a folder that is not empty and that it does not know.
  */
 export async function removePackage(
   item?: InstalledPackageItem
@@ -695,62 +703,96 @@ export async function removePackage(
   if (!installRoot) {
     return;
   }
+  const operationRunning =
+    'A package operation is already in progress. Please wait for it to finish.';
   if (isPackageOperationRunning()) {
-    void vscode.window.showWarningMessage(
-      'A package operation is already in progress. Please wait for it to finish.'
-    );
+    void vscode.window.showWarningMessage(operationRunning);
     return;
   }
   const autoRemove = vscode.workspace
     .getConfiguration(EXTENSION_ID)
     .get<boolean>(CONF_AUTO_REMOVE_UNNEEDED, true);
+
+  const plan = await planVersionRemoval(installRoot, version, autoRemove);
+  if (!plan) {
+    return;
+  }
+
   // The dialog only asks about the version. Whether the packages nothing
   // else needs go too is the autoRemoveUnneeded setting, and the log says
-  // what the removal took.
+  // what the removal took. A purge deletes the folder, so the dialog says so.
   const confirm = await vscode.window.showWarningMessage(
     `Remove Qt ${version}?`,
-    { modal: true },
+    {
+      modal: true,
+      ...(plan.purge
+        ? {
+            detail:
+              `Nothing else is installed in ${installRoot}, so the folder ` +
+              'is deleted with everything in it.'
+          }
+        : {})
+    },
     'Remove'
   );
   if (confirm !== 'Remove') {
     return;
   }
+  // Another operation may have started while the dialog was open.
+  if (isPackageOperationRunning()) {
+    void vscode.window.showWarningMessage(operationRunning);
+    return;
+  }
 
   setPackageOperationRunning(true);
   try {
-    await removeVersion(installRoot, version, autoRemove);
+    await removeVersion(installRoot, version, autoRemove, plan);
   } finally {
     setPackageOperationRunning(false);
   }
 }
 
-async function removeVersion(
+/** How a Qt version is removed, decided before the user confirms. */
+interface VersionRemovalPlan {
+  readonly packages: Packages;
+  /** The alias packages of the version, the ones a removal names. */
+  readonly refs: { id: string; version: string }[];
+  /** Remove the whole installation, because nothing would be left in it. */
+  readonly purge: boolean;
+}
+
+/**
+ * Read what is installed and decide how `version` is removed. Shows the
+ * error and returns undefined when the version cannot be removed.
+ */
+async function planVersionRemoval(
   installRoot: string,
   version: string,
   autoRemove: boolean
-): Promise<void> {
-  const target = { installRoot };
+): Promise<VersionRemovalPlan | undefined> {
   let packages: Packages;
-  let refs: { id: string; version: string }[];
+  let installed: PackageData[];
   try {
     packages = new Packages(await ensureConnected());
-    // The alias packages are what an install names, so they are what a
-    // removal names. The service takes their dependencies along.
-    const { packages: installed } = await packages.listInstalledPackages(
-      target,
-      { packageType: 'alias' }
-    );
-    refs = installed
-      .filter((pkg) => isFrameworkPackage(pkg, version))
-      .map((pkg) => ({ id: pkg.id, version: pkg.version }));
+    ({ packages: installed } = await packages.listInstalledPackages({
+      installRoot
+    }));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error(`Cannot list the packages of Qt ${version}: ${msg}`);
     void vscode.window.showErrorMessage(
       `Failed to remove Qt ${version}: ${msg}`
     );
-    return;
+    return undefined;
   }
+
+  // The alias packages are what an install names, so they are what a
+  // removal names. The service takes their dependencies along.
+  const refs = installed
+    .filter(
+      (pkg) => pkg.packageType === 'alias' && isFrameworkPackage(pkg, version)
+    )
+    .map((pkg) => ({ id: pkg.id, version: pkg.version }));
 
   if (refs.length === 0) {
     // The view lists what the service records, so this means the version
@@ -760,14 +802,37 @@ async function removeVersion(
         `in ${installRoot}, so it cannot be removed.`
     );
     syncInstalledPackages();
-    return;
+    return undefined;
   }
 
-  logger.info(
-    `Removing Qt ${version} from ${installRoot}${autoRemove ? ' with unneeded packages' : ''}: ${refs
-      .map((ref) => `${ref.id}@${ref.version}`)
-      .join(', ')}`
-  );
+  return {
+    packages,
+    refs,
+    purge: autoRemove && removalEmptiesInstallation(installed, refs)
+  };
+}
+
+async function removeVersion(
+  installRoot: string,
+  version: string,
+  autoRemove: boolean,
+  plan: VersionRemovalPlan
+): Promise<void> {
+  const target = { installRoot };
+  const { packages, refs, purge } = plan;
+
+  if (purge) {
+    logger.info(
+      `Removing Qt ${version}, the last packages in ${installRoot}: ` +
+        'purging the installation'
+    );
+  } else {
+    logger.info(
+      `Removing Qt ${version} from ${installRoot}${autoRemove ? ' with unneeded packages' : ''}: ${refs
+        .map((ref) => `${ref.id}@${ref.version}`)
+        .join(', ')}`
+    );
+  }
   try {
     const result = await vscode.window.withProgress(
       {
@@ -777,32 +842,36 @@ async function removeVersion(
       },
       async (progress) => {
         let lastPct = 0;
-        // The user confirmed the removal in the dialog above, so the
-        // service is told not to ask its removal_confirmation question:
-        // with autoRemove it would list every module of the version.
-        const removal = packages.remove(
-          target,
-          refs,
-          { autoRemove, confirmRemoval: true },
-          {
-            onProgress: (info) => {
-              const pct = Math.round(info.progress);
-              reportInstalledPackagesProgress(`Removing Qt ${version}`, pct);
-              progress.report({
-                message: `${String(pct)}%`,
-                increment: pct - lastPct
-              });
-              lastPct = pct;
-            },
-            onMessage: (info) => {
-              // The service says what a removal that succeeded anyway could
-              // not do, for example files it left behind.
-              logger.warn(`remove: ${info.message}`);
-              void vscode.window.showWarningMessage(info.message);
-            },
-            onPrompt: handleUserPrompt
-          }
-        );
+        const callbacks: JobCallbacks = {
+          onProgress: (info) => {
+            const pct = Math.round(info.progress);
+            reportInstalledPackagesProgress(`Removing Qt ${version}`, pct);
+            progress.report({
+              message: `${String(pct)}%`,
+              increment: pct - lastPct
+            });
+            lastPct = pct;
+          },
+          onMessage: (info) => {
+            // The service says what a removal that succeeded anyway could
+            // not do, for example files it left behind.
+            logger.warn(`remove: ${info.message}`);
+            void vscode.window.showWarningMessage(info.message);
+          },
+          onPrompt: handleUserPrompt
+        };
+        // The user confirmed the removal in the dialog, so the service is
+        // told not to ask its removal_confirmation question: with
+        // autoRemove it would list every module of the version. A purge
+        // never asks.
+        const removal = purge
+          ? packages.purge(target, callbacks)
+          : packages.remove(
+              target,
+              refs,
+              { autoRemove, confirmRemoval: true },
+              callbacks
+            );
         showInstalledPackagesOperation(`Removing Qt ${version}`, removal);
         return removal;
       }
@@ -821,10 +890,16 @@ async function removeVersion(
     void vscode.window.showErrorMessage(
       `Failed to remove Qt ${version}: ${msg}`
     );
+    // A purge that could not delete the folder has removed the packages.
+    syncInstalledPackages();
     return;
   }
 
-  void vscode.window.showInformationMessage(`Removed Qt ${version}.`);
+  void vscode.window.showInformationMessage(
+    purge
+      ? `Removed Qt ${version} and the installation folder ${installRoot}.`
+      : `Removed Qt ${version}.`
+  );
   afterVersionRemoved(version);
 }
 
