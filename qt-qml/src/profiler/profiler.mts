@@ -348,38 +348,47 @@ async function launchPySideProfiler(
 
     let traceName = `pyside_${folder.name}`;
 
-    if (pySideProject.supportsProjectRunArgs()) {
-      logger.info('Using pyside6-project run with args');
-      profilerProcess = pySideProject.runProject(allArgs);
+    let absFilePath: string | undefined = await pySideProject.getMainFile();
+    if (absFilePath) {
+      logger.info(`Auto-detected main file: ${absFilePath}`);
+      traceName = `pyside_${path.basename(absFilePath, '.py')}`;
     } else {
-      logger.info('Replicating pyside6-project run manually');
-      let absFilePath: string | undefined = await pySideProject.getMainFile();
-      if (absFilePath) {
-        logger.info(`Auto-detected main file: ${absFilePath}`);
-        traceName = `pyside_${path.basename(absFilePath, '.py')}`;
-      } else {
-        const selectedFile = await pickPythonFile(project, pySideProject);
-        if (!selectedFile) {
-          manager.dispose();
-          return false;
-        }
-        absFilePath = path.isAbsolute(selectedFile)
-          ? selectedFile
-          : path.join(folder.uri.fsPath, selectedFile);
-        traceName = `pyside_${path.basename(absFilePath, '.py')}`;
-        logger.info(`Selected main file: ${absFilePath}`);
-      }
-
-      logger.info('Building PySide project…');
-      const buildOk = await pySideProject.build();
-      if (buildOk !== 0) {
-        logger.error('PySide project build failed');
+      const selectedFile = await pickPythonFile(project, pySideProject);
+      if (!selectedFile) {
         manager.dispose();
-        ui.showFailedToStart(new Error('pyside6-project build failed'));
         return false;
       }
-      profilerProcess = pySideProject.runFile(absFilePath, allArgs);
+      absFilePath = path.isAbsolute(selectedFile)
+        ? selectedFile
+        : path.join(folder.uri.fsPath, selectedFile);
+      traceName = `pyside_${path.basename(absFilePath, '.py')}`;
+      logger.info(`Selected main file: ${absFilePath}`);
     }
+
+    logger.info('Building PySide project…');
+    const buildOk = await pySideProject.build();
+    if (buildOk !== 0) {
+      logger.error('PySide project build failed');
+      manager.dispose();
+      ui.showFailedToStart(new Error('pyside6-project build failed'));
+      return false;
+    }
+
+    const extension = vscode.extensions.getExtension(
+      `theqtcompany.${EXTENSION_ID}`
+    );
+    if (!extension) {
+      throw new Error('Qt QML extension is not available');
+    }
+    const launcherPath = path.join(
+      extension.extensionPath,
+      'res',
+      'preview_launcher.py'
+    );
+    profilerProcess = pySideProject.runFile(launcherPath, [
+      absFilePath,
+      ...allArgs
+    ]);
 
     if (
       !profilerProcess ||

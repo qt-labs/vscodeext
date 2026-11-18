@@ -89,19 +89,18 @@ class PySideProjectWrapper implements PySideProjectAPI {
     filePath: string,
     args?: string[]
   ): childProcess.ChildProcess | undefined {
-    let command = `python "${filePath}"`;
-    if (args?.length) {
-      command += ` ${args.join(' ')}`;
+    const pythonPath = this.project.env.pythonPath;
+    if (!pythonPath) {
+      logger.error(
+        `No Python interpreter configured for: ${this.folder.uri.fsPath}`
+      );
+      return undefined;
     }
 
-    const cmd = new PySideCommandBuilder()
-      .useVenv(true)
-      .venvBinPath(this.project.env.venvBinPath)
-      .build(command);
-
-    logger.info(`runFile: ${cmd.commandLine}`);
-    return childProcess.spawn(cmd.commandLine, {
-      shell: cmd.shellPath,
+    const processArgs = [filePath, ...(args ?? [])];
+    logger.info(`runFile: ${[pythonPath, ...processArgs].join(' ')}`);
+    return childProcess.spawn(pythonPath, processArgs, {
+      shell: false,
       cwd: this.folder.uri.fsPath
     });
   }
