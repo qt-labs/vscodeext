@@ -8,15 +8,7 @@ import * as path from 'path';
 import { execFile } from 'child_process';
 
 import * as vscode from 'vscode';
-import {
-  createLogger,
-  IsLinux,
-  IsMacOS,
-  IsWindows,
-  IsArm64,
-  Isx64,
-  OSExeSuffix
-} from 'qt-lib';
+import { createLogger, host } from 'qt-lib';
 import { ServiceLauncher, qtCompanyIniPath } from 'sms-api';
 
 import { getInstallRoot } from '@/install-root';
@@ -26,24 +18,24 @@ const logger = createLogger('bootstrap');
 const BOOTSTRAP_BASE_URL = 'https://cdn.qt.io/install/public/bootstrap';
 
 function getBootstrapUrl(): string | undefined {
-  if (IsMacOS) {
+  if (host.isMacOS) {
     return `${BOOTSTRAP_BASE_URL}/bootstrap-vscode-macos-universal.dmg.zip`;
   }
 
   let arch: string | undefined;
-  if (Isx64) {
+  if (host.isX64) {
     arch = 'x86_64';
-  } else if (IsArm64) {
+  } else if (host.isArm64) {
     arch = 'aarch64';
   }
   if (!arch) {
     return undefined;
   }
 
-  if (IsLinux) {
+  if (host.isLinux) {
     return `${BOOTSTRAP_BASE_URL}/bootstrap-vscode-linux-${arch}.run.zip`;
   }
-  if (IsWindows) {
+  if (host.isWindows) {
     return `${BOOTSTRAP_BASE_URL}/bootstrap-vscode-windows-${arch}.exe.zip`;
   }
   return undefined;
@@ -70,7 +62,7 @@ function isBootstrapInstalled(): boolean {
       return false;
     }
     const serviceDir = match[1].trim();
-    const binaryName = `QtSoftwareManagementService${OSExeSuffix}`;
+    const binaryName = `QtSoftwareManagementService${host.exeSuffix}`;
     const serviceBin = path.join(serviceDir, binaryName);
     if (!fs.existsSync(serviceBin)) {
       logger.info(
@@ -218,7 +210,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
   const args = bootstrapArgs();
   logger.info(`Bootstrap arguments: ${args.join(' ')}`);
   return new Promise((resolve, reject) => {
-    if (IsMacOS) {
+    if (host.isMacOS) {
       // Find the .app inside the extracted dir
       const entries = fs.readdirSync(extractDir);
       const dmgFile = entries.find((e) => e.endsWith('.dmg'));
@@ -297,7 +289,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
           );
         }
       );
-    } else if (IsLinux) {
+    } else if (host.isLinux) {
       const entries = fs.readdirSync(extractDir);
       const runFile = entries.find((e) => e.endsWith('.run'));
       if (!runFile) {
@@ -314,7 +306,7 @@ async function runBootstrap(extractDir: string): Promise<void> {
           resolve();
         }
       });
-    } else if (IsWindows) {
+    } else if (host.isWindows) {
       const entries = fs.readdirSync(extractDir);
       const exeFile = entries.find((e) => e.endsWith('.exe'));
       if (!exeFile) {

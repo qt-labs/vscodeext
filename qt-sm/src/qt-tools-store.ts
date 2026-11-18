@@ -8,8 +8,7 @@ import * as path from 'path';
 import {
   createLogger,
   resolveConfiguration,
-  IsMacOS,
-  OSExeSuffix,
+  host,
   CoreKey,
   QtWorkspaceConfigMessage,
   type QtToolsPaths
@@ -51,13 +50,13 @@ function firstExisting(candidates: string[]): string | undefined {
 function findCMake(tools: string): string | undefined {
   const cmakeRoot = path.join(tools, 'CMake');
   const candidates: string[] = [];
-  if (IsMacOS) {
+  if (host.isMacOS) {
     candidates.push(
       path.join(cmakeRoot, 'CMake.app', 'Contents', 'bin', 'cmake')
     );
   }
   // Generic bin/ layout (Linux/Windows, and a fallback everywhere).
-  candidates.push(path.join(cmakeRoot, 'bin', `cmake${OSExeSuffix}`));
+  candidates.push(path.join(cmakeRoot, 'bin', `cmake${host.exeSuffix}`));
   return firstExisting(candidates);
 }
 
@@ -66,7 +65,7 @@ function findCMake(tools: string): string | undefined {
  * on every platform, only the executable suffix differs on Windows.
  */
 function findNinja(tools: string): string | undefined {
-  return firstExisting([path.join(tools, 'Ninja', `ninja${OSExeSuffix}`)]);
+  return firstExisting([path.join(tools, 'Ninja', `ninja${host.exeSuffix}`)]);
 }
 
 /**
