@@ -188,7 +188,7 @@ async function installRequiredExtensions(
 }
 
 export let coreAPI: CoreAPI | undefined;
-const requiredVersion = '1.15.1';
+const requiredVersion = '1.17.1';
 
 let loggedIn = false;
 function setLoggedIn(value: boolean) {
