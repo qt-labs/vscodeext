@@ -229,7 +229,16 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     // This is called when the QML app requests a file or directory
     this._previewClient.onPathRequested(async (requestPath) => {
       logger.info('===> Processing path request:', `"${requestPath}"`);
-      await this.handlePathRequest(requestPath);
+      try {
+        await this.handlePathRequest(requestPath);
+      } catch (error) {
+        logger.error(
+          'Failed to process path request:',
+          `"${requestPath}"`,
+          String(error)
+        );
+        this._previewClient?.announceError(requestPath);
+      }
     });
 
     // Signal: errorReported -> Slot: log and show error

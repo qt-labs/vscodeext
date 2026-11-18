@@ -22,6 +22,12 @@ import {
   normalizePathForComparison,
   prependPathEntries
 } from '@/utils.mjs';
+import { QmlPreviewConnectionManager } from '@/preview/preview-connection-manager.mjs';
+import {
+  QmlPreviewClient,
+  QmlPreviewCommand
+} from '@/preview/preview-client.mjs';
+import { Packet } from '@/debug/packet.mjs';
 
 function workspaceFolder(name: string, index: number): vscode.WorkspaceFolder {
   return {
@@ -516,5 +522,36 @@ describe('QML Preview file change handling', () => {
     changes.dispose();
     clock.tick(100);
     expect(handler.called).to.equal(false);
+  });
+});
+
+describe('QML Preview path request handling', () => {
+  it('replies with an error when loading a requested file fails', async () => {
+    const manager = new QmlPreviewConnectionManager();
+    manager.setFileLoader(() => {
+      throw new Error('read failed');
+    });
+    manager.createConnection();
+
+    const connection = manager.connection;
+    expect(connection).to.not.equal(undefined);
+    const client = connection!.getClient('QmlPreview') as
+      | QmlPreviewClient
+      | undefined;
+    expect(client).to.not.equal(undefined);
+    const announceError = sinon.spy(client!, 'announceError');
+
+    const request = new Packet();
+    request.writeInt8(QmlPreviewCommand.Request);
+    request.writeStringUTF16(process.execPath);
+    client?.messageReceived(request);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(announceError.calledOnceWithExactly(process.execPath)).to.equal(
+      true
+    );
+
+    manager.dispose();
   });
 });

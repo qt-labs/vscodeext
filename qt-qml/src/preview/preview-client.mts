@@ -18,7 +18,7 @@ const logger = createLogger('qml-preview-client');
  * QML Preview protocol commands
  * Maps to QmlPreview::QmlPreviewClient::Command from Qt Creator
  */
-enum QmlPreviewCommand {
+export enum QmlPreviewCommand {
   File,
   Load,
   Request,
