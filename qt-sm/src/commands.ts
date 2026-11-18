@@ -44,6 +44,7 @@ import {
 } from '@/constants';
 import { ensureConnected, disconnect } from '@/service-connection';
 import { getInstallRoot, installationTarget } from '@/install-root';
+import { QT_FRAMEWORK, productVersionDir } from '@/install-layout';
 import { coreAPI } from '@/extension';
 import {
   AUTH_PROVIDER_ID,
@@ -545,7 +546,7 @@ async function showInstalledNotification(pkg: PackageData): Promise<void> {
   const startWalkthrough = 'Start Walkthrough';
   const installRoot = getInstallRoot();
   const location = installRoot
-    ? ` Installed in ${path.join(installRoot, 'QtFramework', pkg.version)}.`
+    ? ` Installed in ${productVersionDir(installRoot, QT_FRAMEWORK, pkg.version)}.`
     : '';
   // The walkthrough is already in front of the user when it is the active
   // editor, so the notification does not offer to start it.
@@ -578,15 +579,16 @@ function registerInstalledQtPaths(version: string): void {
     return;
   }
 
-  // Folder structure: <installRoot>/QtFramework/<version>/<arch>/bin/qtpaths
+  // Folder structure: <version folder>/<arch>/bin/qtpaths
   const arch = platformArch();
-  const insPath = path.join(installRoot, 'QtFramework', version, arch);
+  const insPath = path.join(
+    productVersionDir(installRoot, QT_FRAMEWORK, version),
+    arch
+  );
   logger.info(`Looking for Qt installation in ${insPath}`);
   const qtpathsExe = findQtPathsInInstallationPath(insPath);
   if (!qtpathsExe) {
-    logger.info(
-      `No qtpaths found at QtFramework/${version}/${arch} in ${installRoot}`
-    );
+    logger.info(`No qtpaths found in ${insPath}`);
     return;
   }
 
@@ -638,7 +640,7 @@ function unregisterInstalledQtPaths(version: string): void {
   if (!installRoot) {
     return;
   }
-  const versionDir = path.join(installRoot, 'QtFramework', version);
+  const versionDir = productVersionDir(installRoot, QT_FRAMEWORK, version);
 
   const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
   const existing = coreConfig.inspect<(string | object)[]>(
@@ -829,12 +831,12 @@ async function removeVersion(
 /** What the rest of the extension needs to know after a version is gone. */
 function afterVersionRemoved(version: string): void {
   unregisterInstalledQtPaths(version);
-  // Re-read the installed versions from the service.
+  // Re-read the installed versions from the service. The framework step
+  // of the walkthrough follows the answer.
   syncInstalledPackages();
-  // The framework step (and "Get latest") may have regressed.
-  refreshWalkthrough();
+  // "Get latest" may be available again.
   void refreshLatestFrameworkState();
-  // The removal may have taken CMake/Ninja under Tools/ along; re-detect
+  // The removal may have taken CMake/Ninja along; re-detect
   // and inform qt-core/qt-cpp via CoreAPI.
   publishQtToolsPaths();
 }
@@ -1127,16 +1129,14 @@ async function installPackageByIdImpl(
         logger.info(`Launch item (${item.type}): ${item.uri}`);
       }
       void showInstalledNotification(pkg);
-      // Re-read the installed versions from the service.
+      // Re-read the installed versions from the service. The framework
+      // step of the walkthrough completes with the answer.
       syncInstalledPackages();
-      // Re-render so the framework step's install button is recomputed as
-      // disabled now that a version is installed.
-      refreshWalkthrough();
       // The just-installed version may be the newest available, which would
       // disable "Get latest"; re-resolve that asynchronously.
       void refreshLatestFrameworkState();
       registerInstalledQtPaths(pkg.version);
-      // The install may have added CMake/Ninja under Tools/; re-detect and
+      // The install may have added CMake/Ninja; re-detect and
       // inform qt-core/qt-cpp via CoreAPI.
       publishQtToolsPaths();
     })
