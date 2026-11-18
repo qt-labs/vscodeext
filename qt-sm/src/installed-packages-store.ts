@@ -3,7 +3,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import type { PackageData } from 'sms-api';
+import { InstallReason, type PackageData } from 'sms-api';
 
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import { getInstallRoot } from '@/install-root';
@@ -37,6 +37,22 @@ export function isFrameworkPackage(
     pkg.product === QT_FRAMEWORK_PRODUCT ||
     pkg.id.includes(`.${QT_FRAMEWORK_PRODUCT}.`)
   );
+}
+
+/**
+ * Whether removing the packages `removed` names, together with the
+ * packages nothing needs any more, leaves no package in the installation
+ * that holds `installed`. That is so when no other package was installed
+ * on request: the service then takes the rest as unneeded dependencies.
+ */
+export function removalEmptiesInstallation(
+  installed: readonly PackageData[],
+  removed: readonly { id: string; version: string }[]
+): boolean {
+  const named = new Set(removed.map((ref) => `${ref.id}@${ref.version}`));
+  return installed
+    .filter((pkg) => pkg.installReason === InstallReason.Manual)
+    .every((pkg) => named.has(`${pkg.id}@${pkg.version}`));
 }
 
 /** A Qt version the service has installed, with its packages. */
