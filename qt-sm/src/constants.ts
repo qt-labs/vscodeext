@@ -19,8 +19,6 @@ export const CONF_GET_STARTED_DONE = 'getStartedDone';
 export const DEFAULT_BACKEND_URL = 'https://api.install.qt.io';
 // Qt Account "Forgot password" page, opened from the walkthrough sign-in step.
 export const RESET_PASSWORD_URL = 'https://login.qt.io/forgot';
-// Qt Account registration page, opened by the "Create Account" buttons.
-export const CREATE_ACCOUNT_URL = 'https://login.qt.io/register';
 // Sign-in troubleshooting page. Same placeholder as the C++ installer, no
 // hosted page exists yet.
 export const TROUBLESHOOT_URL = 'https://login.qt.io/troubleshoot';

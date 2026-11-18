@@ -14,7 +14,6 @@ import {
 import {
   EXTENSION_ID,
   CONF_INSTALLATION_PATH,
-  CREATE_ACCOUNT_URL,
   RESET_PASSWORD_URL,
   TELEMETRY_STATEMENT_URL,
   TROUBLESHOOT_URL
@@ -385,8 +384,13 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(`${EXTENSION_ID}.resetPassword`, () =>
       vscode.env.openExternal(vscode.Uri.parse(RESET_PASSWORD_URL))
     ),
-    vscode.commands.registerCommand(`${EXTENSION_ID}.createAccount`, () =>
-      vscode.env.openExternal(vscode.Uri.parse(CREATE_ACCOUNT_URL))
+    // An account is created on the page of the browser sign-in, which has
+    // a Create Account tab next to Sign In. The login server has no page
+    // that opens on it, and the registration page it had before is not the
+    // one of this client. The new account is signed in when the browser
+    // comes back.
+    vscode.commands.registerCommand(`${EXTENSION_ID}.createAccount`, async () =>
+      login(authProvider)
     ),
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.removePackage`,

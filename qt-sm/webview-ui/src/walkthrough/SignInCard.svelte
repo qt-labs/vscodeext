@@ -186,7 +186,11 @@ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
     <div class="wt-actions">
       <button class="wt-btn" onclick={() => run(SIGN_IN_COMMANDS.signIn)}>Sign In</button>
       <span class="wt-actions-or">or</span>
-      <button class="wt-btn" onclick={() => run(SIGN_IN_COMMANDS.createAccount)}>
+      <button
+        class="wt-btn"
+        title="Opens the Qt Account page in the browser, where you can create an account"
+        onclick={() => run(SIGN_IN_COMMANDS.createAccount)}
+      >
         Create Account
       </button>
       <button
