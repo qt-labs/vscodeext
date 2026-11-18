@@ -11,6 +11,7 @@ import { getInstallRoot } from '@/install-root';
 import { ensureConnected } from '@/service-connection';
 import {
   groupFrameworkVersions,
+  setInstalledVersions,
   type InstalledQtVersion
 } from '@/installed-packages-store';
 
@@ -245,7 +246,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
         const installRoot = getInstallRoot();
         if (!installRoot) {
           this.installRoot = '';
-          this.versions = [];
+          this.setVersions([]);
           this.setState('loaded');
           return;
         }
@@ -255,7 +256,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
             session
           ).listInstalledPackages({ installRoot }, { packageType: 'alias' });
           this.installRoot = resolved || installRoot;
-          this.versions = groupFrameworkVersions(packages);
+          this.setVersions(groupFrameworkVersions(packages));
           logger.info(
             `Installed Qt versions in ${this.installRoot}: ${
               this.versions.map((v) => v.version).join(', ') || 'none'
@@ -267,10 +268,18 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
           logger.error(
             `Cannot read the installed Qt versions: ${this.errorMessage}`
           );
+          // What is installed is not known any more.
+          this.setVersions([]);
           this.setState('failed');
         }
       }
     );
+  }
+
+  /** Keep the versions for the view and tell the rest of the extension. */
+  private setVersions(versions: InstalledQtVersion[]): void {
+    this.versions = versions;
+    setInstalledVersions(versions);
   }
 
   private setState(state: LoadState): void {

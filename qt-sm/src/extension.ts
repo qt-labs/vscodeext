@@ -52,7 +52,10 @@ import {
 } from '@/walkthrough-panel';
 
 import { installBootstrap } from '@/bootstrap';
-import { watchInstalledPackagesOnDisk } from '@/installed-packages-store';
+import {
+  onDidChangeInstalledVersions,
+  watchInstalledPackagesOnDisk
+} from '@/installed-packages-store';
 import {
   loadInstalledPackagesAfter,
   refreshInstalledPackages,
@@ -240,12 +243,20 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Re-sync the walkthrough when Qt versions appear/disappear in the
-  // installation root on disk (installs/uninstalls outside the extension).
-  // Recompute both the step status and the cached "latest installed" gate, so
-  // removing the newest (or only) version re-enables "Get latest Qt Framework".
+  // The framework step of the walkthrough follows the Qt versions the
+  // service lists: re-render it whenever a new answer changes them, for
+  // example after an install or a removal.
+  context.subscriptions.push(
+    onDidChangeInstalledVersions(() => {
+      refreshWalkthrough();
+    })
+  );
+
+  // Qt versions appeared or disappeared in the installation root on disk
+  // (installs/uninstalls outside the extension). Recompute the cached
+  // "latest installed" gate, so removing the newest (or only) version
+  // re-enables "Get latest Qt Framework".
   watchInstalledPackagesOnDisk(context, () => {
-    refreshWalkthrough();
     void refreshLatestFrameworkState();
     // An install or removal made outside the extension changed the
     // service's records too; re-read them once the events settle.
@@ -268,7 +279,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Detect the bundled build tools (CMake, Ninja) and inform qt-core/qt-cpp via
   // CoreAPI. Done at activation because the installation root may have changed
   // (e.g. via QtCreator) while qt-sm was not running. Also keep watching the
-  // Tools/ directory so external installs/uninstalls propagate live.
+  // folders of the tools so external installs/uninstalls propagate live.
   publishQtToolsPaths();
   watchQtToolsOnDisk(context, publishQtToolsPaths);
 
@@ -408,9 +419,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(`${EXTENSION_ID}.${CONF_INSTALLATION_PATH}`)) {
         void onInstallationPathChanged();
-        // The new root may contain a different set of installed Qt versions,
-        // so the framework step can go forward or backward.
-        refreshWalkthrough();
+        // The new root may contain a different set of installed Qt versions.
+        // The framework step goes forward or backward with the answer.
         syncInstalledPackages();
         // The new root may also bundle different build tools; re-detect and
         // re-publish them to qt-core/qt-cpp.

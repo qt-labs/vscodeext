@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import type { PackageData } from 'sms-api';
 
-import { resolveConfiguration } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
+import { getInstallRoot } from '@/install-root';
+import {
+  QT_FRAMEWORK,
+  listProductVersions,
+  productDir
+} from '@/install-layout';
 import { isPackageOperationRunning } from '@/install-state';
 
 const QT_FRAMEWORK_PRODUCT = 'qtframework';
@@ -77,56 +81,51 @@ export function groupFrameworkVersions(
     );
 }
 
+// The Qt versions of the last `packages/list` answer, newest first. Empty
+// until the service has answered, and after an answer that failed.
+let installedVersions: readonly InstalledQtVersion[] = [];
+const installedVersionsEmitter = new vscode.EventEmitter<void>();
+
 /**
- * Check whether a Qt version is installed on disk.
- * Folder structure: <installationPath>/QtFramework/<version>/
+ * Fires when the Qt versions the service reports as installed change, see
+ * setInstalledVersions().
+ */
+export const onDidChangeInstalledVersions = installedVersionsEmitter.event;
+
+/**
+ * Remember the Qt versions of a `packages/list` answer. The Installed
+ * Packages view calls this each time it has read them, so the rest of the
+ * extension asks the same answer and does not look on disk, where the
+ * layout is up to the service.
+ */
+export function setInstalledVersions(
+  versions: readonly InstalledQtVersion[]
+): void {
+  const before = installedVersions.map((v) => v.version).join('\n');
+  installedVersions = versions;
+  if (versions.map((v) => v.version).join('\n') !== before) {
+    installedVersionsEmitter.fire();
+  }
+}
+
+/**
+ * Whether the service reports at least one Qt Framework version in the
+ * installation root. False until the service has answered.
+ */
+export function isAnyVersionInstalled(): boolean {
+  return installedVersions.length > 0;
+}
+
+/**
+ * Check whether a Qt version is installed on disk, for versions the service
+ * does not report. See install-layout.ts for the folder structure.
  */
 export function isVersionInstalledOnDisk(version: string): boolean {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawPath) {
+  const installRoot = getInstallRoot();
+  if (!installRoot) {
     return false;
   }
-  const installPath = resolveConfiguration(rawPath);
-  const versionDir = path.join(installPath, 'QtFramework', version);
-  return fs.existsSync(versionDir) && fs.statSync(versionDir).isDirectory();
-}
-
-/**
- * Check whether any Qt version is installed on disk.
- * Returns true if <installationPath>/QtFramework/ contains at least one
- * subdirectory.
- */
-export function isAnyVersionInstalledOnDisk(): boolean {
-  return listInstalledVersionsOnDisk().length > 0;
-}
-
-/**
- * List the Qt versions installed on disk, sorted newest first.
- * Each subdirectory of <installationPath>/QtFramework/ is a version.
- */
-export function listInstalledVersionsOnDisk(): string[] {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawPath) {
-    return [];
-  }
-  const installPath = resolveConfiguration(rawPath);
-  const frameworkDir = path.join(installPath, 'QtFramework');
-  if (!fs.existsSync(frameworkDir)) {
-    return [];
-  }
-  try {
-    const entries = fs.readdirSync(frameworkDir, { withFileTypes: true });
-    return entries
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name)
-      .sort((a, b) =>
-        b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' })
-      );
-  } catch {
-    return [];
-  }
+  return listProductVersions(installRoot, QT_FRAMEWORK).includes(version);
 }
 
 let diskWatchers: vscode.FileSystemWatcher[] = [];
@@ -134,7 +133,8 @@ let diskWatchers: vscode.FileSystemWatcher[] = [];
 /**
  * Watch the Qt framework installation directory on disk and invoke `onChange`
  * whenever a version folder is added or removed — e.g. an install/uninstall
- * done outside the extension, or a manual change. The watcher re-targets
+ * done outside the extension, or a manual change. What is installed is then
+ * read from the service again; the disk only says when to ask. The watcher re-targets
  * automatically when the installation-root setting changes.
  */
 export function watchInstalledPackagesOnDisk(
@@ -147,16 +147,14 @@ export function watchInstalledPackagesOnDisk(
     });
     diskWatchers = [];
 
-    const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-    const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
-    if (!rawPath) {
+    const installRoot = getInstallRoot();
+    if (!installRoot) {
       return;
     }
-    const installRoot = resolveConfiguration(rawPath);
 
     // Ignore disk churn while an install or a removal is changing the
-    // folder — the intermediate states are noise. The operation refreshes
-    // the walkthrough itself once it completes.
+    // folder — the intermediate states are noise. The operation reads the
+    // installed versions again itself once it completes.
     const handle = () => {
       if (isPackageOperationRunning()) {
         return;
@@ -173,13 +171,12 @@ export function watchInstalledPackagesOnDisk(
       diskWatchers.push(watcher);
     };
 
-    // Non-recursive watch of the immediate children (the version folders),
-    // which is exactly what isAnyVersionInstalledOnDisk() looks at.
-    addWatcher(path.join(installRoot, 'QtFramework'), '*');
+    // Non-recursive watch of the immediate children (the version folders).
+    addWatcher(productDir(installRoot, QT_FRAMEWORK), '*');
 
     // The watcher above is anchored inside the installation root, so it cannot
     // observe the root itself being removed. Deleting the installation root
-    // wipes QtFramework along with it, which must also refresh the walkthrough.
+    // wipes the Qt versions along with it, which must be noticed as well.
     // Watch the root entry from its parent so its deletion (and re-creation) is
     // reported. Skip when the root has no parent (e.g. a filesystem root).
     const installRootParent = path.dirname(installRoot);

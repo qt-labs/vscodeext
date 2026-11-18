@@ -7,83 +7,89 @@ import * as path from 'path';
 
 import {
   createLogger,
-  resolveConfiguration,
   host,
   CoreKey,
   QtWorkspaceConfigMessage,
   type QtToolsPaths
 } from 'qt-lib';
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
+import { getInstallRoot } from '@/install-root';
+import {
+  CMAKE,
+  NINJA,
+  listProductVersions,
+  productDir,
+  productVersionDir
+} from '@/install-layout';
 import { isPackageOperationRunning } from '@/install-state';
 import { coreAPI } from '@/extension';
 
 const logger = createLogger('qt-tools-store');
-
-/**
- * Absolute path to the `Tools/` directory under the configured installation
- * root, or undefined when no installation path is set.
- */
-function toolsDir(): string | undefined {
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawPath = config.get<string>(CONF_INSTALLATION_PATH);
-  if (!rawPath) {
-    return undefined;
-  }
-  const root = resolveConfiguration(rawPath);
-  if (!root) {
-    return undefined;
-  }
-  return path.join(root, 'Tools');
-}
 
 function firstExisting(candidates: string[]): string | undefined {
   return candidates.find((c) => fs.existsSync(c));
 }
 
 /**
- * Locate the CMake executable bundled under `<root>/Tools/CMake`. The layout
- * differs per platform:
- *   - macOS:   Tools/CMake/CMake.app/Contents/bin/cmake
- *   - Linux:   Tools/CMake/bin/cmake
- *   - Windows: Tools/CMake/bin/cmake.exe
+ * Locate the CMake executable of the newest CMake version installed in
+ * `installRoot`. The layout below the version folder differs per platform:
+ *   - macOS:   CMake.app/Contents/bin/cmake
+ *   - Linux:   bin/cmake
+ *   - Windows: bin/cmake.exe
  */
-function findCMake(tools: string): string | undefined {
-  const cmakeRoot = path.join(tools, 'CMake');
-  const candidates: string[] = [];
-  if (host.isMacOS) {
-    candidates.push(
-      path.join(cmakeRoot, 'CMake.app', 'Contents', 'bin', 'cmake')
-    );
+function findCMake(installRoot: string): string | undefined {
+  for (const version of listProductVersions(installRoot, CMAKE)) {
+    const versionDir = productVersionDir(installRoot, CMAKE, version);
+    const candidates: string[] = [];
+    if (host.isMacOS) {
+      candidates.push(
+        path.join(versionDir, 'CMake.app', 'Contents', 'bin', 'cmake')
+      );
+    }
+    // Generic bin/ layout (Linux/Windows, and a fallback everywhere).
+    candidates.push(path.join(versionDir, 'bin', `cmake${host.exeSuffix}`));
+    const cmake = firstExisting(candidates);
+    if (cmake) {
+      return cmake;
+    }
   }
-  // Generic bin/ layout (Linux/Windows, and a fallback everywhere).
-  candidates.push(path.join(cmakeRoot, 'bin', `cmake${host.exeSuffix}`));
-  return firstExisting(candidates);
+  return undefined;
 }
 
 /**
- * Locate the Ninja executable bundled under `<root>/Tools/Ninja`. Same layout
- * on every platform, only the executable suffix differs on Windows.
+ * Locate the Ninja executable of the newest Ninja version installed in
+ * `installRoot`. It sits in the version folder on every platform, only the
+ * executable suffix differs on Windows.
  */
-function findNinja(tools: string): string | undefined {
-  return firstExisting([path.join(tools, 'Ninja', `ninja${host.exeSuffix}`)]);
+function findNinja(installRoot: string): string | undefined {
+  for (const version of listProductVersions(installRoot, NINJA)) {
+    const ninja = path.join(
+      productVersionDir(installRoot, NINJA, version),
+      `ninja${host.exeSuffix}`
+    );
+    if (fs.existsSync(ninja)) {
+      return ninja;
+    }
+  }
+  return undefined;
 }
 
 /**
- * Detect the CMake and Ninja executables installed under the current
- * installation root's `Tools/` directory. Fields are omitted when the
- * corresponding tool is not present.
+ * Detect the CMake and Ninja executables installed in the current
+ * installation root, see install-layout.ts for where. Fields are omitted
+ * when the corresponding tool is not present.
  */
 export function detectQtToolsPaths(): QtToolsPaths {
-  const tools = toolsDir();
-  if (!tools || !fs.existsSync(tools)) {
+  const installRoot = getInstallRoot();
+  if (!installRoot) {
     return {};
   }
   const result: QtToolsPaths = {};
-  const cmake = findCMake(tools);
+  const cmake = findCMake(installRoot);
   if (cmake) {
     result.cmake = cmake;
   }
-  const ninja = findNinja(tools);
+  const ninja = findNinja(installRoot);
   if (ninja) {
     result.ninja = ninja;
   }
@@ -111,31 +117,32 @@ export function publishQtToolsPaths(): void {
   coreAPI.notify(message);
 }
 
-let toolsWatcher: vscode.FileSystemWatcher | undefined;
+let toolsWatchers: vscode.FileSystemWatcher[] = [];
+
+function disposeToolsWatchers(): void {
+  toolsWatchers.forEach((w) => {
+    w.dispose();
+  });
+  toolsWatchers = [];
+}
 
 /**
- * Watch the `Tools/` directory under the installation root and re-publish the
- * tool paths whenever a tool folder is added or removed — e.g. CMake or Ninja
- * installed/uninstalled by QtCreator while qt-sm is running. The watcher
- * re-targets automatically when the installation-root setting changes.
+ * Watch the CMake and Ninja folders of the installation root and re-publish
+ * the tool paths whenever a version of them is added or removed — e.g.
+ * installed/uninstalled by QtCreator while qt-sm is running. The watchers
+ * re-target automatically when the installation-root setting changes.
  */
 export function watchQtToolsOnDisk(
   context: vscode.ExtensionContext,
   onChange: () => void
 ): void {
   const retarget = () => {
-    toolsWatcher?.dispose();
-    toolsWatcher = undefined;
+    disposeToolsWatchers();
 
-    const tools = toolsDir();
-    if (!tools) {
+    const installRoot = getInstallRoot();
+    if (!installRoot) {
       return;
     }
-    // Watch the immediate children of Tools/ (the per-tool folders such as
-    // CMake and Ninja). Adding or removing a tool creates/deletes its folder
-    // here, which is enough to trigger a re-detect.
-    const pattern = new vscode.RelativePattern(vscode.Uri.file(tools), '*');
-    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
     const handle = () => {
       // qt-sm's own installs and removals publish explicitly once finished;
       // ignore the intermediate disk churn they produce.
@@ -144,9 +151,19 @@ export function watchQtToolsOnDisk(
       }
       onChange();
     };
-    watcher.onDidCreate(handle);
-    watcher.onDidDelete(handle);
-    toolsWatcher = watcher;
+    // Watch the immediate children of each tool folder (its version
+    // folders). Adding or removing a tool creates/deletes one here, which
+    // is enough to trigger a re-detect.
+    for (const tool of [CMAKE, NINJA]) {
+      const pattern = new vscode.RelativePattern(
+        vscode.Uri.file(productDir(installRoot, tool)),
+        '*'
+      );
+      const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+      watcher.onDidCreate(handle);
+      watcher.onDidDelete(handle);
+      toolsWatchers.push(watcher);
+    }
   };
 
   retarget();
@@ -157,10 +174,6 @@ export function watchQtToolsOnDisk(
         retarget();
       }
     }),
-    {
-      dispose: () => {
-        toolsWatcher?.dispose();
-      }
-    }
+    { dispose: disposeToolsWatchers }
   );
 }

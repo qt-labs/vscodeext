@@ -11,7 +11,7 @@ import {
   STATE_WALKTHROUGH_FIRST_APP_DONE,
   STATE_WALKTHROUGH_SIGN_IN_ACKNOWLEDGED
 } from '@/constants';
-import { isAnyVersionInstalledOnDisk } from '@/installed-packages-store';
+import { isAnyVersionInstalled } from '@/installed-packages-store';
 import { isLatestFrameworkInstalled } from '@/latest-framework';
 import { setUsageDataConsent } from '@/service-connection';
 import type { SignInPhase } from '@/auth-provider';
@@ -42,7 +42,7 @@ function createWebviewPanelIcons(context: vscode.ExtensionContext) {
  * Persisted walkthrough state: the "Build your first Qt application" step,
  * whether the signed-in card was acknowledged with Continue, and the two
  * privacy opt-ins. The other steps are derived from live signals (login,
- * installed extensions/framework).
+ * installed extensions, and the Qt versions the service lists).
  */
 class WalkthroughStateManager extends BaseStateManager {
   constructor(context: vscode.ExtensionContext) {
@@ -342,7 +342,8 @@ export function getStepCompletion(
     // Signed in, and the signed-in card was acknowledged with Continue.
     signin: isLoggedIn && getWalkthroughState(context).signInAcknowledged,
     extensions: areExtensionsInstalled,
-    framework: isAnyVersionInstalledOnDisk(),
+    // What the service lists, see setInstalledVersions().
+    framework: isAnyVersionInstalled(),
     firstApp: getWalkthroughState(context).firstAppDone
   };
 }
@@ -358,7 +359,8 @@ function computeLiveCompletion(
   return {
     signin: getLoggedIn() && getWalkthroughState(context).signInAcknowledged,
     extensions: getRequiredExtensionsContext(),
-    framework: isAnyVersionInstalledOnDisk(),
+    // What the service lists, see setInstalledVersions().
+    framework: isAnyVersionInstalled(),
     firstApp: getWalkthroughState(context).firstAppDone
   };
 }
