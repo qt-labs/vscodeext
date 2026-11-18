@@ -1,0 +1,214 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.3.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "qt-sm",
+      "version": "0.1.5",
+      "bom-ref": "qt-sm@0.1.5",
+      "description": "Qt Software Management",
+      "purl": "pkg:npm/qt-sm@0.1.5?vcs_url=git%2Bhttps%3A%2F%2Fgithub.com%2Fqt-labs%2Fvscodeext.git",
+      "externalReferences": [
+        {
+          "url": "https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/qt-labs/vscodeext.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.qt.io/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:vscode",
+          "value": "^1.94.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "module-alias",
+      "version": "2.3.4",
+      "bom-ref": "qt-sm@0.1.5|module-alias@2.3.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/module-alias@2.3.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/module-alias/-/module-alias-2.3.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "6ce72566df21929b868124a81b4ecf2a6bf34e2cd13a29544ef2cdcab32abe50bdb2786cef2ec6ce33560156c84883a58423f54f5e2b1f53c3015f6237206aff"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/module-alias"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qt-lib",
+      "version": "1.19.0",
+      "bom-ref": "qt-sm@0.1.5|qt-lib@1.19.0",
+      "purl": "pkg:npm/qt-lib@1.19.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/qt-lib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sms-api",
+      "version": "0.1.0",
+      "bom-ref": "qt-sm@0.1.5|sms-api@0.1.0",
+      "purl": "pkg:npm/sms-api@0.1.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/sms-api"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "qt-sm@0.1.5",
+      "dependsOn": [
+        "qt-sm@0.1.5|module-alias@2.3.4",
+        "qt-sm@0.1.5|qt-lib@1.19.0",
+        "qt-sm@0.1.5|sms-api@0.1.0"
+      ]
+    },
+    {
+      "ref": "qt-sm@0.1.5|module-alias@2.3.4"
+    },
+    {
+      "ref": "qt-sm@0.1.5|qt-lib@1.19.0"
+    },
+    {
+      "ref": "qt-sm@0.1.5|sms-api@0.1.0"
+    }
+  ]
+}
