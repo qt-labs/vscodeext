@@ -18,11 +18,13 @@ import { RecordedInputEvent } from './preview-event-replay-client.mts';
 import { QrcResourceFinder } from './qrc-resource-finder.mts';
 import { createLogger, delay } from 'qt-lib';
 import { createKeyedDebouncer, normalizePathForComparison } from '@/utils.mjs';
+import { PythonSaveMonitor } from '@/preview/python-save-monitor.mjs';
 
 const logger = createLogger('qml-preview-manager');
 
 // Time to wait for further change events of a file before reloading it.
 const FILE_CHANGE_SETTLE_MS = 50;
+const PYTHON_CHANGE_SETTLE_MS = 500;
 
 /**
  * File loader function type
@@ -84,6 +86,8 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private _previewClient?: QmlPreviewClient;
   private readonly _qrcFinder: QrcResourceFinder;
   private _fileSystemWatcher?: vscode.FileSystemWatcher;
+  private _pythonFileSystemWatcher?: vscode.FileSystemWatcher;
+  private _pythonSaveMonitor?: PythonSaveMonitor;
   private _lastLoadedUrl?: URL;
   private readonly _settings: QmlPreviewManagerSettings = {};
   private _buildDirs: string[] = [];
@@ -112,6 +116,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
   private readonly _onHotReloadStateChanged =
     new vscode.EventEmitter<QmlPreviewSettings>();
   private readonly _onHotReloadFailure = new vscode.EventEmitter<string>();
+  private readonly _onPythonFileChanged = new vscode.EventEmitter<string[]>();
   constructor() {
     super();
     this._qrcFinder = new QrcResourceFinder();
@@ -138,6 +143,10 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
   get onHotReloadFailure() {
     return this._onHotReloadFailure.event;
+  }
+
+  get onPythonFileChanged() {
+    return this._onPythonFileChanged.event;
   }
 
   /**
@@ -757,6 +766,46 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     logger.info('File system watcher configured');
   }
 
+  setupPythonFileWatcher(folder: vscode.WorkspaceFolder, files: string[]) {
+    const watched = new Set(
+      files.map((file) => normalizePathForComparison(file))
+    );
+    this._pythonSaveMonitor = new PythonSaveMonitor(
+      PYTHON_CHANGE_SETTLE_MS,
+      (changedFiles) => {
+        this._onPythonFileChanged.fire(changedFiles);
+      },
+      (file) => fs.readFileSync(file)
+    );
+    for (const file of files) {
+      try {
+        this._pythonSaveMonitor.watch(file);
+      } catch (error) {
+        logger.warn('Cannot watch Python file:', `"${file}"`, String(error));
+      }
+    }
+
+    this._pythonFileSystemWatcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(folder, '**/*.py')
+    );
+    this._pythonFileSystemWatcher.onDidChange((uri) => {
+      const changedFile = normalizePathForComparison(uri.fsPath);
+      if (!watched.has(changedFile)) {
+        return;
+      }
+      try {
+        this._pythonSaveMonitor?.save(uri.fsPath);
+      } catch (error) {
+        logger.error(
+          'Cannot read changed Python file:',
+          `"${changedFile}"`,
+          String(error)
+        );
+      }
+    });
+    logger.info('Watching', String(watched.size), 'Python files for changes');
+  }
+
   /**
    * Handle file change event
    * Implements hot-reload logic matching Qt Creator's implementation
@@ -870,6 +919,8 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
 
     // Then clean up our own resources
     this._fileSystemWatcher?.dispose();
+    this._pythonFileSystemWatcher?.dispose();
+    this._pythonSaveMonitor?.dispose();
     this._previewClient?.dispose();
 
     // Dispose event emitters
@@ -878,6 +929,7 @@ export class QmlPreviewConnectionManager extends QmlDebugConnectionManager {
     this._onDebugServiceUnavailable.dispose();
     this._onHotReloadStateChanged.dispose();
     this._onHotReloadFailure.dispose();
+    this._onPythonFileChanged.dispose();
 
     // Clear tracked data structures
     this._fileChanges.dispose();

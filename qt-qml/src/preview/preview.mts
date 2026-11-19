@@ -52,6 +52,9 @@ let relaunchCurrentPreview: (() => Promise<boolean>) | undefined;
 // next connection manager and replayed to restore the UI state.
 // Maps to the event storage in Qt Creator's QmlPreviewPlugin.
 let pendingReplayEvents: RecordedInputEvent[] | undefined;
+let cleaningSession = false;
+let pythonRestartValidation: Promise<void> | undefined;
+const pendingPythonRestartFiles = new Set<string>();
 
 function isPreviewStartingOrRunning() {
   return (
@@ -62,14 +65,22 @@ function isPreviewStartingOrRunning() {
 }
 
 function cleanupSession() {
-  previewManager?.dispose();
-  previewManager = undefined;
-  previewProcess?.kill();
-  previewProcess = undefined;
-  previewLaunch?.dispose();
-  previewLaunch = undefined;
-  relaunchCurrentPreview = undefined;
-  ui.setPreviewStopped();
+  if (cleaningSession) {
+    return;
+  }
+  cleaningSession = true;
+  try {
+    previewManager?.dispose();
+    previewManager = undefined;
+    previewProcess?.kill();
+    previewProcess = undefined;
+    previewLaunch?.dispose();
+    previewLaunch = undefined;
+    relaunchCurrentPreview = undefined;
+    ui.setPreviewStopped();
+  } finally {
+    cleaningSession = false;
+  }
 }
 
 /**
@@ -463,6 +474,14 @@ async function launchPySidePreview(
       return false;
     }
 
+    const pythonFiles = (await pySideProject.findPythonFiles()).map((file) =>
+      path.isAbsolute(file) ? file : path.join(folder.uri.fsPath, file)
+    );
+    manager.setupPythonFileWatcher(folder, pythonFiles);
+    manager.onPythonFileChanged((files) => {
+      void restartAfterPythonSave(manager, pySideProject, files);
+    });
+
     const extension = vscode.extensions.getExtension(
       `theqtcompany.${EXTENSION_ID}`
     );
@@ -678,6 +697,68 @@ async function restartPreviewSession(manager: QmlPreviewConnectionManager) {
   } finally {
     if (previewStartPromise === restartPromise) {
       previewStartPromise = undefined;
+    }
+  }
+}
+
+async function restartAfterPythonSave(
+  manager: QmlPreviewConnectionManager,
+  pySideProject: PySideProject,
+  files: string[]
+) {
+  files.forEach((file) => pendingPythonRestartFiles.add(file));
+  if (pythonRestartValidation) {
+    logger.info('Queued Python changes during restart validation');
+    return;
+  }
+  if (previewManager !== manager) {
+    pendingPythonRestartFiles.clear();
+    return;
+  }
+
+  const validation = (async () => {
+    const validatedFiles = new Set<string>();
+    while (pendingPythonRestartFiles.size > 0 && previewManager === manager) {
+      const batch = [...pendingPythonRestartFiles];
+      pendingPythonRestartFiles.clear();
+      batch.forEach((file) => validatedFiles.add(file));
+      logger.info(
+        'Checking Python syntax before restart:',
+        batch.map((file) => path.basename(file)).join(', ')
+      );
+      for (const file of batch) {
+        const error = await pySideProject.checkPythonSyntax(file);
+        if (error) {
+          pendingPythonRestartFiles.clear();
+          const message =
+            `Python syntax check failed for ${path.basename(file)}; ` +
+            'keeping the current QML Preview running.';
+          logger.error(message, error);
+          qmlPreviewOutputChannel?.appendLine(`\n${message}\n${error}\n`);
+          ui.showError(message);
+          return;
+        }
+      }
+    }
+
+    if (previewManager !== manager) {
+      pendingPythonRestartFiles.clear();
+      return;
+    }
+    qmlPreviewOutputChannel?.appendLine(
+      `\nPython files changed: ${[...validatedFiles]
+        .map((file) => path.basename(file))
+        .join(', ')}. Restarting QML Preview...\n`
+    );
+    await restartPreviewSession(manager);
+  })();
+
+  pythonRestartValidation = validation;
+  try {
+    await validation;
+  } finally {
+    if (pythonRestartValidation === validation) {
+      pythonRestartValidation = undefined;
     }
   }
 }
