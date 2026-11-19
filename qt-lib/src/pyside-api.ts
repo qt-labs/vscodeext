@@ -57,6 +57,12 @@ export interface PySideProject {
   runFile(filePath: string, args?: string[]): ChildProcess | undefined;
 
   /**
+   * Check a Python file for syntax errors with the selected interpreter.
+   * @returns The compiler output on failure, or undefined on success.
+   */
+  checkPythonSyntax(filePath: string): Promise<string | undefined>;
+
+  /**
    * Find all Python files within the project's workspace folder.
    * Used as a fallback entry-point picker when PySide < 6.10.3.
    * @returns Relative paths of all `.py` files found.
