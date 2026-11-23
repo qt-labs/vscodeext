@@ -61,8 +61,11 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   private installRoot = '';
   private errorMessage = '';
   // The item of the install or removal that runs, shown at the top of the
-  // view. Kept across renders so that a progress update re-renders only it.
+  // view, or in place of the version a removal removes. Kept across renders
+  // so that a progress update re-renders only it.
   private operation: vscode.TreeItem | undefined;
+  // The version the running removal removes, whose item it replaces.
+  private operationReplaces: string | undefined;
 
   private refreshing: Promise<void> | undefined;
   private refreshAgain = false;
@@ -121,20 +124,34 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
    * settles. The view would otherwise say that nothing is installed while
    * the first version downloads, because the disk watcher stays quiet
    * during the operation and the service lists it only once it is done.
+   *
+   * A removal passes the version it removes as `replaces`: its item shows
+   * in place of that version instead of at the top. Once the removal
+   * succeeds the version stays hidden, so that it does not show again
+   * until the refresh that follows drops it.
    */
-  showOperation(label: string, operation: Promise<unknown>): void {
+  showOperation(
+    label: string,
+    operation: Promise<unknown>,
+    replaces?: string
+  ): void {
     const item = operationItem(label);
     this.operation = item;
+    this.operationReplaces = replaces;
     this._onDidChangeTreeData.fire(undefined);
     void vscode.window.withProgress(
       { location: { viewId: VIEW_ID } },
       async () => {
-        await operation.then(
-          () => undefined,
-          () => undefined
+        const succeeded = await operation.then(
+          () => true,
+          () => false
         );
         if (this.operation === item) {
+          if (succeeded && replaces !== undefined) {
+            this.versions = this.versions.filter((v) => v.version !== replaces);
+          }
           this.operation = undefined;
+          this.operationReplaces = undefined;
           this._onDidChangeTreeData.fire(undefined);
         }
       }
@@ -181,10 +198,30 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
       return [];
     }
     const items = this.rootItems();
-    if (this.operation) {
+    if (this.operation && !this.replacesVersionItem(items)) {
       items.unshift(this.operation);
     }
     return [this.installRootItem(), ...items];
+  }
+
+  /**
+   * Put the item of the running removal in place of the item of the
+   * version it removes. Returns whether that version was listed.
+   */
+  private replacesVersionItem(items: vscode.TreeItem[]): boolean {
+    const { operation, operationReplaces } = this;
+    if (!operation || operationReplaces === undefined) {
+      return false;
+    }
+    const index = items.findIndex(
+      (i) =>
+        i instanceof InstalledPackageItem && i.version === operationReplaces
+    );
+    if (index < 0) {
+      return false;
+    }
+    items[index] = operation;
+    return true;
   }
 
   /** The root the service resolved once it answered, the configured one before that. */
@@ -430,13 +467,15 @@ function operationItem(label: string): vscode.TreeItem {
 
 /**
  * Show a running install or removal in the view until `operation` settles.
- * `label` is what runs, for example "Installing Qt 6.9.0".
+ * `label` is what runs, for example "Installing Qt 6.9.0". A removal names
+ * the version it removes as `replaces`, whose item it is shown in place of.
  */
 export function showInstalledPackagesOperation(
   label: string,
-  operation: Promise<unknown>
+  operation: Promise<unknown>,
+  replaces?: string
 ): void {
-  provider?.showOperation(label, operation);
+  provider?.showOperation(label, operation, replaces);
 }
 
 /**

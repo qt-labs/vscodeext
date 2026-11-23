@@ -872,7 +872,11 @@ async function removeVersion(
               { autoRemove, confirmRemoval: true },
               callbacks
             );
-        showInstalledPackagesOperation(`Removing Qt ${version}`, removal);
+        showInstalledPackagesOperation(
+          `Removing Qt ${version}`,
+          removal,
+          version
+        );
         return removal;
       }
     );
