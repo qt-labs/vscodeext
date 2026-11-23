@@ -1,21 +1,29 @@
-# Qt Software Management
+# Qt Software Management (Beta)
 
-Supercharge your Qt development in Visual Studio Code with advanced QML support, intelligent code completion, and integrated debugging — all in one streamlined extension.
+**Your Qt development environment, within Visual Studio Code.**
 
-**Trying the beta?** We'd love to hear how it went. [Take the 3-minute survey ↗](https://install.qt.io/beta-survey)
+Discover, install and manage Qt framework and build tools without leaving the
+integrated development environment.
+
+**Tried it?** Tell us what was good and what was not so good.
+[Take the 3-minute survey ↗](https://install.qt.io/beta-survey)
 
 ## Get started
 
-1. Install Qt extension
-2. Go through the walkthrough
-3. Install Qt Client. Accept legal obligations.
-4. Sign in to Qt account, if you already have an account or if you have a commercial account.
+1. Install this extension.
+2. Open the walkthrough and follow it.
+3. Sign in with your Qt Account, or create one.
+4. Let the extension install Qt Client, CMake and the build tools you need.
+5. Select a Qt Framework version to download and install.
+6. Create a project, or start from an example.
 
-## What you get
+## Beta
 
-- Qt Client to manage Qt installations.
-- Qt Framework is not part of the extension. Qt Client will offer to install it.
-- Qt Client will also install CMake and Build tools
+This is a beta. Expect rough edges, and don't rely on it for production
+setups yet. Your feedback shapes the release.
+
+[Take the 3-minute survey ↗](https://install.qt.io/beta-survey) ·
+[Report a bug ↗](https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues)
 
 ## Documentation
 
@@ -24,40 +32,6 @@ For more information about using Qt extensions, go to
 
 For pre-release versions, go to
 [Qt Extension for VS Code Pre-release Documentation](https://doc-snapshots.qt.io/vscodeext-dev/).
-
-## Known Issues (Alpha)
-
-### Bootstrap not triggered after previous installation remnants
-
-If `QtCompany.ini` exists from a previous test or installation but the
-service binary is missing (e.g. after running `remove-installation` or
-manually deleting `~/.local/bin/QtSoftwareManagementService`), the
-extension will skip the bootstrap download because it considers the
-service already installed.
-
-**Workaround:** Remove the stale configuration and restart VS Code:
-
-```bash
-# macOS
-rm "$HOME/Library/Application Support/QtCompany/QtCompany.ini"
-pkill -SIGTERM QtSoftwareManagementService
-
-# Linux
-rm "$HOME/.local/share/QtCompany/QtCompany.ini"
-pkill -SIGTERM QtSoftwareManagementService
-
-# Windows (PowerShell)
-Remove-Item "$env:LOCALAPPDATA\QtCompany\QtCompany.ini"
-Stop-Process -Name QtSoftwareManagementService -ErrorAction SilentlyContinue
-```
-
-After restarting VS Code, the extension will re-download and install the
-bootstrap automatically.
-
-## Issues
-
-If you encounter any issues with the extension, please [report the
-issues](https://qt-project.atlassian.net/jira/software/c/projects/VSCODEEXT/issues).
 
 ## License
 
