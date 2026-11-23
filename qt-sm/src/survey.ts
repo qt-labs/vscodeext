@@ -163,6 +163,21 @@ export function shareFeedback(): void {
 }
 
 /**
+ * Forget the answers to the survey prompt and schedule it again, as on the
+ * first activation. Used by resetTestState.
+ */
+export function resetSurveyState(): void {
+  if (!surveyState) {
+    return;
+  }
+  surveyState.surveyCompleted = false;
+  surveyState.surveyDismissed = false;
+  surveyState.lastPromptTime = 0;
+  disposeSurvey();
+  scheduleSurveyPrompt();
+}
+
+/**
  * Clean up the survey timer when the extension deactivates.
  */
 export function disposeSurvey(): void {

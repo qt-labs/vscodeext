@@ -11,6 +11,7 @@ import {
   Packages,
   IPC,
   legacyQtAccountIniPath,
+  genericDataLocation,
   qtCompanyIniPath,
   type PackageData,
   type JobCallbacks,
@@ -77,6 +78,7 @@ import {
   setPackageOperationRunning
 } from '@/install-state';
 import { publishQtToolsPaths } from '@/qt-tools-store';
+import { resetSurveyState } from '@/survey';
 import {
   findLatestFramework,
   resetLatestFrameworkState
@@ -1425,7 +1427,8 @@ export async function logout(
  * Reset all qt-sm local state. **For testing purposes only.**
  *
  * This removes:
- *   - The Qt installation directory (e.g. ~/QtAlpha)
+ *   - The Qt installation directory (e.g. ~/QtBeta), purged through the
+ *     service so that its journal forgets the installation too
  *   - QtCompany.ini (service settings)
  *   - The Qt Account credentials in Qt.ini (via sign-out; the file itself is
  *     shared with other Qt tools and kept) and a legacy qtaccount.ini
@@ -1433,14 +1436,18 @@ export async function logout(
  *   - The IPC socket / named pipe
  *   - The persisted walkthrough state, so it restarts from step 1
  *   - The persisted latest Qt Framework version
+ *   - The answers to the survey prompt
+ *   - The download cache of the service and the folders of earlier
+ *     bootstrap installers
  *
  * It also kills any running QtSoftwareManagementService process and
- * disconnects the current IPC session.
+ * disconnects the current IPC session, and tells qt-core that the Qt
+ * versions and the build tools of the installation are gone.
  */
 export async function resetTestState(): Promise<void> {
   const confirm = await vscode.window.showWarningMessage(
-    'This will remove all qt-sm data (installed packages, credentials, ' +
-      'service state). This action is for testing purposes only and cannot ' +
+    'This will remove all qt-sm data (installed packages, downloaded ' +
+      'archives, credentials, service state). This action is for testing purposes only and cannot ' +
       'be undone. Continue?',
     { modal: true },
     'Reset'
@@ -1448,6 +1455,16 @@ export async function resetTestState(): Promise<void> {
   if (confirm !== 'Reset') {
     return;
   }
+
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawInstallPath =
+    config.get<string>(CONF_INSTALLATION_PATH) ?? '~/QtBeta';
+  const installPath = resolveConfiguration(rawInstallPath);
+
+  // Purge while the service still runs and the user is still signed in,
+  // so that the journal of the service forgets the installation. Deleting
+  // only the folder would leave it recorded with packages that are gone.
+  await purgeInstallation(installPath);
 
   // Sign out before tearing down
   if (authProviderInstance) {
@@ -1459,17 +1476,16 @@ export async function resetTestState(): Promise<void> {
   // Kill the service process
   await killServiceProcess();
 
-  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
-  const rawInstallPath =
-    config.get<string>(CONF_INSTALLATION_PATH) ?? '~/QtBeta';
-  const installPath = resolveConfiguration(rawInstallPath);
-
+  // The folder is still there when the purge failed, for example because
+  // the service does not record it.
   const pathsToRemove = [
     installPath,
     qtCompanyIniPath(),
     legacyQtAccountIniPath(),
     getServiceLockFilePath(),
-    IPC.defaultSocket
+    IPC.defaultSocket,
+    serviceCacheDir(),
+    ...bootstrapInstallerDirs()
   ];
 
   const removed: string[] = [];
@@ -1497,9 +1513,11 @@ export async function resetTestState(): Promise<void> {
     AdditionalQtPathsName
   );
   const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  // With the separator, so that ~/QtBeta does not match ~/QtBeta2.
+  const installPrefix = path.join(installPath, path.sep);
   const filtered = currentPaths.filter((p) => {
     const pPath = typeof p === 'string' ? p : (p as { path: string }).path;
-    return !pPath.startsWith(installPath);
+    return !path.normalize(pPath).startsWith(installPrefix);
   });
   if (filtered.length !== currentPaths.length) {
     await coreConfig.update(
@@ -1510,9 +1528,23 @@ export async function resetTestState(): Promise<void> {
     logger.info(
       `Removed ${String(currentPaths.length - filtered.length)} Qt path(s) under ${installPath}`
     );
+    // Tell qt-cpp through qt-core, so that the kits go away without a reload.
+    coreAPI?.setValue(
+      CoreKey.GLOBAL_WORKSPACE,
+      CoreKey.ADDITIONAL_QT_PATHS,
+      filtered.map((p) =>
+        typeof p === 'string' ? { path: p } : (p as QtAdditionalPath)
+      )
+    );
+    const message = new QtWorkspaceConfigMessage(CoreKey.GLOBAL_WORKSPACE);
+    message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
+    coreAPI?.notify(message);
   }
+  // CMake and Ninja went with the installation.
+  publishQtToolsPaths();
 
   resetLatestFrameworkState();
+  resetSurveyState();
 
   // Clear the persisted walkthrough state last, so the re-render sees the
   // already-reset sign-in and install state.
@@ -1523,6 +1555,101 @@ export async function resetTestState(): Promise<void> {
   // The Installed Packages view shows what the service records; read it
   // again now that the installation and the service are gone.
   syncInstalledPackages();
+}
+
+/**
+ * Remove the installation and its record in the journal of the service
+ * with `packages/purge`. Failures are only logged, resetTestState deletes
+ * the folder itself afterwards.
+ */
+async function purgeInstallation(installRoot: string): Promise<void> {
+  if (!fs.existsSync(installRoot)) {
+    return;
+  }
+  try {
+    const packages = new Packages(await ensureConnected({ silent: true }));
+    const result = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Purging ${installRoot}`,
+        cancellable: false
+      },
+      async () =>
+        packages.purge(
+          { installRoot },
+          {
+            onMessage: (info) => {
+              logger.warn(`purge: ${info.message}`);
+            },
+            onPrompt: handleUserPrompt
+          }
+        )
+    );
+    logger.info(`Purge result: ${result.message}`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Cannot purge ${installRoot}: ${msg}`);
+  }
+}
+
+/**
+ * `QStandardPaths::GenericCacheLocation`, where the service keeps the
+ * archives it downloads:
+ *   Linux:   `$XDG_CACHE_HOME` or `~/.cache`
+ *   macOS:   `~/Library/Caches`
+ *   Windows: `%LOCALAPPDATA%\cache`
+ */
+function genericCacheLocation(): string {
+  if (process.platform === 'win32') {
+    const localAppData =
+      process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
+    return path.join(localAppData, 'cache');
+  }
+  if (process.platform === 'darwin') {
+    return path.join(os.homedir(), 'Library', 'Caches');
+  }
+  return process.env.XDG_CACHE_HOME ?? path.join(os.homedir(), '.cache');
+}
+
+/** `QStandardPaths::GenericConfigLocation`. */
+function genericConfigLocation(): string {
+  if (process.platform === 'win32') {
+    return (
+      process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local')
+    );
+  }
+  if (process.platform === 'darwin') {
+    return path.join(os.homedir(), 'Library', 'Preferences');
+  }
+  return process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config');
+}
+
+/** The download cache of the service. */
+function serviceCacheDir(): string {
+  return path.join(genericCacheLocation(), 'qt-softwaremanagement-service');
+}
+
+/**
+ * The folders each bootstrap installer leaves behind, named after its
+ * build, for example `QtSoftwareManagementServiceInstaller_2026-06-05`.
+ */
+function bootstrapInstallerDirs(): string[] {
+  const prefix = 'QtSoftwareManagementServiceInstaller_';
+  const parents = new Set([
+    genericDataLocation(),
+    genericConfigLocation(),
+    genericCacheLocation()
+  ]);
+  return [...parents].flatMap((parent) => {
+    try {
+      return fs
+        .readdirSync(parent)
+        .filter((name) => name.startsWith(prefix))
+        .map((name) => path.join(parent, name));
+    } catch {
+      return [];
+    }
+  });
 }
 
 function getServiceLockFilePath(): string {
