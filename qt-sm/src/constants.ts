@@ -34,10 +34,11 @@ export const PERSONAL_ACCESS_TOKEN_URL =
 // QT_ACCOUNT_OIDC_* environment variables override both.
 export const OIDC_STAGING_CLIENT_ID = 'qt-pif-sms-staging';
 
-// Browser sign-in timings, from the Qt offline installer: report a stalled
-// hand-off after 25 seconds without a result, give up after 10 minutes. Both
-// are measured from the last time the browser was opened.
-export const SIGN_IN_STALL_MS = 25_000;
+// Browser sign-in timings: report a stalled hand-off after 2 minutes without
+// a result, give up after 10 minutes. Both are measured from the last time
+// the browser was opened. The Qt offline installer reports the stall after
+// 25 seconds, which is too early for creating an account in the browser.
+export const SIGN_IN_STALL_MS = 2 * 60_000;
 export const SIGN_IN_EXPIRY_MS = 10 * 60_000;
 
 // Survey popup constants

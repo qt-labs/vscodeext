@@ -12,7 +12,8 @@ import {
   OIDC_DEFAULTS,
   QtCredentialStorage,
   applyOidcEnvOverrides,
-  type LogLevel
+  type LogLevel,
+  type OidcLoginOptions
 } from 'sms-api';
 import { createLogger } from 'qt-lib';
 import {
@@ -164,16 +165,7 @@ export class QtAccountAuthenticationProvider
     scopes: readonly string[]
   ): Promise<vscode.AuthenticationSession> {
     void scopes;
-    if (this.pendingLogin) {
-      // A second request while the browser is open: show the page again and
-      // let the caller share the pending result.
-      this.reopenBrowser();
-      return this.pendingLogin;
-    }
-    this.pendingLogin = this.runBrowserLogin().finally(() => {
-      this.pendingLogin = undefined;
-    });
-    return this.pendingLogin;
+    return this.startBrowserLogin();
   }
 
   async removeSession(sessionId: string): Promise<void> {
@@ -205,6 +197,15 @@ export class QtAccountAuthenticationProvider
   }
 
   // ── Browser sign-in controls ──────────────────────────────────────────
+
+  /**
+   * Like `createSession()`, but the browser opens on the account creation
+   * page of the login server. The new account is signed in when the browser
+   * comes back.
+   */
+  async createAccount(): Promise<vscode.AuthenticationSession> {
+    return this.startBrowserLogin({ screenHint: 'signup' });
+  }
 
   /** Opens the authorization URL of the pending login again and restarts the timers. */
   reopenBrowser(): void {
@@ -320,11 +321,28 @@ export class QtAccountAuthenticationProvider
 
   // ── Internals ──────────────────────────────────────────────────────────
 
-  private async runBrowserLogin(): Promise<vscode.AuthenticationSession> {
+  private async startBrowserLogin(
+    options?: OidcLoginOptions
+  ): Promise<vscode.AuthenticationSession> {
+    if (this.pendingLogin) {
+      // A second request while the browser is open: show the page again and
+      // let the caller share the pending result.
+      this.reopenBrowser();
+      return this.pendingLogin;
+    }
+    this.pendingLogin = this.runBrowserLogin(options).finally(() => {
+      this.pendingLogin = undefined;
+    });
+    return this.pendingLogin;
+  }
+
+  private async runBrowserLogin(
+    options?: OidcLoginOptions
+  ): Promise<vscode.AuthenticationSession> {
     this.resetExpiry();
     this.setSignInState({ phase: 'signing' });
     try {
-      await this.authenticator.login();
+      await this.authenticator.login(options);
     } catch (err) {
       this.clearTimers();
       if (err instanceof OidcAuthError && err.code === OidcError.Cancelled) {

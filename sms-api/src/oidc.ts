@@ -452,6 +452,16 @@ export interface OidcAuthenticatorOptions {
   successPage?: string;
 }
 
+/** Options of a single `OidcAuthenticator.login()`. */
+export interface OidcLoginOptions {
+  /**
+   * `screen_hint` parameter of the authorization request, omitted when
+   * empty. `'signup'` opens the account creation page instead of the sign-in
+   * page of the Qt account login server.
+   */
+  screenHint?: string;
+}
+
 export class OidcAuthenticator {
   readonly config: OidcClientConfig;
   private readonly storage: QtCredentialStorage;
@@ -522,11 +532,11 @@ export class OidcAuthenticator {
    * email are stored, rejects with an `OidcAuthError` otherwise. Rejects with
    * `OidcError.Busy` while another login or refresh is in progress.
    */
-  async login(): Promise<void> {
+  async login(options?: OidcLoginOptions): Promise<void> {
     const op = this.begin('login');
     try {
       const discovery = await this.discover(op);
-      await this.runLogin(op, discovery);
+      await this.runLogin(op, discovery, options);
       this.log('info', 'OIDC login succeeded.');
     } catch (err) {
       throw this.finishWithError(op, err);
@@ -704,7 +714,11 @@ export class OidcAuthenticator {
 
   // ── Login ──────────────────────────────────────────────────────────────
 
-  private async runLogin(op: Operation, discovery: Discovery): Promise<void> {
+  private async runLogin(
+    op: Operation,
+    discovery: Discovery,
+    options: OidcLoginOptions | undefined
+  ): Promise<void> {
     const port = await this.listen(op);
     const redirectUri = `http://${CALLBACK_HOST}:${String(port)}${CALLBACK_PATH}`;
     const state = base64url(crypto.randomBytes(16));
@@ -731,6 +745,9 @@ export class OidcAuthenticator {
     }
     if (this.config.resource) {
       params.push(['resource', this.config.resource]);
+    }
+    if (options?.screenHint) {
+      params.push(['screen_hint', options.screenHint]);
     }
     const url = new URL(discovery.authorizationEndpoint);
     const existing = url.search ? `${url.search.slice(1)}&` : '';

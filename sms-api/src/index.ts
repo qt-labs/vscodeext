@@ -102,5 +102,9 @@ export {
   decodeJwtPayload,
   normalizeIssuer
 } from './oidc';
-export type { OidcClientConfig, OidcAuthenticatorOptions } from './oidc';
+export type {
+  OidcClientConfig,
+  OidcAuthenticatorOptions,
+  OidcLoginOptions
+} from './oidc';
 export { BearerTokenProvider } from './bearer-token';

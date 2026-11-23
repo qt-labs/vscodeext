@@ -418,10 +418,26 @@ describe('OidcAuthenticator', () => {
     const params = new URL(url).searchParams;
     assert.equal(params.has('prompt'), false);
     assert.equal(params.has('resource'), false);
+    assert.equal(params.has('screen_hint'), false);
     const form = new URLSearchParams(
       server.requestsTo('/v1/oidc/token')[0]!.body
     );
     assert.equal(form.has('resource'), false);
+  });
+
+  it('adds the screen hint of the login to the authorization URL', async () => {
+    const auth = authenticator();
+    const urlPromise = new Promise<string>((resolve) => {
+      auth.onAuthorizationUrl = resolve;
+    });
+    const done = auth.login({ screenHint: 'signup' });
+    done.catch(() => undefined);
+    const url = await urlPromise;
+    await browse(url);
+    await done;
+    const params = new URL(url).searchParams;
+    assert.equal(params.get('screen_hint'), 'signup');
+    assert.equal(params.get('prompt'), 'consent');
   });
 
   // ── Refresh ────────────────────────────────────────────────────────────

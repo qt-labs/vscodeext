@@ -1365,11 +1365,14 @@ async function validateAndSetInstallationPath(insPath: string): Promise<void> {
 }
 
 /**
- * Sign in to the Qt Account in the browser. Failures are shown in the
- * walkthrough's sign-in card when it is open, otherwise as a notification.
+ * Sign in to the Qt Account in the browser. With `signUp`, the browser opens
+ * on the account creation page and the new account is signed in. Failures
+ * are shown in the walkthrough's sign-in card when it is open, otherwise as
+ * a notification.
  */
 export async function login(
-  authProvider: QtAccountAuthenticationProvider
+  authProvider: QtAccountAuthenticationProvider,
+  options?: { signUp?: boolean }
 ): Promise<void> {
   const sessions = await authProvider.getSessions();
   if (sessions.length > 0 && sessions[0]) {
@@ -1379,7 +1382,11 @@ export async function login(
     return;
   }
   try {
-    await authProvider.createSession([AUTH_PROVIDER_ID]);
+    if (options?.signUp) {
+      await authProvider.createAccount();
+    } else {
+      await authProvider.createSession([AUTH_PROVIDER_ID]);
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg === LOGIN_CANCELLED_MESSAGE) {
