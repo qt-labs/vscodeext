@@ -5,18 +5,30 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { host, telemetry } from 'qt-lib';
+import { findMingwBinDir, host, telemetry } from 'qt-lib';
 import { getQtInsRoot, getSelectedKit } from '@cmd/register-qt-path';
 import { EXTENSION_ID } from '@/constants';
+import { coreAPI } from '@/extension';
+import { getSharedQtToolsPaths } from '@/kit-manager';
+import { CppProject, CppProjectType, getActiveProject } from '@/project';
 
 async function findMinGWgdbPath(): Promise<string | undefined> {
   telemetry.sendAction('minGWgdb');
   if (!host.isWindows) {
     throw new Error('MinGW gdb is only available on Windows');
   }
+  const project = await getActiveProject();
+  if (project?.type === CppProjectType.Presets) {
+    return findMinGWgdbPathOfPreset(project);
+  }
   const kit = await getSelectedKit();
   if (!kit) {
     return undefined;
+  }
+  // The debugger of the toolchain that the kit builds with.
+  const gdbOfCompiler = gdbNextTo(kit.compilers?.CXX ?? kit.compilers?.C);
+  if (gdbOfCompiler) {
+    return gdbOfCompiler;
   }
   const insRoot = getQtInsRoot(kit);
   if (!insRoot) {
@@ -37,6 +49,41 @@ async function findMinGWgdbPath(): Promise<string | undefined> {
     throw new Error('No gdb found in MinGW installation');
   }
   return gdbPath;
+}
+
+/**
+ * A project with CMake presets has no kit to tell the toolchain. Its gdb is
+ * the one of the compiler that the selected configure preset names or,
+ * when the preset leaves the compiler to CMake, the one of the MinGW that
+ * goes with the Qt of the preset.
+ */
+async function findMinGWgdbPathOfPreset(project: CppProject) {
+  const gdbOfCompiler = gdbNextTo(project.getCompilerFromPreset());
+  if (gdbOfCompiler) {
+    return gdbOfCompiler;
+  }
+  const qtPaths = await project.getQtPaths();
+  const qtPrefix =
+    (qtPaths
+      ? coreAPI?.getQtInfoFromPath(qtPaths).info?.get('QT_INSTALL_PREFIX')
+      : undefined) ?? (await project.getInstallationPathFromPreset());
+  const mingwBinDir = qtPrefix
+    ? findMingwBinDir(qtPrefix, getSharedQtToolsPaths()?.mingw)
+    : undefined;
+  const gdbPath = mingwBinDir ? path.join(mingwBinDir, 'gdb.exe') : undefined;
+  if (!gdbPath || !fs.existsSync(gdbPath)) {
+    throw new Error('No MinGW gdb found for the selected configure preset');
+  }
+  return gdbPath;
+}
+
+// The gdb in the folder of a compiler, which is where MinGW has it.
+function gdbNextTo(compiler: string | undefined) {
+  if (!compiler) {
+    return undefined;
+  }
+  const gdbPath = path.join(path.dirname(compiler), 'gdb.exe');
+  return fs.existsSync(gdbPath) ? gdbPath : undefined;
 }
 
 function locateToolsDir(selectedQtPath: string): string {

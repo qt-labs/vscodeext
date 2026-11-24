@@ -15,6 +15,7 @@ await runEsbuild({
     './test/helper.mts',
     './test/suite/extension.test.mts',
     './test/suite/commands.test.mts',
+    './test/suite/mingw.test.mts',
     './test/suite/project-config-generator.test.mts'
   ]
 });
