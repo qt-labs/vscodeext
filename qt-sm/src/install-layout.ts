@@ -10,9 +10,10 @@ import * as path from 'path';
  *
  *   <installRoot>/<vendor>/<product>/<version>/
  *
- * for example `io.qt/qtframework/6.12.0`, `org.cmake/cmake/3.30.6` and
- * `org.ninja-build/ninja/1.12.1`. The service does not report these paths,
- * so this is the one place the extension knows them.
+ * for example `io.qt/qtframework/6.12.0`, `org.cmake/cmake/3.30.6`,
+ * `org.ninja-build/ninja/1.12.1` and `org.mingw-w64/mingw/15.1.0`. The
+ * service does not report these paths, so this is the one place the
+ * extension knows them.
  */
 interface ProductLocation {
   readonly vendor: string;
@@ -27,6 +28,10 @@ export const CMAKE: ProductLocation = { vendor: 'org.cmake', product: 'cmake' };
 export const NINJA: ProductLocation = {
   vendor: 'org.ninja-build',
   product: 'ninja'
+};
+export const MINGW: ProductLocation = {
+  vendor: 'org.mingw-w64',
+  product: 'mingw'
 };
 
 /** The folder that holds the version folders of a product. */

@@ -16,6 +16,7 @@ import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
 import { getInstallRoot } from '@/install-root';
 import {
   CMAKE,
+  MINGW,
   NINJA,
   listProductVersions,
   productDir,
@@ -75,9 +76,28 @@ function findNinja(installRoot: string): string | undefined {
 }
 
 /**
- * Detect the CMake and Ninja executables installed in the current
- * installation root, see install-layout.ts for where. Fields are omitted
- * when the corresponding tool is not present.
+ * Locate the `bin` folder of every MinGW version installed in `installRoot`,
+ * by version. All of them are reported and not only the newest, because a
+ * MinGW build of Qt is built against with the MinGW version it names.
+ */
+function findMingw(installRoot: string): Record<string, string> {
+  const binDirs: Record<string, string> = {};
+  for (const version of listProductVersions(installRoot, MINGW)) {
+    const binDir = path.join(
+      productVersionDir(installRoot, MINGW, version),
+      'bin'
+    );
+    if (fs.existsSync(path.join(binDir, `g++${host.exeSuffix}`))) {
+      binDirs[version] = binDir;
+    }
+  }
+  return binDirs;
+}
+
+/**
+ * Detect the CMake and Ninja executables and the MinGW toolchains installed
+ * in the current installation root, see install-layout.ts for where. Fields
+ * are omitted when the corresponding tool is not present.
  */
 export function detectQtToolsPaths(): QtToolsPaths {
   const installRoot = getInstallRoot();
@@ -92,6 +112,10 @@ export function detectQtToolsPaths(): QtToolsPaths {
   const ninja = findNinja(installRoot);
   if (ninja) {
     result.ninja = ninja;
+  }
+  const mingw = findMingw(installRoot);
+  if (Object.keys(mingw).length > 0) {
+    result.mingw = mingw;
   }
   return result;
 }
@@ -112,7 +136,8 @@ export function publishQtToolsPaths(): void {
   message.config.add(CoreKey.QT_TOOLS_PATHS);
   logger.info(
     `Publishing Qt tools paths: cmake=${paths.cmake ?? '<none>'}, ` +
-      `ninja=${paths.ninja ?? '<none>'}`
+      `ninja=${paths.ninja ?? '<none>'}, ` +
+      `mingw=${Object.values(paths.mingw ?? {}).join(', ') || '<none>'}`
   );
   coreAPI.notify(message);
 }
@@ -127,8 +152,8 @@ function disposeToolsWatchers(): void {
 }
 
 /**
- * Watch the CMake and Ninja folders of the installation root and re-publish
- * the tool paths whenever a version of them is added or removed — e.g.
+ * Watch the CMake, Ninja and MinGW folders of the installation root and
+ * re-publish the tool paths whenever a version of them is added or removed — e.g.
  * installed/uninstalled by QtCreator while qt-sm is running. The watchers
  * re-target automatically when the installation-root setting changes.
  */
@@ -154,7 +179,7 @@ export function watchQtToolsOnDisk(
     // Watch the immediate children of each tool folder (its version
     // folders). Adding or removing a tool creates/deletes one here, which
     // is enough to trigger a re-detect.
-    for (const tool of [CMAKE, NINJA]) {
+    for (const tool of [CMAKE, NINJA, MINGW]) {
       const pattern = new vscode.RelativePattern(
         vscode.Uri.file(productDir(installRoot, tool)),
         '*'
