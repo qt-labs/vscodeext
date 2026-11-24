@@ -173,6 +173,12 @@
         "icon": "$(folder-opened)"
       },
       {
+        "command": "qt-sm.cancelPackageOperation",
+        "title": "%qt-sm.command.cancelPackageOperation.title%",
+        "category": "Qt",
+        "icon": "$(close)"
+      },
+      {
         "command": "qt-sm.resetTestState",
         "title": "%qt-sm.command.resetTestState.title%",
         "category": "Qt"
@@ -201,6 +207,10 @@
           "when": "false"
         },
         {
+          "command": "qt-sm.cancelPackageOperation",
+          "when": "false"
+        },
+        {
           "command": "qt-sm.reopenSignIn",
           "when": "false"
         },
@@ -226,6 +236,11 @@
         {
           "command": "qt-sm.revealInstallRoot",
           "when": "view == qt-sm.installedPackagesView && viewItem == installRoot",
+          "group": "inline"
+        },
+        {
+          "command": "qt-sm.cancelPackageOperation",
+          "when": "view == qt-sm.installedPackagesView && viewItem == cancellableOperation",
           "group": "inline"
         }
       ],

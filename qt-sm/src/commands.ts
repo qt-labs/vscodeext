@@ -64,7 +64,10 @@ import {
   type InstalledPackageItem,
   refreshInstalledPackages,
   showInstalledPackagesOperation,
-  reportInstalledPackagesProgress
+  reportInstalledPackagesProgress,
+  setInstalledPackagesOperationCancellable,
+  markInstalledPackagesOperationCancelling,
+  restoreInstalledPackagesOperationAfterFailedCancel
 } from '@/installed-packages-view';
 import {
   isWalkthroughActive,
@@ -1163,6 +1166,8 @@ async function installPackageByIdImpl(
 
           if (phase === ProgressType.Install) {
             endDownloadPhase?.();
+            // Like the notification, the install phase cannot be cancelled.
+            setInstalledPackagesOperationCancellable(false);
             // Start install phase notification (non-cancellable)
             void vscode.window.withProgress(
               {
@@ -1240,7 +1245,47 @@ async function installPackageByIdImpl(
       void vscode.window.showErrorMessage(errMsg);
     });
 
-  showInstalledPackagesOperation(`Installing ${pkgLabel}`, installDone);
+  // Cancel the download, from the download notification or from the
+  // cancel button of the item of the install in the Installed Packages
+  // view. Closes the download notification once the service cancelled.
+  // If it does not, the download goes on and shows its progress again.
+  const cancelInstall = (): void => {
+    if (cancelledByUser || currentPhase === ProgressType.Install) {
+      return;
+    }
+    cancelledByUser = true;
+    logger.info('User cancelled installation');
+    markInstalledPackagesOperationCancelling(
+      `Cancelling the download of ${pkgLabel}`
+    );
+    packages
+      .cancel({
+        onMessage: (info) => {
+          logger.info(`cancel: ${info.message}`);
+        }
+      })
+      .then(() => {
+        logger.info('Installation cancelled successfully');
+        endDownloadPhase?.();
+      })
+      .catch((cancelErr: unknown) => {
+        cancelledByUser = false;
+        restoreInstalledPackagesOperationAfterFailedCancel();
+        const msg =
+          cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
+        logger.error(`Failed to cancel installation: ${msg}`);
+        void vscode.window.showErrorMessage(
+          `Failed to cancel installation: ${msg}`
+        );
+      });
+  };
+
+  showInstalledPackagesOperation(
+    `Installing ${pkgLabel}`,
+    installDone,
+    undefined,
+    cancelInstall
+  );
 
   // Start with the download phase notification (cancellable)
   logger.info(
@@ -1257,32 +1302,7 @@ async function installPackageByIdImpl(
         activeProgress = progress;
         endDownloadPhase = resolve;
 
-        token.onCancellationRequested(() => {
-          cancelledByUser = true;
-          logger.info('User cancelled installation');
-          packages
-            .cancel({
-              onMessage: (info) => {
-                logger.info(`cancel: ${info.message}`);
-              }
-            })
-            .then(() => {
-              logger.info('Installation cancelled successfully');
-            })
-            .catch((cancelErr: unknown) => {
-              const msg =
-                cancelErr instanceof Error
-                  ? cancelErr.message
-                  : String(cancelErr);
-              logger.error(`Failed to cancel installation: ${msg}`);
-              void vscode.window.showErrorMessage(
-                `Failed to cancel installation: ${msg}`
-              );
-            })
-            .finally(() => {
-              resolve();
-            });
-        });
+        token.onCancellationRequested(cancelInstall);
       })
   );
 

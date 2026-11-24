@@ -20,11 +20,37 @@ const logger = createLogger('installed-packages-view');
 const VIEW_ID = `${EXTENSION_ID}.installedPackagesView`;
 // Context value of the installation root item, which has the reveal button.
 const INSTALL_ROOT_CONTEXT = 'installRoot';
+// Context value of the item of a running operation that can still be
+// cancelled, which has the cancel button.
+const CANCELLABLE_OPERATION_CONTEXT = 'cancellableOperation';
 // Disk events of an install made outside the extension arrive in bursts;
 // one refresh after the last of them is enough.
 const REFRESH_DEBOUNCE_MS = 500;
 
 type LoadState = 'loading' | 'loaded' | 'failed';
+
+/** What the item of an operation showed before it was being cancelled. */
+interface CancelledOperationItem {
+  label: vscode.TreeItem['label'];
+  description: vscode.TreeItem['description'];
+  tooltip: vscode.TreeItem['tooltip'];
+  contextValue: vscode.TreeItem['contextValue'];
+  cancel: (() => void) | undefined;
+}
+
+/** Set an optional property of `item`, or delete it for `undefined`. */
+function setOrDelete<K extends 'description' | 'tooltip' | 'contextValue'>(
+  item: vscode.TreeItem,
+  key: K,
+  value: vscode.TreeItem[K]
+): void {
+  if (value === undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete item[key];
+  } else {
+    item[key] = value;
+  }
+}
 
 /** Tree item for one installed Qt version; `version` is read by removePackage. */
 export class InstalledPackageItem extends vscode.TreeItem {
@@ -66,6 +92,12 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   private operation: vscode.TreeItem | undefined;
   // The version the running removal removes, whose item it replaces.
   private operationReplaces: string | undefined;
+  // Cancels the running operation, while it can still be cancelled.
+  private cancelOperation: (() => void) | undefined;
+  // The running operation is being cancelled, with what its item showed
+  // before, to show again if the cancel fails. Progress is not shown
+  // meanwhile.
+  private operationCancelling: CancelledOperationItem | undefined;
 
   private refreshing: Promise<void> | undefined;
   private refreshAgain = false;
@@ -129,15 +161,24 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
    * in place of that version instead of at the top. Once the removal
    * succeeds the version stays hidden, so that it does not show again
    * until the refresh that follows drops it.
+   *
+   * An operation that can be cancelled passes `cancel`: its item has a
+   * cancel button until setOperationCancellable(false) or the cancel.
    */
   showOperation(
     label: string,
     operation: Promise<unknown>,
-    replaces?: string
+    replaces?: string,
+    cancel?: () => void
   ): void {
     const item = operationItem(label);
     this.operation = item;
     this.operationReplaces = replaces;
+    this.cancelOperation = cancel;
+    this.operationCancelling = undefined;
+    if (cancel) {
+      item.contextValue = CANCELLABLE_OPERATION_CONTEXT;
+    }
     this._onDidChangeTreeData.fire(undefined);
     void vscode.window.withProgress(
       { location: { viewId: VIEW_ID } },
@@ -152,6 +193,8 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
           }
           this.operation = undefined;
           this.operationReplaces = undefined;
+          this.cancelOperation = undefined;
+          this.operationCancelling = undefined;
           this._onDidChangeTreeData.fire(undefined);
         }
       }
@@ -166,7 +209,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
    */
   reportOperationProgress(label: string, percent: number): void {
     const item = this.operation;
-    if (!item) {
+    if (!item || this.operationCancelling) {
       return;
     }
     const pct = Math.min(100, Math.max(0, Math.round(percent)));
@@ -178,6 +221,95 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
     item.description = description;
     item.tooltip = `${label}: ${String(pct)}%`;
     this._onDidChangeTreeData.fire(item);
+  }
+
+  /**
+   * Show or drop the cancel button of the running operation, for example
+   * when an install leaves the download phase and cannot be cancelled.
+   * An operation shown without `cancel` never gets the button.
+   */
+  setOperationCancellable(cancellable: boolean): void {
+    const item = this.operation;
+    if (!item) {
+      return;
+    }
+    const saved = this.operationCancelling;
+    if (saved) {
+      // Applies once a failed cancel shows the item as before.
+      if (!cancellable) {
+        saved.cancel = undefined;
+        saved.contextValue = undefined;
+      }
+      return;
+    }
+    const contextValue =
+      cancellable && this.cancelOperation
+        ? CANCELLABLE_OPERATION_CONTEXT
+        : undefined;
+    if (!cancellable) {
+      this.cancelOperation = undefined;
+    }
+    if (item.contextValue !== contextValue) {
+      if (contextValue) {
+        item.contextValue = contextValue;
+      } else {
+        delete item.contextValue;
+      }
+      this._onDidChangeTreeData.fire(item);
+    }
+  }
+
+  /**
+   * Show that the running operation is being cancelled: the item drops
+   * the cancel button and the progress, and says so until it settles or
+   * restoreOperationAfterFailedCancel.
+   */
+  markOperationCancelling(label: string): void {
+    const item = this.operation;
+    if (!item || this.operationCancelling) {
+      return;
+    }
+    this.operationCancelling = {
+      label: item.label,
+      description: item.description,
+      tooltip: item.tooltip,
+      contextValue: item.contextValue,
+      cancel: this.cancelOperation
+    };
+    this.cancelOperation = undefined;
+    item.label = `${label}...`;
+    delete item.description;
+    delete item.tooltip;
+    delete item.contextValue;
+    item.iconPath = new vscode.ThemeIcon('loading~spin');
+    this._onDidChangeTreeData.fire(item);
+  }
+
+  /**
+   * The service did not cancel the running operation, which goes on:
+   * show its item as before the cancel, with the cancel button and the
+   * progress.
+   */
+  restoreOperationAfterFailedCancel(): void {
+    const item = this.operation;
+    const saved = this.operationCancelling;
+    if (!item || !saved) {
+      return;
+    }
+    this.operationCancelling = undefined;
+    this.cancelOperation = saved.cancel;
+    if (saved.label !== undefined) {
+      item.label = saved.label;
+    }
+    setOrDelete(item, 'description', saved.description);
+    setOrDelete(item, 'tooltip', saved.tooltip);
+    setOrDelete(item, 'contextValue', saved.contextValue);
+    this._onDidChangeTreeData.fire(item);
+  }
+
+  /** Cancel the running operation, from the cancel button of its item. */
+  requestCancel(): void {
+    this.cancelOperation?.();
   }
 
   dispose(): void {
@@ -420,6 +552,12 @@ export function registerInstalledPackagesView(
     vscode.commands.registerCommand(
       `${EXTENSION_ID}.revealInstallRoot`,
       revealInstallRoot
+    ),
+    vscode.commands.registerCommand(
+      `${EXTENSION_ID}.cancelPackageOperation`,
+      () => {
+        provider?.requestCancel();
+      }
     )
   );
 }
@@ -469,13 +607,39 @@ function operationItem(label: string): vscode.TreeItem {
  * Show a running install or removal in the view until `operation` settles.
  * `label` is what runs, for example "Installing Qt 6.9.0". A removal names
  * the version it removes as `replaces`, whose item it is shown in place of.
+ * An operation that can be cancelled passes `cancel`, run by the cancel
+ * button of its item.
  */
 export function showInstalledPackagesOperation(
   label: string,
   operation: Promise<unknown>,
-  replaces?: string
+  replaces?: string,
+  cancel?: () => void
 ): void {
-  provider?.showOperation(label, operation, replaces);
+  provider?.showOperation(label, operation, replaces, cancel);
+}
+
+/** Show or drop the cancel button of the running operation. */
+export function setInstalledPackagesOperationCancellable(
+  cancellable: boolean
+): void {
+  provider?.setOperationCancellable(cancellable);
+}
+
+/**
+ * Show that the running operation is being cancelled, with `label`, for
+ * example "Cancelling the download of Qt 6.9.0".
+ */
+export function markInstalledPackagesOperationCancelling(label: string): void {
+  provider?.markOperationCancelling(label);
+}
+
+/**
+ * The service did not cancel the running operation: show it as before
+ * markInstalledPackagesOperationCancelling, with its progress.
+ */
+export function restoreInstalledPackagesOperationAfterFailedCancel(): void {
+  provider?.restoreOperationAfterFailedCancel();
 }
 
 /**

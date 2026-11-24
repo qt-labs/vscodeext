@@ -23,6 +23,7 @@
   "qt-sm.command.removePackage.title": "Remove",
   "qt-sm.command.refreshInstalledPackages.title": "SM: Refresh Installed Packages",
   "qt-sm.command.revealInstallRoot.title": "Reveal in File Explorer",
+  "qt-sm.command.cancelPackageOperation.title": "Cancel",
   "qt-sm.command.resetTestState.title": "SM: Reset Test State (testing only)",
   "qt-sm.walkthrough.getStarted.title": "Get started with Qt",
   "qt-sm.walkthrough.getStarted.description": "Take your first steps in setting up a Qt project. Complete each step in order to unlock the next.",
