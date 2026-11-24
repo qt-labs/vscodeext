@@ -7,57 +7,77 @@
 //------------------------------------------------------------------------------
 Rectangle {
     width: 100 * 2;
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //       ^^ - meta.embedded.expression.qml
 //         ^^^^^^^ meta.embedded.expression.qml
 //                ^ - meta.embedded.expression.qml
 //                ^ punctuation.terminator.statement.qml
     width: height / 2
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^^^^ meta.embedded.expression.qml
     width: 100
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^ meta.embedded.expression.qml
     width: 100;
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^ meta.embedded.expression.qml
 //            ^ - meta.embedded.expression.qml
 //            ^ punctuation.terminator.statement.qml
     width: 100; height: 200
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^ meta.embedded.expression.qml
 //            ^^ - meta.embedded.expression.qml
 //            ^ punctuation.terminator.statement.qml
-//              ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//              ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
     width: 100; height: 200;
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^ meta.embedded.expression.qml
 //            ^^ - meta.embedded.expression.qml
 //            ^ punctuation.terminator.statement.qml
-//              ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//              ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
 //                         ^ - meta.embedded.expression.qml
 //                         ^ punctuation.terminator.statement.qml
     height : 480
-//  ^^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^^ entity.other.attribute-name.qml
 //        ^^^ - meta.embedded.expression.qml
 //           ^^^ meta.embedded.expression.qml
     color: "red"
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^ meta.embedded.expression.qml
     color: Qt.rgba(100, 100, 100, 100)
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     opacity: 1.2
-//  ^^^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^^^ entity.other.attribute-name.qml
 //           ^^^ meta.embedded.expression.qml
     visible: true
-//  ^^^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^^^ entity.other.attribute-name.qml
 //           ^^^^ meta.embedded.expression.qml
     visible: false
-//  ^^^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^^^ entity.other.attribute-name.qml
 //           ^^^^^ meta.embedded.expression.qml
+}
+
+//------------------------------------------------------------------------------
+// id
+//------------------------------------------------------------------------------
+Rectangle {
+    id: root
+//  ^^ keyword.other.id.qml - entity.other.attribute-name.qml
+//      ^^^^ entity.name.variable.id.qml - meta.embedded.expression.qml
+    id: root; width: 10
+//  ^^ keyword.other.id.qml
+//      ^^^^ entity.name.variable.id.qml
+//          ^ punctuation.terminator.statement.qml
+//            ^^^^^ entity.other.attribute-name.qml
+    id: root // comment
+//  ^^ keyword.other.id.qml
+//      ^^^^ entity.name.variable.id.qml
+//           ^^^^^^^^^^ comment.line.qml
+    idx: 1
+//  ^^^ entity.other.attribute-name.qml - keyword.other.id.qml
 }
 
 //------------------------------------------------------------------------------
@@ -65,30 +85,30 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     anchors.fill: parent
-//  ^^^^^^^^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^^^^^^^^ entity.other.attribute-name.qml
 //                ^^^^^^ meta.embedded.expression.qml
     anchors {
-//  ^^^^^^^ variable.parameter.attr-group-notation.qml - meta.embedded.expression.qml
+//  ^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //          ^ punctuation.definition.block.qml
         left: other.right // comment
-//      ^^^^ variable.parameter.attr-expr.qml
+//      ^^^^ entity.other.attribute-name.qml
 //            ^^^^^^^^^^^ meta.embedded.expression.qml
         right: parent.right
-//      ^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^ entity.other.attribute-name.qml
 //             ^^^^^^^^^^^^ meta.embedded.expression.qml
         // comment
         top: parent.top
-//      ^^^ variable.parameter.attr-expr.qml
+//      ^^^ entity.other.attribute-name.qml
 //           ^^^^^^^^^^ meta.embedded.expression.qml
     }
 //  ^ punctuation.definition.block.qml
     font { bold: true; pixelSize: 12 }
-//  ^^^^ variable.parameter.attr-group-notation.qml
+//  ^^^^ entity.other.attribute-name.qml
 //       ^ punctuation.definition.block.qml
-//         ^^^^ variable.parameter.attr-expr.qml
+//         ^^^^ entity.other.attribute-name.qml
 //               ^^^^ meta.embedded.expression.qml
 //                   ^ punctuation.terminator.statement.qml
-//                     ^^^^^^^^^ variable.parameter.attr-expr.qml
+//                     ^^^^^^^^^ entity.other.attribute-name.qml
 //                                ^^ meta.embedded.expression.qml
 //                                   ^ punctuation.definition.block.qml
 }
@@ -98,11 +118,11 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     width: { return 100; }
-//  ^^^^^ variable.parameter.attr-block.qml - meta.embedded.block.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.block.qml
 //           ^^^^^^^^^^^ meta.embedded.block.qml
 //                       ^ - meta.embedded.block.qml
     width: {
-//  ^^^^^ variable.parameter.attr-block.qml - meta.embedded.block.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.block.qml
 //         ^ - meta.embedded.block.qml
         const val = 3;
 //      ^^^^^^^^^^^^^^ meta.embedded.block.qml
@@ -121,7 +141,7 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     color: Qt.rgba(
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^^ meta.embedded.expression.qml
         100,
 //      ^^^^ meta.embedded.expression.qml
@@ -141,9 +161,9 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     values: [1, 2, 3, 4]
-//  ^^^^^^ variable.parameter.attr-list.qml
+//  ^^^^^^ entity.other.attribute-name.qml
     values: [
-//  ^^^^^^ variable.parameter.attr-list.qml
+//  ^^^^^^ entity.other.attribute-name.qml
         1, 2, 3, 4,
         2*20, Math.PI, calc(20)
     ]
@@ -154,19 +174,19 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     children: [
-//  ^^^^^^^^ variable.parameter.attr-list.qml
+//  ^^^^^^^^ entity.other.attribute-name.qml
         Item { value: 1 },
-//             ^^^^^ variable.parameter.attr-expr.qml
+//             ^^^^^ entity.other.attribute-name.qml
 //                  ^^ - meta.embedded.expression.qml
 //                    ^ meta.embedded.expression.qml
 //                      ^ - meta.embedded.expression.qml
         Item { value: 2 },
-//             ^^^^^ variable.parameter.attr-expr.qml
+//             ^^^^^ entity.other.attribute-name.qml
 //                  ^^ - meta.embedded.expression.qml
 //                    ^ meta.embedded.expression.qml
 //                      ^ - meta.embedded.expression.qml
         T.Item { value: 3 }
-//               ^^^^^ variable.parameter.attr-expr.qml
+//               ^^^^^ entity.other.attribute-name.qml
 //                    ^^ - meta.embedded.expression.qml
 //                      ^ meta.embedded.expression.qml
 //                        ^ - meta.embedded.expression.qml
@@ -178,34 +198,34 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     gradient: Gradient {
-//  ^^^^^^^^ variable.parameter.attr-object.qml
+//  ^^^^^^^^ entity.other.attribute-name.qml
 //            ^^^^^^^^ entity.name.type.object.qml
 //                     ^ - entity.name.type.object.qml
 //                     ^ punctuation.definition.block.qml
         GradientStop { position: 0.0; color: "yellow" }
-//                     ^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//                     ^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                             ^^ - meta.embedded.expression.qml
 //                               ^^^ meta.embedded.expression.qml
 //                                  ^^ - meta.embedded.expression.qml
 //                                  ^ punctuation.terminator.statement.qml
-//                                    ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//                                    ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                                         ^^ - meta.embedded.expression.qml
 //                                           ^^^^^^^^ meta.embedded.expression.qml
 //                                                    ^ - meta.embedded.expression.qml
         GradientStop { position: 1.0; color: "green" }
-//                     ^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//                     ^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                             ^^ - meta.embedded.expression.qml
 //                               ^^^ meta.embedded.expression.qml
 //                                  ^^ - meta.embedded.expression.qml
 //                                  ^ punctuation.terminator.statement.qml
-//                                    ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//                                    ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                                         ^^ - meta.embedded.expression.qml
 //                                           ^^^^^^^ meta.embedded.expression.qml
 //                                                   ^ - meta.embedded.expression.qml
     }
 //  ^ punctuation.definition.block.qml
     background: T.Rectangle {}
-//  ^^^^^^^^^^ variable.parameter.attr-object.qml
+//  ^^^^^^^^^^ entity.other.attribute-name.qml
 //              ^^^^^^^^^^^ entity.name.type.object.qml
 //                          ^^ - entity.name.type.object.qml
 //                          ^ punctuation.definition.block.qml
@@ -217,31 +237,31 @@ Rectangle {
 //------------------------------------------------------------------------------
 ListView {
     delegate: Item {
-//  ^^^^^^^^ variable.parameter.attr-object.qml
+//  ^^^^^^^^ entity.other.attribute-name.qml
 //            ^^^^ entity.name.type.object.qml
 //                 ^ - entity.name.type.object.qml
 //                 ^ punctuation.definition.block.qml
         id: _delegate
-//      ^^ variable.parameter.attr-expr.qml
-//          ^^^^^^^^^ meta.embedded.expression.qml
+//      ^^ keyword.other.id.qml
+//          ^^^^^^^^^ entity.name.variable.id.qml
         width: 100; height: 30
-//      ^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^ entity.other.attribute-name.qml
 //             ^^^ meta.embedded.expression.qml
 //                ^^ - meta.embedded.expression.qml
 //                ^ punctuation.terminator.statement.qml
-//                  ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//                  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                          ^^ meta.embedded.expression.qml
 
         Rectangle {
             width: 100; height: 30
-//          ^^^^^ variable.parameter.attr-expr.qml
+//          ^^^^^ entity.other.attribute-name.qml
 //                 ^^^ meta.embedded.expression.qml
 //                    ^^ - meta.embedded.expression.qml
 //                    ^ punctuation.terminator.statement.qml
-//                      ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//                      ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                              ^^ meta.embedded.expression.qml
             color: _delegate.ListView.isCurrentItem ? "red" : "yellow" // correct
-//          ^^^^^ variable.parameter.attr-expr.qml
+//          ^^^^^ entity.other.attribute-name.qml
 //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
         }
     }
@@ -253,19 +273,19 @@ ListView {
 //------------------------------------------------------------------------------
 Rectangle {
     text: "a;b"
-//  ^^^^ variable.parameter.attr-expr.qml
+//  ^^^^ entity.other.attribute-name.qml
 //        ^^^^^ meta.embedded.expression.qml
     text: "a}b"
-//  ^^^^ variable.parameter.attr-expr.qml
+//  ^^^^ entity.other.attribute-name.qml
 //        ^^^^^ meta.embedded.expression.qml
     value: ({ a: 1 })
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^^^^ meta.embedded.expression.qml
     handler: () => { return 1 }
-//  ^^^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^^^ entity.other.attribute-name.qml
 //           ^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     width: { return "}"; }
-//  ^^^^^ variable.parameter.attr-block.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //           ^^^^^^^^^^^ meta.embedded.block.qml
 //                       ^ - meta.embedded.block.qml
 }

@@ -25,10 +25,10 @@
           "name": "keyword.control.pragma.qml"
         },
         "2": {
-          "name": "variable.parameter.pragma.qml"
+          "name": "entity.other.attribute-name.pragma.qml"
         },
         "3": {
-          "name": "entity.name.pragma.qml"
+          "name": "constant.language.pragma.qml"
         }
       },
       "end": "$",
@@ -37,7 +37,7 @@
           "match": ",\\s*([_a-zA-Z]\\w*)\\b",
           "captures": {
             "1": {
-              "name": "entity.name.pragma.qml"
+              "name": "constant.language.pragma.qml"
             }
           }
         },
@@ -66,10 +66,10 @@
           "match": "\\b([A-Z][\\w\\.]*)(?:\\s+(\\d+(?:\\.\\d+)?))?",
           "captures": {
             "1": {
-              "name": "entity.name.section.import.module.qml"
+              "name": "entity.name.namespace.qml"
             },
             "2": {
-              "name": "constant.numeric.import.version.qml"
+              "name": "constant.numeric.version.qml"
             }
           }
         },
@@ -77,10 +77,10 @@
           "match": "\\b(as)\\s+([A-Z]\\w*)",
           "captures": {
             "1": {
-              "name": "keyword.control.import.as.qml"
+              "name": "keyword.control.as.qml"
             },
             "2": {
-              "name": "entity.name.type.import.type.qml"
+              "name": "entity.name.namespace.qml"
             }
           }
         },
@@ -171,7 +171,7 @@
           "include": "#signal"
         },
         {
-          "include": "#prop-custom"
+          "include": "#property-declaration"
         },
         {
           "include": "#prop-force-required"
@@ -184,6 +184,9 @@
         },
         {
           "include": "#comp-inline"
+        },
+        {
+          "include": "#id-assignment"
         },
         {
           "include": "#attr-general"
@@ -271,7 +274,7 @@
               "name": "storage.type.signal.qml"
             },
             "2": {
-              "name": "entity.name.function.signal.name.qml"
+              "name": "entity.name.function.signal.qml"
             },
             "3": {
               "name": "punctuation.definition.parameters.begin.qml"
@@ -288,10 +291,14 @@
               "match": "(\\w+)\\s*:\\s*([\\w\\.]+(?:<[\\w\\.]+>)?)\\s*,?",
               "captures": {
                 "1": {
-                  "name": "variable.parameter.signal.param-name.qml"
+                  "name": "variable.parameter.qml"
                 },
                 "2": {
-                  "name": "entity.name.type.signal.param-type.qml"
+                  "patterns": [
+                    {
+                      "include": "#type"
+                    }
+                  ]
                 }
               }
             },
@@ -299,10 +306,14 @@
               "match": "([\\w\\.]+(?:<[\\w\\.]+>)?)\\s+(\\w+)\\s*,?",
               "captures": {
                 "1": {
-                  "name": "entity.name.type.signal.param-type.qml"
+                  "patterns": [
+                    {
+                      "include": "#type"
+                    }
+                  ]
                 },
                 "2": {
-                  "name": "variable.parameter.signal.param-name.qml"
+                  "name": "variable.parameter.qml"
                 }
               }
             }
@@ -316,29 +327,49 @@
               "name": "storage.type.signal.qml"
             },
             "2": {
-              "name": "entity.name.function.signal.name.qml"
+              "name": "entity.name.function.signal.qml"
             }
           }
+        }
+      ]
+    },
+    "property-declaration": {
+      "name": "meta.property.qml",
+      "begin": "(?=\\b(?:(?:default|readonly|required|final|virtual|override)\\s+)*property\\b)",
+      "end": "(?<=[;}\\]])|$|(?=\\})|(?=\\s*(?:\\/\\/|\\/\\*))",
+      "patterns": [
+        {
+          "include": "#prop-custom"
+        },
+        {
+          "include": "#attr-general"
+        },
+        {
+          "include": "#semicolon"
         }
       ]
     },
     "prop-custom": {
       "patterns": [
         {
-          "name": "storage.modifier.prop-custom.qml",
+          "name": "storage.modifier.qml",
           "match": "\\b(?:default|readonly|required|final|virtual|override)\\b(?=(?:\\s+(?:default|readonly|required|final|virtual|override))*\\s+property\\b)"
         },
         {
           "match": "\\b(property)\\s+([\\w\\.]+(?:<[\\w\\.]+>)?)\\s+(\\w+)(?=\\s*:)",
           "captures": {
             "1": {
-              "name": "keyword.other.prop-custom.qml"
+              "name": "storage.type.property.qml"
             },
             "2": {
-              "name": "storage.type.prop-custom.type.qml"
+              "patterns": [
+                {
+                  "include": "#type"
+                }
+              ]
             },
             "3": {
-              "name": "variable.parameter.prop-custom.name.qml"
+              "name": "entity.other.attribute-name.qml"
             }
           }
         },
@@ -346,13 +377,17 @@
           "match": "\\b(property)\\s+([\\w\\.]+(?:<[\\w\\.]+>)?)\\s+(\\w+)(?=\\s*(?:;|//|/\\*|$))",
           "captures": {
             "1": {
-              "name": "keyword.other.prop-custom.qml"
+              "name": "storage.type.property.qml"
             },
             "2": {
-              "name": "storage.type.prop-custom.type.qml"
+              "patterns": [
+                {
+                  "include": "#type"
+                }
+              ]
             },
             "3": {
-              "name": "variable.parameter.prop-custom.name.qml"
+              "name": "entity.other.attribute-name.qml"
             }
           }
         }
@@ -362,12 +397,36 @@
       "match": "\\b(required)\\s+(\\w+)(?=\\s*(?:;|//|/\\*|$))",
       "captures": {
         "1": {
-          "name": "storage.modifier.prop-force-required.qml"
+          "name": "storage.modifier.qml"
         },
         "2": {
-          "name": "variable.parameter.prop-force-required.name.qml"
+          "name": "entity.other.attribute-name.qml"
         }
       }
+    },
+    "type": {
+      "patterns": [
+        {
+          "name": "keyword.other.alias.qml",
+          "match": "\\balias\\b"
+        },
+        {
+          "name": "storage.type.primitive.qml",
+          "match": "\\b(?:bool|double|enumeration|int|list|real|string|url|var|variant|date|color|font|matrix4x4|point|quaternion|rect|size|vector2d|vector3d|vector4d)\\b(?!\\.)"
+        },
+        {
+          "name": "punctuation.definition.typeparameters.begin.qml",
+          "match": "<"
+        },
+        {
+          "name": "punctuation.definition.typeparameters.end.qml",
+          "match": ">"
+        },
+        {
+          "name": "entity.name.type.qml",
+          "match": "[\\w\\.]+"
+        }
+      ]
     },
     "method": {
       "begin": "\\b(?=function\\b)",
@@ -384,13 +443,13 @@
       "begin": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)\\s*(\\{)",
       "beginCaptures": {
         "1": {
-          "name": "entity.name.type.on-prop.qml"
+          "name": "entity.name.type.object.qml"
         },
         "2": {
-          "name": "keyword.control.on-prop.on.qml"
+          "name": "keyword.other.on.qml"
         },
         "3": {
-          "name": "variable.parameter.on-prop.prop.qml"
+          "name": "entity.other.attribute-name.qml"
         },
         "4": {
           "name": "punctuation.definition.block.qml"
@@ -413,10 +472,10 @@
       "begin": "\\b(component)\\s+([A-Z]\\w*)\\s*:",
       "beginCaptures": {
         "1": {
-          "name": "keyword.other.comp-inline.qml"
+          "name": "storage.type.component.qml"
         },
         "2": {
-          "name": "entity.name.type.comp-inline.name.qml"
+          "name": "entity.name.type.component.qml"
         }
       },
       "end": "(?<=\\})",
@@ -430,7 +489,7 @@
       "begin": "\\b(\\w*)\\s*(\\{)",
       "beginCaptures": {
         "1": {
-          "name": "variable.parameter.attr-group-notation.qml"
+          "name": "entity.other.attribute-name.qml"
         },
         "2": {
           "name": "punctuation.definition.block.qml"
@@ -450,6 +509,17 @@
           "include": "#comment"
         }
       ]
+    },
+    "id-assignment": {
+      "match": "\\b(id)\\s*:\\s*([_a-zA-Z]\\w*)",
+      "captures": {
+        "1": {
+          "name": "keyword.other.id.qml"
+        },
+        "2": {
+          "name": "entity.name.variable.id.qml"
+        }
+      }
     },
     "attr-general": {
       "patterns": [
@@ -471,7 +541,7 @@
           "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[A-Z][\\w\\.]*\\s*\\{)",
           "beginCaptures": {
             "1": {
-              "name": "variable.parameter.attr-object.qml"
+              "name": "entity.other.attribute-name.qml"
             }
           },
           "end": "(?<=\\})",
@@ -485,7 +555,7 @@
           "begin": "\\b([\\w\\.]*)\\s*:\\s*\\[\\s*",
           "beginCaptures": {
             "1": {
-              "name": "variable.parameter.attr-list.qml"
+              "name": "entity.other.attribute-name.qml"
             }
           },
           "end": "\\]",
@@ -502,7 +572,12 @@
           "begin": "\\b([\\w\\.]*)\\s*:\\s*\\{\\s*",
           "beginCaptures": {
             "1": {
-              "name": "variable.parameter.attr-block.qml"
+              "name": "entity.other.attribute-name.qml",
+              "patterns": [
+                {
+                  "include": "#handler-name"
+                }
+              ]
             }
           },
           "end": "\\}",
@@ -517,7 +592,12 @@
           "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[^\\s]+)",
           "beginCaptures": {
             "1": {
-              "name": "variable.parameter.attr-expr.qml"
+              "name": "entity.other.attribute-name.qml",
+              "patterns": [
+                {
+                  "include": "#handler-name"
+                }
+              ]
             }
           },
           "end": "(;)|$|(?=\\})",
@@ -534,6 +614,10 @@
           ]
         }
       }
+    },
+    "handler-name": {
+      "name": "entity.name.function.handler.qml",
+      "match": "\\bon[A-Z]\\w*"
     },
     "string": {
       "patterns": [

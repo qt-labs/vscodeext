@@ -60,7 +60,7 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
     function g(a: int): int
 //  ^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
     {
@@ -101,7 +101,7 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     height: 20
-//  ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -117,11 +117,11 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
     function g() {}
 //  ^^^^^^^^^^^^^^^ meta.embedded.function.qml
     height: 20
-//  ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -129,9 +129,9 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     functionName: 1
-//  ^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------

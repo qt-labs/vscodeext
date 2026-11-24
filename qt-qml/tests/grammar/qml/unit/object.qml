@@ -31,11 +31,11 @@ Window {
 //            ^ punctuation.definition.block.qml
 //  ^^^^^^^^^^^ meta.object.qml
         width: 100
-//      ^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^ entity.other.attribute-name.qml
 //             ^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^ meta.object.qml
         height: 100
-//      ^^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^^ entity.other.attribute-name.qml
 //              ^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^^ meta.object.qml
     }
@@ -59,11 +59,11 @@ Window {
 //  ^ punctuation.definition.block.qml
 //  ^ meta.object.qml
         width: 100
-//      ^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^ entity.other.attribute-name.qml
 //             ^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^ meta.object.qml
         height: 100
-//      ^^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^^ entity.other.attribute-name.qml
 //              ^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^^ meta.object.qml
     }
@@ -85,11 +85,11 @@ Window {
 //            ^ punctuation.definition.block.qml
 //  ^^^^^^^^^^^ meta.object.qml
         width: 100
-//      ^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^ entity.other.attribute-name.qml
 //             ^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^ meta.object.qml
         height: 100
-//      ^^^^^^ variable.parameter.attr-expr.qml
+//      ^^^^^^ entity.other.attribute-name.qml
 //              ^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^^ meta.object.qml
 
@@ -98,11 +98,11 @@ Window {
 //           ^ punctuation.definition.block.qml
 //      ^^^^^^ meta.object.qml
             width: 100
-//          ^^^^^ variable.parameter.attr-expr.qml
+//          ^^^^^ entity.other.attribute-name.qml
 //                 ^^^ - entity.name.type.object.qml
 //          ^^^^^^^^^^ meta.object.qml
             height: 100
-//          ^^^^^^ variable.parameter.attr-expr.qml
+//          ^^^^^^ entity.other.attribute-name.qml
 //                  ^^^ - entity.name.type.object.qml
 //          ^^^^^^^^^^^ meta.object.qml
         }
@@ -127,7 +127,7 @@ Window {
 //                ^ punctuation.definition.block.qml
 //  ^^^^^^^^^^^^^^^ meta.object.qml
         text: "Hello from my custom text item!"
-//      ^^^^ variable.parameter.attr-expr.qml
+//      ^^^^ entity.other.attribute-name.qml
 //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - entity.name.type.object.qml
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.object.qml
     }
@@ -166,15 +166,15 @@ Item {
 //   ^ punctuation.definition.block.qml
 // <------ meta.object.qml
     x: Foo
-//  ^ variable.parameter.attr-expr.qml
+//  ^ entity.other.attribute-name.qml
 //     ^^^ - entity.name.type.object.qml
 //  ^^^^^^ meta.object.qml
     y: Qt.AlignLeft
-//  ^ variable.parameter.attr-expr.qml
+//  ^ entity.other.attribute-name.qml
 //     ^^^^^^^^^^^^ - entity.name.type.object.qml
 //  ^^^^^^^^^^^^^^^ meta.object.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //         ^^ - entity.name.type.object.qml
 //  ^^^^^^^^^ meta.object.qml
 }
@@ -190,7 +190,7 @@ Item {
     pragma Singleton
 //         ^^^^^^^^^ - entity.name.type.object.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------
@@ -200,7 +200,7 @@ Item {
     Rectangle
 //  ^^^^^^^^^ entity.name.type.object.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------

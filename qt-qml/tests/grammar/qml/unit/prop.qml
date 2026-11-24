@@ -10,29 +10,38 @@
 //------------------------------------------------------------------------------
 Window {
     property int height: 0
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^ storage.type.prop-custom.type.qml
-//               ^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property int height : 0
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^ storage.type.prop-custom.type.qml
-//               ^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property string name: "abcd"
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^ storage.type.prop-custom.type.qml
-//                  ^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^^ storage.type.primitive.qml
+//                  ^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property color color: "#121212" // comment
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^ storage.type.prop-custom.type.qml
-//                 ^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ storage.type.primitive.qml
+//                 ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property point value: Qt.point(1, 2)
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^ storage.type.prop-custom.type.qml
-//                 ^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ storage.type.primitive.qml
+//                 ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property list<int> value: [1, 2, 3, 4]
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^^^^ storage.type.prop-custom.type.qml
-//                     ^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-list.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^ storage.type.primitive.qml
+//                   ^ punctuation.definition.typeparameters.end.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -40,11 +49,12 @@ Window {
 //------------------------------------------------------------------------------
 Window {
     default property var someText
-//  ^^^^^^^ storage.modifier.prop-custom.qml
-//         ^ - storage.modifier.prop-custom.qml
-//          ^^^^^^^^ keyword.other.prop-custom.qml
-//                   ^^^ storage.type.prop-custom.type.qml
-//                       ^^^^^^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^ storage.modifier.qml
+//         ^ - storage.modifier.qml
+//          ^^^^^^^^ storage.type.property.qml
+//                   ^^^ storage.type.primitive.qml
+//                       ^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -53,27 +63,33 @@ Window {
 Window {
     Component {
         id: _delegate
-//      ^^ variable.parameter.attr-expr.qml
+//      ^^ keyword.other.id.qml
 
         Item {
             required property int point
-//          ^^^^^^^^ storage.modifier.prop-custom.qml
-//                  ^ - storage.modifier.prop-custom.qml
-//                   ^^^^^^^^ keyword.other.prop-custom.qml
-//                            ^^^ storage.type.prop-custom.type.qml
-//                                ^^^^^ variable.parameter.prop-custom.name.qml
+//          ^^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^ storage.type.primitive.qml
+//                                ^^^^^ entity.other.attribute-name.qml
+//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
             required property string name
-//          ^^^^^^^^ storage.modifier.prop-custom.qml
-//                  ^ - storage.modifier.prop-custom.qml
-//                   ^^^^^^^^ keyword.other.prop-custom.qml
-//                            ^^^^^^ storage.type.prop-custom.type.qml
-//                                   ^^^^ variable.parameter.prop-custom.name.qml
+//          ^^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^^^^ storage.type.primitive.qml
+//                                   ^^^^ entity.other.attribute-name.qml
+//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
             required property list<int> value
-//          ^^^^^^^^ storage.modifier.prop-custom.qml
-//                  ^ - storage.modifier.prop-custom.qml
-//                   ^^^^^^^^ keyword.other.prop-custom.qml
-//                            ^^^^^^^^^ storage.type.prop-custom.type.qml
-//                                      ^^^^^ variable.parameter.prop-custom.name.qml
+//          ^^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^^ storage.type.primitive.qml
+//                                ^ punctuation.definition.typeparameters.begin.qml
+//                                 ^^^ storage.type.primitive.qml
+//                                    ^ punctuation.definition.typeparameters.end.qml
+//                                      ^^^^^ entity.other.attribute-name.qml
+//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
         }
     }
 }
@@ -83,17 +99,22 @@ Window {
 //------------------------------------------------------------------------------
 Window {
     readonly property color myvalue: Qt.rgba(1, 1, 1, 1)
-//  ^^^^^^^^ storage.modifier.prop-custom.qml
-//          ^ - storage.modifier.prop-custom.qml
-//           ^^^^^^^^ keyword.other.prop-custom.qml
-//                    ^^^^^ storage.type.prop-custom.type.qml
-//                          ^^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^^^ storage.type.primitive.qml
+//                          ^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     readonly property list<int> value: [1, 2, 3, 4]
-//  ^^^^^^^^ storage.modifier.prop-custom.qml
-//          ^ - storage.modifier.prop-custom.qml
-//           ^^^^^^^^ keyword.other.prop-custom.qml
-//                    ^^^^^^^^^ storage.type.prop-custom.type.qml
-//                              ^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-list.qml
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^^ storage.type.primitive.qml
+//                        ^ punctuation.definition.typeparameters.begin.qml
+//                         ^^^ storage.type.primitive.qml
+//                            ^ punctuation.definition.typeparameters.end.qml
+//                              ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -101,9 +122,10 @@ Window {
 //------------------------------------------------------------------------------
 Window {
     property alias text: _text.text
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^ storage.type.prop-custom.type.qml
-//                 ^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ keyword.other.alias.qml
+//                 ^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -111,13 +133,18 @@ Window {
 //------------------------------------------------------------------------------
 Window {
     property color nextColor
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^ storage.type.prop-custom.type.qml
-//                 ^^^^^^^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ storage.type.primitive.qml
+//                 ^^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property list<int> value
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^^^^ storage.type.prop-custom.type.qml
-//                     ^^^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^ storage.type.primitive.qml
+//                   ^ punctuation.definition.typeparameters.end.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -126,13 +153,15 @@ Window {
 Window {
     Rectangle {
         property int animatedHeight: 0
-//      ^^^^^^^^ keyword.other.prop-custom.qml
-//               ^^^ storage.type.prop-custom.type.qml
-//                   ^^^^^^^^^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//      ^^^^^^^^ storage.type.property.qml
+//               ^^^ storage.type.primitive.qml
+//                   ^^^^^^^^^^^^^^ entity.other.attribute-name.qml
+//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
         property string name: "abcd"
-//      ^^^^^^^^ keyword.other.prop-custom.qml
-//               ^^^^^^ storage.type.prop-custom.type.qml
-//                      ^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//      ^^^^^^^^ storage.type.property.qml
+//               ^^^^^^ storage.type.primitive.qml
+//                      ^^^^ entity.other.attribute-name.qml
+//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     }
 }
 
@@ -142,8 +171,8 @@ Window {
 Window {
     Rectangle {
         required color
-//      ^^^^^^^^ storage.modifier.prop-force-required.qml
-//               ^^^^^ variable.parameter.prop-force-required.name.qml
+//      ^^^^^^^^ storage.modifier.qml
+//               ^^^^^ entity.other.attribute-name.qml
     }
 }
 
@@ -152,20 +181,28 @@ Window {
 //------------------------------------------------------------------------------
 Window {
     property list<int> value: [
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^^^^ storage.type.prop-custom.type.qml
-//                     ^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-list.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^ storage.type.primitive.qml
+//                   ^ punctuation.definition.typeparameters.end.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
         1, 2, 3, 4
+//      ^^^^^^^^^^ meta.property.qml
     ]
+//  ^ meta.property.qml
 
     property Model value1: Model { }
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^ storage.type.prop-custom.type.qml
-//                 ^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-object.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ entity.name.type.qml
+//                 ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property Model value2: Model { }
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^ storage.type.prop-custom.type.qml
-//                 ^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-object.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ entity.name.type.qml
+//                 ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -173,23 +210,33 @@ Window {
 //------------------------------------------------------------------------------
 Item {
     property T.Button btn
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^^^ storage.type.prop-custom.type.qml
-//                    ^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^^^^ entity.name.type.qml
+//                    ^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property T.Button btn2: T.Button {}
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^^^ storage.type.prop-custom.type.qml
-//                    ^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-object.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^^^^ entity.name.type.qml
+//                    ^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property list<T.Item> items
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^^^^^^^^^^ storage.type.prop-custom.type.qml
-//                        ^^^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^^^^ entity.name.type.qml
+//                      ^ punctuation.definition.typeparameters.end.qml
+//                        ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     readonly property list<T.Item> items2: []
-//  ^^^^^^^^ storage.modifier.prop-custom.qml
-//          ^ - storage.modifier.prop-custom.qml
-//           ^^^^^^^^ keyword.other.prop-custom.qml
-//                    ^^^^^^^^^^^^ storage.type.prop-custom.type.qml
-//                                 ^^^^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-list.qml
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^^ storage.type.primitive.qml
+//                        ^ punctuation.definition.typeparameters.begin.qml
+//                         ^^^^^^ entity.name.type.qml
+//                               ^ punctuation.definition.typeparameters.end.qml
+//                                 ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -197,39 +244,44 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     default required property Item content
-//  ^^^^^^^ storage.modifier.prop-custom.qml
-//         ^ - storage.modifier.prop-custom.qml
-//          ^^^^^^^^ storage.modifier.prop-custom.qml
-//                  ^ - storage.modifier.prop-custom.qml
-//                   ^^^^^^^^ keyword.other.prop-custom.qml
-//                            ^^^^ storage.type.prop-custom.type.qml
-//                                 ^^^^^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^ storage.modifier.qml
+//         ^ - storage.modifier.qml
+//          ^^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^^ entity.name.type.qml
+//                                 ^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     required default property Item content2
-//  ^^^^^^^^ storage.modifier.prop-custom.qml
-//          ^ - storage.modifier.prop-custom.qml
-//           ^^^^^^^ storage.modifier.prop-custom.qml
-//                  ^ - storage.modifier.prop-custom.qml
-//                   ^^^^^^^^ keyword.other.prop-custom.qml
-//                            ^^^^ storage.type.prop-custom.type.qml
-//                                 ^^^^^^^^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^^ entity.name.type.qml
+//                                 ^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     final property int a: 1
-//  ^^^^^ storage.modifier.prop-custom.qml
-//       ^ - storage.modifier.prop-custom.qml
-//        ^^^^^^^^ keyword.other.prop-custom.qml
-//                 ^^^ storage.type.prop-custom.type.qml
-//                     ^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^ storage.modifier.qml
+//       ^ - storage.modifier.qml
+//        ^^^^^^^^ storage.type.property.qml
+//                 ^^^ storage.type.primitive.qml
+//                     ^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     virtual property int b: 1
-//  ^^^^^^^ storage.modifier.prop-custom.qml
-//         ^ - storage.modifier.prop-custom.qml
-//          ^^^^^^^^ keyword.other.prop-custom.qml
-//                   ^^^ storage.type.prop-custom.type.qml
-//                       ^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^ storage.modifier.qml
+//         ^ - storage.modifier.qml
+//          ^^^^^^^^ storage.type.property.qml
+//                   ^^^ storage.type.primitive.qml
+//                       ^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     override property int c: 1
-//  ^^^^^^^^ storage.modifier.prop-custom.qml
-//          ^ - storage.modifier.prop-custom.qml
-//           ^^^^^^^^ keyword.other.prop-custom.qml
-//                    ^^^ storage.type.prop-custom.type.qml
-//                        ^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^ storage.type.primitive.qml
+//                        ^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -237,21 +289,32 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     property int x // comment
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^ storage.type.prop-custom.type.qml
-//               ^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^ entity.other.attribute-name.qml
 //                 ^^^^^^^^^^ comment.line.qml
+//                 ^^^^^^^^^^ - meta.property.qml
+//  ^^^^^^^^^^^^^^ meta.property.qml
     property int y;
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^ storage.type.prop-custom.type.qml
-//               ^ variable.parameter.prop-custom.name.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^ entity.other.attribute-name.qml
 //                ^ punctuation.terminator.statement.qml
+//  ^^^^^^^^^^^^^^^ meta.property.qml
+    property int z: 1; width: 10
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^ entity.other.attribute-name.qml
+//                   ^ punctuation.terminator.statement.qml
+//                     ^^^^^^^^^ - meta.property.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^ meta.property.qml
     required color;
-//  ^^^^^^^^ storage.modifier.prop-force-required.qml
-//           ^^^^^ variable.parameter.prop-force-required.name.qml
+//  ^^^^^^^^ storage.modifier.qml
+//           ^^^^^ entity.other.attribute-name.qml
 //                ^ punctuation.terminator.statement.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------
@@ -259,15 +322,17 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     property var obj: ({ a: 1 })
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^ storage.type.prop-custom.type.qml
-//               ^^^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property var f: () => 1
-//  ^^^^^^^^ keyword.other.prop-custom.qml
-//           ^^^ storage.type.prop-custom.type.qml
-//               ^ variable.parameter.prop-custom.name.qml - variable.parameter.attr-expr.qml
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^ storage.type.primitive.qml
+//               ^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------

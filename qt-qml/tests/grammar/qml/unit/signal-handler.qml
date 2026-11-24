@@ -7,10 +7,12 @@
 //------------------------------------------------------------------------------
 Rectangle {
     onWidthChanged: _rect.pressed()
-//  ^^^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^ entity.name.function.handler.qml
 //                  ^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     onWidthChanged: {
-//  ^^^^^^^^^^^^^^ variable.parameter.attr-block.qml - meta.embedded.block.qml
+//  ^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.block.qml
+//  ^^^^^^^^^^^^^^ entity.name.function.handler.qml
         console.log(`width changed to ${_rect.width}`)
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.block.qml
     }
@@ -23,7 +25,8 @@ Rectangle {
 Rectangle {
     MouseArea {
         onClicked: (mouse) => {
-//      ^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//      ^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//      ^^^^^^^^^ entity.name.function.handler.qml
 //                 ^^^^^^^^^^^^ meta.embedded.expression.qml
             console.log("clicked")
 //          ^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
@@ -39,11 +42,13 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     Keys.onLeftPressed: console.log("move left")
-//  ^^^^^^^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//       ^^^^^^^^^^^^^ entity.name.function.handler.qml
 //                      ^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
 
     Keys.onPressed: (event) => {
-//  ^^^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//       ^^^^^^^^^ entity.name.function.handler.qml
 //                  ^^^^^^^^^^^^ meta.embedded.expression.qml
         if (event.key == Qt.Key_Left) {
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
@@ -57,7 +62,8 @@ Rectangle {
 //  ^ meta.embedded.expression.qml
 
     Component.onCompleted: {
-//  ^^^^^^^^^^^^^^^^^^^^^ variable.parameter.attr-block.qml - meta.embedded.block.qml
+//  ^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.block.qml
+//            ^^^^^^^^^^^ entity.name.function.handler.qml
         console.log("onCompleted")
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.block.qml
     }
@@ -69,7 +75,8 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     Component.onCompleted: () => {
-//  ^^^^^^^^^^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//            ^^^^^^^^^^^ entity.name.function.handler.qml
 //                         ^^^^^^^ meta.embedded.expression.qml
         console.log("aaa");
 //      ^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
@@ -83,7 +90,8 @@ Rectangle {
 Rectangle {
     MouseArea {
         onPressed: mouse => root.activated(mouse.x, mouse.y)
-//      ^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//      ^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//      ^^^^^^^^^ entity.name.function.handler.qml
 //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     }
 }
@@ -93,14 +101,15 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     onClicked: function(mouse) {
-//  ^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^ entity.name.function.handler.qml
 //             ^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
         console.log(mouse)
 //      ^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     }
 //  ^ meta.embedded.expression.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //         ^^ meta.embedded.expression.qml
 }
 
@@ -109,13 +118,14 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     Layout.fillWidth: true
-//  ^^^^^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                    ^^^^ meta.embedded.expression.qml
     Keys.onPressed: (event) => { event.accepted = true }
-//  ^^^^^^^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//       ^^^^^^^^^ entity.name.function.handler.qml
 //                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     height: 20
-//  ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //          ^^ meta.embedded.expression.qml
 }
 
@@ -125,14 +135,24 @@ Rectangle {
 Rectangle {
     Connections {
         target: _rect
-//      ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//      ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //              ^^^^^ meta.embedded.expression.qml
         function onClicked(mouse) { }
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
     }
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //         ^^ meta.embedded.expression.qml
+}
+
+//------------------------------------------------------------------------------
+// names that are not handlers
+//------------------------------------------------------------------------------
+Rectangle {
+    onlyOne: 1
+//  ^^^^^^^ entity.other.attribute-name.qml - entity.name.function.handler.qml
+    buttonOnClick: 1
+//  ^^^^^^^^^^^^^ entity.other.attribute-name.qml - entity.name.function.handler.qml
 }
 
 //------------------------------------------------------------------------------

@@ -81,9 +81,9 @@ Item {
 //      ^^^^ variable.other.enummember.qml - entity.name.type.object.qml
     }
     property int mode: 0
-//  ^^^^^^^^ keyword.other.prop-custom.qml - meta.enum.qml
+//  ^^^^^^^^ storage.type.property.qml - meta.enum.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.enum.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.enum.qml
 }
 
 //------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ Item {
     }
 //  ^ punctuation.definition.block.qml
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------

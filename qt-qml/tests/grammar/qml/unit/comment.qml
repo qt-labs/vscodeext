@@ -74,15 +74,15 @@ Item {
 Item {
     /* c */ width: 100
 //  ^^^^^^^ comment.block.qml - meta.embedded.expression.qml
-//          ^^^^^ variable.parameter.attr-expr.qml
+//          ^^^^^ entity.other.attribute-name.qml
     width: 100 /* c */
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //             ^^^^^^^ meta.embedded.expression.qml - comment.block.qml
     width: 100; /* c */ height: 200
-//  ^^^^^ variable.parameter.attr-expr.qml
+//  ^^^^^ entity.other.attribute-name.qml
 //            ^ punctuation.terminator.statement.qml
 //              ^^^^^^^ comment.block.qml - meta.embedded.expression.qml
-//                      ^^^^^^ variable.parameter.attr-expr.qml
+//                      ^^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------

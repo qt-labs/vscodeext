@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 pragma Singleton
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^ variable.parameter.pragma.qml
+//     ^^^^^^^^^ entity.other.attribute-name.pragma.qml
 // <---------------- meta.pragma.qml
 
 //------------------------------------------------------------------------------
@@ -15,37 +15,37 @@ pragma Singleton
 //------------------------------------------------------------------------------
 pragma ListPropertyAssignBehavior: ReplaceIfNotDefault // Append, Replace,
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                               ^^ - entity.name.pragma.qml
-//                                 ^^^^^^^^^^^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                               ^^ - constant.language.pragma.qml
+//                                 ^^^^^^^^^^^^^^^^^^^ constant.language.pragma.qml
 //                                                     ^^^^^^^^^^^^^^^^^^^ comment.line.qml
 // <-------------------------------------------------------------------------- meta.pragma.qml
 pragma ComponentBehavior: Bound // Unbound
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                      ^^ - entity.name.pragma.qml
-//                        ^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^^ constant.language.pragma.qml
 //                              ^^^^^^^^^^ comment.line.qml
 // <------------------------------------------ meta.pragma.qml
 pragma FunctionSignatureBehavior: Ignored // Enforced
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                              ^^ - entity.name.pragma.qml
-//                                ^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                              ^^ - constant.language.pragma.qml
+//                                ^^^^^^^ constant.language.pragma.qml
 //                                        ^^^^^^^^^^^ comment.line.qml
 // <----------------------------------------------------- meta.pragma.qml
 pragma NativeMethodBehavior: AcceptThisObject // RejectThisObject
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                         ^^ - entity.name.pragma.qml
-//                           ^^^^^^^^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                         ^^ - constant.language.pragma.qml
+//                           ^^^^^^^^^^^^^^^^ constant.language.pragma.qml
 //                                            ^^^^^^^^^^^^^^^^^^^ comment.line.qml
 // <----------------------------------------------------------------- meta.pragma.qml
 pragma ValueTypeBehavior: Addressable // Inaddressable, Copy, Reference
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                      ^^ - entity.name.pragma.qml
-//                        ^^^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^^^^^^^^ constant.language.pragma.qml
 //                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.qml
 // <----------------------------------------------------------------------- meta.pragma.qml
 
@@ -54,14 +54,14 @@ pragma ValueTypeBehavior: Addressable // Inaddressable, Copy, Reference
 //------------------------------------------------------------------------------
 pragma Translator: myContext
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^ variable.parameter.pragma.qml
-//               ^^ - entity.name.pragma.qml
-//                 ^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//               ^^ - constant.language.pragma.qml
+//                 ^^^^^^^^^ constant.language.pragma.qml
 // <---------------------------- meta.pragma.qml
 pragma Translator: "myContext"
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^ variable.parameter.pragma.qml
-//               ^^ - entity.name.pragma.qml
+//     ^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//               ^^ - constant.language.pragma.qml
 //                 ^^^^^^^^^^^ string.quoted.double.qml
 // <------------------------------ meta.pragma.qml
 
@@ -70,8 +70,8 @@ pragma Translator: "myContext"
 //------------------------------------------------------------------------------
 pragma Translator: my_context2
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^ variable.parameter.pragma.qml
-//                 ^^^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                 ^^^^^^^^^^^ constant.language.pragma.qml
 pragma Translator: "my\"context"
 //                 ^^^ string.quoted.double.qml
 //                    ^^ string.quoted.double.qml constant.character.escape.qml
@@ -86,21 +86,21 @@ pragma Translator: 'my\'context'
 //------------------------------------------------------------------------------
 pragma ValueTypeBehavior: Copy, Addressable
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                      ^^ - entity.name.pragma.qml
-//                        ^^^^ entity.name.pragma.qml
-//                            ^^ - entity.name.pragma.qml
-//                              ^^^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^ constant.language.pragma.qml
+//                            ^^ - constant.language.pragma.qml
+//                              ^^^^^^^^^^^ constant.language.pragma.qml
 // <------------------------------------------- meta.pragma.qml
 pragma ValueTypeBehavior: Copy, Addressable, Inaddressable // comment
 // <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^ variable.parameter.pragma.qml
-//                      ^^ - entity.name.pragma.qml
-//                        ^^^^ entity.name.pragma.qml
-//                            ^^ - entity.name.pragma.qml
-//                              ^^^^^^^^^^^ entity.name.pragma.qml
-//                                         ^^ - entity.name.pragma.qml
-//                                           ^^^^^^^^^^^^^ entity.name.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^ constant.language.pragma.qml
+//                            ^^ - constant.language.pragma.qml
+//                              ^^^^^^^^^^^ constant.language.pragma.qml
+//                                         ^^ - constant.language.pragma.qml
+//                                           ^^^^^^^^^^^^^ constant.language.pragma.qml
 //                                                         ^^^^^^^^^^ comment.line.qml
 // <--------------------------------------------------------------------- meta.pragma.qml
 

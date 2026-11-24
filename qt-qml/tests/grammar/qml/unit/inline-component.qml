@@ -7,12 +7,12 @@
 //------------------------------------------------------------------------------
 Window {
     component PushButtonInline: Rectangle {
-//  ^^^^^^^^^ keyword.other.comp-inline.qml
-//            ^^^^^^^^^^^^^^^^ entity.name.type.comp-inline.name.qml
+//  ^^^^^^^^^ storage.type.component.qml
+//            ^^^^^^^^^^^^^^^^ entity.name.type.component.qml
 //                              ^^^^^^^^^ entity.name.type.object.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.component.qml
         id: _rect
-//      ^^ variable.parameter.attr-expr.qml
+//      ^^ keyword.other.id.qml
 //      ^^^^^^^^^ meta.component.qml
         color: "skyblue"
         border.color: "lightgray"
@@ -27,10 +27,10 @@ Window {
 //------------------------------------------------------------------------------
 Item {
     component MyButton: T.Button { text: "a" }
-//  ^^^^^^^^^ keyword.other.comp-inline.qml
-//            ^^^^^^^^ entity.name.type.comp-inline.name.qml
+//  ^^^^^^^^^ storage.type.component.qml
+//            ^^^^^^^^ entity.name.type.component.qml
 //                      ^^^^^^^^ entity.name.type.object.qml
-//                                 ^^^^ variable.parameter.attr-expr.qml
+//                                 ^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.component.qml
 }
 
@@ -39,15 +39,15 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     component Labeled: Item {
-//  ^^^^^^^^^ keyword.other.comp-inline.qml
-//            ^^^^^^^ entity.name.type.comp-inline.name.qml
+//  ^^^^^^^^^ storage.type.component.qml
+//            ^^^^^^^ entity.name.type.component.qml
 //                     ^^^^ entity.name.type.object.qml
         Text { text: "x" }
 //      ^^^^ entity.name.type.object.qml
 //      ^^^^^^^^^^^^^^^^^^ meta.component.qml
     }
     width: 10
-//  ^^^^^ variable.parameter.attr-expr.qml - meta.component.qml
+//  ^^^^^ entity.other.attribute-name.qml - meta.component.qml
 }
 
 //------------------------------------------------------------------------------
