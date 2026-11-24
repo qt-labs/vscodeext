@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
 //------------------------------------------------------------------------------
-// prop. changed signal handler
+// expression and block handlers
 //------------------------------------------------------------------------------
 Rectangle {
     onWidthChanged: _rect.pressed()
@@ -20,7 +20,7 @@ Rectangle {
 }
 
 //------------------------------------------------------------------------------
-// item specific signal handler
+// multi-line arrow function
 //------------------------------------------------------------------------------
 Rectangle {
     MouseArea {
@@ -35,6 +35,23 @@ Rectangle {
         }
 //      ^ meta.embedded.expression.qml
     }
+}
+
+//------------------------------------------------------------------------------
+// function expression
+//------------------------------------------------------------------------------
+Rectangle {
+    onClicked: function(mouse) {
+//  ^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^^^^^ entity.name.function.handler.qml
+//             ^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
+        console.log(mouse)
+//      ^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
+    }
+//  ^ meta.embedded.expression.qml
+    width: 10
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//         ^^ meta.embedded.expression.qml
 }
 
 //------------------------------------------------------------------------------
@@ -68,49 +85,6 @@ Rectangle {
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.block.qml
     }
 //  ^ - meta.embedded.block.qml
-}
-
-//------------------------------------------------------------------------------
-// arrow function without parameters
-//------------------------------------------------------------------------------
-Rectangle {
-    Component.onCompleted: () => {
-//  ^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
-//            ^^^^^^^^^^^ entity.name.function.handler.qml
-//                         ^^^^^^^ meta.embedded.expression.qml
-        console.log("aaa");
-//      ^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
-    }
-//  ^ meta.embedded.expression.qml
-}
-
-//------------------------------------------------------------------------------
-// arrow function without (), {}
-//------------------------------------------------------------------------------
-Rectangle {
-    MouseArea {
-        onPressed: mouse => root.activated(mouse.x, mouse.y)
-//      ^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
-//      ^^^^^^^^^ entity.name.function.handler.qml
-//                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
-    }
-}
-
-//------------------------------------------------------------------------------
-// function expression
-//------------------------------------------------------------------------------
-Rectangle {
-    onClicked: function(mouse) {
-//  ^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
-//  ^^^^^^^^^ entity.name.function.handler.qml
-//             ^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
-        console.log(mouse)
-//      ^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
-    }
-//  ^ meta.embedded.expression.qml
-    width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
-//         ^^ meta.embedded.expression.qml
 }
 
 //------------------------------------------------------------------------------

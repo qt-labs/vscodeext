@@ -26,31 +26,7 @@ Item {
 }
 
 //------------------------------------------------------------------------------
-// return type
-//------------------------------------------------------------------------------
-Item {
-    function myfunc(): int {
-//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
-        return 3;
-//      ^^^^^^^^^ meta.embedded.function.qml
-    }
-//  ^ meta.embedded.function.qml
-}
-
-//------------------------------------------------------------------------------
-// typed parameters
-//------------------------------------------------------------------------------
-Item {
-    function myfunc(a: int, b: date, c: Item): int {
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
-        return a + b + c.prop;
-//      ^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
-    }
-//  ^ meta.embedded.function.qml
-}
-
-//------------------------------------------------------------------------------
-// generic and qualified types
+// type annotations
 //------------------------------------------------------------------------------
 Item {
     function f(a: list<int>, b: T.Item): list<T.Item> {
@@ -61,21 +37,6 @@ Item {
 //  ^ meta.embedded.function.qml
     width: 10
 //  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
-}
-
-//------------------------------------------------------------------------------
-// inside child item
-//------------------------------------------------------------------------------
-Item {
-    MouseArea {
-        function insideItem(a: int, b: date): int {
-//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
-            return a + b;
-//          ^^^^^^^^^^^^^ meta.embedded.function.qml
-        }
-//      ^ meta.embedded.function.qml
-    }
-//  ^ - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------

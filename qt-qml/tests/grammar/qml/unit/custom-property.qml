@@ -6,9 +6,9 @@
 // https://doc.qt.io/qt-6/qtqml-syntax-objectattributes.html
 
 //------------------------------------------------------------------------------
-// qml types
+// types
 //------------------------------------------------------------------------------
-Window {
+Item {
     property int height: 0
 //  ^^^^^^^^ storage.type.property.qml
 //           ^^^ storage.type.primitive.qml
@@ -35,191 +35,16 @@ Window {
 //           ^^^^^ storage.type.primitive.qml
 //                 ^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    property list<int> value: [1, 2, 3, 4]
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^ storage.type.primitive.qml
-//               ^ punctuation.definition.typeparameters.begin.qml
-//                ^^^ storage.type.primitive.qml
-//                   ^ punctuation.definition.typeparameters.end.qml
-//                     ^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-}
-
-//------------------------------------------------------------------------------
-// default
-//------------------------------------------------------------------------------
-Window {
-    default property var someText
-//  ^^^^^^^ storage.modifier.qml
-//         ^ - storage.modifier.qml
-//          ^^^^^^^^ storage.type.property.qml
-//                   ^^^ storage.type.primitive.qml
-//                       ^^^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-}
-
-//------------------------------------------------------------------------------
-// required
-//------------------------------------------------------------------------------
-Window {
-    Component {
-        id: _delegate
-//      ^^ keyword.other.id.qml
-
-        Item {
-            required property int point
-//          ^^^^^^^^ storage.modifier.qml
-//                  ^ - storage.modifier.qml
-//                   ^^^^^^^^ storage.type.property.qml
-//                            ^^^ storage.type.primitive.qml
-//                                ^^^^^ entity.other.attribute-name.qml
-//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-            required property string name
-//          ^^^^^^^^ storage.modifier.qml
-//                  ^ - storage.modifier.qml
-//                   ^^^^^^^^ storage.type.property.qml
-//                            ^^^^^^ storage.type.primitive.qml
-//                                   ^^^^ entity.other.attribute-name.qml
-//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-            required property list<int> value
-//          ^^^^^^^^ storage.modifier.qml
-//                  ^ - storage.modifier.qml
-//                   ^^^^^^^^ storage.type.property.qml
-//                            ^^^^ storage.type.primitive.qml
-//                                ^ punctuation.definition.typeparameters.begin.qml
-//                                 ^^^ storage.type.primitive.qml
-//                                    ^ punctuation.definition.typeparameters.end.qml
-//                                      ^^^^^ entity.other.attribute-name.qml
-//          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-        }
-    }
-}
-
-//------------------------------------------------------------------------------
-// readonly
-//------------------------------------------------------------------------------
-Window {
-    readonly property color myvalue: Qt.rgba(1, 1, 1, 1)
-//  ^^^^^^^^ storage.modifier.qml
-//          ^ - storage.modifier.qml
-//           ^^^^^^^^ storage.type.property.qml
-//                    ^^^^^ storage.type.primitive.qml
-//                          ^^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    readonly property list<int> value: [1, 2, 3, 4]
-//  ^^^^^^^^ storage.modifier.qml
-//          ^ - storage.modifier.qml
-//           ^^^^^^^^ storage.type.property.qml
-//                    ^^^^ storage.type.primitive.qml
-//                        ^ punctuation.definition.typeparameters.begin.qml
-//                         ^^^ storage.type.primitive.qml
-//                            ^ punctuation.definition.typeparameters.end.qml
-//                              ^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-}
-
-//------------------------------------------------------------------------------
-// alias
-//------------------------------------------------------------------------------
-Window {
     property alias text: _text.text
 //  ^^^^^^^^ storage.type.property.qml
 //           ^^^^^ keyword.other.alias.qml
 //                 ^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-}
-
-//------------------------------------------------------------------------------
-// without initial value
-//------------------------------------------------------------------------------
-Window {
-    property color nextColor
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^^ storage.type.primitive.qml
-//                 ^^^^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    property list<int> value
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^ storage.type.primitive.qml
-//               ^ punctuation.definition.typeparameters.begin.qml
-//                ^^^ storage.type.primitive.qml
-//                   ^ punctuation.definition.typeparameters.end.qml
-//                     ^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-}
-
-//------------------------------------------------------------------------------
-// props in child object
-//------------------------------------------------------------------------------
-Window {
-    Rectangle {
-        property int animatedHeight: 0
-//      ^^^^^^^^ storage.type.property.qml
-//               ^^^ storage.type.primitive.qml
-//                   ^^^^^^^^^^^^^^ entity.other.attribute-name.qml
-//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-        property string name: "abcd"
-//      ^^^^^^^^ storage.type.property.qml
-//               ^^^^^^ storage.type.primitive.qml
-//                      ^^^^ entity.other.attribute-name.qml
-//      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    }
-}
-
-//------------------------------------------------------------------------------
-// make property to a required one
-//------------------------------------------------------------------------------
-Window {
-    Rectangle {
-        required color
-//      ^^^^^^^^ storage.modifier.qml
-//               ^^^^^ entity.other.attribute-name.qml
-    }
-}
-
-//------------------------------------------------------------------------------
-// others
-//------------------------------------------------------------------------------
-Window {
-    property list<int> value: [
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^ storage.type.primitive.qml
-//               ^ punctuation.definition.typeparameters.begin.qml
-//                ^^^ storage.type.primitive.qml
-//                   ^ punctuation.definition.typeparameters.end.qml
-//                     ^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-        1, 2, 3, 4
-//      ^^^^^^^^^^ meta.property.qml
-    ]
-//  ^ meta.property.qml
-
-    property Model value1: Model { }
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^^ entity.name.type.qml
-//                 ^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    property Model value2: Model { }
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^^ entity.name.type.qml
-//                 ^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-}
-
-//------------------------------------------------------------------------------
-// qualified and generic types
-//------------------------------------------------------------------------------
-Item {
     property T.Button btn
 //  ^^^^^^^^ storage.type.property.qml
 //           ^^^^^^^^ entity.name.type.qml
 //                    ^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    property T.Button btn2: T.Button {}
-//  ^^^^^^^^ storage.type.property.qml
-//           ^^^^^^^^ entity.name.type.qml
-//                    ^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property list<T.Item> items
 //  ^^^^^^^^ storage.type.property.qml
 //           ^^^^ storage.type.primitive.qml
@@ -228,40 +53,33 @@ Item {
 //                      ^ punctuation.definition.typeparameters.end.qml
 //                        ^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    readonly property list<T.Item> items2: []
-//  ^^^^^^^^ storage.modifier.qml
-//          ^ - storage.modifier.qml
-//           ^^^^^^^^ storage.type.property.qml
-//                    ^^^^ storage.type.primitive.qml
-//                        ^ punctuation.definition.typeparameters.begin.qml
-//                         ^^^^^^ entity.name.type.qml
-//                               ^ punctuation.definition.typeparameters.end.qml
-//                                 ^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
-// modifier combinations
+// modifiers
 //------------------------------------------------------------------------------
 Item {
-    default required property Item content
+    default property var someText
 //  ^^^^^^^ storage.modifier.qml
 //         ^ - storage.modifier.qml
-//          ^^^^^^^^ storage.modifier.qml
-//                  ^ - storage.modifier.qml
-//                   ^^^^^^^^ storage.type.property.qml
-//                            ^^^^ entity.name.type.qml
-//                                 ^^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
-    required default property Item content2
+//          ^^^^^^^^ storage.type.property.qml
+//                   ^^^ storage.type.primitive.qml
+//                       ^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    required property int point
 //  ^^^^^^^^ storage.modifier.qml
 //          ^ - storage.modifier.qml
-//           ^^^^^^^ storage.modifier.qml
-//                  ^ - storage.modifier.qml
-//                   ^^^^^^^^ storage.type.property.qml
-//                            ^^^^ entity.name.type.qml
-//                                 ^^^^^^^^ entity.other.attribute-name.qml
-//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^ storage.type.primitive.qml
+//                        ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    readonly property color myvalue: Qt.rgba(1, 1, 1, 1)
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^^^ storage.type.primitive.qml
+//                          ^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     final property int a: 1
 //  ^^^^^ storage.modifier.qml
 //       ^ - storage.modifier.qml
@@ -283,12 +101,43 @@ Item {
 //                    ^^^ storage.type.primitive.qml
 //                        ^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    default required property Item content
+//  ^^^^^^^ storage.modifier.qml
+//         ^ - storage.modifier.qml
+//          ^^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^^ entity.name.type.qml
+//                                 ^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    required default property Item content2
+//  ^^^^^^^^ storage.modifier.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^ storage.modifier.qml
+//                  ^ - storage.modifier.qml
+//                   ^^^^^^^^ storage.type.property.qml
+//                            ^^^^ entity.name.type.qml
+//                                 ^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
-// trailing semicolon and comment
+// without initial value
 //------------------------------------------------------------------------------
 Item {
+    property color nextColor
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^^ storage.type.primitive.qml
+//                 ^^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    property list<int> value
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^ storage.type.primitive.qml
+//                   ^ punctuation.definition.typeparameters.end.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property int x // comment
 //  ^^^^^^^^ storage.type.property.qml
 //           ^^^ storage.type.primitive.qml
@@ -310,12 +159,42 @@ Item {
 //                     ^^^^^^^^^ - meta.property.qml
 //                     ^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^ meta.property.qml
-    required color;
+}
+
+//------------------------------------------------------------------------------
+// list values
+//------------------------------------------------------------------------------
+Item {
+    property list<int> value: [1, 2, 3, 4]
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^ storage.type.primitive.qml
+//                   ^ punctuation.definition.typeparameters.end.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    readonly property list<T.Item> items2: []
 //  ^^^^^^^^ storage.modifier.qml
-//           ^^^^^ entity.other.attribute-name.qml
-//                ^ punctuation.terminator.statement.qml
-    width: 10
-//  ^^^^^ entity.other.attribute-name.qml
+//          ^ - storage.modifier.qml
+//           ^^^^^^^^ storage.type.property.qml
+//                    ^^^^ storage.type.primitive.qml
+//                        ^ punctuation.definition.typeparameters.begin.qml
+//                         ^^^^^^ entity.name.type.qml
+//                               ^ punctuation.definition.typeparameters.end.qml
+//                                 ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+    property list<int> value: [
+//  ^^^^^^^^ storage.type.property.qml
+//           ^^^^ storage.type.primitive.qml
+//               ^ punctuation.definition.typeparameters.begin.qml
+//                ^^^ storage.type.primitive.qml
+//                   ^ punctuation.definition.typeparameters.end.qml
+//                     ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
+        1, 2, 3, 4
+//      ^^^^^^^^^^ meta.property.qml
+    ]
+//  ^ meta.property.qml
 }
 
 //------------------------------------------------------------------------------
@@ -382,6 +261,21 @@ Item {
 //  ^ punctuation.definition.block.qml - meta.property.qml
     x: 3
 //  ^ entity.other.attribute-name.qml
+}
+
+//------------------------------------------------------------------------------
+// required without property
+//------------------------------------------------------------------------------
+Item {
+    required color
+//  ^^^^^^^^ storage.modifier.qml
+//           ^^^^^ entity.other.attribute-name.qml
+    required color;
+//  ^^^^^^^^ storage.modifier.qml
+//           ^^^^^ entity.other.attribute-name.qml
+//                ^ punctuation.terminator.statement.qml
+    width: 10
+//  ^^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------

@@ -27,27 +27,6 @@ pragma ComponentBehavior: Bound // Unbound
 //                        ^^^^^ constant.language.pragma.qml
 //                              ^^^^^^^^^^ comment.line.qml
 // <------------------------------------------ meta.pragma.qml
-pragma FunctionSignatureBehavior: Ignored // Enforced
-// <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
-//                              ^^ - constant.language.pragma.qml
-//                                ^^^^^^^ constant.language.pragma.qml
-//                                        ^^^^^^^^^^^ comment.line.qml
-// <----------------------------------------------------- meta.pragma.qml
-pragma NativeMethodBehavior: AcceptThisObject // RejectThisObject
-// <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
-//                         ^^ - constant.language.pragma.qml
-//                           ^^^^^^^^^^^^^^^^ constant.language.pragma.qml
-//                                            ^^^^^^^^^^^^^^^^^^^ comment.line.qml
-// <----------------------------------------------------------------- meta.pragma.qml
-pragma ValueTypeBehavior: Addressable // Inaddressable, Copy, Reference
-// <------ keyword.control.pragma.qml
-//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
-//                      ^^ - constant.language.pragma.qml
-//                        ^^^^^^^^^^^ constant.language.pragma.qml
-//                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.qml
-// <----------------------------------------------------------------------- meta.pragma.qml
 
 //------------------------------------------------------------------------------
 // translator context

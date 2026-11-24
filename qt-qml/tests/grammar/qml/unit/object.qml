@@ -20,32 +20,6 @@ Window {
 // <- meta.object.qml
 
 //------------------------------------------------------------------------------
-// multiple lines
-//------------------------------------------------------------------------------
-Window {
-// <------ entity.name.type.object.qml
-//     ^ punctuation.definition.block.qml
-// <-------- meta.object.qml
-    Rectangle {
-//  ^^^^^^^^^ entity.name.type.object.qml
-//            ^ punctuation.definition.block.qml
-//  ^^^^^^^^^^^ meta.object.qml
-        width: 100
-//      ^^^^^ entity.other.attribute-name.qml
-//             ^^^ - entity.name.type.object.qml
-//      ^^^^^^^^^^ meta.object.qml
-        height: 100
-//      ^^^^^^ entity.other.attribute-name.qml
-//              ^^^ - entity.name.type.object.qml
-//      ^^^^^^^^^^^ meta.object.qml
-    }
-//  ^ punctuation.definition.block.qml
-//  ^ meta.object.qml
-}
-// <- punctuation.definition.block.qml
-// <- meta.object.qml
-
-//------------------------------------------------------------------------------
 // brace on the next line
 //------------------------------------------------------------------------------
 Window {

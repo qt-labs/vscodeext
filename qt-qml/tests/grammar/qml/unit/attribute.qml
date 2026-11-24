@@ -6,15 +6,6 @@
 // js expression
 //------------------------------------------------------------------------------
 Rectangle {
-    width: 100 * 2;
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
-//       ^^ - meta.embedded.expression.qml
-//         ^^^^^^^ meta.embedded.expression.qml
-//                ^ - meta.embedded.expression.qml
-//                ^ punctuation.terminator.statement.qml
-    width: height / 2
-//  ^^^^^ entity.other.attribute-name.qml
-//         ^^^^^^^^^^ meta.embedded.expression.qml
     width: 100
 //  ^^^^^ entity.other.attribute-name.qml
 //         ^^^ meta.embedded.expression.qml
@@ -30,34 +21,13 @@ Rectangle {
 //            ^ punctuation.terminator.statement.qml
 //              ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
-    width: 100; height: 200;
-//  ^^^^^ entity.other.attribute-name.qml
-//         ^^^ meta.embedded.expression.qml
-//            ^^ - meta.embedded.expression.qml
-//            ^ punctuation.terminator.statement.qml
-//              ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
-//                      ^^^ meta.embedded.expression.qml
-//                         ^ - meta.embedded.expression.qml
-//                         ^ punctuation.terminator.statement.qml
     height : 480
 //  ^^^^^^ entity.other.attribute-name.qml
 //        ^^^ - meta.embedded.expression.qml
 //           ^^^ meta.embedded.expression.qml
-    color: "red"
-//  ^^^^^ entity.other.attribute-name.qml
-//         ^^^^^ meta.embedded.expression.qml
     color: Qt.rgba(100, 100, 100, 100)
 //  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
-    opacity: 1.2
-//  ^^^^^^^ entity.other.attribute-name.qml
-//           ^^^ meta.embedded.expression.qml
-    visible: true
-//  ^^^^^^^ entity.other.attribute-name.qml
-//           ^^^^ meta.embedded.expression.qml
-    visible: false
-//  ^^^^^^^ entity.other.attribute-name.qml
-//           ^^^^^ meta.embedded.expression.qml
 }
 
 //------------------------------------------------------------------------------

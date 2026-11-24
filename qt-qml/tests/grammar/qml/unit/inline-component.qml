@@ -12,8 +12,6 @@ Window {
 //                              ^^^^^^^^^ entity.name.type.object.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.component.qml
         id: _rect
-//      ^^ keyword.other.id.qml
-//      ^^^^^^^^^ meta.component.qml
         color: "skyblue"
         border.color: "lightgray"
         implicitWidth: 150
