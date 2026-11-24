@@ -183,6 +183,9 @@
           "include": "#on-prop"
         },
         {
+          "include": "#on-prop-type-only"
+        },
+        {
           "include": "#comp-inline"
         },
         {
@@ -335,7 +338,7 @@
     },
     "property-declaration": {
       "name": "meta.property.qml",
-      "begin": "(?=\\b(?:(?:default|readonly|required|final|virtual|override)\\s+)*property\\b)",
+      "begin": "(?=\\b(?:(?:default|readonly|required|final|virtual|override)\\s+)*property\\s+[\\w\\.])",
       "end": "(?<=[;}\\]])|$|(?=\\})|(?=\\s*(?:\\/\\/|\\/\\*))",
       "patterns": [
         {
@@ -467,6 +470,20 @@
         }
       ]
     },
+    "on-prop-type-only": {
+      "match": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.object.qml"
+        },
+        "2": {
+          "name": "keyword.other.on.qml"
+        },
+        "3": {
+          "name": "entity.other.attribute-name.qml"
+        }
+      }
+    },
     "comp-inline": {
       "name": "meta.component.qml",
       "begin": "\\b(component)\\s+([A-Z]\\w*)\\s*:",
@@ -589,7 +606,7 @@
           ]
         },
         "attr-expr": {
-          "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[^\\s]+)",
+          "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[^\\s]|$)",
           "beginCaptures": {
             "1": {
               "name": "entity.other.attribute-name.qml",
@@ -600,7 +617,7 @@
               ]
             }
           },
-          "end": "(;)|$|(?=\\})",
+          "end": "(;)|(?<=[^|&+\\-*%^=<>!?:,.~(\\[{\\s])(?=\\s*(?:$|\\/\\/))|(?=\\})",
           "endCaptures": {
             "1": {
               "name": "punctuation.terminator.statement.qml"

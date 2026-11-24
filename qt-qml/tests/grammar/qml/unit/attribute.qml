@@ -153,6 +153,58 @@ Rectangle {
 //      ^^^^^^^^^^^^^ meta.embedded.expression.qml
     )
 //  ^ meta.embedded.expression.qml
+
+    // continued after an operator at the end of the line
+    flags: Qt.Dialog |
+//  ^^^^^ entity.other.attribute-name.qml
+//         ^^^^^^^^^^^ meta.embedded.expression.qml
+        Qt.WindowStaysOnTopHint
+//      ^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml - entity.name.type.object.qml
+    width: 10 +
+//  ^^^^^ entity.other.attribute-name.qml
+//         ^^^^ meta.embedded.expression.qml
+        20
+//      ^^ meta.embedded.expression.qml
+    visible: a &&
+//  ^^^^^^^ entity.other.attribute-name.qml
+//           ^^^^ meta.embedded.expression.qml
+        b
+//      ^ meta.embedded.expression.qml
+    onClicked: (mouse) =>
+//  ^^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^ entity.name.function.handler.qml
+//             ^^^^^^^^^^ meta.embedded.expression.qml
+        console.log(mouse)
+//      ^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
+
+    // the value starts on the next line
+    opacity:
+//  ^^^^^^^ entity.other.attribute-name.qml
+        0.5
+//      ^^^ meta.embedded.expression.qml
+    scale: 1
+//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+
+    // a trailing comment that ends with a punctuation mark is not an operator
+    width: 100 // the default width.
+//  ^^^^^ entity.other.attribute-name.qml
+//         ^^^ meta.embedded.expression.qml
+//             ^^^^^^^^^^^^^^^^^^^^^ comment.line.qml - meta.embedded.expression.qml
+    height: 10
+//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+    x: 1 // note:
+//  ^ entity.other.attribute-name.qml
+//     ^ meta.embedded.expression.qml
+//       ^^^^^^^^ comment.line.qml - meta.embedded.expression.qml
+    y: 2
+//  ^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+
+    // a regular expression ends with a slash, which is not an operator
+    validator: /[0-9]+/
+//  ^^^^^^^^^ entity.other.attribute-name.qml
+//             ^^^^^^^^ meta.embedded.expression.qml
+    height: 10
+//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
 }
 // <- - meta.embedded.expression.qml
 

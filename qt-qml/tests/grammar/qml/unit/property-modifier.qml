@@ -1,4 +1,4 @@
-// SYNTAX TEST "source.qml" "<Type> on <property>"
+// SYNTAX TEST "source.qml" "property modifier types (<Type> on <property>)"
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
@@ -93,6 +93,24 @@ Text {
 //  ^ punctuation.definition.block.qml
     width: 10
 //  ^^^^^ entity.other.attribute-name.qml
+}
+
+//------------------------------------------------------------------------------
+// brace on the next line
+//------------------------------------------------------------------------------
+Item {
+    Behavior on x
+//  ^^^^^^^^ entity.name.type.object.qml
+//           ^^ keyword.other.on.qml
+//              ^ entity.other.attribute-name.qml
+    {
+//  ^ punctuation.definition.block.qml
+        enabled: true
+//      ^^^^^^^ entity.other.attribute-name.qml
+    }
+//  ^ punctuation.definition.block.qml
+    clip: true
+//  ^^^^ entity.other.attribute-name.qml
 }
 
 //------------------------------------------------------------------------------
