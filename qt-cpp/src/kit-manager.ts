@@ -13,6 +13,7 @@ import {
   createLogger,
   CoreKey,
   compareVersions,
+  findMingwBinDir,
   findQtKits,
   isError,
   QtInfo,
@@ -138,6 +139,9 @@ export class KitManager {
   projects = new Set<CppProject>();
   workspaceFile: vscode.Uri | undefined;
   globalStateManager: GlobalStateManager;
+  // The shared MinGW toolchains that the kits of the Qt paths were last
+  // generated with, undefined until they are generated.
+  private sharedMingw: string | undefined;
 
   constructor(readonly context: vscode.ExtensionContext) {
     this.globalStateManager = new GlobalStateManager(context);
@@ -310,6 +314,38 @@ export class KitManager {
     );
   }
 
+  /**
+   * Generate the kits of the Qt paths again when the shared MinGW toolchains
+   * are not the ones the kits were generated with, because the kit of a MinGW
+   * build of Qt names one of them. qt-sm can share them after the kits were
+   * generated, for example when it activates later than this extension.
+   */
+  public async onQtToolsPathsChanged() {
+    if (
+      this.sharedMingw === undefined ||
+      this.sharedMingw === sharedMingwKey()
+    ) {
+      return;
+    }
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Updating kits'
+      },
+      async () => {
+        await this.updateQtPathsQtKits(getCurrentGlobalAdditionalQtPaths());
+        for (const project of this.projects) {
+          if (project.type === CppProjectType.Kit) {
+            await this.updateQtPathsQtKits(
+              KitManager.getWorkspaceFolderAdditionalQtPaths(project.folder),
+              project.folder
+            );
+          }
+        }
+      }
+    );
+  }
+
   private static async generateKitsFromQtPathsInfo(
     qtPaths: QtAdditionalPath[]
   ) {
@@ -439,6 +475,25 @@ export class KitManager {
       );
       return;
     }
+    // A MinGW build of Qt has to be built against with MinGW, which CMake
+    // does not find unless it is in the PATH.
+    const prefix = qtInfo.get('QT_INSTALL_PREFIX');
+    if (IsWindows && prefix && qtInfo.get('QMAKE_XSPEC') === 'win32-g++') {
+      const mingwBinDir = findMingwBinDir(
+        prefix,
+        getSharedQtToolsPaths()?.mingw
+      );
+      logger.info(`Mingw dir path: ${mingwBinDir ?? ''}`);
+      if (mingwBinDir) {
+        kit.environmentVariables.PATH = [mingwBinDir, pathEnv].join(
+          path.delimiter
+        );
+        kit.compilers = {
+          C: path.join(mingwBinDir, 'gcc' + OSExeSuffix),
+          CXX: path.join(mingwBinDir, 'g++' + OSExeSuffix)
+        };
+      }
+    }
     yield kit;
   }
   private static convertMSCVERToYear(mscver: number) {
@@ -468,6 +523,9 @@ export class KitManager {
     paths: QtAdditionalPath[],
     workspaceFolder?: vscode.WorkspaceFolder
   ) {
+    // Recorded before the kits are generated, so that a change arriving
+    // during the generation still counts as one in onQtToolsPathsChanged().
+    this.sharedMingw = sharedMingwKey();
     const generatedKits = await KitManager.generateKitsFromQtPathsInfo(paths);
     logger.info(`QtPaths Generated kits: ${JSON.stringify(generatedKits)}`);
     let previousQtKits: Kit[] = [];
@@ -891,13 +949,17 @@ function getCurrentGlobalAdditionalQtPaths(): QtAdditionalPath[] {
     ) ?? []
   );
 }
-// Build-tool paths (CMake, Ninja) bundled with the Qt installation and shared
-// by qt-sm via CoreAPI.
-function getSharedQtToolsPaths(): QtToolsPaths | undefined {
+// Build-tool paths (CMake, Ninja, MinGW) bundled with the Qt installation and
+// shared by qt-sm via CoreAPI.
+export function getSharedQtToolsPaths(): QtToolsPaths | undefined {
   return coreAPI?.getValue<QtToolsPaths>(
     CoreKey.GLOBAL_WORKSPACE,
     CoreKey.QT_TOOLS_PATHS
   );
+}
+// Tells one set of shared MinGW toolchains from another.
+function sharedMingwKey() {
+  return JSON.stringify(getSharedQtToolsPaths()?.mingw ?? {});
 }
 
 export async function tryToUseCMakeFromQtTools() {

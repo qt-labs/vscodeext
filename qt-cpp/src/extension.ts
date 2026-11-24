@@ -177,6 +177,8 @@ async function processMessage(message: QtWorkspaceConfigMessage) {
       // Shared CMake/Ninja paths arrived (or changed); pick up the bundled
       // CMake if the cmake command is still missing.
       void tryToUseCMakeFromQtTools();
+      // The kits of the MinGW builds of Qt name the shared MinGW.
+      await kitManager.onQtToolsPathsChanged();
       continue;
     }
   }

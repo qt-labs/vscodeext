@@ -33,14 +33,20 @@ export function compareQtAdditionalPath(
 }
 
 /**
- * Absolute paths to the build tools (CMake, Ninja) bundled with a Qt
- * installation, as detected under the installation root's `Tools/` directory.
+ * Absolute paths to the build tools (CMake, Ninja, MinGW) bundled with a Qt
+ * installation, as detected in the installation root.
  * Published by qt-sm via CoreAPI so qt-core/qt-cpp can pick them up. A field is
  * omitted when that tool is not present on disk.
  */
 export interface QtToolsPaths {
   cmake?: string;
   ninja?: string;
+  /**
+   * The `bin` folder of every installed MinGW toolchain by the version of
+   * the toolchain, for example `15.1.0`. `findMingwBinDir()` picks the one
+   * that goes with a build of Qt.
+   */
+  mingw?: Record<string, string>;
 }
 
 export type ConfigType =
