@@ -51,11 +51,13 @@ export function localSocketPath(name = 'qtclient_socket'): string {
  * `QStandardPaths::GenericDataLocation`:
  *   Linux:   `$XDG_DATA_HOME` or `~/.local/share`
  *   macOS:   `~/Library/Application Support`
- *   Windows: `%APPDATA%` (`C:\Users\<user>\AppData\Roaming`)
+ *   Windows: `%LOCALAPPDATA%` (`C:\Users\<user>\AppData\Local`)
  */
 export function genericDataLocation(): string {
   if (process.platform === 'win32') {
-    return process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    return (
+      process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local')
+    );
   }
   if (process.platform === 'darwin') {
     return path.join(os.homedir(), 'Library', 'Application Support');

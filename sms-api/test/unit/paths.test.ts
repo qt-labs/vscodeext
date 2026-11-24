@@ -28,7 +28,11 @@ describe('paths', () => {
     if (process.platform === 'darwin') {
       assert.ok(p.endsWith(path.join('Library', 'Application Support')), p);
     } else if (process.platform === 'win32') {
-      assert.ok(/AppData[\\/]Roaming$/.test(p) || !!process.env.APPDATA, p);
+      assert.equal(
+        p,
+        process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local')
+      );
+      assert.notEqual(p, process.env.APPDATA);
     } else {
       assert.ok(
         p === process.env.XDG_DATA_HOME || p.endsWith('.local/share'),

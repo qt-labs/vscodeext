@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as os from 'os';
+import { host } from 'qt-lib';
 import * as path from 'path';
 
 import {
@@ -1690,6 +1691,12 @@ function bootstrapInstallerDirs(): string[] {
     genericConfigLocation(),
     genericCacheLocation()
   ]);
+  if (host.isWindows) {
+    // `QStandardPaths::AppDataLocation` is in the roaming folder on Windows.
+    parents.add(
+      process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming')
+    );
+  }
   return [...parents].flatMap((parent) => {
     try {
       return fs
@@ -1703,7 +1710,7 @@ function bootstrapInstallerDirs(): string[] {
 }
 
 function getServiceLockFilePath(): string {
-  if (process.platform === 'win32') {
+  if (host.isWindows) {
     return path.join(os.tmpdir(), 'QtSoftwareManagementService.lock');
   }
   return path.join(os.tmpdir(), 'QtSoftwareManagementService.lock');
@@ -1734,10 +1741,9 @@ async function killServiceProcess(): Promise<void> {
   try {
     const { exec } = await import('child_process');
     await new Promise<void>((resolve) => {
-      const cmd =
-        process.platform === 'win32'
-          ? `taskkill /F /IM ${processName}.exe`
-          : `pkill -f ${processName}`;
+      const cmd = host.isWindows
+        ? `taskkill /F /IM ${processName}.exe`
+        : `pkill -f ${processName}`;
       exec(cmd, (err) => {
         if (err) {
           logger.info(
