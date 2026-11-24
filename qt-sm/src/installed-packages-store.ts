@@ -22,6 +22,105 @@ export function packageLabel(pkg: PackageData): string {
 }
 
 /**
+ * What a package is built for, for example `MSVC 2022 x86_64`: the display
+ * name that follows the name of the package. A version of Qt can come in
+ * several builds, on Windows one per compiler, so the version alone does
+ * not tell its packages apart. Empty when the backend names none.
+ */
+export function packageVariant(pkg: PackageData): string {
+  return pkg.displayNames[1] ?? '';
+}
+
+/**
+ * Name, version and variant of a package, for example
+ * `Qt Framework 6.12.1 (MSVC 2022 x86_64)`.
+ */
+export function packageTitle(pkg: PackageData): string {
+  const variant = packageVariant(pkg);
+  return `${packageLabel(pkg)} ${pkg.version}${variant ? ` (${variant})` : ''}`;
+}
+
+/**
+ * The target of a package: its id without the component at the end, for
+ * example `io.qt.qtframework.windows-11-x86_64-msvc2022` for the id
+ * `io.qt.qtframework.windows-11-x86_64-msvc2022.monolith`. The alias
+ * packages of one build of Qt share it.
+ */
+export function packageTarget(pkg: PackageData): string {
+  const dot = pkg.id.lastIndexOf('.');
+  return dot > 0 ? pkg.id.slice(0, dot) : pkg.id;
+}
+
+/**
+ * Where a target comes among the builds of one version: on Windows MSVC,
+ * then MinGW, then LLVM-MinGW. Targets with another compiler come last, in
+ * the order of the service.
+ */
+function compilerRank(target: string): number {
+  const name = target.toLowerCase();
+  if (name.includes('msvc')) {
+    return 0;
+  }
+  if (name.includes('llvm')) {
+    return 2;
+  }
+  if (name.includes('mingw')) {
+    return 1;
+  }
+  return 3;
+}
+
+/** Newest version first, the builds of one version by compilerRank(). */
+function compareBuilds(
+  a: { version: string; target: string },
+  b: { version: string; target: string }
+): number {
+  return (
+    b.version.localeCompare(a.version, undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    }) || compilerRank(a.target) - compilerRank(b.target)
+  );
+}
+
+function comparePackages(a: PackageData, b: PackageData): number {
+  return compareBuilds(
+    { version: a.version, target: packageTarget(a) },
+    { version: b.version, target: packageTarget(b) }
+  );
+}
+
+/**
+ * The packages in the order to offer them: the products as the service
+ * lists them, the newest version of each first, and the builds of one
+ * version with the preferred compiler first, see compilerRank().
+ */
+export function sortPackages(packages: readonly PackageData[]): PackageData[] {
+  const productOrder = new Map<string, number>();
+  for (const pkg of packages) {
+    if (!productOrder.has(pkg.product)) {
+      productOrder.set(pkg.product, productOrder.size);
+    }
+  }
+  const productIndex = (pkg: PackageData) => productOrder.get(pkg.product) ?? 0;
+  return [...packages].sort(
+    (a, b) => productIndex(a) - productIndex(b) || comparePackages(a, b)
+  );
+}
+
+/**
+ * The packages of the newest version among `packages`: the builds of that
+ * version, the preferred compiler first, see compilerRank().
+ */
+export function newestPackages(
+  packages: readonly PackageData[]
+): PackageData[] {
+  const sorted = [...packages].sort(comparePackages);
+  const newest = sorted[0]?.version;
+  return sorted.filter((pkg) => pkg.version === newest);
+}
+
+/**
  * Whether a package is part of the Qt Framework, and of `version` when one
  * is given. The backend names the product; the id carries it too, for
  * packages the journal recorded without one.
@@ -55,46 +154,74 @@ export function removalEmptiesInstallation(
     .every((pkg) => named.has(`${pkg.id}@${pkg.version}`));
 }
 
-/** A Qt version the service has installed, with its packages. */
+/**
+ * A build of a Qt version the service has installed, with its packages.
+ * One version can be installed in several builds, for example for MSVC and
+ * for MinGW.
+ */
 export interface InstalledQtVersion {
   readonly version: string;
-  /** The packages of the version, sorted by label. */
+  /** What the build is for, for example `MSVC 2022 x86_64`. */
+  readonly variant: string;
+  /** The target its packages share, see packageTarget(). */
+  readonly target: string;
+  /** The packages of the build, sorted by label. */
   readonly packages: PackageData[];
 }
 
+/** Identifies a build among the installed ones: its target and version. */
+export function qtBuildKey(
+  qt: Pick<InstalledQtVersion, 'version' | 'target'>
+): string {
+  return `${qt.target}@${qt.version}`;
+}
+
+/** Version and variant of a build, for example `Qt 6.12.1 (MSVC 2022 x86_64)`. */
+export function installedQtTitle(
+  qt: Pick<InstalledQtVersion, 'version' | 'variant'>
+): string {
+  return `Qt ${qt.version}${qt.variant ? ` (${qt.variant})` : ''}`;
+}
+
 /**
- * Group the Qt Framework packages of a `packages/list` answer by version,
- * newest first. Packages of other products, such as the build tools, are
- * left out: the view lists Qt versions.
+ * Group the Qt Framework packages of a `packages/list` answer by build,
+ * that is by version and target: newest version first, and the builds of
+ * one version by compiler, see compilerRank(). Packages of other products,
+ * such as the build tools, are left out: the view lists Qt versions.
  */
 export function groupFrameworkVersions(
   packages: readonly PackageData[]
 ): InstalledQtVersion[] {
-  const byVersion = new Map<string, PackageData[]>();
+  const builds = new Map<
+    string,
+    { version: string; target: string; packages: PackageData[] }
+  >();
   for (const pkg of packages) {
     if (!isFrameworkPackage(pkg)) {
       continue;
     }
-    const group = byVersion.get(pkg.version);
-    if (group) {
-      group.push(pkg);
+    const build = { version: pkg.version, target: packageTarget(pkg) };
+    const key = qtBuildKey(build);
+    const known = builds.get(key);
+    if (known) {
+      known.packages.push(pkg);
     } else {
-      byVersion.set(pkg.version, [pkg]);
+      builds.set(key, { ...build, packages: [pkg] });
     }
   }
-  return [...byVersion.entries()]
-    .map(([version, group]) => ({
-      version,
-      packages: group.sort((a, b) =>
+  return [...builds.values()]
+    .map((build) => ({
+      ...build,
+      // The packages of a build name the same variant. The target tells
+      // the builds of a version apart when the journal recorded none.
+      variant:
+        build.packages.map(packageVariant).find((name) => name.length > 0) ??
+        build.target.slice(build.target.lastIndexOf('.') + 1),
+      packages: build.packages.sort((a, b) =>
         packageLabel(a).localeCompare(packageLabel(b))
       )
     }))
-    .sort((a, b) =>
-      b.version.localeCompare(a.version, undefined, {
-        numeric: true,
-        sensitivity: 'base'
-      })
-    );
+    .sort(compareBuilds);
 }
 
 // The Qt versions of the last `packages/list` answer, newest first. Empty
@@ -117,9 +244,9 @@ export const onDidChangeInstalledVersions = installedVersionsEmitter.event;
 export function setInstalledVersions(
   versions: readonly InstalledQtVersion[]
 ): void {
-  const before = installedVersions.map((v) => v.version).join('\n');
+  const before = installedVersions.map(qtBuildKey).join('\n');
   installedVersions = versions;
-  if (versions.map((v) => v.version).join('\n') !== before) {
+  if (versions.map(qtBuildKey).join('\n') !== before) {
     installedVersionsEmitter.fire();
   }
 }
@@ -133,8 +260,9 @@ export function isAnyVersionInstalled(): boolean {
 }
 
 /**
- * Check whether a Qt version is installed on disk, for versions the service
- * does not report. See install-layout.ts for the folder structure.
+ * Check whether a Qt version is installed on disk, in any build, for
+ * versions the service does not report. See install-layout.ts for the
+ * folder structure.
  */
 export function isVersionInstalledOnDisk(version: string): boolean {
   const installRoot = getInstallRoot();

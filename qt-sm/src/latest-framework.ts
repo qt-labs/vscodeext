@@ -8,7 +8,10 @@ import { createLogger, BaseStateManager, CoreKey } from 'qt-lib';
 import { STATE_LATEST_FRAMEWORK_VERSION } from '@/constants';
 import { getSession } from '@/service-connection';
 import { installationTarget } from '@/install-root';
-import { isVersionInstalledOnDisk } from '@/installed-packages-store';
+import {
+  isVersionInstalledOnDisk,
+  newestPackages
+} from '@/installed-packages-store';
 
 const logger = createLogger('latest-framework');
 
@@ -55,29 +58,28 @@ export function resetLatestFrameworkState(): void {
 }
 
 /**
- * Pick the newest Qt Framework package from an available-packages list and
- * remember its version for later offline checks.
+ * Pick the Qt Framework packages of the newest version from an
+ * available-packages list and remember that version for later offline
+ * checks. Windows offers a version once per compiler, so there can be
+ * several: the build to install comes first, see newestPackages().
  */
 export function findLatestFramework(
   available: readonly PackageData[]
-): PackageData | undefined {
-  const latest = available
-    .filter((pkg: PackageData) => pkg.product === QT_FRAMEWORK_PRODUCT)
-    .sort((a, b) =>
-      b.version.localeCompare(a.version, undefined, {
-        numeric: true,
-        sensitivity: 'base'
-      })
-    )[0];
-  if (latest && latestFrameworkState) {
-    latestFrameworkState.latestVersion = latest.version;
+): PackageData[] {
+  const latest = newestPackages(
+    available.filter((pkg: PackageData) => pkg.product === QT_FRAMEWORK_PRODUCT)
+  );
+  const version = latest[0]?.version;
+  if (version !== undefined && latestFrameworkState) {
+    latestFrameworkState.latestVersion = version;
   }
   return latest;
 }
 
 /**
  * Determine whether the newest available Qt Framework version is already
- * installed on disk.
+ * installed, in any of its builds: a user who has it for MinGW has the
+ * latest version, and is not offered the MSVC build of it as "latest".
  *
  * "latest" is defined by the remote available-packages list, so answering this
  * accurately needs the SMS service. To avoid spawning the service or showing
@@ -102,12 +104,13 @@ export async function isLatestFrameworkInstalled(): Promise<
       { packagePresentation: 'monolith' }
     );
     const latest = findLatestFramework(available);
-    if (!latest) {
+    const version = latest[0]?.version;
+    if (version === undefined) {
       return undefined;
     }
     return (
-      latest.installState === InstallState.Installed ||
-      isVersionInstalledOnDisk(latest.version)
+      latest.some((pkg) => pkg.installState === InstallState.Installed) ||
+      isVersionInstalledOnDisk(version)
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

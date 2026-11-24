@@ -47,7 +47,11 @@ import {
 } from '@/constants';
 import { ensureConnected, disconnect } from '@/service-connection';
 import { getInstallRoot, installationTarget } from '@/install-root';
-import { QT_FRAMEWORK, productVersionDir } from '@/install-layout';
+import {
+  QT_FRAMEWORK,
+  listProductVersionSubdirs,
+  productVersionDir
+} from '@/install-layout';
 import { coreAPI } from '@/extension';
 import {
   AUTH_PROVIDER_ID,
@@ -56,10 +60,18 @@ import {
 } from '@/auth-provider';
 import { showLicenseAgreementPanel } from '@/license-panel';
 import {
+  installedQtTitle,
   isFrameworkPackage,
   isVersionInstalledOnDisk,
+  newestPackages,
   packageLabel,
-  removalEmptiesInstallation
+  packageTarget,
+  packageTitle,
+  packageVariant,
+  qtBuildKey,
+  removalEmptiesInstallation,
+  sortPackages,
+  type InstalledQtVersion
 } from '@/installed-packages-store';
 import {
   type InstalledPackageItem,
@@ -296,15 +308,16 @@ export async function searchPackages(): Promise<void> {
     }
 
     // The search names the installation root, so the service reports the
-    // packages installed there. The disk check covers versions the
-    // service does not know about.
+    // packages installed there. It tells the builds of a version apart,
+    // which the version folder on disk does not.
     const isInstalled = (pkg: PackageData) =>
-      pkg.installState === InstallState.Installed ||
-      isVersionInstalledOnDisk(pkg.version);
+      pkg.installState === InstallState.Installed;
 
-    const items = results.map((pkg: PackageData) => ({
-      label: packageLabel(pkg),
-      description: `${pkg.version} — ${isInstalled(pkg) ? '$(check) Installed' : installStateLabel(pkg.installState)}`,
+    const items = sortPackages(results).map((pkg: PackageData) => ({
+      label: `${packageLabel(pkg)} ${pkg.version}`,
+      description: [packageVariant(pkg), installStateLabel(pkg.installState)]
+        .filter((part) => part.length > 0)
+        .join(' — '),
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
       pkg
     }));
@@ -317,11 +330,13 @@ export async function searchPackages(): Promise<void> {
 
     if (selected) {
       const installed = isInstalled(selected.pkg);
+      const variant = packageVariant(selected.pkg);
       const info = [
         `**${packageLabel(selected.pkg)}** v${selected.pkg.version}`,
         '',
         selected.pkg.description,
         '',
+        ...(variant ? [`- **Built for:** ${variant}`] : []),
         `- **Author:** ${selected.pkg.author}`,
         `- **License:** ${selected.pkg.license}`,
         `- **Product:** ${selected.pkg.productName || selected.pkg.product}`,
@@ -435,7 +450,9 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     // "Get latest" gate, which can't query the service after a reload.
     findLatestFramework(results);
 
-    let candidates = [...results];
+    // Newest version first. Windows offers a version once per compiler:
+    // MSVC comes first among these builds, then MinGW, then LLVM-MinGW.
+    let candidates = sortPackages(results);
 
     if (args?.product) {
       candidates = candidates.filter(
@@ -458,28 +475,32 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     }
 
     // The search named the installation root, so the service reports the
-    // packages installed there. The disk check covers versions the service
-    // does not know about.
+    // packages installed there. It tells the builds of a version apart,
+    // which the version folder on disk does not: a version installed for
+    // one compiler can still be installed for another.
     const uninstalledCandidates = candidates.filter(
-      (pkg: PackageData) =>
-        pkg.installState !== InstallState.Installed &&
-        !isVersionInstalledOnDisk(pkg.version)
+      (pkg: PackageData) => pkg.installState !== InstallState.Installed
     );
 
     if (args?.version === 'latest') {
       // Pick the newest available version, not the newest uninstalled one,
       // otherwise an older version is installed when the latest is present.
-      const sorted = [...candidates].sort((a, b) =>
-        b.version.localeCompare(a.version, undefined, {
-          numeric: true,
-          sensitivity: 'base'
-        })
-      );
-      const latest = sorted[0];
+      // Any build of it counts as installed, so that a user who has it for
+      // MinGW is not given the MSVC build as well. The preferred build,
+      // which is the MSVC one on Windows, comes first.
+      const newest = newestPackages(candidates);
+      const latest = newest[0];
       if (latest) {
-        if (!uninstalledCandidates.includes(latest)) {
+        const installed = newest.find(
+          (pkg) => pkg.installState === InstallState.Installed
+        );
+        // The disk check covers versions the service does not know about.
+        if (installed || isVersionInstalledOnDisk(latest.version)) {
+          const variant = installed ? packageVariant(installed) : '';
           void vscode.window.showInformationMessage(
-            `The latest version ${latest.version} is already installed.`
+            `The latest version ${latest.version} is already installed${
+              variant ? ` (${variant})` : ''
+            }.`
           );
           refreshWalkthrough();
           void refreshLatestFrameworkState();
@@ -491,6 +512,7 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     }
 
     if (args?.version && args.version !== 'latest') {
+      // The first build of the version that is not installed yet.
       const match = uninstalledCandidates.find(
         (pkg: PackageData) => pkg.version === args.version
       );
@@ -511,9 +533,11 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       return;
     }
 
+    // The description names what a package is built for, for example
+    // "MSVC 2022 x86_64": the builds of a version differ in nothing else.
     const items = uninstalledCandidates.map((pkg: PackageData) => ({
-      label: packageLabel(pkg),
-      description: pkg.version,
+      label: `${packageLabel(pkg)} ${pkg.version}`,
+      description: packageVariant(pkg),
       detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
       pkg
     }));
@@ -528,21 +552,6 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
       await installPackageById(packages, selected.pkg);
     }
   });
-}
-
-function platformArch(): string {
-  switch (process.platform) {
-    case 'darwin':
-      return 'clang-universal';
-    case 'linux':
-      // TODO: Add support for other architectures
-      return 'gcc-x86_64';
-    case 'win32':
-      // TODO: Add Windows support with appropriate architecture labels
-      return 'msvc2022-x86_64';
-    default:
-      return 'unknown';
-  }
 }
 
 /**
@@ -560,7 +569,7 @@ async function showInstalledNotification(pkg: PackageData): Promise<void> {
   // editor, so the notification does not offer to start it.
   const offerWalkthrough = !isWalkthroughActive();
   const action = await vscode.window.showInformationMessage(
-    `${packageLabel(pkg)} ${pkg.version} installed successfully. ` +
+    `${packageTitle(pkg)} installed successfully. ` +
       "Your Qt development environment is ready. Open the Qt panel to see what's installed" +
       (offerWalkthrough
         ? ', or start the walkthrough to build your first app.'
@@ -578,6 +587,15 @@ async function showInstalledNotification(pkg: PackageData): Promise<void> {
   }
 }
 
+/**
+ * Add the qtpaths of the builds of `version` to qt-core's additional Qt
+ * paths, and notify qt-cpp via coreAPI so that it picks up the kits.
+ *
+ * Folder structure: <version folder>/<build>/bin/qtpaths, where the build
+ * names the compiler and the architecture, for example `msvc2022-x86_64` or
+ * `mingw1510-x86_64`. A version can hold several builds, so every folder
+ * with a qtpaths is looked at and the ones not registered yet are added.
+ */
 function registerInstalledQtPaths(version: string): void {
   const installRoot = getInstallRoot();
   if (!installRoot || !fs.existsSync(installRoot)) {
@@ -587,16 +605,17 @@ function registerInstalledQtPaths(version: string): void {
     return;
   }
 
-  // Folder structure: <version folder>/<arch>/bin/qtpaths
-  const arch = platformArch();
-  const insPath = path.join(
-    productVersionDir(installRoot, QT_FRAMEWORK, version),
-    arch
-  );
-  logger.info(`Looking for Qt installation in ${insPath}`);
-  const qtpathsExe = findQtPathsInInstallationPath(insPath);
-  if (!qtpathsExe) {
-    logger.info(`No qtpaths found in ${insPath}`);
+  const versionDir = productVersionDir(installRoot, QT_FRAMEWORK, version);
+  logger.info(`Looking for Qt installations in ${versionDir}`);
+  const qtpathsExes = listProductVersionSubdirs(
+    installRoot,
+    QT_FRAMEWORK,
+    version
+  )
+    .map((dir) => findQtPathsInInstallationPath(dir))
+    .filter((qtpaths): qtpaths is string => qtpaths !== undefined);
+  if (qtpathsExes.length === 0) {
+    logger.info(`No qtpaths found in ${versionDir}`);
     return;
   }
 
@@ -605,23 +624,27 @@ function registerInstalledQtPaths(version: string): void {
     AdditionalQtPathsName
   );
   const currentPaths: (string | object)[] = existing?.globalValue ?? [];
-  const alreadyRegistered = currentPaths.some(
-    (p) =>
-      (typeof p === 'string' ? p : (p as { path: string }).path) === qtpathsExe
+  const registered = new Set(
+    currentPaths.map((p) =>
+      typeof p === 'string' ? p : (p as { path: string }).path
+    )
   );
+  const added = qtpathsExes.filter((qtpaths) => !registered.has(qtpaths));
 
-  if (alreadyRegistered) {
-    logger.info(`Qt installation already registered: ${qtpathsExe}`);
+  if (added.length === 0) {
+    logger.info(
+      `Qt installation already registered: ${qtpathsExes.join(', ')}`
+    );
     return;
   }
 
-  const updated = [...currentPaths, { path: qtpathsExe }];
+  const updated = [...currentPaths, ...added.map((p) => ({ path: p }))];
   void coreConfig.update(
     AdditionalQtPathsName,
     updated,
     vscode.ConfigurationTarget.Global
   );
-  logger.info(`Registered Qt installation: ${qtpathsExe}`);
+  logger.info(`Registered Qt installation: ${added.join(', ')}`);
 
   // Notify qt-cpp (via coreAPI) so it picks up the new kit immediately
   const allPaths: QtAdditionalPath[] = updated.map((p) =>
@@ -639,9 +662,11 @@ function registerInstalledQtPaths(version: string): void {
 }
 
 /**
- * Remove qtpaths entries under the given version's directory from qt-core's
- * additional Qt paths — the inverse of registerInstalledQtPaths — and notify
- * qt-cpp via coreAPI so the kit disappears immediately.
+ * Remove the qtpaths entries under the given version's directory that are
+ * gone from disk from qt-core's additional Qt paths — the inverse of
+ * registerInstalledQtPaths — and notify qt-cpp via coreAPI so the kit
+ * disappears immediately. The entries of the builds of the version that
+ * are still installed stay.
  */
 function unregisterInstalledQtPaths(version: string): void {
   const installRoot = getInstallRoot();
@@ -657,7 +682,7 @@ function unregisterInstalledQtPaths(version: string): void {
   const currentPaths: (string | object)[] = existing?.globalValue ?? [];
   const filtered = currentPaths.filter((p) => {
     const pPath = typeof p === 'string' ? p : (p as { path: string }).path;
-    return !pPath.startsWith(versionDir);
+    return !pPath.startsWith(versionDir) || fs.existsSync(pPath);
   });
   if (filtered.length === currentPaths.length) {
     return;
@@ -683,10 +708,11 @@ function unregisterInstalledQtPaths(version: string): void {
 }
 
 /**
- * Remove an installed Qt version. Invoked from the trash icon in the
- * Installed Packages view.
+ * Remove an installed build of a Qt version, for example Qt 6.12.1 for
+ * MSVC and not the one for MinGW next to it. Invoked from the trash icon in
+ * the Installed Packages view.
  *
- * The version is removed through the service: its alias packages are the
+ * The build is removed through the service: its alias packages are the
  * ones named, the service takes everything that depends on them and, with
  * autoRemove, the dependencies nothing needs any more, such as the build
  * tools. When that reaches beyond the named packages, the service asks the
@@ -701,8 +727,8 @@ function unregisterInstalledQtPaths(version: string): void {
 export async function removePackage(
   item?: InstalledPackageItem
 ): Promise<void> {
-  const version = item?.version;
-  if (!version) {
+  const qt = item?.qt;
+  if (!qt) {
     return;
   }
   const installRoot = await requireInstallRoot();
@@ -719,16 +745,16 @@ export async function removePackage(
     .getConfiguration(EXTENSION_ID)
     .get<boolean>(CONF_AUTO_REMOVE_UNNEEDED, true);
 
-  const plan = await planVersionRemoval(installRoot, version, autoRemove);
+  const plan = await planVersionRemoval(installRoot, qt, autoRemove);
   if (!plan) {
     return;
   }
 
-  // The dialog only asks about the version. Whether the packages nothing
+  // The dialog only asks about the build. Whether the packages nothing
   // else needs go too is the autoRemoveUnneeded setting, and the log says
   // what the removal took. A purge deletes the folder, so the dialog says so.
   const confirm = await vscode.window.showWarningMessage(
-    `Remove Qt ${version}?`,
+    `Remove ${installedQtTitle(qt)}?`,
     {
       modal: true,
       ...(plan.purge
@@ -752,30 +778,32 @@ export async function removePackage(
 
   setPackageOperationRunning(true);
   try {
-    await removeVersion(installRoot, version, autoRemove, plan);
+    await removeVersion(installRoot, qt, autoRemove, plan);
   } finally {
     setPackageOperationRunning(false);
   }
 }
 
-/** How a Qt version is removed, decided before the user confirms. */
+/** How a build of a Qt version is removed, decided before the user confirms. */
 interface VersionRemovalPlan {
   readonly packages: Packages;
-  /** The alias packages of the version, the ones a removal names. */
+  /** The alias packages of the build, the ones a removal names. */
   readonly refs: { id: string; version: string }[];
   /** Remove the whole installation, because nothing would be left in it. */
   readonly purge: boolean;
 }
 
 /**
- * Read what is installed and decide how `version` is removed. Shows the
- * error and returns undefined when the version cannot be removed.
+ * Read what is installed and decide how the build `qt` is removed. Shows
+ * the error and returns undefined when it cannot be removed.
  */
 async function planVersionRemoval(
   installRoot: string,
-  version: string,
+  qt: InstalledQtVersion,
   autoRemove: boolean
 ): Promise<VersionRemovalPlan | undefined> {
+  const { version } = qt;
+  const title = installedQtTitle(qt);
   let packages: Packages;
   let installed: PackageData[];
   try {
@@ -785,26 +813,29 @@ async function planVersionRemoval(
     }));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logger.error(`Cannot list the packages of Qt ${version}: ${msg}`);
-    void vscode.window.showErrorMessage(
-      `Failed to remove Qt ${version}: ${msg}`
-    );
+    logger.error(`Cannot list the packages of ${title}: ${msg}`);
+    void vscode.window.showErrorMessage(`Failed to remove ${title}: ${msg}`);
     return undefined;
   }
 
   // The alias packages are what an install names, so they are what a
-  // removal names. The service takes their dependencies along.
+  // removal names. The service takes their dependencies along. Only the
+  // ones of this build: the version may be installed for another compiler
+  // too, which stays.
   const refs = installed
     .filter(
-      (pkg) => pkg.packageType === 'alias' && isFrameworkPackage(pkg, version)
+      (pkg) =>
+        pkg.packageType === 'alias' &&
+        isFrameworkPackage(pkg, version) &&
+        packageTarget(pkg) === qt.target
     )
     .map((pkg) => ({ id: pkg.id, version: pkg.version }));
 
   if (refs.length === 0) {
-    // The view lists what the service records, so this means the version
+    // The view lists what the service records, so this means the build
     // went away between the listing and the click.
     void vscode.window.showErrorMessage(
-      `Qt ${version} is not recorded by the Qt Software Management Service ` +
+      `${title} is not recorded by the Qt Software Management Service ` +
         `in ${installRoot}, so it cannot be removed.`
     );
     syncInstalledPackages();
@@ -820,21 +851,23 @@ async function planVersionRemoval(
 
 async function removeVersion(
   installRoot: string,
-  version: string,
+  qt: InstalledQtVersion,
   autoRemove: boolean,
   plan: VersionRemovalPlan
 ): Promise<void> {
   const target = { installRoot };
   const { packages, refs, purge } = plan;
+  const { version } = qt;
+  const title = installedQtTitle(qt);
 
   if (purge) {
     logger.info(
-      `Removing Qt ${version}, the last packages in ${installRoot}: ` +
+      `Removing ${title}, the last packages in ${installRoot}: ` +
         'purging the installation'
     );
   } else {
     logger.info(
-      `Removing Qt ${version} from ${installRoot}${autoRemove ? ' with unneeded packages' : ''}: ${refs
+      `Removing ${title} from ${installRoot}${autoRemove ? ' with unneeded packages' : ''}: ${refs
         .map((ref) => `${ref.id}@${ref.version}`)
         .join(', ')}`
     );
@@ -843,7 +876,7 @@ async function removeVersion(
     const result = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Removing Qt ${version}`,
+        title: `Removing ${title}`,
         cancellable: false
       },
       async (progress) => {
@@ -881,7 +914,7 @@ async function removeVersion(
         showInstalledPackagesOperation(
           `Removing Qt ${version}`,
           removal,
-          version
+          qtBuildKey(qt)
         );
         return removal;
       }
@@ -892,14 +925,12 @@ async function removeVersion(
       err instanceof SmsServiceError &&
       err.code === ErrorCode.UserCancelled
     ) {
-      logger.info(`Removal of Qt ${version} cancelled: ${err.message}`);
+      logger.info(`Removal of ${title} cancelled: ${err.message}`);
       return;
     }
     const msg = err instanceof Error ? err.message : String(err);
-    logger.error(`Failed to remove Qt ${version}: ${msg}`);
-    void vscode.window.showErrorMessage(
-      `Failed to remove Qt ${version}: ${msg}`
-    );
+    logger.error(`Failed to remove ${title}: ${msg}`);
+    void vscode.window.showErrorMessage(`Failed to remove ${title}: ${msg}`);
     // A purge that could not delete the folder has removed the packages.
     syncInstalledPackages();
     return;
@@ -907,8 +938,8 @@ async function removeVersion(
 
   void vscode.window.showInformationMessage(
     purge
-      ? `Removed Qt ${version} and the installation folder ${installRoot}.`
-      : `Removed Qt ${version}.`
+      ? `Removed ${title} and the installation folder ${installRoot}.`
+      : `Removed ${title}.`
   );
   afterVersionRemoved(version);
 }
@@ -1098,7 +1129,7 @@ async function installPackageByIdImpl(
   if (hardBlockers.length > 0) {
     const messages = hardBlockers.map((r) => r.userMessage);
     void vscode.window.showErrorMessage(
-      `Cannot install ${packageLabel(pkg)}: ${messages.join('; ')}`
+      `Cannot install ${packageTitle(pkg)}: ${messages.join('; ')}`
     );
     return;
   }
@@ -1132,7 +1163,12 @@ async function installPackageByIdImpl(
   const options =
     preAnswers.length > 0 ? { preAnsweredAgreements: preAnswers } : undefined;
 
-  const pkgLabel = `${packageLabel(pkg)} ${pkg.version}`;
+  // The notifications say what the package is built for, for example
+  // "Qt Framework 6.12.1 (MSVC 2022 x86_64)". The item of the install in
+  // the Installed Packages view leaves that out, to keep its progress bar
+  // in sight in a narrow side bar.
+  const pkgLabel = packageTitle(pkg);
+  const viewLabel = `${packageLabel(pkg)} ${pkg.version}`;
 
   // Two separate progress notifications: cancellable download, then non-cancellable install.
   // We track which notification is active and swap when the phase changes.
@@ -1156,7 +1192,7 @@ async function installPackageByIdImpl(
         const pct = Math.round(info.progress);
         const phase = info.type;
         reportInstalledPackagesProgress(
-          `${phase === ProgressType.Install ? 'Installing' : 'Downloading'} ${pkgLabel}`,
+          `${phase === ProgressType.Install ? 'Installing' : 'Downloading'} ${viewLabel}`,
           pct
         );
 
@@ -1241,7 +1277,7 @@ async function installPackageByIdImpl(
         return;
       }
       const msg = err instanceof Error ? err.message : String(err);
-      const errMsg = `Failed to install ${packageLabel(pkg)} ${pkg.version} : ${msg}`;
+      const errMsg = `Failed to install ${pkgLabel} : ${msg}`;
       logger.error(errMsg);
       void vscode.window.showErrorMessage(errMsg);
     });
@@ -1257,7 +1293,7 @@ async function installPackageByIdImpl(
     cancelledByUser = true;
     logger.info('User cancelled installation');
     markInstalledPackagesOperationCancelling(
-      `Cancelling the download of ${pkgLabel}`
+      `Cancelling the download of ${viewLabel}`
     );
     packages
       .cancel({
@@ -1282,7 +1318,7 @@ async function installPackageByIdImpl(
   };
 
   showInstalledPackagesOperation(
-    `Installing ${pkgLabel}`,
+    `Installing ${viewLabel}`,
     installDone,
     undefined,
     cancelInstall
@@ -1290,7 +1326,7 @@ async function installPackageByIdImpl(
 
   // Start with the download phase notification (cancellable)
   logger.info(
-    `Installing package ${packageLabel(pkg)} into ${installRoot} with options: ${JSON.stringify(options)}`
+    `Installing package ${pkgLabel} (${pkg.id}) into ${installRoot} with options: ${JSON.stringify(options)}`
   );
   await vscode.window.withProgress(
     {

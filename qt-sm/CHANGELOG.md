@@ -26,6 +26,14 @@
 - Move the focus to Continue once the license agreements are accepted, so that pressing Enter twice accepts them
 - Do not offer to start the walkthrough after an install when the walkthrough is the active editor
 - Show the running install or removal at the top of the Installed Packages view, with its progress bar, instead of an empty view while the first version downloads
+- Show what a Qt version is built for, for example "MSVC 2022 x86_64", in the list of packages to install and in the Installed Packages view, and list the newest version first
+- Install the MSVC build with "Get latest Qt Framework" on Windows, where a Qt version is available once per compiler
+
+🐞 **Fixed**
+
+- Offer a Qt version that is installed for one compiler for the other compilers too
+- Remove only the selected build of a Qt version that is installed for several compilers
+- Register Qt versions built with MinGW or LLVM-MinGW with the Qt extensions after an install
 
 🗑️ **Removed**
 

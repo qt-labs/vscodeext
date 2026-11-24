@@ -47,6 +47,29 @@ export function productVersionDir(
 }
 
 /**
+ * The folders inside the folder of one version of a product. For the Qt
+ * Framework these are its builds, one per compiler on Windows, for example
+ * `msvc2022-x86_64` and `mingw1510-x86_64`, next to what the builds share,
+ * such as `Docs` and `Examples`.
+ */
+export function listProductVersionSubdirs(
+  installRoot: string,
+  location: ProductLocation,
+  version: string
+): string[] {
+  const versionDir = productVersionDir(installRoot, location, version);
+  try {
+    return fs
+      .readdirSync(versionDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(versionDir, entry.name));
+  } catch {
+    // The version folder is missing until the version is installed.
+    return [];
+  }
+}
+
+/**
  * The versions of a product installed on disk, newest first. Each
  * subdirectory of the product folder is a version.
  */

@@ -11,6 +11,8 @@ import { getInstallRoot } from '@/install-root';
 import { ensureConnected } from '@/service-connection';
 import {
   groupFrameworkVersions,
+  installedQtTitle,
+  qtBuildKey,
   setInstalledVersions,
   type InstalledQtVersion
 } from '@/installed-packages-store';
@@ -52,16 +54,23 @@ function setOrDelete<K extends 'description' | 'tooltip' | 'contextValue'>(
   }
 }
 
-/** Tree item for one installed Qt version; `version` is read by removePackage. */
+/**
+ * Tree item for one installed build of a Qt version; `qt` is read by
+ * removePackage. The description names what the build is for, for example
+ * `MSVC 2022 x86_64`: a version can be installed once per compiler.
+ */
 export class InstalledPackageItem extends vscode.TreeItem {
   constructor(
-    readonly version: string,
+    readonly qt: InstalledQtVersion,
     installRoot: string
   ) {
-    super(`Qt ${version}`, vscode.TreeItemCollapsibleState.None);
+    super(`Qt ${qt.version}`, vscode.TreeItemCollapsibleState.None);
+    if (qt.variant) {
+      this.description = qt.variant;
+    }
     this.contextValue = 'installedPackage';
     this.iconPath = new vscode.ThemeIcon('package');
-    this.tooltip = `Qt ${version} in ${installRoot}`;
+    this.tooltip = `${installedQtTitle(qt)} in ${installRoot}`;
   }
 }
 
@@ -87,10 +96,11 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
   private installRoot = '';
   private errorMessage = '';
   // The item of the install or removal that runs, shown at the top of the
-  // view, or in place of the version a removal removes. Kept across renders
+  // view, or in place of the build a removal removes. Kept across renders
   // so that a progress update re-renders only it.
   private operation: vscode.TreeItem | undefined;
-  // The version the running removal removes, whose item it replaces.
+  // The build the running removal removes, by qtBuildKey(), whose item it
+  // replaces.
   private operationReplaces: string | undefined;
   // Cancels the running operation, while it can still be cancelled.
   private cancelOperation: (() => void) | undefined;
@@ -157,9 +167,9 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
    * the first version downloads, because the disk watcher stays quiet
    * during the operation and the service lists it only once it is done.
    *
-   * A removal passes the version it removes as `replaces`: its item shows
-   * in place of that version instead of at the top. Once the removal
-   * succeeds the version stays hidden, so that it does not show again
+   * A removal passes the build it removes as `replaces`, by qtBuildKey():
+   * its item shows in place of that build instead of at the top. Once the
+   * removal succeeds the build stays hidden, so that it does not show again
    * until the refresh that follows drops it.
    *
    * An operation that can be cancelled passes `cancel`: its item has a
@@ -189,7 +199,9 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
         );
         if (this.operation === item) {
           if (succeeded && replaces !== undefined) {
-            this.versions = this.versions.filter((v) => v.version !== replaces);
+            this.versions = this.versions.filter(
+              (v) => qtBuildKey(v) !== replaces
+            );
           }
           this.operation = undefined;
           this.operationReplaces = undefined;
@@ -338,7 +350,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
 
   /**
    * Put the item of the running removal in place of the item of the
-   * version it removes. Returns whether that version was listed.
+   * build it removes. Returns whether that build was listed.
    */
   private replacesVersionItem(items: vscode.TreeItem[]): boolean {
     const { operation, operationReplaces } = this;
@@ -347,7 +359,8 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
     }
     const index = items.findIndex(
       (i) =>
-        i instanceof InstalledPackageItem && i.version === operationReplaces
+        i instanceof InstalledPackageItem &&
+        qtBuildKey(i.qt) === operationReplaces
     );
     if (index < 0) {
       return false;
@@ -400,7 +413,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
         }
         return [
           ...this.versions.map(
-            (v) => new InstalledPackageItem(v.version, this.installRoot)
+            (v) => new InstalledPackageItem(v, this.installRoot)
           ),
           this.installItem('Install other versions')
         ];
@@ -428,7 +441,7 @@ export class InstalledPackagesViewProvider implements vscode.TreeDataProvider<vs
           this.setVersions(groupFrameworkVersions(packages));
           logger.info(
             `Installed Qt versions in ${this.installRoot}: ${
-              this.versions.map((v) => v.version).join(', ') || 'none'
+              this.versions.map(installedQtTitle).join(', ') || 'none'
             }`
           );
           this.setState('loaded');
@@ -606,7 +619,8 @@ function operationItem(label: string): vscode.TreeItem {
 /**
  * Show a running install or removal in the view until `operation` settles.
  * `label` is what runs, for example "Installing Qt 6.9.0". A removal names
- * the version it removes as `replaces`, whose item it is shown in place of.
+ * the build it removes as `replaces`, by qtBuildKey(), whose item it is
+ * shown in place of.
  * An operation that can be cancelled passes `cancel`, run by the cancel
  * button of its item.
  */
