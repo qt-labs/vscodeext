@@ -207,6 +207,24 @@ export class CppProject implements Project {
     return undefined;
   }
 
+  /**
+   * The C++ compiler that the selected configure preset names, or its C
+   * compiler without one. Undefined when the preset leaves the compiler to
+   * CMake.
+   */
+  getCompilerFromPreset() {
+    const cacheVariables = this._cmakeProject?.configurePreset?.cacheVariables;
+    for (const key of ['CMAKE_CXX_COMPILER', 'CMAKE_C_COMPILER']) {
+      const variable = cacheVariables?.[key];
+      const value =
+        variable && typeof variable === 'object' ? variable.value : variable;
+      if (value && typeof value === 'string') {
+        return value;
+      }
+    }
+    return undefined;
+  }
+
   async getInstallationPathFromPreset() {
     const preset = this._cmakeProject?.configurePreset;
     if (!preset) {
