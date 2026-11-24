@@ -8,11 +8,13 @@ import * as commandExists from 'command-exists';
 
 import {
   createLogger,
+  findMingwBinDir,
   findQtKits,
   findQtPathsInInstallationPath,
   generateDefaultQtPathsName,
   getMsvcInfo,
   host,
+  isMingwQtBuild,
   QtInfo,
   QtToolsPaths,
   CoreKey
@@ -37,8 +39,8 @@ type Context = vscode.ExtensionContext;
 
 const logger = createLogger('ex-browser-helpers');
 
-// Build-tool paths (CMake, Ninja) bundled with the Qt installation and shared
-// by qt-sm via CoreAPI.
+// Build-tool paths (CMake, Ninja, MinGW) bundled with the Qt installation and
+// shared by qt-sm via CoreAPI.
 function getSharedQtToolsPaths(): QtToolsPaths | undefined {
   return coreAPI?.getValue<QtToolsPaths>(
     CoreKey.GLOBAL_WORKSPACE,
@@ -265,9 +267,15 @@ export async function resolveQtInstallation(
   return undefined;
 }
 
-function generateCMakePresets(
+// The PATH of a preset: the given folders in front of the PATH of VS Code.
+function presetPathEnv(...dirs: string[]) {
+  return [...dirs, '$penv{PATH}'].join(';');
+}
+
+export function generateCMakePresets(
   projectDir: string,
-  qtInfo: QtInstallationInfo | undefined
+  qtInfo: QtInstallationInfo | undefined,
+  toolsPaths: QtToolsPaths | undefined = getSharedQtToolsPaths()
 ) {
   if (!qtInfo) {
     logger.warn(
@@ -297,7 +305,7 @@ function generateCMakePresets(
 
   const commonFields: Record<string, unknown> = {
     environment: {
-      PATH: `${qtInfo.binDir};$penv{PATH}`
+      PATH: presetPathEnv(qtInfo.binDir)
     },
     vendor: {
       'qt-cpp': qtInfo.vendor
@@ -359,10 +367,37 @@ function generateCMakePresets(
     } else {
       // Ninja is not on PATH; fall back to the one shared by qt-sm via CoreAPI
       // and point CMake at it explicitly.
-      const sharedNinjaPath = getSharedQtToolsPaths()?.ninja;
+      const sharedNinjaPath = toolsPaths?.ninja;
       if (sharedNinjaPath) {
         commonFields.generator = 'Ninja';
         commonCacheVariables.CMAKE_MAKE_PROGRAM = sharedNinjaPath;
+      }
+    }
+
+    // A MinGW build of Qt has to be built against with MinGW. The Qt
+    // toolchain file does not name the compiler, and CMake takes MSVC when
+    // it is installed, so the preset names MinGW.
+    if (host.isWindows && isMingwQtBuild(qtInfo.prefixPath)) {
+      const mingwBinDir = findMingwBinDir(qtInfo.prefixPath, toolsPaths?.mingw);
+      if (mingwBinDir) {
+        commonCacheVariables.CMAKE_C_COMPILER = path.join(
+          mingwBinDir,
+          'gcc.exe'
+        );
+        commonCacheVariables.CMAKE_CXX_COMPILER = path.join(
+          mingwBinDir,
+          'g++.exe'
+        );
+        // MinGW goes in front of Qt, which ships the runtime of the MinGW it
+        // was built with: a program built with a newer MinGW needs the
+        // newer runtime.
+        commonFields.environment = {
+          PATH: presetPathEnv(mingwBinDir, qtInfo.binDir)
+        };
+      } else {
+        logger.warn(
+          `No MinGW toolchain found for ${qtInfo.prefixPath}, the presets do not name a compiler`
+        );
       }
     }
 
