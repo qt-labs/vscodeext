@@ -18,7 +18,8 @@
   ],
   "repository": {
     "pragma": {
-      "begin": "\\b(pragma)\\s+([A-Z]\\w*)(\\s*:\\s*[a-zA-Z]+)?\\b",
+      "name": "meta.pragma.qml",
+      "begin": "\\b(pragma)\\s+([A-Z]\\w*)(?:\\s*:\\s*([a-zA-Z]+))?\\b",
       "beginCaptures": {
         "1": {
           "name": "keyword.control.pragma.qml"
@@ -33,6 +34,14 @@
       "end": "$",
       "patterns": [
         {
+          "match": ",\\s*([a-zA-Z]+)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.pragma.qml"
+            }
+          }
+        },
+        {
           "include": "#string"
         },
         {
@@ -41,6 +50,7 @@
       ]
     },
     "import": {
+      "name": "meta.import.qml",
       "begin": "\\b(import)\\b",
       "beginCaptures": {
         "1": {
@@ -80,13 +90,22 @@
       ]
     },
     "object": {
+      "name": "meta.object.qml",
       "begin": "\\b([A-Z][\\w\\.]*)\\s*(\\{|$)",
       "beginCaptures": {
         "1": {
           "name": "entity.name.type.object.qml"
+        },
+        "2": {
+          "name": "punctuation.definition.block.qml"
         }
       },
       "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.qml"
+        }
+      },
       "patterns": [
         {
           "include": "#object-contents"
@@ -126,27 +145,79 @@
           "include": "#attr-group-notation"
         },
         {
-          "name": "keyword.ohter.enum.qml",
-          "match": "\\b(enum)\\b"
+          "include": "#enum"
+        }
+      ]
+    },
+    "enum": {
+      "name": "meta.enum.qml",
+      "begin": "\\b(enum)\\s+([_a-zA-Z]\\w*)\\s*(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "storage.type.enum.qml"
+        },
+        "2": {
+          "name": "entity.name.type.enum.qml"
+        },
+        "3": {
+          "name": "punctuation.definition.block.qml"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.qml"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "match": "\\b([_a-zA-Z]\\w*)\\b(?:\\s*(=)\\s*(-?(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?)))?",
+          "captures": {
+            "1": {
+              "name": "variable.other.enummember.qml"
+            },
+            "2": {
+              "name": "keyword.operator.assignment.qml"
+            },
+            "3": {
+              "name": "constant.numeric.qml"
+            }
+          }
+        },
+        {
+          "name": "punctuation.separator.comma.qml",
+          "match": ","
         }
       ]
     },
     "signal": {
       "patterns": [
         {
-          "begin": "\\b(signal)\\s*([_a-zA-Z]\\w*)\\s*\\(",
+          "name": "meta.signal.qml",
+          "begin": "\\b(signal)\\s*([_a-zA-Z]\\w*)\\s*(\\()",
           "beginCaptures": {
             "1": {
               "name": "storage.type.signal.qml"
             },
             "2": {
               "name": "entity.name.function.signal.name.qml"
+            },
+            "3": {
+              "name": "punctuation.definition.parameters.begin.qml"
             }
           },
-          "end": "\\)",
+          "end": "(\\))",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.parameters.end.qml"
+            }
+          },
           "patterns": [
             {
-              "match": "(\\w+)\\s*:\\s*(\\w+)\\s*,?",
+              "match": "(\\w+)\\s*:\\s*([\\w\\.]+(?:<[\\w\\.]+>)?)\\s*,?",
               "captures": {
                 "1": {
                   "name": "variable.parameter.signal.param-name.qml"
@@ -157,7 +228,7 @@
               }
             },
             {
-              "match": "(\\w+)\\s+(\\w+)\\s*,?",
+              "match": "([\\w\\.]+(?:<[\\w\\.]+>)?)\\s+(\\w+)\\s*,?",
               "captures": {
                 "1": {
                   "name": "entity.name.type.signal.param-type.qml"
@@ -170,7 +241,8 @@
           ]
         },
         {
-          "match": "\\b(signal)\\s*([_a-zA-Z]\\w*)\\s*",
+          "name": "meta.signal.qml",
+          "match": "\\b(signal)\\s*([_a-zA-Z]\\w*)",
           "captures": {
             "1": {
               "name": "storage.type.signal.qml"
@@ -186,10 +258,10 @@
       "patterns": [
         {
           "name": "storage.modifier.prop-custom.qml",
-          "match": "\\b(default|readonly|required)\\s+(?=property)"
+          "match": "\\b(?:default|readonly|required|final|virtual|override)\\b(?=(?:\\s+(?:default|readonly|required|final|virtual|override))*\\s+property\\b)"
         },
         {
-          "match": "\\b(property)\\s+([\\w<>]+)(?=\\s+\\w+\\s*:)",
+          "match": "\\b(property)\\s+([\\w\\.]+(?:<[\\w\\.]+>)?)(?=\\s+\\w+\\s*:)",
           "captures": {
             "1": {
               "name": "keyword.other.prop-custom.qml"
@@ -200,7 +272,7 @@
           }
         },
         {
-          "match": "\\b(property)\\s+([\\w<>]+)\\s+(\\w+)\\s*$",
+          "match": "\\b(property)\\s+([\\w\\.]+(?:<[\\w\\.]+>)?)\\s+(\\w+)(?=\\s*(?:;|//|/\\*|$))",
           "captures": {
             "1": {
               "name": "keyword.other.prop-custom.qml"
@@ -216,7 +288,7 @@
       ]
     },
     "prop-force-required": {
-      "match": "\\b(required)\\s+(\\w+)\\s*",
+      "match": "\\b(required)\\s+(\\w+)(?=\\s*(?:;|//|/\\*|$))",
       "captures": {
         "1": {
           "name": "storage.modifier.prop-force-required.qml"
@@ -227,8 +299,9 @@
       }
     },
     "method": {
-      "begin": "\\b(?=function)\\b",
+      "begin": "\\b(?=function\\b)",
       "end": "(?<=\\})",
+      "contentName": "meta.embedded.function.qml",
       "patterns": [
         {
           "include": "source.js"
@@ -236,7 +309,8 @@
       ]
     },
     "on-prop": {
-      "begin": "\\b([A-Z]\\w*)\\s+(on)\\s+(\\w+)\\s*{",
+      "name": "meta.object.qml",
+      "begin": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)\\s*(\\{)",
       "beginCaptures": {
         "1": {
           "name": "entity.name.type.on-prop.qml"
@@ -246,26 +320,32 @@
         },
         "3": {
           "name": "variable.parameter.on-prop.prop.qml"
+        },
+        "4": {
+          "name": "punctuation.definition.block.qml"
         }
       },
       "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.block.qml"
+        }
+      },
       "patterns": [
         {
-          "include": "#object"
-        },
-        {
-          "include": "#attr-general"
+          "include": "#object-contents"
         }
       ]
     },
     "comp-inline": {
+      "name": "meta.component.qml",
       "begin": "\\b(component)\\s+([A-Z]\\w*)\\s*:",
       "beginCaptures": {
         "1": {
           "name": "keyword.other.comp-inline.qml"
         },
         "2": {
-          "name": "entity.name.type.comp-line.name.qml"
+          "name": "entity.name.type.comp-inline.name.qml"
         }
       },
       "end": "(?<=\\})",
@@ -309,13 +389,13 @@
       ],
       "repository": {
         "attr-object": {
-          "begin": "\\b([\\w\\.]*)\\s*:\\s*([A-Z]\\w*\\s*\\{)",
+          "begin": "\\b([\\w\\.]*)\\s*:\\s*([A-Z][\\w\\.]*)\\s*\\{",
           "beginCaptures": {
             "1": {
               "name": "variable.parameter.attr-object.qml"
             },
             "2": {
-              "name": "variable.parameter.attr-object.type.qml"
+              "name": "entity.name.type.object.qml"
             }
           },
           "end": "\\}",
@@ -350,6 +430,7 @@
             }
           },
           "end": "\\}",
+          "contentName": "meta.embedded.block.qml",
           "patterns": [
             {
               "include": "source.js"
@@ -363,7 +444,8 @@
               "name": "variable.parameter.attr-expr.qml"
             }
           },
-          "end": ";|$",
+          "end": ";|$|(?=\\})",
+          "contentName": "meta.embedded.expression.qml",
           "patterns": [
             {
               "include": "source.js"
@@ -391,6 +473,11 @@
         {
           "name": "comment.line.qml",
           "begin": "(\\/\\/)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.comment.qml"
+            }
+          },
           "end": "$",
           "patterns": [
             {
@@ -401,7 +488,17 @@
         {
           "name": "comment.block.qml",
           "begin": "(\\/\\*)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.definition.comment.qml"
+            }
+          },
           "end": "(\\*\\/)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.definition.comment.qml"
+            }
+          },
           "patterns": [
             {
               "include": "#comment-contents"
@@ -413,11 +510,11 @@
         "comment-contents": {
           "patterns": [
             {
-              "name": "constant.language.qml",
+              "name": "keyword.other.todo.qml",
               "match": "\\b(NOTE|TODO|DEBUG|XXX)\\b"
             },
             {
-              "name": "invalid",
+              "name": "invalid.illegal.todo.qml",
               "match": "\\b(BUG|FIXME|WARNING)\\b"
             }
           ]

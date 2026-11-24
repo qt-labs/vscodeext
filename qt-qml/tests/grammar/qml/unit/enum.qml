@@ -2,15 +2,86 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
 
+//------------------------------------------------------------------------------
+// multiple lines
+//------------------------------------------------------------------------------
 Text {
     enum TextType {
+//  ^^^^ storage.type.enum.qml
+//       ^^^^^^^^ entity.name.type.enum.qml - entity.name.type.object.qml
+//                ^ punctuation.definition.block.qml
+//  ^^^^^^^^^^^^^^^ meta.enum.qml
         Normal,
+//      ^^^^^^ variable.other.enummember.qml
+//            ^ punctuation.separator.comma.qml
+//      ^^^^^^^ meta.enum.qml
         Heading = 2,
+//      ^^^^^^^ variable.other.enummember.qml
+//              ^ keyword.operator.assignment.qml
+//                ^ constant.numeric.qml
+//                 ^ punctuation.separator.comma.qml
         Contents
+//      ^^^^^^^^ variable.other.enummember.qml - entity.name.type.object.qml
+//      ^^^^^^^^ meta.enum.qml
     }
+//  ^ punctuation.definition.block.qml
+//  ^ meta.enum.qml
+}
 
-    property int textType: MyText.TextType.Normal
+//------------------------------------------------------------------------------
+// single line
+//------------------------------------------------------------------------------
+Item {
+    enum Color { Red, Green, Blue }
+//  ^^^^ storage.type.enum.qml
+//       ^^^^^ entity.name.type.enum.qml
+//             ^ punctuation.definition.block.qml
+//               ^^^ variable.other.enummember.qml
+//                  ^ punctuation.separator.comma.qml
+//                    ^^^^^ variable.other.enummember.qml
+//                         ^ punctuation.separator.comma.qml
+//                           ^^^^ variable.other.enummember.qml
+//                                ^ punctuation.definition.block.qml
+//  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.enum.qml
+}
 
-    font.bold: textType === MyText.TextType.Heading
-    font.pixelSize: textType === MyText.TextType.Heading ? 24 : 12
+//------------------------------------------------------------------------------
+// negative value and comments
+//------------------------------------------------------------------------------
+Item {
+    enum Level {
+//  ^^^^ storage.type.enum.qml
+//       ^^^^^ entity.name.type.enum.qml
+//             ^ punctuation.definition.block.qml
+        Low = -1, // comment
+//      ^^^ variable.other.enummember.qml
+//          ^ keyword.operator.assignment.qml
+//            ^^ constant.numeric.qml
+//              ^ punctuation.separator.comma.qml
+//                ^^^^^^^^^^ comment.line.qml
+        /* comment */ High = 10
+//      ^^^^^^^^^^^^^ comment.block.qml
+//                    ^^^^ variable.other.enummember.qml
+//                         ^ keyword.operator.assignment.qml
+//                           ^^ constant.numeric.qml
+    }
+}
+
+//------------------------------------------------------------------------------
+// members after enum
+//------------------------------------------------------------------------------
+Item {
+    enum Mode {
+//  ^^^^ storage.type.enum.qml
+//       ^^^^ entity.name.type.enum.qml
+//            ^ punctuation.definition.block.qml
+        First,
+//      ^^^^^ variable.other.enummember.qml
+        Last
+//      ^^^^ variable.other.enummember.qml - entity.name.type.object.qml
+    }
+    property int mode: 0
+//  ^^^^^^^^ keyword.other.prop-custom.qml - meta.enum.qml
+    width: 10
+//  ^^^^^ variable.parameter.attr-expr.qml - meta.enum.qml
 }
