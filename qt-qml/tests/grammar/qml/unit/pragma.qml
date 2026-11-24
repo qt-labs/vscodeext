@@ -66,6 +66,22 @@ pragma Translator: "myContext"
 // <------------------------------ meta.pragma.qml
 
 //------------------------------------------------------------------------------
+// identifier and escaped string values
+//------------------------------------------------------------------------------
+pragma Translator: my_context2
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^ variable.parameter.pragma.qml
+//                 ^^^^^^^^^^^ entity.name.pragma.qml
+pragma Translator: "my\"context"
+//                 ^^^ string.quoted.double.qml
+//                    ^^ string.quoted.double.qml constant.character.escape.qml
+//                      ^^^^^^^^ string.quoted.double.qml - constant.character.escape.qml
+pragma Translator: 'my\'context'
+//                 ^^^ string.quoted.single.qml
+//                    ^^ string.quoted.single.qml constant.character.escape.qml
+//                      ^^^^^^^^ string.quoted.single.qml - constant.character.escape.qml
+
+//------------------------------------------------------------------------------
 // multiple values
 //------------------------------------------------------------------------------
 pragma ValueTypeBehavior: Copy, Addressable
@@ -87,6 +103,14 @@ pragma ValueTypeBehavior: Copy, Addressable, Inaddressable // comment
 //                                           ^^^^^^^^^^^^^ entity.name.pragma.qml
 //                                                         ^^^^^^^^^^ comment.line.qml
 // <--------------------------------------------------------------------- meta.pragma.qml
+
+//------------------------------------------------------------------------------
+// trailing semicolon
+//------------------------------------------------------------------------------
+pragma Singleton;
+//              ^ punctuation.terminator.statement.qml
+pragma ComponentBehavior: Bound;
+//                             ^ punctuation.terminator.statement.qml
 
 //------------------------------------------------------------------------------
 // meta scope ends at the end of the statement

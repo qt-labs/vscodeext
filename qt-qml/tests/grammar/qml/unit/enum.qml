@@ -85,3 +85,26 @@ Item {
     width: 10
 //  ^^^^^ variable.parameter.attr-expr.qml - meta.enum.qml
 }
+
+//------------------------------------------------------------------------------
+// brace on the next line
+//------------------------------------------------------------------------------
+Item {
+    enum Size
+//  ^^^^ storage.type.enum.qml
+//       ^^^^ entity.name.type.enum.qml - entity.name.type.object.qml
+    {
+//  ^ punctuation.definition.block.qml
+        Small,
+        Large
+    }
+//  ^ punctuation.definition.block.qml
+    width: 10
+//  ^^^^^ variable.parameter.attr-expr.qml
+}
+
+//------------------------------------------------------------------------------
+// end of file: every object above is closed
+//------------------------------------------------------------------------------
+// end
+// <------ - meta.object.qml

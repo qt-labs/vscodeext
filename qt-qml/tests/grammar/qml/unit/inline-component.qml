@@ -49,3 +49,9 @@ Item {
     width: 10
 //  ^^^^^ variable.parameter.attr-expr.qml - meta.component.qml
 }
+
+//------------------------------------------------------------------------------
+// end of file: every object above is closed
+//------------------------------------------------------------------------------
+// end
+// <------ - meta.object.qml

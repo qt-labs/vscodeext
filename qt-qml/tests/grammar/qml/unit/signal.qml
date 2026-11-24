@@ -100,21 +100,25 @@ Rectangle {
 //  ^^^^^^ storage.type.signal.qml
 //         ^^^^^^^ entity.name.function.signal.name.qml
 //                ^ - meta.signal.qml
+//                ^ punctuation.terminator.statement.qml
 //  ^^^^^^^^^^^^^^ meta.signal.qml
     signal pressed();
 //  ^^^^^^ storage.type.signal.qml
 //         ^^^^^^^ entity.name.function.signal.name.qml
 //                  ^ - meta.signal.qml
+//                  ^ punctuation.terminator.statement.qml
 //  ^^^^^^^^^^^^^^^^ meta.signal.qml
     signal clickedAt(x: real, y: real);
 //  ^^^^^^ storage.type.signal.qml
 //         ^^^^^^^^^ entity.name.function.signal.name.qml
 //                                    ^ - meta.signal.qml
+//                                    ^ punctuation.terminator.statement.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.signal.qml
     signal a; signal b()
 //  ^^^^^^ storage.type.signal.qml
 //         ^ entity.name.function.signal.name.qml
 //          ^^ - meta.signal.qml
+//          ^ punctuation.terminator.statement.qml
 //            ^^^^^^ storage.type.signal.qml
 //                   ^ entity.name.function.signal.name.qml
 //  ^^^^^^^^ meta.signal.qml
@@ -123,12 +127,20 @@ Rectangle {
 //  ^^^^^^ storage.type.signal.qml
 //         ^ entity.name.function.signal.name.qml
 //            ^^ - meta.signal.qml
+//            ^ punctuation.terminator.statement.qml
 //              ^^^^^ variable.parameter.attr-expr.qml - meta.signal.qml
 //  ^^^^^^^^^^ meta.signal.qml
     width: 10; signal d
 //  ^^^^^ variable.parameter.attr-expr.qml - meta.signal.qml
 //           ^^ - meta.signal.qml
+//           ^ punctuation.terminator.statement.qml
 //             ^^^^^^ storage.type.signal.qml
 //                    ^ entity.name.function.signal.name.qml
 //             ^^^^^^^^ meta.signal.qml
 }
+
+//------------------------------------------------------------------------------
+// end of file: every object above is closed
+//------------------------------------------------------------------------------
+// end
+// <------ - meta.object.qml

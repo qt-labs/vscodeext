@@ -11,6 +11,7 @@ Rectangle {
 //       ^^ - meta.embedded.expression.qml
 //         ^^^^^^^ meta.embedded.expression.qml
 //                ^ - meta.embedded.expression.qml
+//                ^ punctuation.terminator.statement.qml
     width: height / 2
 //  ^^^^^ variable.parameter.attr-expr.qml
 //         ^^^^^^^^^^ meta.embedded.expression.qml
@@ -21,19 +22,23 @@ Rectangle {
 //  ^^^^^ variable.parameter.attr-expr.qml
 //         ^^^ meta.embedded.expression.qml
 //            ^ - meta.embedded.expression.qml
+//            ^ punctuation.terminator.statement.qml
     width: 100; height: 200
 //  ^^^^^ variable.parameter.attr-expr.qml
 //         ^^^ meta.embedded.expression.qml
 //            ^^ - meta.embedded.expression.qml
+//            ^ punctuation.terminator.statement.qml
 //              ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
     width: 100; height: 200;
 //  ^^^^^ variable.parameter.attr-expr.qml
 //         ^^^ meta.embedded.expression.qml
 //            ^^ - meta.embedded.expression.qml
+//            ^ punctuation.terminator.statement.qml
 //              ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
 //                         ^ - meta.embedded.expression.qml
+//                         ^ punctuation.terminator.statement.qml
     height : 480
 //  ^^^^^^ variable.parameter.attr-expr.qml
 //        ^^^ - meta.embedded.expression.qml
@@ -64,6 +69,7 @@ Rectangle {
 //                ^^^^^^ meta.embedded.expression.qml
     anchors {
 //  ^^^^^^^ variable.parameter.attr-group-notation.qml - meta.embedded.expression.qml
+//          ^ punctuation.definition.block.qml
         left: other.right // comment
 //      ^^^^ variable.parameter.attr-expr.qml
 //            ^^^^^^^^^^^ meta.embedded.expression.qml
@@ -75,6 +81,16 @@ Rectangle {
 //      ^^^ variable.parameter.attr-expr.qml
 //           ^^^^^^^^^^ meta.embedded.expression.qml
     }
+//  ^ punctuation.definition.block.qml
+    font { bold: true; pixelSize: 12 }
+//  ^^^^ variable.parameter.attr-group-notation.qml
+//       ^ punctuation.definition.block.qml
+//         ^^^^ variable.parameter.attr-expr.qml
+//               ^^^^ meta.embedded.expression.qml
+//                   ^ punctuation.terminator.statement.qml
+//                     ^^^^^^^^^ variable.parameter.attr-expr.qml
+//                                ^^ meta.embedded.expression.qml
+//                                   ^ punctuation.definition.block.qml
 }
 
 //------------------------------------------------------------------------------
@@ -165,11 +181,13 @@ Rectangle {
 //  ^^^^^^^^ variable.parameter.attr-object.qml
 //            ^^^^^^^^ entity.name.type.object.qml
 //                     ^ - entity.name.type.object.qml
+//                     ^ punctuation.definition.block.qml
         GradientStop { position: 0.0; color: "yellow" }
 //                     ^^^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                             ^^ - meta.embedded.expression.qml
 //                               ^^^ meta.embedded.expression.qml
 //                                  ^^ - meta.embedded.expression.qml
+//                                  ^ punctuation.terminator.statement.qml
 //                                    ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                                         ^^ - meta.embedded.expression.qml
 //                                           ^^^^^^^^ meta.embedded.expression.qml
@@ -179,15 +197,19 @@ Rectangle {
 //                             ^^ - meta.embedded.expression.qml
 //                               ^^^ meta.embedded.expression.qml
 //                                  ^^ - meta.embedded.expression.qml
+//                                  ^ punctuation.terminator.statement.qml
 //                                    ^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                                         ^^ - meta.embedded.expression.qml
 //                                           ^^^^^^^ meta.embedded.expression.qml
 //                                                   ^ - meta.embedded.expression.qml
     }
+//  ^ punctuation.definition.block.qml
     background: T.Rectangle {}
 //  ^^^^^^^^^^ variable.parameter.attr-object.qml
 //              ^^^^^^^^^^^ entity.name.type.object.qml
 //                          ^^ - entity.name.type.object.qml
+//                          ^ punctuation.definition.block.qml
+//                           ^ punctuation.definition.block.qml
 }
 
 //------------------------------------------------------------------------------
@@ -198,6 +220,7 @@ ListView {
 //  ^^^^^^^^ variable.parameter.attr-object.qml
 //            ^^^^ entity.name.type.object.qml
 //                 ^ - entity.name.type.object.qml
+//                 ^ punctuation.definition.block.qml
         id: _delegate
 //      ^^ variable.parameter.attr-expr.qml
 //          ^^^^^^^^^ meta.embedded.expression.qml
@@ -205,6 +228,7 @@ ListView {
 //      ^^^^^ variable.parameter.attr-expr.qml
 //             ^^^ meta.embedded.expression.qml
 //                ^^ - meta.embedded.expression.qml
+//                ^ punctuation.terminator.statement.qml
 //                  ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                          ^^ meta.embedded.expression.qml
 
@@ -213,6 +237,7 @@ ListView {
 //          ^^^^^ variable.parameter.attr-expr.qml
 //                 ^^^ meta.embedded.expression.qml
 //                    ^^ - meta.embedded.expression.qml
+//                    ^ punctuation.terminator.statement.qml
 //                      ^^^^^^ variable.parameter.attr-expr.qml - meta.embedded.expression.qml
 //                              ^^ meta.embedded.expression.qml
             color: _delegate.ListView.isCurrentItem ? "red" : "yellow" // correct
@@ -220,6 +245,7 @@ ListView {
 //                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
         }
     }
+//  ^ punctuation.definition.block.qml
 }
 
 //------------------------------------------------------------------------------
@@ -243,3 +269,9 @@ Rectangle {
 //           ^^^^^^^^^^^ meta.embedded.block.qml
 //                       ^ - meta.embedded.block.qml
 }
+
+//------------------------------------------------------------------------------
+// end of file: every object above is closed
+//------------------------------------------------------------------------------
+// end
+// <------ - meta.object.qml

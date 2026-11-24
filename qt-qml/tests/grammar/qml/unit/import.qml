@@ -24,6 +24,22 @@ import QtQuick.LocalStorage 2.0 as Database
 // <------------------------------------------- meta.import.qml
 
 //------------------------------------------------------------------------------
+// major version only
+//------------------------------------------------------------------------------
+import QtQuick 6
+// <------ keyword.control.import.qml
+//     ^^^^^^^ entity.name.section.import.module.qml
+//             ^ constant.numeric.import.version.qml
+// <---------------- meta.import.qml
+import QtQuick 6 as Q
+// <------ keyword.control.import.qml
+//     ^^^^^^^ entity.name.section.import.module.qml
+//             ^ constant.numeric.import.version.qml
+//               ^^ keyword.control.import.as.qml
+//                  ^ entity.name.type.import.type.qml
+// <--------------------- meta.import.qml
+
+//------------------------------------------------------------------------------
 // without version
 //------------------------------------------------------------------------------
 import QtQuick
@@ -78,6 +94,17 @@ import QtQuick.LocalStorage 2.0 as Database // comment
 //                                 ^^^^^^^^ entity.name.type.import.type.qml
 //                                          ^^^^^^^^^^ comment.line.qml
 // <------------------------------------------------------ meta.import.qml
+
+//------------------------------------------------------------------------------
+// trailing semicolon
+//------------------------------------------------------------------------------
+import QtQuick;
+//     ^^^^^^^ entity.name.section.import.module.qml
+//            ^ punctuation.terminator.statement.qml
+import QtQuick 2.0;
+//                ^ punctuation.terminator.statement.qml
+import "../textwidgets" as MyModule;
+//                                 ^ punctuation.terminator.statement.qml
 
 //------------------------------------------------------------------------------
 // meta scope ends at the end of the statement

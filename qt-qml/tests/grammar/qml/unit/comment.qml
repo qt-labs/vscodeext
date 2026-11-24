@@ -67,3 +67,26 @@ Item {
 //     ^^^^^^^ comment.line.qml invalid.illegal.todo.qml
 //            ^^^^^^^^^^^^^^ comment.line.qml - invalid.illegal.todo.qml
 }
+
+//------------------------------------------------------------------------------
+// inline block comment
+//------------------------------------------------------------------------------
+Item {
+    /* c */ width: 100
+//  ^^^^^^^ comment.block.qml - meta.embedded.expression.qml
+//          ^^^^^ variable.parameter.attr-expr.qml
+    width: 100 /* c */
+//  ^^^^^ variable.parameter.attr-expr.qml
+//             ^^^^^^^ meta.embedded.expression.qml - comment.block.qml
+    width: 100; /* c */ height: 200
+//  ^^^^^ variable.parameter.attr-expr.qml
+//            ^ punctuation.terminator.statement.qml
+//              ^^^^^^^ comment.block.qml - meta.embedded.expression.qml
+//                      ^^^^^^ variable.parameter.attr-expr.qml
+}
+
+//------------------------------------------------------------------------------
+// end of file: every object above is closed
+//------------------------------------------------------------------------------
+// end
+// <------ - meta.object.qml

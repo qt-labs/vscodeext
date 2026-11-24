@@ -12,6 +12,7 @@ Window {
     Rectangle { width: 100; height: 100 }
 //  ^^^^^^^^^ entity.name.type.object.qml
 //            ^ punctuation.definition.block.qml
+//                        ^ punctuation.terminator.statement.qml
 //                                      ^ punctuation.definition.block.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.object.qml
 }
@@ -55,6 +56,7 @@ Window {
 //  ^^^^^^^^^ entity.name.type.object.qml
 //  ^^^^^^^^^ meta.object.qml
     {
+//  ^ punctuation.definition.block.qml
 //  ^ meta.object.qml
         width: 100
 //      ^^^^^ variable.parameter.attr-expr.qml
@@ -178,6 +180,28 @@ Item {
 }
 // <- punctuation.definition.block.qml
 // <- meta.object.qml
+
+//------------------------------------------------------------------------------
+// invalid import and pragma inside an object
+//------------------------------------------------------------------------------
+Item {
+    import QtQuick
+//         ^^^^^^^ - entity.name.type.object.qml
+    pragma Singleton
+//         ^^^^^^^^^ - entity.name.type.object.qml
+    width: 10
+//  ^^^^^ variable.parameter.attr-expr.qml
+}
+
+//------------------------------------------------------------------------------
+// type name alone, as while typing
+//------------------------------------------------------------------------------
+Item {
+    Rectangle
+//  ^^^^^^^^^ entity.name.type.object.qml
+    width: 10
+//  ^^^^^ variable.parameter.attr-expr.qml
+}
 
 //------------------------------------------------------------------------------
 // end of file: every object above is closed

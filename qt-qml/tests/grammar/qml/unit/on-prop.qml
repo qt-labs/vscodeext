@@ -7,6 +7,7 @@
 //------------------------------------------------------------------------------
 Rectangle {
     width: 100; height: 100
+//            ^ punctuation.terminator.statement.qml
 
     Behavior on width {}
 //  ^^^^^^^^ entity.name.type.on-prop.qml
@@ -32,6 +33,8 @@ Rectangle {
 //------------------------------------------------------------------------------
 ProgressBar {
     from:0; to: 100; width: 200
+//        ^ punctuation.terminator.statement.qml
+//                 ^ punctuation.terminator.statement.qml
 
     NumberAnimation on value {
 //  ^^^^^^^^^^^^^^^ entity.name.type.on-prop.qml
@@ -39,6 +42,7 @@ ProgressBar {
 //                     ^^^^^ variable.parameter.on-prop.prop.qml - variable.parameter.attr-group-notation.qml
 //                           ^ punctuation.definition.block.qml
         from: 0; to: 100
+//             ^ punctuation.terminator.statement.qml
         duration: 2000
 //      ^^^^^^^^ variable.parameter.attr-expr.qml
         loops: NumberAnimation.Infinite
