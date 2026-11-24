@@ -1460,6 +1460,7 @@ export async function logout(
  *   - The Qt Account credentials in Qt.ini (via sign-out; the file itself is
  *     shared with other Qt tools and kept) and a legacy qtaccount.ini
  *   - The QtSoftwareManagementService lock file
+ *   - The installation journal of the service (installationJournal.json)
  *   - The IPC socket / named pipe
  *   - The persisted walkthrough state, so it restarts from step 1
  *   - The persisted latest Qt Framework version
@@ -1510,6 +1511,9 @@ export async function resetTestState(): Promise<void> {
     qtCompanyIniPath(),
     legacyQtAccountIniPath(),
     getServiceLockFilePath(),
+    // The purge above only drops the entry of installPath, and is skipped
+    // when the folder is gone; earlier bootstrap runs leave other entries.
+    serviceJournalPath(),
     IPC.defaultSocket,
     serviceCacheDir(),
     ...bootstrapInstallerDirs()
@@ -1654,6 +1658,25 @@ function genericConfigLocation(): string {
 /** The download cache of the service. */
 function serviceCacheDir(): string {
   return path.join(genericCacheLocation(), 'qt-softwaremanagement-service');
+}
+
+/**
+ * The installation journal of the service, in its
+ * `QStandardPaths::AppLocalDataLocation`:
+ *   Linux:   `~/.local/share/QtSoftwareManagementService`
+ *   macOS:   `~/Library/Application Support/QtSoftwareManagementService`
+ *   Windows: `%LOCALAPPDATA%\QtSoftwareManagementService`
+ */
+function serviceJournalPath(): string {
+  const dataDir =
+    process.platform === 'win32'
+      ? genericConfigLocation()
+      : genericDataLocation();
+  return path.join(
+    dataDir,
+    'QtSoftwareManagementService',
+    'installationJournal.json'
+  );
 }
 
 /**
