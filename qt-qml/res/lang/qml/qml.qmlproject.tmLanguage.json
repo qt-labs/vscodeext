@@ -576,6 +576,7 @@
             }
           },
           "end": "\\]",
+          "contentName": "meta.embedded.list.qml",
           "patterns": [
             {
               "include": "#object-declaration"

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "scopeName": "qml-js.injection",
+  "injectionSelector": "L:meta.embedded.expression.qml - string - comment, L:meta.embedded.block.qml - string - comment, L:meta.embedded.function.qml - string - comment, L:meta.embedded.list.qml - string - comment",
+  "patterns": [
+    {
+      "include": "#qt-global-object"
+    },
+    {
+      "include": "#translation-functions"
+    }
+  ],
+  "repository": {
+    "qt-global-object": {
+      "patterns": [
+        {
+          "match": "(?<![\\w$.])(Qt)\\s*(\\.)\\s*([a-z_]\\w*)(?=\\s*\\()",
+          "captures": {
+            "1": {
+              "name": "support.class.qt.qml"
+            },
+            "2": {
+              "name": "punctuation.accessor.qml"
+            },
+            "3": {
+              "name": "support.function.qt.qml"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\w$.])(Qt)\\s*(\\.)\\s*([A-Z]\\w*)",
+          "captures": {
+            "1": {
+              "name": "support.class.qt.qml"
+            },
+            "2": {
+              "name": "punctuation.accessor.qml"
+            },
+            "3": {
+              "name": "support.constant.qt.qml"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\w$.])(Qt)\\s*(\\.)\\s*([a-z_]\\w*)",
+          "captures": {
+            "1": {
+              "name": "support.class.qt.qml"
+            },
+            "2": {
+              "name": "punctuation.accessor.qml"
+            },
+            "3": {
+              "name": "support.variable.property.qt.qml"
+            }
+          }
+        },
+        {
+          "name": "support.class.qt.qml",
+          "match": "(?<![\\w$.])Qt\\b"
+        }
+      ]
+    },
+    "translation-functions": {
+      "name": "support.function.translation.qml",
+      "match": "(?<![\\w$.])(?:qsTr|qsTranslate|qsTrId|qsTrNoOp|qsTranslateNoOp|qsTrIdNoOp|QT_TR_NOOP|QT_TRANSLATE_NOOP|QT_TRID_NOOP)(?=\\s*\\()"
+    }
+  }
+}
