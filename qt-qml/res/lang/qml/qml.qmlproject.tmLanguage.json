@@ -558,7 +558,12 @@
           "begin": "\\b([\\w\\.]*)\\s*:\\s*(?=[A-Z][\\w\\.]*\\s*\\{)",
           "beginCaptures": {
             "1": {
-              "name": "entity.other.attribute-name.qml"
+              "name": "entity.other.attribute-name.qml",
+              "patterns": [
+                {
+                  "include": "#attr-name-parts"
+                }
+              ]
             }
           },
           "end": "(?<=\\})",
@@ -572,7 +577,12 @@
           "begin": "\\b([\\w\\.]*)\\s*:\\s*\\[\\s*",
           "beginCaptures": {
             "1": {
-              "name": "entity.other.attribute-name.qml"
+              "name": "entity.other.attribute-name.qml",
+              "patterns": [
+                {
+                  "include": "#attr-name-parts"
+                }
+              ]
             }
           },
           "end": "\\]",
@@ -593,6 +603,9 @@
               "name": "entity.other.attribute-name.qml",
               "patterns": [
                 {
+                  "include": "#attr-name-parts"
+                },
+                {
                   "include": "#handler-name"
                 }
               ]
@@ -612,6 +625,9 @@
             "1": {
               "name": "entity.other.attribute-name.qml",
               "patterns": [
+                {
+                  "include": "#attr-name-parts"
+                },
                 {
                   "include": "#handler-name"
                 }
@@ -636,6 +652,25 @@
     "handler-name": {
       "name": "entity.name.function.handler.qml",
       "match": "\\bon[A-Z]\\w*"
+    },
+    "attr-name-parts": {
+      "patterns": [
+        {
+          "match": "\\b([A-Z]\\w*)(\\.)(?=[_a-zA-Z])",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.attached.qml"
+            },
+            "2": {
+              "name": "punctuation.accessor.qml"
+            }
+          }
+        },
+        {
+          "match": "\\.",
+          "name": "punctuation.accessor.qml"
+        }
+      ]
     },
     "string": {
       "patterns": [
