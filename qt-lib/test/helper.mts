@@ -419,7 +419,8 @@ function readKitsFromDisk(): KitLike[] {
  *
  * The selection logic follows platform-specific compiler preferences:
  *  - **macOS:** prefers Clang (arm64 or AppleClang), then generic Clang, then GCC.
- *  - **Windows:** prefers MSVC / Visual Studio / Clang-cl, then Clang, then MinGW/GCC.
+ *  - **Windows:** prefers the Clang of Visual Studio, then MSVC / Visual Studio / Clang-cl,
+ *    then Clang, then MinGW/GCC.
  *  - **Linux/other:** prefers GCC, then Clang.
  *
  * If no kit matches these patterns, the first available kit is returned as a fallback.
@@ -433,7 +434,21 @@ function pickKit(list: KitLike[]): string | undefined {
   const preferences: RegExp[] = IsMacOS
     ? [/Clang.*arm64/i, /AppleClang/i, /Clang/i, /GCC/i]
     : IsWindows
-      ? [/MSVC|Visual Studio|Clang-cl/i, /Clang/i, /GCC|MinGW/i]
+      ? [
+          // The Clang that Visual Studio ships goes with its standard library.
+          // A standalone Clang can be too old for it: the standard library of
+          // Visual Studio 2026 18.12 stops with STL1000 for a Clang older
+          // than 22. The kit of a standalone Clang matches "MSVC" below, by
+          // its x86_64-pc-windows-msvc target, and comes first in the list.
+          // The "GNU CLI" kit names no generator, so CMake Tools keeps Ninja
+          // and the binaries stay in the build folder. The other kits of
+          // Visual Studio use its generator, which has a folder per
+          // configuration.
+          /Clang.*\(GNU CLI\).*\(Visual Studio/i,
+          /MSVC|Visual Studio|Clang-cl/i,
+          /Clang/i,
+          /GCC|MinGW/i
+        ]
       : [/GCC/i, /Clang/i];
 
   for (const re of preferences) {
