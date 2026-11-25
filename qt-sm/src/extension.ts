@@ -85,34 +85,112 @@ const REQUIRED_EXTENSIONS = [
   ...OTHER_REQUIRED_EXTENSIONS
 ];
 
-async function ensureCoreVersion(): Promise<void> {
-  const ext = vscode.extensions.getExtension('theqtcompany.qt-core');
-  if (ext) {
-    const packageJSON = ext.packageJSON as Record<string, unknown>;
-    const installedVersion = String(packageJSON.version);
+// The Qt extensions that use what this extension shares through CoreAPI,
+// such as the MinGW toolchains. They must be at least `requiredVersion`.
+const MIN_VERSION_EXTENSIONS = ['theqtcompany.qt-core', 'theqtcompany.qt-cpp'];
 
-    if (compareVersions(installedVersion, requiredVersion) >= 0) {
-      logger.info(
-        `Installed Qt Core extension ${installedVersion} is at least ` +
-          `${requiredVersion}, keeping it`
-      );
-      return;
-    }
+function isOlderThanRequired(extId: string): boolean {
+  const ext = vscode.extensions.getExtension(extId);
+  if (!ext) {
+    return false;
   }
+  const installedVersion = String(
+    (ext.packageJSON as Record<string, unknown>).version
+  );
+  return compareVersions(installedVersion, requiredVersion) < 0;
+}
 
-  logger.info('Installing pre-release Qt Core extension');
+// Remembers which extensions a pre-release install was already tried for
+// with the current `requiredVersion`. When the Marketplace pre-release is
+// still older, installing it again and reloading would never end.
+function installAttemptKey(extId: string): string {
+  return `${EXTENSION_ID}.preReleaseInstallAttempt.${extId}`;
+}
+
+async function installPreRelease(
+  context: vscode.ExtensionContext,
+  extId: string
+): Promise<void> {
   await vscode.commands.executeCommand(
     'workbench.extensions.installExtension',
-    'theqtcompany.qt-core',
+    extId,
     { installPreReleaseVersion: true }
   );
-  await vscode.commands.executeCommand('workbench.action.reloadWindow');
+  await context.globalState.update(installAttemptKey(extId), requiredVersion);
+}
+
+/**
+ * Installs the pre-release of a Qt extension that is older than
+ * `requiredVersion`, or that is missing when `installIfMissing` is set.
+ * Returns whether it installed one, which takes a window reload to load.
+ */
+async function ensureExtensionVersion(
+  context: vscode.ExtensionContext,
+  extId: string,
+  name: string,
+  installIfMissing: boolean
+): Promise<boolean> {
+  const ext = vscode.extensions.getExtension(extId);
+  if (ext) {
+    const installedVersion = String(
+      (ext.packageJSON as Record<string, unknown>).version
+    );
+    if (compareVersions(installedVersion, requiredVersion) >= 0) {
+      logger.info(
+        `Installed ${name} extension ${installedVersion} is at least ` +
+          `${requiredVersion}, keeping it`
+      );
+      return false;
+    }
+    if (context.globalState.get(installAttemptKey(extId)) === requiredVersion) {
+      logger.warn(
+        `${name} extension ${installedVersion} is still older than ` +
+          `${requiredVersion} after installing its pre-release, ` +
+          'not trying again'
+      );
+      return false;
+    }
+  } else if (!installIfMissing) {
+    return false;
+  }
+
+  logger.info(`Installing pre-release ${name} extension`);
+  await installPreRelease(context, extId);
+  return true;
+}
+
+/**
+ * Makes sure that the Qt extensions in `MIN_VERSION_EXTENSIONS` are at least
+ * `requiredVersion`.
+ */
+async function ensureRequiredVersions(
+  context: vscode.ExtensionContext
+): Promise<void> {
+  const coreInstalled = await ensureExtensionVersion(
+    context,
+    'theqtcompany.qt-core',
+    'Qt Core',
+    true
+  );
+  // The walkthrough installs a missing Qt C++, so it is left to it here.
+  const cppInstalled = await ensureExtensionVersion(
+    context,
+    'theqtcompany.qt-cpp',
+    'Qt C++',
+    false
+  );
+  if (coreInstalled || cppInstalled) {
+    await vscode.commands.executeCommand('workbench.action.reloadWindow');
+  }
 }
 
 function areRequiredExtensionsInstalled(requiredVersion: string): boolean {
   return REQUIRED_EXTENSIONS.every((extId) => {
     const ext = vscode.extensions.getExtension(extId);
     if (!ext) {
+      return false;
+    }
+    if (MIN_VERSION_EXTENSIONS.includes(extId) && isOlderThanRequired(extId)) {
       return false;
     }
     if (VERSIONED_EXTENSIONS.includes(extId)) {
@@ -148,11 +226,7 @@ async function installRequiredExtensions(
 
   for (const extId of QT_PRERELEASE_EXTENSIONS) {
     logger.info(`Installing pre-release extension: ${extId}`);
-    await vscode.commands.executeCommand(
-      'workbench.extensions.installExtension',
-      extId,
-      { installPreReleaseVersion: true }
-    );
+    await installPreRelease(context, extId);
   }
   for (const extId of OTHER_REQUIRED_EXTENSIONS) {
     const ext = vscode.extensions.getExtension(extId);
@@ -180,6 +254,19 @@ async function installRequiredExtensions(
     );
   }
   await updateRequiredExtensionsContext(requiredVersion);
+  // An extension that was already loaded keeps its old version until the
+  // window reloads, and the walkthrough step stays open until then.
+  if (MIN_VERSION_EXTENSIONS.some(isOlderThanRequired)) {
+    const reload = 'Reload Window';
+    const choice = await vscode.window.showInformationMessage(
+      'Reload the window to load the updated Qt extensions.',
+      reload
+    );
+    if (choice === reload) {
+      await vscode.commands.executeCommand('workbench.action.reloadWindow');
+    }
+    return;
+  }
   if (areRequiredExtensionsInstalled(requiredVersion)) {
     void vscode.window.showInformationMessage(
       'Required extensions installed successfully.'
@@ -188,7 +275,7 @@ async function installRequiredExtensions(
 }
 
 export let coreAPI: CoreAPI | undefined;
-const requiredVersion = '1.17.1';
+const requiredVersion = '1.17.2';
 
 let loggedIn = false;
 function setLoggedIn(value: boolean) {
@@ -228,7 +315,7 @@ export async function activate(context: vscode.ExtensionContext) {
   setUsageDataConsent(getUsageDataOptIn(context));
   initLatestFrameworkState(context);
 
-  await ensureCoreVersion();
+  await ensureRequiredVersions(context);
 
   await updateRequiredExtensionsContext(requiredVersion);
 
