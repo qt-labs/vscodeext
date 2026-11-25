@@ -206,6 +206,45 @@ function dumpBuildOutput(logPrefix: string, buildDir: string): void {
 }
 
 /**
+ * The clang-cl to build with on Windows: the one that Visual Studio ships,
+ * which its standard library accepts. A standalone LLVM that comes first in
+ * the PATH can be too old for it: the standard library of Visual Studio 2026
+ * 18.12 stops with STL1000 for a Clang older than 22.
+ *
+ * Falls back to `clang-cl` from the PATH when the newest Visual Studio has no
+ * Clang, or when vswhere cannot be asked.
+ */
+function findClangCl(): string {
+  const vswhere = path.join(
+    process.env['ProgramFiles(x86)'] ?? 'C:\\Program Files (x86)',
+    'Microsoft Visual Studio',
+    'Installer',
+    'vswhere.exe'
+  );
+  const res = cp.spawnSync(
+    vswhere,
+    [
+      '-latest',
+      '-products',
+      '*',
+      '-find',
+      'VC\\Tools\\Llvm\\x64\\bin\\clang-cl.exe'
+    ],
+    { encoding: 'utf-8' }
+  );
+  // vswhere prints its errors to stdout too, so only a file counts.
+  const found =
+    res.status === 0
+      ? res.stdout
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .find((line) => fs.existsSync(line))
+      : undefined;
+  // CMake takes forward slashes in a cache variable.
+  return found ? found.replace(/\\/g, '/') : 'clang-cl';
+}
+
+/**
  * Configure and build the minimal Qt test project using CMake Tools and
  * CMake Presets.
  *
@@ -311,6 +350,10 @@ export async function configureAndBuildMinimalQtProject(
   // `cmake.useVsDeveloperEnvironment: 'always'`. The `architecture` field
   // uses the presets-spec "external" strategy: CMake ignores it, but CMake
   // Tools reads it to pick the environment's target architecture.
+  const clangCl = host.isWindows ? findClangCl() : undefined;
+  if (clangCl) {
+    dlog(`${logPrefix} Using clang-cl:`, clangCl);
+  }
   const presets = {
     version: 3,
     configurePresets: [
@@ -328,10 +371,10 @@ export async function configureAndBuildMinimalQtProject(
         cacheVariables: {
           CMAKE_BUILD_TYPE: 'Debug',
           CMAKE_PREFIX_PATH: qtEnv.leaf,
-          ...(host.isWindows
+          ...(clangCl
             ? {
-                CMAKE_C_COMPILER: 'clang-cl',
-                CMAKE_CXX_COMPILER: 'clang-cl'
+                CMAKE_C_COMPILER: clangCl,
+                CMAKE_CXX_COMPILER: clangCl
               }
             : {})
         }
