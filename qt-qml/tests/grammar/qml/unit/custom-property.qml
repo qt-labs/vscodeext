@@ -28,7 +28,8 @@ Item {
 //  ^^^^^^^^ storage.type.property.qml
 //           ^^^^^ storage.type.primitive.qml
 //                 ^^^^^ entity.other.attribute-name.qml
-//                                  ^^^^^^^^^^ comment.line.qml - meta.property.qml
+//                                  ^^^^^^^^^^ comment.line.qml
+//                                  ^^^^^^^^^^ - meta.property.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     property point value: Qt.point(1, 2)
 //  ^^^^^^^^ storage.type.property.qml
@@ -233,7 +234,8 @@ Item {
 //  ^ punctuation.definition.block.qml
 //  ^ meta.property.qml
     height: 1
-//  ^^^^^^ entity.other.attribute-name.qml - meta.property.qml
+//  ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^ - meta.property.qml
     readonly property T.Button btn: T.Button { text: "a" }; z: 2
 //  ^^^^^^^^ storage.modifier.qml
 //           ^^^^^^^^ storage.type.property.qml
@@ -242,8 +244,10 @@ Item {
 //                                  ^^^^^^^^ entity.name.type.object.qml
 //                                           ^ punctuation.definition.block.qml
 //                                                       ^ punctuation.definition.block.qml
-//                                                        ^ punctuation.terminator.statement.qml - meta.property.qml
-//                                                          ^ entity.other.attribute-name.qml - meta.property.qml
+//                                                        ^ punctuation.terminator.statement.qml
+//                                                        ^ - meta.property.qml
+//                                                          ^ entity.other.attribute-name.qml
+//                                                          ^ - meta.property.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
 
     // the brace is on the next line: the type is taken as a JS expression,
@@ -254,11 +258,14 @@ Item {
 //                ^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^^^^^^^^^^^ meta.property.qml
     {
-//  ^ punctuation.definition.block.qml - meta.property.qml
+//  ^ punctuation.definition.block.qml
+//  ^ - meta.property.qml
         width: 1
-//      ^^^^^ entity.other.attribute-name.qml - meta.property.qml
+//      ^^^^^ entity.other.attribute-name.qml
+//      ^^^^^ - meta.property.qml
     }
-//  ^ punctuation.definition.block.qml - meta.property.qml
+//  ^ punctuation.definition.block.qml
+//  ^ - meta.property.qml
     x: 3
 //  ^ entity.other.attribute-name.qml
 }
@@ -283,10 +290,14 @@ Item {
 //------------------------------------------------------------------------------
 PropertyAnimation {
     property: "opacity"; to: 1
-//                       ^^ entity.other.attribute-name.qml - meta.property.qml
-//  ^^^^^^^^ entity.other.attribute-name.qml - storage.type.property.qml meta.property.qml
+//                       ^^ entity.other.attribute-name.qml
+//                       ^^ - meta.property.qml
+//  ^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^ - storage.type.property.qml
+//  ^^^^^^^^ - meta.property.qml
     properties: "x,y"
-//  ^^^^^^^^^^ entity.other.attribute-name.qml - meta.property.qml
+//  ^^^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^ - meta.property.qml
 }
 
 //------------------------------------------------------------------------------

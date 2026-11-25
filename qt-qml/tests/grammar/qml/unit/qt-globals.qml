@@ -41,7 +41,8 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     points: [Qt.point(1, 2), Qt.point(3, 4)]
-//           ^^ meta.embedded.list.qml support.class.qt.qml
+//           ^^ meta.embedded.list.qml
+//           ^^ support.class.qt.qml
 //              ^^^^^ support.function.qt.qml
 //                           ^^ support.class.qt.qml
 //                              ^^^^^ support.function.qt.qml
@@ -74,18 +75,38 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     text: "Qt.rgba(1, 0, 0, 1) qsTr()" // Qt.rgba() qsTr()
-//         ^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//            ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//                             ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//                                        ^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//                                           ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//                                                  ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
+//         ^^ - support.class.qt.qml
+//         ^^ - support.function.qt.qml
+//         ^^ - support.function.translation.qml
+//            ^^^^ - support.class.qt.qml
+//            ^^^^ - support.function.qt.qml
+//            ^^^^ - support.function.translation.qml
+//                             ^^^^ - support.class.qt.qml
+//                             ^^^^ - support.function.qt.qml
+//                             ^^^^ - support.function.translation.qml
+//                                        ^^ - support.class.qt.qml
+//                                        ^^ - support.function.qt.qml
+//                                        ^^ - support.function.translation.qml
+//                                           ^^^^ - support.class.qt.qml
+//                                           ^^^^ - support.function.qt.qml
+//                                           ^^^^ - support.function.translation.qml
+//                                                  ^^^^ - support.class.qt.qml
+//                                                  ^^^^ - support.function.qt.qml
+//                                                  ^^^^ - support.function.translation.qml
     other: myQt.rgba(1)
-//         ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//              ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
+//         ^^^^ - support.class.qt.qml
+//         ^^^^ - support.function.qt.qml
+//         ^^^^ - support.function.translation.qml
+//              ^^^^ - support.class.qt.qml
+//              ^^^^ - support.function.qt.qml
+//              ^^^^ - support.function.translation.qml
     member: foo.Qt.rgba
-//              ^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
-//                 ^^^^ - support.class.qt.qml support.function.qt.qml support.function.translation.qml
+//              ^^ - support.class.qt.qml
+//              ^^ - support.function.qt.qml
+//              ^^ - support.function.translation.qml
+//                 ^^^^ - support.class.qt.qml
+//                 ^^^^ - support.function.qt.qml
+//                 ^^^^ - support.function.translation.qml
 }
 
 //------------------------------------------------------------------------------

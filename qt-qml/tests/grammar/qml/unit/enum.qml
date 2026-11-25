@@ -8,7 +8,8 @@
 Text {
     enum TextType {
 //  ^^^^ storage.type.enum.qml
-//       ^^^^^^^^ entity.name.type.enum.qml - entity.name.type.object.qml
+//       ^^^^^^^^ entity.name.type.enum.qml
+//       ^^^^^^^^ - entity.name.type.object.qml
 //                ^ punctuation.definition.block.qml
 //  ^^^^^^^^^^^^^^^ meta.enum.qml
         Normal,
@@ -21,7 +22,8 @@ Text {
 //                ^ constant.numeric.qml
 //                 ^ punctuation.separator.comma.qml
         Contents
-//      ^^^^^^^^ variable.other.enummember.qml - entity.name.type.object.qml
+//      ^^^^^^^^ variable.other.enummember.qml
+//      ^^^^^^^^ - entity.name.type.object.qml
 //      ^^^^^^^^ meta.enum.qml
     }
 //  ^ punctuation.definition.block.qml
@@ -78,12 +80,15 @@ Item {
         First,
 //      ^^^^^ variable.other.enummember.qml
         Last
-//      ^^^^ variable.other.enummember.qml - entity.name.type.object.qml
+//      ^^^^ variable.other.enummember.qml
+//      ^^^^ - entity.name.type.object.qml
     }
     property int mode: 0
-//  ^^^^^^^^ storage.type.property.qml - meta.enum.qml
+//  ^^^^^^^^ storage.type.property.qml
+//  ^^^^^^^^ - meta.enum.qml
     width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.enum.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.enum.qml
 }
 
 //------------------------------------------------------------------------------
@@ -92,7 +97,8 @@ Item {
 Item {
     enum Size
 //  ^^^^ storage.type.enum.qml
-//       ^^^^ entity.name.type.enum.qml - entity.name.type.object.qml
+//       ^^^^ entity.name.type.enum.qml
+//       ^^^^ - entity.name.type.object.qml
     {
 //  ^ punctuation.definition.block.qml
         Small,

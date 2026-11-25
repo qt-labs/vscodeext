@@ -22,7 +22,8 @@ Item {
 Item {
     function myfunc() { return 3; } // comment
 //  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
-//                                  ^^^^^^^^^^ comment.line.qml - meta.embedded.function.qml
+//                                  ^^^^^^^^^^ comment.line.qml
+//                                  ^^^^^^^^^^ - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -36,7 +37,8 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -52,7 +54,8 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.function.qml
     function g(a: int): int
 //  ^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.function.qml
     {
@@ -62,7 +65,8 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     height: 20
-//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^ - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -78,11 +82,13 @@ Item {
     }
 //  ^ meta.embedded.function.qml
     width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.function.qml
     function g() {}
 //  ^^^^^^^^^^^^^^^ meta.embedded.function.qml
     height: 20
-//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^ - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------
@@ -90,9 +96,11 @@ Item {
 //------------------------------------------------------------------------------
 Item {
     functionName: 1
-//  ^^^^^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^^^^^^ - meta.embedded.function.qml
     width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.function.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.function.qml
 }
 
 //------------------------------------------------------------------------------

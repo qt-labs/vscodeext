@@ -19,7 +19,8 @@ Rectangle {
 //         ^^^ meta.embedded.expression.qml
 //            ^^ - meta.embedded.expression.qml
 //            ^ punctuation.terminator.statement.qml
-//              ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//              ^^^^^^ entity.other.attribute-name.qml
+//              ^^^^^^ - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
     height : 480
 //  ^^^^^^ entity.other.attribute-name.qml
@@ -35,8 +36,10 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     id: root
-//  ^^ keyword.other.id.qml - entity.other.attribute-name.qml
-//      ^^^^ entity.name.variable.id.qml - meta.embedded.expression.qml
+//  ^^ keyword.other.id.qml
+//  ^^ - entity.other.attribute-name.qml
+//      ^^^^ entity.name.variable.id.qml
+//      ^^^^ - meta.embedded.expression.qml
     id: root; width: 10
 //  ^^ keyword.other.id.qml
 //      ^^^^ entity.name.variable.id.qml
@@ -47,7 +50,8 @@ Rectangle {
 //      ^^^^ entity.name.variable.id.qml
 //           ^^^^^^^^^^ comment.line.qml
     idx: 1
-//  ^^^ entity.other.attribute-name.qml - keyword.other.id.qml
+//  ^^^ entity.other.attribute-name.qml
+//  ^^^ - keyword.other.id.qml
 }
 
 //------------------------------------------------------------------------------
@@ -58,7 +62,8 @@ Rectangle {
 //  ^^^^^^^^^^^^ entity.other.attribute-name.qml
 //                ^^^^^^ meta.embedded.expression.qml
     anchors {
-//  ^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^^ - meta.embedded.expression.qml
 //          ^ punctuation.definition.block.qml
         left: other.right // comment
 //      ^^^^ entity.other.attribute-name.qml
@@ -88,11 +93,13 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     width: { return 100; }
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.block.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.block.qml
 //           ^^^^^^^^^^^ meta.embedded.block.qml
 //                       ^ - meta.embedded.block.qml
     width: {
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.block.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.block.qml
 //         ^ - meta.embedded.block.qml
         const val = 3;
 //      ^^^^^^^^^^^^^^ meta.embedded.block.qml
@@ -129,7 +136,8 @@ Rectangle {
 //  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^^^^^ meta.embedded.expression.qml
         Qt.WindowStaysOnTopHint
-//      ^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml - entity.name.type.object.qml
+//      ^^^^^^^^^^^^^^^^^^^^^^^ meta.embedded.expression.qml
+//      ^^^^^^^^^^^^^^^^^^^^^^^ - entity.name.type.object.qml
     width: 10 +
 //  ^^^^^ entity.other.attribute-name.qml
 //         ^^^^ meta.embedded.expression.qml
@@ -153,28 +161,34 @@ Rectangle {
         0.5
 //      ^^^ meta.embedded.expression.qml
     scale: 1
-//  ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.embedded.expression.qml
 
     // a trailing comment that ends with a punctuation mark is not an operator
     width: 100 // the default width.
 //  ^^^^^ entity.other.attribute-name.qml
 //         ^^^ meta.embedded.expression.qml
-//             ^^^^^^^^^^^^^^^^^^^^^ comment.line.qml - meta.embedded.expression.qml
+//             ^^^^^^^^^^^^^^^^^^^^^ comment.line.qml
+//             ^^^^^^^^^^^^^^^^^^^^^ - meta.embedded.expression.qml
     height: 10
-//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^ - meta.embedded.expression.qml
     x: 1 // note:
 //  ^ entity.other.attribute-name.qml
 //     ^ meta.embedded.expression.qml
-//       ^^^^^^^^ comment.line.qml - meta.embedded.expression.qml
+//       ^^^^^^^^ comment.line.qml
+//       ^^^^^^^^ - meta.embedded.expression.qml
     y: 2
-//  ^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^ entity.other.attribute-name.qml
+//  ^ - meta.embedded.expression.qml
 
     // a regular expression ends with a slash, which is not an operator
     validator: /[0-9]+/
 //  ^^^^^^^^^ entity.other.attribute-name.qml
 //             ^^^^^^^^ meta.embedded.expression.qml
     height: 10
-//  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//  ^^^^^^ entity.other.attribute-name.qml
+//  ^^^^^^ - meta.embedded.expression.qml
 }
 // <- - meta.embedded.expression.qml
 
@@ -225,22 +239,26 @@ Rectangle {
 //                     ^ - entity.name.type.object.qml
 //                     ^ punctuation.definition.block.qml
         GradientStop { position: 0.0; color: "yellow" }
-//                     ^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//                     ^^^^^^^^ entity.other.attribute-name.qml
+//                     ^^^^^^^^ - meta.embedded.expression.qml
 //                             ^^ - meta.embedded.expression.qml
 //                               ^^^ meta.embedded.expression.qml
 //                                  ^^ - meta.embedded.expression.qml
 //                                  ^ punctuation.terminator.statement.qml
-//                                    ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//                                    ^^^^^ entity.other.attribute-name.qml
+//                                    ^^^^^ - meta.embedded.expression.qml
 //                                         ^^ - meta.embedded.expression.qml
 //                                           ^^^^^^^^ meta.embedded.expression.qml
 //                                                    ^ - meta.embedded.expression.qml
         GradientStop { position: 1.0; color: "green" }
-//                     ^^^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//                     ^^^^^^^^ entity.other.attribute-name.qml
+//                     ^^^^^^^^ - meta.embedded.expression.qml
 //                             ^^ - meta.embedded.expression.qml
 //                               ^^^ meta.embedded.expression.qml
 //                                  ^^ - meta.embedded.expression.qml
 //                                  ^ punctuation.terminator.statement.qml
-//                                    ^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//                                    ^^^^^ entity.other.attribute-name.qml
+//                                    ^^^^^ - meta.embedded.expression.qml
 //                                         ^^ - meta.embedded.expression.qml
 //                                           ^^^^^^^ meta.embedded.expression.qml
 //                                                   ^ - meta.embedded.expression.qml
@@ -271,7 +289,8 @@ ListView {
 //             ^^^ meta.embedded.expression.qml
 //                ^^ - meta.embedded.expression.qml
 //                ^ punctuation.terminator.statement.qml
-//                  ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//                  ^^^^^^ entity.other.attribute-name.qml
+//                  ^^^^^^ - meta.embedded.expression.qml
 //                          ^^ meta.embedded.expression.qml
 
         Rectangle {
@@ -280,7 +299,8 @@ ListView {
 //                 ^^^ meta.embedded.expression.qml
 //                    ^^ - meta.embedded.expression.qml
 //                    ^ punctuation.terminator.statement.qml
-//                      ^^^^^^ entity.other.attribute-name.qml - meta.embedded.expression.qml
+//                      ^^^^^^ entity.other.attribute-name.qml
+//                      ^^^^^^ - meta.embedded.expression.qml
 //                              ^^ meta.embedded.expression.qml
             color: _delegate.ListView.isCurrentItem ? "red" : "yellow" // correct
 //          ^^^^^ entity.other.attribute-name.qml

@@ -137,10 +137,12 @@ Rectangle {
 //         ^ entity.name.function.signal.qml
 //            ^^ - meta.signal.qml
 //            ^ punctuation.terminator.statement.qml
-//              ^^^^^ entity.other.attribute-name.qml - meta.signal.qml
+//              ^^^^^ entity.other.attribute-name.qml
+//              ^^^^^ - meta.signal.qml
 //  ^^^^^^^^^^ meta.signal.qml
     width: 10; signal d
-//  ^^^^^ entity.other.attribute-name.qml - meta.signal.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.signal.qml
 //           ^^ - meta.signal.qml
 //           ^ punctuation.terminator.statement.qml
 //             ^^^^^^ storage.type.signal.qml

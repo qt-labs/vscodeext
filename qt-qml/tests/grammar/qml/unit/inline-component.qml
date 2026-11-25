@@ -45,7 +45,8 @@ Item {
 //      ^^^^^^^^^^^^^^^^^^ meta.component.qml
     }
     width: 10
-//  ^^^^^ entity.other.attribute-name.qml - meta.component.qml
+//  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ - meta.component.qml
 }
 
 //------------------------------------------------------------------------------

@@ -53,12 +53,16 @@ pragma Translator: my_context2
 //                 ^^^^^^^^^^^ constant.language.pragma.qml
 pragma Translator: "my\"context"
 //                 ^^^ string.quoted.double.qml
-//                    ^^ string.quoted.double.qml constant.character.escape.qml
-//                      ^^^^^^^^ string.quoted.double.qml - constant.character.escape.qml
+//                    ^^ string.quoted.double.qml
+//                    ^^ constant.character.escape.qml
+//                      ^^^^^^^^ string.quoted.double.qml
+//                      ^^^^^^^^ - constant.character.escape.qml
 pragma Translator: 'my\'context'
 //                 ^^^ string.quoted.single.qml
-//                    ^^ string.quoted.single.qml constant.character.escape.qml
-//                      ^^^^^^^^ string.quoted.single.qml - constant.character.escape.qml
+//                    ^^ string.quoted.single.qml
+//                    ^^ constant.character.escape.qml
+//                      ^^^^^^^^ string.quoted.single.qml
+//                      ^^^^^^^^ - constant.character.escape.qml
 
 //------------------------------------------------------------------------------
 // multiple values
