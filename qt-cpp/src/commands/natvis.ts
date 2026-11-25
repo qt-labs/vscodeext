@@ -5,12 +5,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { getSelectedKit, IsQtKit } from '@cmd/register-qt-path';
 import { createLogger, telemetry } from 'qt-lib';
 import { EXTENSION_ID } from '@/constants';
-import { QtVersionFromKit } from '@/util/util';
-import { CppProjectType, getActiveProject } from '@/project';
-import { coreAPI } from '@/extension';
+import { getActiveProject } from '@/project';
 
 const logger = createLogger('natvis');
 
@@ -54,35 +51,12 @@ export function registerNatvisCommand() {
         logger.error('Cannot find an active project');
         return '';
       }
-      if (project.type === CppProjectType.Presets) {
-        const qtpaths = await project.getQtPaths();
-        if (!qtpaths) {
-          const error = 'Cannot find Qt Paths in the project presets';
-          throw new Error(error);
-        }
-        const qtInfo = coreAPI?.getQtInfoFromPath(qtpaths);
-        const majorVersion = qtInfo?.info?.get('QT_VERSION')?.split('.')[0];
-        if (!majorVersion) {
-          throw new Error('Cannot determine the major version');
-        }
-        return getNatvis(majorVersion);
-      } else {
-        // CppProjectType.Kit
-        const kit = await getSelectedKit();
-        if (!kit || !IsQtKit(kit)) {
-          const error = `${kit?.name ?? ''} is not a Qt kit`;
-          throw new Error(error);
-        }
-        const version = QtVersionFromKit(kit);
-        if (version) {
-          const majorVersion = version.split('.')[0];
-          if (!majorVersion) {
-            throw new Error('Cannot determine the major version');
-          }
-          return getNatvis(majorVersion);
-        }
+      // Ask for a kit if none is selected
+      const majorVersion = await project.getMajorQtVersion(false);
+      if (!majorVersion) {
+        throw new Error('Cannot determine the major version');
       }
-      return undefined;
+      return getNatvis(majorVersion);
     }
   );
   const natvis5Disposal = vscode.commands.registerCommand(
