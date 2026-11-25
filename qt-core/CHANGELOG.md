@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.17.2 (Nov 25, 2026)
+
+🐞 **Fixed**
+
+- Fix projects that you create from examples failing to build against MinGW builds of Qt on machines that have Visual Studio installed
+  - Set the MinGW compilers in the generated `CMakePresets.json` file and add MinGW to its `PATH`
+- Include the `Qt Bridge C#` extension in the `Qt: Open Qt Extension settings` command and in the extension list of the Welcome page
+
 ## 1.17.1 (Oct 22, 2026)
 
 ### qtcli

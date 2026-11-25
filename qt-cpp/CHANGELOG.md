@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.17.2 (Nov 25, 2026)
+
+🐞 **Fixed**
+
+- Fix the kits of MinGW builds of Qt registered with `qtpaths` building with MSVC on machines that have Visual Studio installed
+  - Set the MinGW compilers in the kits and add MinGW to their `PATH`
+  - Use the MinGW version that the Qt build names when the Qt Software Manager (`qt-sm`) extension provides it, and otherwise the MinGW in the `Tools` folder of the Qt installation
+  - Generate the kits again when the Qt Software Manager (`qt-sm`) extension provides its MinGW toolchains after the kits were generated
+- Fix `${command:qt-cpp.minGWgdb}` not finding `gdb` for projects that use CMake presets and for Qt installations without a `Tools` folder
+
 ## 1.17.1 (Oct 22, 2026)
 
 🐞 **Fixed**

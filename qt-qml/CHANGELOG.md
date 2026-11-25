@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.17.2 (Nov 25, 2026)
+
+🐞 **Fixed**
+
+- Show a warning instead of the `Cannot start QML language server. not found` error when no QML Language Server executable is found
+
 ## 1.17.1 (Oct 22, 2026)
 
 🎉 **Added**
