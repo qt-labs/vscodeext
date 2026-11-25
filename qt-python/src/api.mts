@@ -21,6 +21,36 @@ import { PySideProject } from './project.mjs';
 
 const logger = createLogger('api');
 
+export async function checkPythonSyntax(
+  pythonPath: string,
+  cwd: string,
+  filePath: string
+): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    const proc = childProcess.spawn(
+      pythonPath,
+      ['-m', 'py_compile', filePath],
+      {
+        cwd,
+        shell: false
+      }
+    );
+    let output = '';
+    proc.stdout.on('data', (data: Buffer) => {
+      output += data.toString();
+    });
+    proc.stderr.on('data', (data: Buffer) => {
+      output += data.toString();
+    });
+    proc.on('error', (error) => {
+      resolve(String(error));
+    });
+    proc.on('exit', (code) => {
+      resolve(code === 0 ? undefined : output.trim());
+    });
+  });
+}
+
 export class PySideAPIImpl implements PySideAPI {
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   getProject(folder: vscode.WorkspaceFolder): PySideProjectAPI | undefined {
@@ -89,27 +119,40 @@ class PySideProjectWrapper implements PySideProjectAPI {
     filePath: string,
     args?: string[]
   ): childProcess.ChildProcess | undefined {
-    let command = `python "${filePath}"`;
-    if (args?.length) {
-      command += ` ${args.join(' ')}`;
+    const pythonPath = this.project.env.pythonPath;
+    if (!pythonPath) {
+      logger.error(
+        `No Python interpreter configured for: ${this.folder.uri.fsPath}`
+      );
+      return undefined;
     }
 
-    const cmd = new PySideCommandBuilder()
-      .useVenv(true)
-      .venvBinPath(this.project.env.venvBinPath)
-      .build(command);
-
-    logger.info(`runFile: ${cmd.commandLine}`);
-    return childProcess.spawn(cmd.commandLine, {
-      shell: cmd.shellPath,
+    const processArgs = [filePath, ...(args ?? [])];
+    logger.info(`runFile: ${[pythonPath, ...processArgs].join(' ')}`);
+    return childProcess.spawn(pythonPath, processArgs, {
+      shell: false,
       cwd: this.folder.uri.fsPath
     });
+  }
+
+  async checkPythonSyntax(filePath: string): Promise<string | undefined> {
+    const pythonPath = this.project.env.pythonPath;
+    if (!pythonPath) {
+      return `No Python interpreter configured for: ${this.folder.uri.fsPath}`;
+    }
+    return checkPythonSyntax(pythonPath, this.folder.uri.fsPath, filePath);
   }
 
   async findPythonFiles(): Promise<string[]> {
     return glob('**/*.py', {
       cwd: this.folder.uri.fsPath,
-      ignore: ['**/.*/**', '**/__pycache__/**', '**/node_modules/**']
+      ignore: [
+        '**/.*/**',
+        '**/__pycache__/**',
+        '**/node_modules/**',
+        '**/build/**',
+        '**/dist/**'
+      ]
     });
   }
 

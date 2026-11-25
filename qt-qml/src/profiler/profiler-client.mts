@@ -49,6 +49,34 @@ export const enum ProfileRangeType {
   Javascript = 5
 }
 
+export const enum ProfileFeature {
+  JavaScript = 0,
+  Memory = 1,
+  PixmapCache = 2,
+  SceneGraph = 3,
+  Animations = 4,
+  Painting = 5,
+  Compiling = 6,
+  Creating = 7,
+  Binding = 8,
+  HandlingSignal = 9,
+  InputEvents = 10,
+  DebugMessages = 11,
+  Quick3D = 12
+}
+
+export const enum InputEventType {
+  InputKeyPress = 0,
+  InputKeyRelease = 1,
+  InputKeyUnknown = 2,
+  InputMousePress = 3,
+  InputMouseRelease = 4,
+  InputMouseMove = 5,
+  InputMouseDoubleClick = 6,
+  InputMouseWheel = 7,
+  InputMouseUnknown = 8
+}
+
 /** All non-undefined feature bits from ProfileFeature enum */
 export const ALL_PROFILE_FEATURES: bigint =
   (BigInt(1) << BigInt(13)) - BigInt(1);

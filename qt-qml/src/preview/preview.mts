@@ -20,6 +20,7 @@ import { EXTENSION_ID } from '@/constants.js';
 import { projectManager, coreAPI } from '@/extension.mjs';
 import { QmlPreviewConnectionManager } from '@/preview/preview-connection-manager.mjs';
 import { FpsInfo } from '@/preview/preview-client.mjs';
+import { RecordedInputEvent } from '@/preview/preview-event-replay-client.mjs';
 import { ServerScheme } from '@debug/debug-connection.mjs';
 import {
   QtProcess,
@@ -44,6 +45,16 @@ let previewManager: QmlPreviewConnectionManager | undefined;
 let previewProcess: QtProcess | undefined;
 let previewLaunch: QtBridgePreviewLaunch | undefined;
 let previewStartPromise: Promise<void> | undefined;
+// Relaunches the current preview session with the parameters of its last
+// start. Used to restart the application after a hot reload failure.
+let relaunchCurrentPreview: (() => Promise<boolean>) | undefined;
+// Input events preserved across a preview restart. They are seeded into the
+// next connection manager and replayed to restore the UI state.
+// Maps to the event storage in Qt Creator's QmlPreviewPlugin.
+let pendingReplayEvents: RecordedInputEvent[] | undefined;
+let cleaningSession = false;
+let pythonRestartValidation: Promise<void> | undefined;
+const pendingPythonRestartFiles = new Set<string>();
 
 function isPreviewStartingOrRunning() {
   return (
@@ -54,26 +65,56 @@ function isPreviewStartingOrRunning() {
 }
 
 function cleanupSession() {
-  previewManager?.dispose();
-  previewManager = undefined;
-  previewProcess?.kill();
-  previewProcess = undefined;
-  previewLaunch?.dispose();
-  previewLaunch = undefined;
-  ui.setPreviewStopped();
+  if (cleaningSession) {
+    return;
+  }
+  cleaningSession = true;
+  try {
+    previewManager?.dispose();
+    previewManager = undefined;
+    previewProcess?.kill();
+    previewProcess = undefined;
+    previewLaunch?.dispose();
+    previewLaunch = undefined;
+    relaunchCurrentPreview = undefined;
+    ui.setPreviewStopped();
+  } finally {
+    cleaningSession = false;
+  }
 }
 
-function createPreviewManager() {
-  return createPreviewManagerForBuildDirs(projectManager.getBuildDirs());
+/**
+ * Create the connection manager for a preview session.
+ *
+ * Hot reload (in-place updates) only applies to the running application:
+ * the service patches the objects the application created itself and never
+ * instantiates a loaded URL. Previewing a single file therefore needs the
+ * classic preview, which shows the loaded file in a window of its own and
+ * reloads it on every change.
+ */
+function createPreviewManager(hotReload: boolean) {
+  return createPreviewManagerForBuildDirs(
+    projectManager.getBuildDirs(),
+    hotReload
+  );
 }
 
-function createPreviewManagerForBuildDirs(projectBuildDirs: readonly string[]) {
+function createPreviewManagerForBuildDirs(
+  projectBuildDirs: readonly string[],
+  hotReload: boolean
+) {
   const manager = new QmlPreviewConnectionManager();
+  manager.hotReloadEnabled = hotReload;
   manager.setupFileWatcher();
   manager.buildDirs = [
     ...projectBuildDirs,
     ...qmlSettings.preview.additionalBuildDirs.get([])
   ];
+
+  if (pendingReplayEvents && pendingReplayEvents.length > 0) {
+    manager.seedRecordedEvents(pendingReplayEvents);
+  }
+  pendingReplayEvents = undefined;
 
   return manager;
 }
@@ -84,7 +125,12 @@ async function resolveCMakeProgram() {
 }
 
 function buildPreviewArgs(host: string, port: number) {
-  return `-qmljsdebugger=host:${host},port:${port.toString()},block,services:QmlPreview,DebugTranslation`;
+  // The same services as Qt Creator's QmlPreviewServices. CanvasFrameRate
+  // (QML Profiler) records the input events and EventReplay (Qt 6.12+)
+  // re-injects them to restore the UI state after a full reload or a
+  // restart. Older Qt versions ignore unknown services.
+  const services = 'QmlPreview,DebugTranslation,CanvasFrameRate,EventReplay';
+  return `-qmljsdebugger=host:${host},port:${port.toString()},block,services:${services}`;
 }
 
 /**
@@ -158,7 +204,8 @@ async function launchCMakePreview(qmlFile?: string) {
   }
   logger.info(`Host: ${host}, Port: ${port.toString()}`);
 
-  const manager = createPreviewManager();
+  // A single file is shown by the classic preview, see createPreviewManager.
+  const manager = createPreviewManager(qmlFile === undefined);
 
   manager.onConnectionClosed(() => {
     logger.info('QML Preview connection closed');
@@ -187,6 +234,7 @@ async function launchCMakePreview(qmlFile?: string) {
     );
 
     setupProcessForPreview(process, manager, qmlFile, host, port);
+    relaunchCurrentPreview = async () => launchCMakePreview(qmlFile);
     return true;
   } catch (err) {
     logger.error(`Failed to start QML Preview: ${String(err)}`);
@@ -273,7 +321,9 @@ async function launchQtBridgePreview(
       return false;
     }
 
-    manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs);
+    // The application loads its root QML itself and the current file is
+    // only registered for hot reload, so in-place updates always apply.
+    manager = createPreviewManagerForBuildDirs(metadata.qml.buildDirs, true);
     manager.setSourceRedirect(
       createQtBridgeSourceRedirect(metadata, path.dirname(launch.executable))
     );
@@ -315,6 +365,8 @@ async function launchQtBridgePreview(
 
     previewLaunch = launch;
     setupProcessForPreview(process, manager, undefined, host, port);
+    relaunchCurrentPreview = async () =>
+      launchQtBridgePreview(folder, bridgeProject, qmlFile);
     return true;
   } catch (err) {
     logger.error(`Failed to start Qt Bridge preview: ${String(err)}`);
@@ -376,7 +428,8 @@ async function launchPySidePreview(
   }
   logger.info(`Host: ${host}, Port: ${String(port)}`);
 
-  const manager = createPreviewManager();
+  // A single file is shown by the classic preview, see createPreviewManager.
+  const manager = createPreviewManager(qmlFile === undefined);
   manager.onConnectionClosed(() => {
     logger.info('QML Preview connection closed');
     cleanupSession();
@@ -395,46 +448,55 @@ async function launchPySidePreview(
     if (!pySideProject) {
       throw new Error('No PySide project found for the workspace folder');
     }
-    if (pySideProject.supportsProjectRunArgs()) {
-      // PySide >= 6.10.3: pass args via pyside6-project run <args>
-      logger.info('Using pyside6-project run with args');
-      previewProcess = pySideProject.runProject(allArgs);
+
+    let absFilePath: string | undefined = await pySideProject.getMainFile();
+    if (absFilePath) {
+      logger.info(`Auto-detected main file: ${absFilePath}`);
     } else {
-      // PySide < 6.10.3: replicate pyside6-project run manually:
-      // build the project, then run the main file with args.
-      logger.info(
-        'PySide version does not support run args, replicating pyside6-project run'
-      );
-
-      // Determine the main file using the same logic as pyside6-project run:
-      // 1. file named main.py, 2. file containing __main__, 3. user picker.
-      let absFilePath: string | undefined = await pySideProject.getMainFile();
-      if (absFilePath) {
-        logger.info(`Auto-detected main file: ${absFilePath}`);
-      } else {
-        logger.info('Main file not auto-detected, falling back to file picker');
-        const selectedFile = await pickPythonFile(project, pySideProject);
-        if (!selectedFile) {
-          manager.dispose();
-          return false;
-        }
-        absFilePath = path.isAbsolute(selectedFile)
-          ? selectedFile
-          : path.join(folder.uri.fsPath, selectedFile);
-        logger.info(`Selected main file: ${absFilePath}`);
-      }
-
-      logger.info('Building PySide project before running file...');
-      const buildOk = await pySideProject.build();
-      if (buildOk !== 0) {
-        logger.error('PySide project build failed');
+      logger.info('Main file not auto-detected, falling back to file picker');
+      const selectedFile = await pickPythonFile(project, pySideProject);
+      if (!selectedFile) {
         manager.dispose();
-        ui.showFailedToStart(new Error('pyside6-project build failed'));
         return false;
       }
-
-      previewProcess = pySideProject.runFile(absFilePath, allArgs);
+      absFilePath = path.isAbsolute(selectedFile)
+        ? selectedFile
+        : path.join(folder.uri.fsPath, selectedFile);
+      logger.info(`Selected main file: ${absFilePath}`);
     }
+
+    logger.info('Building PySide project before running file...');
+    const buildOk = await pySideProject.build();
+    if (buildOk !== 0) {
+      logger.error('PySide project build failed');
+      manager.dispose();
+      ui.showFailedToStart(new Error('pyside6-project build failed'));
+      return false;
+    }
+
+    const pythonFiles = (await pySideProject.findPythonFiles()).map((file) =>
+      path.isAbsolute(file) ? file : path.join(folder.uri.fsPath, file)
+    );
+    manager.setupPythonFileWatcher(folder, pythonFiles);
+    manager.onPythonFileChanged((files) => {
+      void restartAfterPythonSave(manager, pySideProject, files);
+    });
+
+    const extension = vscode.extensions.getExtension(
+      `theqtcompany.${EXTENSION_ID}`
+    );
+    if (!extension) {
+      throw new Error('Qt QML extension is not available');
+    }
+    const launcherPath = path.join(
+      extension.extensionPath,
+      'res',
+      'preview_launcher.py'
+    );
+    previewProcess = pySideProject.runFile(launcherPath, [
+      absFilePath,
+      ...allArgs
+    ]);
 
     if (
       !previewProcess ||
@@ -451,6 +513,7 @@ async function launchPySidePreview(
     );
 
     setupProcessForPreview(previewProcess, manager, qmlFile, host, port);
+    relaunchCurrentPreview = async () => launchPySidePreview(folder, qmlFile);
     return true;
   } catch (err) {
     logger.error(`Failed to start PySide preview: ${String(err)}`);
@@ -504,7 +567,32 @@ function setupProcessForPreview(
         `signal ${String(signal)}, ` +
         `elapsed ${String(elapsedMs)} ms`
     );
+    if (previewProcess !== proc) {
+      // The session was already cleaned up or replaced, e.g. by a restart
+      // after a hot reload failure. Don't tear down the new session.
+      logger.info('Ignoring exit of a superseded QML Preview process');
+      return;
+    }
     cleanupSession();
+  });
+
+  manager.onHotReloadStateChanged((settings) => {
+    qmlPreviewOutputChannel?.appendLine(
+      `QML Preview hot reload is ${settings.enableInPlaceUpdates ? 'active' : 'inactive'}.`
+    );
+  });
+
+  manager.onHotReloadFailure((reason) => {
+    qmlPreviewOutputChannel?.appendLine(
+      `QML Preview hot reload failed: ${reason}. Restarting the application...`
+    );
+    ui.showHotReloadFailed(reason);
+    void restartPreviewSession(manager);
+  });
+
+  manager.onRestart(() => {
+    logger.info('A changed file requires restarting the QML Preview');
+    void restartPreviewSession(manager);
   });
 
   previewManager = manager;
@@ -555,10 +643,130 @@ function setupProcessForPreview(
   ui.setPreviewRunning();
 }
 
+/**
+ * Restart the preview session, preserving the recorded input events so that
+ * the UI state can be restored after the application is up again.
+ * Maps to Qt Creator's restart() handling in the QML Preview plugin.
+ */
+async function restartPreviewSessionImpl(manager: QmlPreviewConnectionManager) {
+  if (previewManager !== manager) {
+    logger.info('Ignoring restart request from a stale preview session');
+    return;
+  }
+
+  const relaunch = relaunchCurrentPreview;
+  if (!relaunch) {
+    // Attached sessions have no process to restart. A rerun (full reload)
+    // is the best recovery available.
+    logger.warn(
+      'Cannot restart the QML Preview application automatically, ' +
+        'triggering a full reload instead'
+    );
+    manager.rerun();
+    return;
+  }
+
+  const events = manager.recordedEvents;
+  logger.info(
+    `Restarting QML Preview, preserving ${String(events.length)} recorded input events`
+  );
+  cleanupSession();
+  pendingReplayEvents = events;
+
+  try {
+    if (!(await relaunch())) {
+      pendingReplayEvents = undefined;
+      logger.error('Failed to restart the QML Preview application');
+    }
+  } catch (err) {
+    pendingReplayEvents = undefined;
+    logger.error(`Failed to restart QML Preview: ${String(err)}`);
+    ui.showFailedToStart(err instanceof Error ? err : new Error(String(err)));
+  }
+}
+
+async function restartPreviewSession(manager: QmlPreviewConnectionManager) {
+  if (previewStartPromise) {
+    logger.info('Ignoring restart request: a preview start is in progress');
+    return;
+  }
+  const restartPromise = restartPreviewSessionImpl(manager);
+  previewStartPromise = restartPromise;
+  try {
+    await restartPromise;
+  } finally {
+    if (previewStartPromise === restartPromise) {
+      previewStartPromise = undefined;
+    }
+  }
+}
+
+async function restartAfterPythonSave(
+  manager: QmlPreviewConnectionManager,
+  pySideProject: PySideProject,
+  files: string[]
+) {
+  files.forEach((file) => pendingPythonRestartFiles.add(file));
+  if (pythonRestartValidation) {
+    logger.info('Queued Python changes during restart validation');
+    return;
+  }
+  if (previewManager !== manager) {
+    pendingPythonRestartFiles.clear();
+    return;
+  }
+
+  const validation = (async () => {
+    const validatedFiles = new Set<string>();
+    while (pendingPythonRestartFiles.size > 0 && previewManager === manager) {
+      const batch = [...pendingPythonRestartFiles];
+      pendingPythonRestartFiles.clear();
+      batch.forEach((file) => validatedFiles.add(file));
+      logger.info(
+        'Checking Python syntax before restart:',
+        batch.map((file) => path.basename(file)).join(', ')
+      );
+      for (const file of batch) {
+        const error = await pySideProject.checkPythonSyntax(file);
+        if (error) {
+          pendingPythonRestartFiles.clear();
+          const message =
+            `Python syntax check failed for ${path.basename(file)}; ` +
+            'keeping the current QML Preview running.';
+          logger.error(message, error);
+          qmlPreviewOutputChannel?.appendLine(`\n${message}\n${error}\n`);
+          ui.showError(message);
+          return;
+        }
+      }
+    }
+
+    if (previewManager !== manager) {
+      pendingPythonRestartFiles.clear();
+      return;
+    }
+    qmlPreviewOutputChannel?.appendLine(
+      `\nPython files changed: ${[...validatedFiles]
+        .map((file) => path.basename(file))
+        .join(', ')}. Restarting QML Preview...\n`
+    );
+    await restartPreviewSession(manager);
+  })();
+
+  pythonRestartValidation = validation;
+  try {
+    await validation;
+  } finally {
+    if (pythonRestartValidation === validation) {
+      pythonRestartValidation = undefined;
+    }
+  }
+}
+
 function attachPreview(host: string, port: number) {
   logger.info(`Attaching to ${host}:${port.toString()}...`);
 
-  const manager = createPreviewManager();
+  const manager = createPreviewManager(true);
 
   manager.onConnectionClosed(() => {
     logger.info('QML Preview connection closed in attach mode');
@@ -577,6 +785,19 @@ function attachPreview(host: string, port: number) {
   manager.onDebugServiceUnavailable(() => {
     logger.info('QML Preview debug service unavailable in attach mode');
     cleanupSession();
+  });
+  // There is no process to restart in attach mode. A rerun (full reload) is
+  // the best recovery available; the user has to restart the application to
+  // fully recover from a hot reload failure.
+  manager.onHotReloadFailure((reason) => {
+    ui.showHotReloadFailedAttached(reason);
+    manager.rerun();
+  });
+  manager.onRestart(() => {
+    logger.info(
+      'A changed file requires a restart, triggering a full reload instead'
+    );
+    manager.rerun();
   });
 
   try {

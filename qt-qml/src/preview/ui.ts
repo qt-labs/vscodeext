@@ -170,6 +170,18 @@ export class QmlPreviewUI {
     }
   }
 
+  showHotReloadFailed(reason: string) {
+    this.showWarning(
+      `QML Preview hot reload failed: ${reason}. Restarting the application...`
+    );
+  }
+
+  showHotReloadFailedAttached(reason: string) {
+    this.showWarning(
+      `QML Preview hot reload failed: ${reason}. Restart the application to recover.`
+    );
+  }
+
   showReloaded() {
     this.showInfo('QML Preview reloaded.');
   }
