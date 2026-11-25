@@ -61,13 +61,22 @@ Rectangle {
     anchors.fill: parent
 //  ^^^^^^^^^^^^ entity.other.attribute-name.qml
 //                ^^^^^^ meta.embedded.expression.qml
+//         ^ punctuation.accessor.qml
+//          ^^^^ meta.group.anchors.qml
+//  ^^^^^^^ - meta.group.anchors.qml
+    font.onPixelSizeChanged: f()
+//       ^^^^^^^^^^^^^^^^^^ meta.group.font.qml
+//       ^^^^^^^^^^^^^^^^^^ entity.name.function.handler.qml
     anchors {
 //  ^^^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^ - meta.embedded.expression.qml
 //          ^ punctuation.definition.block.qml
+//  ^^^^^^^^^ meta.group.anchors.qml
         left: other.right // comment
 //      ^^^^ entity.other.attribute-name.qml
 //            ^^^^^^^^^^^ meta.embedded.expression.qml
+//      ^^^^ meta.group.anchors.qml
+//      ^^^^ meta.object.type.Rectangle.qml
         right: parent.right
 //      ^^^^^ entity.other.attribute-name.qml
 //             ^^^^^^^^^^^^ meta.embedded.expression.qml

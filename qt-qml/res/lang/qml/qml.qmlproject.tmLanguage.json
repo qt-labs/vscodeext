@@ -109,12 +109,22 @@
       ]
     },
     "object-type-only": {
-      "match": "\\b([A-Z][\\w\\.]*)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
-      "captures": {
+      "name": "meta.object.type.$1.qml",
+      "begin": "\\b([A-Z][\\w\\.]*)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
+      "beginCaptures": {
         "1": {
           "name": "entity.name.type.object.qml"
         }
-      }
+      },
+      "end": "(?<=\\})|(?=[^\\s{/])",
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#object-block"
+        }
+      ]
     },
     "object-block": {
       "name": "meta.object.qml",
@@ -137,7 +147,7 @@
       ]
     },
     "object-declaration": {
-      "name": "meta.object.qml",
+      "name": "meta.object.qml meta.object.type.$1.qml",
       "begin": "\\b([A-Z][\\w\\.]*)\\s*(\\{)",
       "beginCaptures": {
         "1": {
@@ -442,7 +452,7 @@
       ]
     },
     "on-prop": {
-      "name": "meta.object.qml",
+      "name": "meta.object.qml meta.object.type.$1.qml",
       "begin": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)\\s*(\\{)",
       "beginCaptures": {
         "1": {
@@ -471,8 +481,9 @@
       ]
     },
     "on-prop-type-only": {
-      "match": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
-      "captures": {
+      "name": "meta.object.type.$1.qml",
+      "begin": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
+      "beginCaptures": {
         "1": {
           "name": "entity.name.type.object.qml"
         },
@@ -482,7 +493,16 @@
         "3": {
           "name": "entity.other.attribute-name.qml"
         }
-      }
+      },
+      "end": "(?<=\\})|(?=[^\\s{/])",
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#object-block"
+        }
+      ]
     },
     "comp-inline": {
       "name": "meta.component.qml",
@@ -503,6 +523,7 @@
       ]
     },
     "attr-group-notation": {
+      "name": "meta.group.$1.qml",
       "begin": "\\b(\\w*)\\s*(\\{)",
       "beginCaptures": {
         "1": {
@@ -656,13 +677,37 @@
     "attr-name-parts": {
       "patterns": [
         {
-          "match": "\\b([A-Z]\\w*)(\\.)(?=[_a-zA-Z])",
+          "match": "\\b([A-Z]\\w*)(\\.)([_a-zA-Z]\\w*)",
           "captures": {
             "1": {
               "name": "entity.name.type.attached.qml"
             },
             "2": {
               "name": "punctuation.accessor.qml"
+            },
+            "3": {
+              "name": "meta.attached.type.$1.qml",
+              "patterns": [
+                {
+                  "include": "#handler-name"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "match": "\\b([_a-z]\\w*)(\\.)([_a-zA-Z]\\w*)",
+          "captures": {
+            "2": {
+              "name": "punctuation.accessor.qml"
+            },
+            "3": {
+              "name": "meta.group.$1.qml",
+              "patterns": [
+                {
+                  "include": "#handler-name"
+                }
+              ]
             }
           }
         },

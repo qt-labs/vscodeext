@@ -178,6 +178,62 @@ Item {
 }
 
 //------------------------------------------------------------------------------
+// type name in the object scope
+//------------------------------------------------------------------------------
+Window {
+// <-------- meta.object.type.Window.qml
+    Rectangle { width: 100 }
+//              ^^^^^ meta.object.type.Rectangle.qml
+//              ^^^^^ meta.object.type.Window.qml
+    width: 100
+//  ^^^^^ meta.object.type.Window.qml
+//  ^^^^^ - meta.object.type.Rectangle.qml
+    T.Button { }
+//  ^^^^^^^^^^^^ meta.object.type.T.Button.qml
+    Behavior on x { }
+//  ^^^^^^^^^^^^^^^^^ meta.object.type.Behavior.qml
+}
+
+// the brace on the next line
+Window
+// <------ meta.object.type.Window.qml
+{
+// <- meta.object.type.Window.qml
+    Rectangle // comment
+//  ^^^^^^^^^^^^^^^^^^^^ meta.object.type.Rectangle.qml
+    // comment
+//  ^^^^^^^^^^ meta.object.type.Rectangle.qml
+    {
+//  ^ meta.object.type.Rectangle.qml
+        width: 100
+//      ^^^^^ meta.object.type.Rectangle.qml
+//      ^^^^^ meta.object.type.Window.qml
+    }
+//  ^ meta.object.type.Rectangle.qml
+    height: 100
+//  ^^^^^^ meta.object.type.Window.qml
+//  ^^^^^^ - meta.object.type.Rectangle.qml
+    Behavior on x
+//  ^^^^^^^^^^^^^ meta.object.type.Behavior.qml
+    {
+        enabled: true
+//      ^^^^^^^ meta.object.type.Behavior.qml
+    }
+    opacity: 1
+//  ^^^^^^^ - meta.object.type.Behavior.qml
+}
+// <- meta.object.type.Window.qml
+
+// the type name alone: the scope ends before the next attribute
+Item {
+    Rectangle
+//  ^^^^^^^^^ meta.object.type.Rectangle.qml
+    width: 10
+//  ^^^^^ - meta.object.type.Rectangle.qml
+//  ^^^^^ meta.object.type.Item.qml
+}
+
+//------------------------------------------------------------------------------
 // end of file: every object above is closed
 //------------------------------------------------------------------------------
 // end

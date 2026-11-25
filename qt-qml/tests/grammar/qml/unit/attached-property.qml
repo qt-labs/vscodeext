@@ -45,11 +45,14 @@ Rectangle {
 //        ^ - entity.name.type.attached.qml
 //         ^^^^^^^^^ - entity.name.type.attached.qml
 //         ^^^^^^^^^ - punctuation.accessor.qml
+//         ^^^^^^^^^ meta.attached.type.Layout.qml
+//  ^^^^^^^ - meta.attached.type.Layout.qml
 //                    ^^^^ meta.embedded.expression.qml
     Layout.margins: 16
 //  ^^^^^^ entity.name.type.attached.qml
 //         ^^^^^^^ entity.other.attribute-name.qml
 //         ^^^^^^^ - entity.name.type.attached.qml
+//         ^^^^^^^ meta.attached.type.Layout.qml
     ListView.delayRemove: {
 //  ^^^^^^^^ entity.name.type.attached.qml
 //          ^ punctuation.accessor.qml
@@ -65,10 +68,12 @@ Rectangle {
 //  ^^^^^^^^^ entity.name.type.attached.qml
 //           ^ punctuation.accessor.qml
 //            ^^^^^^^^^^^ entity.name.function.handler.qml
+//            ^^^^^^^^^^^ meta.attached.type.Component.qml
     anchors.fill: parent
 //  ^^^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^ - entity.name.type.attached.qml
 //         ^ punctuation.accessor.qml
+//          ^^^^ - meta.attached.type.anchors.qml
 }
 
 //------------------------------------------------------------------------------
