@@ -105,7 +105,11 @@ describe('OidcAuthenticator', () => {
   });
 
   function authenticator(
-    options: { transferTimeoutMs?: number; successPage?: string } = {}
+    options: {
+      transferTimeoutMs?: number;
+      successPage?: string;
+      errorPage?: string;
+    } = {}
   ) {
     return new OidcAuthenticator(storage, { config, ...options });
   }
@@ -189,6 +193,36 @@ describe('OidcAuthenticator', () => {
     const { done, page } = await loginWithBrowser(auth);
     await done;
     assert.equal(page.status, 200);
+    assert.equal(page.body, successPage);
+  });
+
+  it('serves the given error page after a redirect that fails', async () => {
+    const successPage = '<!DOCTYPE html><title>Signed in</title>';
+    const errorPage = '<!DOCTYPE html><title>Not signed in</title>';
+    const auth = authenticator({ successPage, errorPage });
+
+    // The login server denies the authorization.
+    server.denyAuthorization = true;
+    const denied = await loginWithBrowser(auth);
+    await rejectsWith(denied.done, OidcError.ServerError);
+    assert.equal(denied.page.status, 200);
+    assert.equal(denied.page.body, errorPage);
+
+    // A redirect that is not the one of the pending login leaves it pending.
+    server.denyAuthorization = false;
+    const urlPromise = new Promise<string>((resolve) => {
+      auth.onAuthorizationUrl = resolve;
+    });
+    const done = auth.login();
+    const url = await urlPromise;
+    const redirectUri = new URL(url).searchParams.get('redirect_uri') ?? '';
+    const stray = await browse(`${redirectUri}?code=stray&state=wrong-state`);
+    assert.equal(stray.status, 400);
+    assert.equal(stray.body, errorPage);
+    assert.equal(auth.isActive, true);
+
+    const page = await browse(url);
+    await done;
     assert.equal(page.body, successPage);
   });
 

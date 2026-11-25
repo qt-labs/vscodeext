@@ -346,7 +346,8 @@ async function waitForRedirect(
   op: Operation,
   state: string,
   issuer: string,
-  successPage: string | undefined
+  successPage: string | undefined,
+  errorPage: string | undefined
 ): Promise<string> {
   const server = op.server;
   if (!server) {
@@ -364,7 +365,8 @@ async function waitForRedirect(
         'content-type': 'text/html; charset=utf-8',
         'cache-control': 'no-store'
       });
-      res.end(ok && successPage ? successPage : callbackPage(ok, message));
+      const page = ok ? successPage : errorPage;
+      res.end(page ? page : callbackPage(ok, message));
     };
     server.on('request', (req, res) => {
       const url = new URL(req.url ?? '/', `http://${CALLBACK_HOST}`);
@@ -445,11 +447,15 @@ export interface OidcAuthenticatorOptions {
   onLog?: LogCallback;
   /** Called during `login()` with the URL the user has to open in a browser. */
   onAuthorizationUrl?: (url: string) => void;
-  /**
-   * HTML page shown in the browser after a successful redirect. Failures
-   * keep the built-in page, which names the cause.
-   */
+  /** HTML page shown in the browser after a successful redirect. */
   successPage?: string;
+  /**
+   * HTML page shown in the browser after a redirect that does not complete
+   * the login: one with an error, without an authorization code, or that
+   * does not belong to the pending login. Without it, the built-in page
+   * names the cause.
+   */
+  errorPage?: string;
 }
 
 /** Options of a single `OidcAuthenticator.login()`. */
@@ -467,6 +473,7 @@ export class OidcAuthenticator {
   private readonly storage: QtCredentialStorage;
   private readonly transferTimeoutMs: number;
   private readonly successPage: string | undefined;
+  private readonly errorPage: string | undefined;
   private operation: Operation | undefined;
   private discovery: Discovery | undefined;
   private _authorizationUrl: string | undefined;
@@ -484,6 +491,7 @@ export class OidcAuthenticator {
     this.transferTimeoutMs =
       options?.transferTimeoutMs ?? DEFAULT_TRANSFER_TIMEOUT_MS;
     this.successPage = options?.successPage;
+    this.errorPage = options?.errorPage;
     this.onLog = options?.onLog;
     this.onAuthorizationUrl = options?.onAuthorizationUrl;
   }
@@ -762,7 +770,8 @@ export class OidcAuthenticator {
       op,
       state,
       discovery.issuer,
-      this.successPage
+      this.successPage,
+      this.errorPage
     );
     this.log('info', 'Starting the OIDC login in the browser.');
     this.onAuthorizationUrl?.(this._authorizationUrl);

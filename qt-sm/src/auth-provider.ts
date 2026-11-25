@@ -23,6 +23,7 @@ import {
   SIGN_IN_STALL_MS
 } from '@/constants';
 import signInCallbackPage from '../webview-ui/sign-in-callback.html';
+import signInCallbackErrorPage from '../webview-ui/sign-in-callback-error.html';
 
 const logger = createLogger('auth');
 
@@ -109,6 +110,7 @@ export class QtAccountAuthenticationProvider
       config: applyOidcEnvOverrides({ ...OIDC_DEFAULTS, clientId }),
       onLog: logCallback('OidcAuthenticator'),
       successPage: signInCallbackPage,
+      errorPage: signInCallbackErrorPage,
       onAuthorizationUrl: (url) => {
         this.openBrowser(url);
       }
