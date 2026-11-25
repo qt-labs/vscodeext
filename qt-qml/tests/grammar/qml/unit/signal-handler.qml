@@ -10,6 +10,7 @@ Rectangle {
 //  ^^^^^^^^^^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^^^^^^^^ - meta.embedded.expression.qml
 //  ^^^^^^^^^^^^^^ entity.name.function.handler.qml
+//  ^^^^^^^^^^^^^^ meta.doc.member.widthChanged.qml
 //                  ^^^^^^^^^^^^^^^ meta.embedded.expression.qml
     onWidthChanged: {
 //  ^^^^^^^^^^^^^^ entity.other.attribute-name.qml
@@ -29,6 +30,7 @@ Rectangle {
         onClicked: (mouse) => {
 //      ^^^^^^^^^ entity.other.attribute-name.qml
 //      ^^^^^^^^^ - meta.embedded.expression.qml
+//      ^^^^^^^^^ meta.doc.member.clicked.qml
 //      ^^^^^^^^^ entity.name.function.handler.qml
 //                 ^^^^^^^^^^^^ meta.embedded.expression.qml
             console.log("clicked")

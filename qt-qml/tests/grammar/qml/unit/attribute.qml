@@ -8,6 +8,7 @@
 Rectangle {
     width: 100
 //  ^^^^^ entity.other.attribute-name.qml
+//  ^^^^^ meta.doc.member.width.qml
 //         ^^^ meta.embedded.expression.qml
     width: 100;
 //  ^^^^^ entity.other.attribute-name.qml
@@ -20,6 +21,7 @@ Rectangle {
 //            ^^ - meta.embedded.expression.qml
 //            ^ punctuation.terminator.statement.qml
 //              ^^^^^^ entity.other.attribute-name.qml
+//              ^^^^^^ meta.doc.member.height.qml
 //              ^^^^^^ - meta.embedded.expression.qml
 //                      ^^^ meta.embedded.expression.qml
     height : 480
@@ -36,6 +38,7 @@ Rectangle {
 //------------------------------------------------------------------------------
 Rectangle {
     id: root
+//  ^^ - meta.doc.member.id.qml
 //  ^^ keyword.other.id.qml
 //  ^^ - entity.other.attribute-name.qml
 //      ^^^^ entity.name.variable.id.qml
@@ -51,6 +54,7 @@ Rectangle {
 //           ^^^^^^^^^^ comment.line.qml
     idx: 1
 //  ^^^ entity.other.attribute-name.qml
+//  ^^^ meta.doc.member.idx.qml
 //  ^^^ - keyword.other.id.qml
 }
 
@@ -62,21 +66,27 @@ Rectangle {
 //  ^^^^^^^^^^^^ entity.other.attribute-name.qml
 //                ^^^^^^ meta.embedded.expression.qml
 //         ^ punctuation.accessor.qml
-//          ^^^^ meta.group.anchors.qml
-//  ^^^^^^^ - meta.group.anchors.qml
+//          ^^^^ meta.doc.member.anchors.fill.qml
+//  ^^^^^^^ - meta.doc.member.anchors.fill.qml
+//  ^^^^^^^ meta.doc.member.anchors.qml
     font.onPixelSizeChanged: f()
-//       ^^^^^^^^^^^^^^^^^^ meta.group.font.qml
+//       ^^^^^^^^^^^^^^^^^^ meta.doc.member.font.onPixelSizeChanged.qml
 //       ^^^^^^^^^^^^^^^^^^ entity.name.function.handler.qml
+//  ^^^^ meta.doc.member.font.qml
+//       ^^^^^^^^^^^^^^^^^^ meta.doc.member.pixelSizeChanged.qml
     anchors {
 //  ^^^^^^^ entity.other.attribute-name.qml
 //  ^^^^^^^ - meta.embedded.expression.qml
 //          ^ punctuation.definition.block.qml
-//  ^^^^^^^^^ meta.group.anchors.qml
+//  ^^^^^^^^^ meta.doc.group.anchors.qml
+//  ^^^^^^^ meta.doc.member.anchors.qml
+//          ^ - meta.doc.member.anchors.qml
         left: other.right // comment
 //      ^^^^ entity.other.attribute-name.qml
 //            ^^^^^^^^^^^ meta.embedded.expression.qml
-//      ^^^^ meta.group.anchors.qml
-//      ^^^^ meta.object.type.Rectangle.qml
+//      ^^^^ meta.doc.group.anchors.qml
+//      ^^^^ meta.doc.type.Rectangle.qml
+//      ^^^^ meta.doc.member.left.qml
         right: parent.right
 //      ^^^^^ entity.other.attribute-name.qml
 //             ^^^^^^^^^^^^ meta.embedded.expression.qml

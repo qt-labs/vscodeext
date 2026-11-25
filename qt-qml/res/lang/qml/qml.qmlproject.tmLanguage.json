@@ -109,7 +109,7 @@
       ]
     },
     "object-type-only": {
-      "name": "meta.object.type.$1.qml",
+      "name": "meta.doc.type.$1.qml",
       "begin": "\\b([A-Z][\\w\\.]*)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
       "beginCaptures": {
         "1": {
@@ -147,7 +147,7 @@
       ]
     },
     "object-declaration": {
-      "name": "meta.object.qml meta.object.type.$1.qml",
+      "name": "meta.object.qml meta.doc.type.$1.qml",
       "begin": "\\b([A-Z][\\w\\.]*)\\s*(\\{)",
       "beginCaptures": {
         "1": {
@@ -452,7 +452,7 @@
       ]
     },
     "on-prop": {
-      "name": "meta.object.qml meta.object.type.$1.qml",
+      "name": "meta.object.qml meta.doc.type.$1.qml",
       "begin": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)\\s*(\\{)",
       "beginCaptures": {
         "1": {
@@ -462,7 +462,7 @@
           "name": "keyword.other.on.qml"
         },
         "3": {
-          "name": "entity.other.attribute-name.qml"
+          "name": "entity.other.attribute-name.qml meta.doc.on-target.qml meta.doc.member.$3.qml"
         },
         "4": {
           "name": "punctuation.definition.block.qml"
@@ -481,7 +481,7 @@
       ]
     },
     "on-prop-type-only": {
-      "name": "meta.object.type.$1.qml",
+      "name": "meta.doc.type.$1.qml",
       "begin": "\\b([A-Z][\\w\\.]*)\\s+(on)\\s+([\\w\\.]+)(?=\\s*(?:\\/\\/.*|\\/\\*.*)?$)",
       "beginCaptures": {
         "1": {
@@ -491,7 +491,7 @@
           "name": "keyword.other.on.qml"
         },
         "3": {
-          "name": "entity.other.attribute-name.qml"
+          "name": "entity.other.attribute-name.qml meta.doc.on-target.qml meta.doc.member.$3.qml"
         }
       },
       "end": "(?<=\\})|(?=[^\\s{/])",
@@ -523,11 +523,11 @@
       ]
     },
     "attr-group-notation": {
-      "name": "meta.group.$1.qml",
+      "name": "meta.doc.group.$1.qml",
       "begin": "\\b(\\w*)\\s*(\\{)",
       "beginCaptures": {
         "1": {
-          "name": "entity.other.attribute-name.qml"
+          "name": "entity.other.attribute-name.qml meta.doc.member.$1.qml"
         },
         "2": {
           "name": "punctuation.definition.block.qml"
@@ -671,8 +671,12 @@
       }
     },
     "handler-name": {
-      "name": "entity.name.function.handler.qml",
-      "match": "\\bon[A-Z]\\w*"
+      "name": "entity.name.function.handler.qml meta.doc.member.${1:/downcase}$2.qml",
+      "match": "\\bon([A-Z])(\\w*)"
+    },
+    "member-name": {
+      "match": "\\b(?!on[A-Z])([_a-zA-Z]\\w*)\\b",
+      "name": "meta.doc.member.$1.qml"
     },
     "attr-name-parts": {
       "patterns": [
@@ -680,13 +684,35 @@
           "match": "\\b([A-Z]\\w*)(\\.)([_a-zA-Z]\\w*)",
           "captures": {
             "1": {
-              "name": "entity.name.type.attached.qml"
+              "name": "entity.name.type.attached.qml meta.doc.type.$1.qml"
             },
             "2": {
               "name": "punctuation.accessor.qml"
             },
             "3": {
-              "name": "meta.attached.type.$1.qml",
+              "name": "meta.doc.type.$1.qml",
+              "patterns": [
+                {
+                  "include": "#handler-name"
+                },
+                {
+                  "include": "#member-name"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "match": "\\b([_a-z]\\w*)(\\.)([_a-zA-Z]\\w*)",
+          "captures": {
+            "1": {
+              "name": "meta.doc.member.$1.qml"
+            },
+            "2": {
+              "name": "punctuation.accessor.qml"
+            },
+            "3": {
+              "name": "meta.doc.member.$1.$3.qml",
               "patterns": [
                 {
                   "include": "#handler-name"
@@ -696,20 +722,7 @@
           }
         },
         {
-          "match": "\\b([_a-z]\\w*)(\\.)([_a-zA-Z]\\w*)",
-          "captures": {
-            "2": {
-              "name": "punctuation.accessor.qml"
-            },
-            "3": {
-              "name": "meta.group.$1.qml",
-              "patterns": [
-                {
-                  "include": "#handler-name"
-                }
-              ]
-            }
-          }
+          "include": "#member-name"
         },
         {
           "match": "\\.",
