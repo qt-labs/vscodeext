@@ -3,10 +3,15 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { InstallReason, type PackageData } from 'sms-api';
+import {
+  InstallReason,
+  type JobCallbacks,
+  type PackageData,
+  type Packages
+} from 'sms-api';
 
 import { EXTENSION_ID, CONF_INSTALLATION_PATH } from '@/constants';
-import { getInstallRoot } from '@/install-root';
+import { getInstallRoot, installationTarget } from '@/install-root';
 import {
   QT_FRAMEWORK,
   listProductVersions,
@@ -52,22 +57,49 @@ export function packageTarget(pkg: PackageData): string {
 }
 
 /**
+ * Whether a package is built for LLVM-MinGW, as the packages of the target
+ * `io.qt.qtframework.windows-11-x86_64-llvm-mingw2217` are.
+ */
+function isLlvmMingwPackage(pkg: PackageData): boolean {
+  return /llvm[-_]mingw/i.test(packageTarget(pkg));
+}
+
+/**
+ * Search the packages the extension offers to install: the ones for this
+ * host, a version of Qt as one package per build, with the ones installed
+ * in the installation root reported as installed.
+ *
+ * The LLVM-MinGW builds of Qt are left out. The service has no LLVM-MinGW
+ * toolchain to install with them, unlike for MinGW, so a project could not
+ * be built against such a build. Every search of the extension goes through
+ * here, so they are neither listed nor installed.
+ */
+export async function searchInstallablePackages(
+  packages: Packages,
+  callbacks?: JobCallbacks
+): Promise<PackageData[]> {
+  const available = await packages.searchAvailablePackages(
+    installationTarget(),
+    { packagePresentation: 'monolith' },
+    callbacks
+  );
+  return available.filter((pkg) => !isLlvmMingwPackage(pkg));
+}
+
+/**
  * Where a target comes among the builds of one version: on Windows MSVC,
- * then MinGW, then LLVM-MinGW. Targets with another compiler come last, in
- * the order of the service.
+ * then MinGW. Targets with another compiler come last, in the order of the
+ * service.
  */
 function compilerRank(target: string): number {
   const name = target.toLowerCase();
   if (name.includes('msvc')) {
     return 0;
   }
-  if (name.includes('llvm')) {
-    return 2;
-  }
   if (name.includes('mingw')) {
     return 1;
   }
-  return 3;
+  return 2;
 }
 
 /** Newest version first, the builds of one version by compilerRank(). */

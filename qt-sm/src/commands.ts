@@ -46,7 +46,7 @@ import {
   TROUBLESHOOT_URL
 } from '@/constants';
 import { ensureConnected, disconnect } from '@/service-connection';
-import { getInstallRoot, installationTarget } from '@/install-root';
+import { getInstallRoot } from '@/install-root';
 import {
   QT_FRAMEWORK,
   listProductVersionSubdirs,
@@ -70,6 +70,7 @@ import {
   packageVariant,
   qtBuildKey,
   removalEmptiesInstallation,
+  searchInstallablePackages,
   sortPackages,
   type InstalledQtVersion
 } from '@/installed-packages-store';
@@ -290,16 +291,12 @@ export async function searchPackages(): Promise<void> {
         cancellable: false
       },
       async () =>
-        packages.searchAvailablePackages(
-          installationTarget(),
-          { packagePresentation: 'monolith' },
-          {
-            onMessage: (info) => {
-              logger.info(`searchAvailablePackages: ${info.message}`);
-            },
-            onPrompt: handleUserPrompt
-          }
-        )
+        searchInstallablePackages(packages, {
+          onMessage: (info) => {
+            logger.info(`searchAvailablePackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
     );
 
     if (results.length === 0) {
@@ -434,16 +431,12 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
         cancellable: false
       },
       async () =>
-        packages.searchAvailablePackages(
-          installationTarget(),
-          { packagePresentation: 'monolith' },
-          {
-            onMessage: (info) => {
-              logger.info(`searchAvailablePackages: ${info.message}`);
-            },
-            onPrompt: handleUserPrompt
-          }
-        )
+        searchInstallablePackages(packages, {
+          onMessage: (info) => {
+            logger.info(`searchAvailablePackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
     );
 
     // Remember the newest available framework for the walkthrough's
@@ -451,7 +444,7 @@ export async function installPackage(args?: InstallPackageArgs): Promise<void> {
     findLatestFramework(results);
 
     // Newest version first. Windows offers a version once per compiler:
-    // MSVC comes first among these builds, then MinGW, then LLVM-MinGW.
+    // MSVC comes first among these builds, then MinGW.
     let candidates = sortPackages(results);
 
     if (args?.product) {
