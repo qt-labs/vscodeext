@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.17.2 (Nov 25, 2026)
+
+The same as `1.17.1`
+
 ## 1.17.1 (Oct 22, 2026)
 
 🎉 **Our Initial Preview Release** 🎉
