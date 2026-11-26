@@ -8,6 +8,9 @@
     },
     {
       "include": "#translation-functions"
+    },
+    {
+      "include": "#parent"
     }
   ],
   "repository": {
@@ -64,6 +67,10 @@
     "translation-functions": {
       "name": "support.function.translation.qml",
       "match": "(?<![\\w$.])(?:qsTr|qsTranslate|qsTrId|qsTrNoOp|qsTranslateNoOp|qsTrIdNoOp|QT_TR_NOOP|QT_TRANSLATE_NOOP|QT_TRID_NOOP)(?=\\s*\\()"
+    },
+    "parent": {
+      "name": "variable.language.parent.qml",
+      "match": "(?<![\\w$.])parent(?![\\w$])"
     }
   }
 }
