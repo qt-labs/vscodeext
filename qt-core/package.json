@@ -34,7 +34,8 @@
     "workspaceContains:**/*.ui",
     "workspaceContains:**/*.qrc",
     "onWebviewPanel:ViewTypeExBrowser",
-    "onWebviewPanel:ViewTypeWelcomePage"
+    "onWebviewPanel:ViewTypeWelcomePage",
+    "onWebviewPanel:ViewTypeQtProfiler"
   ],
   "main": "./out/extension.js",
   "capabilities": {
@@ -143,8 +144,8 @@
         ]
       },
       {
-        "viewType": "qt-core.qmlTrace",
-        "displayName": "QML trace",
+        "viewType": "qt-core.qtProfiler",
+        "displayName": "Qt Profiler",
         "priority": "default",
         "selector": [
           {
@@ -373,6 +374,21 @@
           "default": "",
           "description": "Specify the custom Qt Widgets Designer executable path",
           "scope": "machine-overridable"
+        },
+        "qt-core.profiler.openSourceOnSelect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the corresponding source file when an item is selected in the Qt profiler.",
+          "scope": "machine-overridable"
+        },
+        "qt-core.profiler.additionalBuildDirs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional build directories to search for QRC files in the Qt profiler. Use this when the build directory is outside the workspace.",
+          "scope": "machine-overridable"
         }
       }
     },
@@ -399,7 +415,7 @@
   },
   "scripts": {
     "vscode:prepublish": "cross-env NODE_ENV=production npm run compile && git rev-parse HEAD > commit",
-    "compile": "npm run deploy:sql-wasm && npm run build:webview && node ./esbuild.mjs",
+    "compile": "npm run deploy:qtprofiler && npm run deploy:sql-wasm && npm run build:webview && node ./esbuild.mjs",
     "compile-test": "node ./esbuild.mjs --test",
     "watch": "node ./esbuild.mjs --watch",
     "pretest": "npm run compile && npm run lint",
@@ -415,9 +431,11 @@
     "ci:webview": "cd webview-ui && npm ci",
     "build:webview": "cd webview-ui && npm run build",
     "install:webview": "cd webview-ui && npm install",
-    "deploy:sql-wasm": "shx cp node_modules/sql.js/dist/sql-wasm.wasm ./res/others/"
+    "deploy:sql-wasm": "shx cp node_modules/sql.js/dist/sql-wasm.wasm ./res/others/",
+    "deploy:qtprofiler": "shx mkdir -p ./res/others/qtprofiler && shx cp node_modules/@qtproject/qtprofiler-wasm/dist/* ./res/others/qtprofiler/"
   },
   "devDependencies": {
+    "@qtproject/qtprofiler-wasm": "^0.0.1-test.3",
     "@types/chai": "^5.2.2",
     "@types/command-exists": "^1.2.3",
     "@types/glob": "^8.1.0",

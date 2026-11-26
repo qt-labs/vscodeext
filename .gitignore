@@ -16,4 +16,5 @@ src/test/util/dependencies
 tsconfig.tsbuildinfo
 qt-core/res/qtcli/*
 qt-core/res/others/sql-wasm.wasm
+qt-core/res/others/qtprofiler/*
 qt-cpp/res/natvis/*

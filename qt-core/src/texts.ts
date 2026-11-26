@@ -41,6 +41,10 @@ export const qmlTrace = {
   folderSelectTitle: 'Select directory'
 };
 
+export const qtProfiler = {
+  tabText: 'Qt Profiler'
+};
+
 export const qrcEditor = {
   tabText: 'QRC editor'
 };
