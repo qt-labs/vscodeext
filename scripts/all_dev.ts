@@ -17,14 +17,12 @@ function main() {
 
   if (targetExtension === 'all') {
     void exec('npm run build:qt-cli');
-    execSync(`npm run ci:qt-lib`, {
-      cwd: extensionRoot,
-      stdio: 'inherit'
-    });
-    execSync(`npm run compile:qt-lib`, {
-      cwd: extensionRoot,
-      stdio: 'inherit'
-    });
+    for (const lib of ['qt-lib', 'sms-api']) {
+      buildLib(lib, extensionRoot);
+    }
+  }
+  if (targetExtension === 'qt-sm') {
+    buildLib('sms-api', extensionRoot);
   }
   execSync(`npm run ci:${targetExtension}`, {
     cwd: extensionRoot,
@@ -57,7 +55,8 @@ function main() {
       'qt-qml',
       'qt-ui',
       'qt-python',
-      'qt-csharp'
+      'qt-csharp',
+      'qt-sm'
     ];
     for (const ext of extensions) {
       const targetRoot = path.join(extensionRoot, ext);
@@ -80,4 +79,14 @@ function main() {
   }
 }
 
+function buildLib(lib: string, extensionRoot: string) {
+  execSync(`npm run ci:${lib}`, {
+    cwd: extensionRoot,
+    stdio: 'inherit'
+  });
+  execSync(`npm run compile:${lib}`, {
+    cwd: extensionRoot,
+    stdio: 'inherit'
+  });
+}
 main();

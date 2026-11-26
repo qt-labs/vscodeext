@@ -1,0 +1,1790 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as https from 'https';
+import * as os from 'os';
+import { host } from 'qt-lib';
+import * as path from 'path';
+
+import {
+  Packages,
+  IPC,
+  legacyQtAccountIniPath,
+  genericDataLocation,
+  qtCompanyIniPath,
+  type PackageData,
+  type JobCallbacks,
+  type LicenseAnswer,
+  type UserPrompt,
+  type UserPromptReply,
+  ErrorCategory,
+  ErrorCode,
+  InstallState,
+  SmsServiceError,
+  UserPromptType,
+  ProgressType
+} from 'sms-api';
+
+import {
+  createLogger,
+  resolveConfiguration,
+  findQtPathsInInstallationPath,
+  CORE_EXTENSION_ID,
+  AdditionalQtPathsName,
+  QtWorkspaceConfigMessage,
+  CoreKey,
+  type QtAdditionalPath
+} from 'qt-lib';
+import {
+  EXTENSION_ID,
+  CONF_AUTO_REMOVE_UNNEEDED,
+  CONF_INSTALLATION_PATH,
+  CONF_RESET_LICENSE_AFTER_INSTALL,
+  DEFAULT_BACKEND_URL,
+  TROUBLESHOOT_URL
+} from '@/constants';
+import { ensureConnected, disconnect } from '@/service-connection';
+import { getInstallRoot } from '@/install-root';
+import {
+  QT_FRAMEWORK,
+  listProductVersionSubdirs,
+  productVersionDir
+} from '@/install-layout';
+import { coreAPI } from '@/extension';
+import {
+  AUTH_PROVIDER_ID,
+  LOGIN_CANCELLED_MESSAGE,
+  type QtAccountAuthenticationProvider
+} from '@/auth-provider';
+import { showLicenseAgreementPanel } from '@/license-panel';
+import {
+  installedQtTitle,
+  isFrameworkPackage,
+  isVersionInstalledOnDisk,
+  newestPackages,
+  packageLabel,
+  packageTarget,
+  packageTitle,
+  packageVariant,
+  qtBuildKey,
+  removalEmptiesInstallation,
+  searchInstallablePackages,
+  sortPackages,
+  type InstalledQtVersion
+} from '@/installed-packages-store';
+import {
+  type InstalledPackageItem,
+  refreshInstalledPackages,
+  showInstalledPackagesOperation,
+  reportInstalledPackagesProgress,
+  setInstalledPackagesOperationCancellable,
+  markInstalledPackagesOperationCancelling,
+  restoreInstalledPackagesOperationAfterFailedCancel
+} from '@/installed-packages-view';
+import {
+  isWalkthroughActive,
+  isWalkthroughOpen,
+  refreshWalkthrough,
+  refreshLatestFrameworkState,
+  resetWalkthroughState
+} from '@/walkthrough-panel';
+import {
+  isPackageOperationRunning,
+  setPackageOperationRunning
+} from '@/install-state';
+import { publishQtToolsPaths } from '@/qt-tools-store';
+import { resetSurveyState } from '@/survey';
+import {
+  findLatestFramework,
+  resetLatestFrameworkState
+} from '@/latest-framework';
+
+const logger = createLogger('commands');
+
+let extensionContext: vscode.ExtensionContext | undefined;
+let authProviderInstance: QtAccountAuthenticationProvider | undefined;
+
+export function setExtensionContext(ctx: vscode.ExtensionContext): void {
+  extensionContext = ctx;
+}
+
+export function setAuthProvider(
+  provider: QtAccountAuthenticationProvider
+): void {
+  authProviderInstance = provider;
+}
+
+function formatSize(bytes: number): string {
+  if (bytes === 0) {
+    return '0 B';
+  }
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const index = Math.min(i, units.length - 1);
+  const unit = units[index];
+  if (unit === undefined) {
+    return `${String(bytes)} B`;
+  }
+  return `${(bytes / Math.pow(1024, index)).toFixed(1)} ${unit}`;
+}
+
+function installStateLabel(state: InstallState): string {
+  switch (state) {
+    case InstallState.Installed:
+      return '$(check) Installed';
+    case InstallState.UpdateAvailable:
+      return '$(arrow-up) Update available';
+    case InstallState.Uninstalled:
+      return '$(circle-outline) Not installed';
+  }
+}
+
+/**
+ * The removal_confirmation question of packages/remove: the removal takes
+ * packages the user did not name, listed in the message one per line with
+ * the reason. The extension confirms a removal before it sends the request
+ * and says so with confirmRemoval, so this is only reached for a service
+ * that asks anyway. The dialog shows the count; the list, which holds
+ * every module of a version, goes to the log. Its buttons are the choices
+ * other than the default answer, which is the cancel choice and what
+ * dismissing the dialog answers.
+ */
+async function confirmRemoval(prompt: UserPrompt): Promise<UserPromptReply> {
+  logger.info(`Removal confirmation asked:\n${prompt.message}`);
+  // The first line introduces the list, one package per line.
+  const count = prompt.message
+    .split('\n')
+    .filter((line) => line.trim().length > 0).length;
+  const detail = `${String(Math.max(count - 1, 0))} packages will be removed. The Qt Software Management log lists them.`;
+
+  const buttons = prompt.choices.filter(
+    (choice) => choice !== prompt.defaultAnswer
+  );
+  const picked = await vscode.window.showWarningMessage(
+    prompt.title || 'Confirm removal',
+    { modal: true, detail },
+    ...buttons
+  );
+  if (picked) {
+    return { kind: 'choice', choice: picked };
+  }
+  return prompt.defaultAnswer
+    ? { kind: 'choice', choice: prompt.defaultAnswer }
+    : { kind: 'cancel' };
+}
+
+async function handleUserPrompt(prompt: UserPrompt): Promise<UserPromptReply> {
+  switch (prompt.type) {
+    case UserPromptType.Choice: {
+      if (prompt.id === IPC.questionIds.removalConfirmation) {
+        return confirmRemoval(prompt);
+      }
+      const items = prompt.choices.map((choice) => ({
+        label: choice,
+        picked: choice === prompt.defaultAnswer
+      }));
+      const picked = await vscode.window.showQuickPick(items, {
+        title: prompt.title,
+        placeHolder: prompt.message || prompt.placeholderText
+      });
+      if (!picked) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'choice', choice: picked.label };
+    }
+    case UserPromptType.Text: {
+      const value = await vscode.window.showInputBox({
+        title: prompt.title,
+        prompt: prompt.message,
+        value: prompt.defaultAnswer,
+        placeHolder: prompt.placeholderText
+      });
+      if (value === undefined) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'text', text: value };
+    }
+    case UserPromptType.DirectoryPath: {
+      const dirOpts: vscode.OpenDialogOptions = {
+        title: prompt.title || prompt.message,
+        canSelectFiles: false,
+        canSelectFolders: true,
+        canSelectMany: false
+      };
+      if (prompt.defaultAnswer) {
+        dirOpts.defaultUri = vscode.Uri.file(prompt.defaultAnswer);
+      }
+      const dirUris = await vscode.window.showOpenDialog(dirOpts);
+      const dirUri = dirUris?.[0];
+      if (!dirUri) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'text', text: dirUri.fsPath };
+    }
+    case UserPromptType.FilePath: {
+      const fileOpts: vscode.OpenDialogOptions = {
+        title: prompt.title || prompt.message,
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false
+      };
+      if (prompt.defaultAnswer) {
+        fileOpts.defaultUri = vscode.Uri.file(prompt.defaultAnswer);
+      }
+      const fileUris = await vscode.window.showOpenDialog(fileOpts);
+      const fileUri = fileUris?.[0];
+      if (!fileUri) {
+        return { kind: 'cancel' };
+      }
+      return { kind: 'text', text: fileUri.fsPath };
+    }
+  }
+}
+
+/**
+ * The service has no valid credentials (error 3000), or the backend
+ * rejected them (3001). Signing in again is what helps, so offer it.
+ */
+function offerSignIn(err: SmsServiceError): void {
+  const signIn = 'Sign In';
+  void vscode.window
+    .showErrorMessage(
+      `Sign in to your Qt Account to continue: ${err.message}`,
+      signIn
+    )
+    .then((pick) => {
+      if (pick === signIn && authProviderInstance) {
+        void login(authProviderInstance);
+      }
+    });
+}
+
+async function withService<T>(
+  action: (packages: Packages) => Promise<T>
+): Promise<T | undefined> {
+  try {
+    const session = await ensureConnected();
+    const packages = new Packages(session);
+    return await action(packages);
+  } catch (err) {
+    if (
+      err instanceof SmsServiceError &&
+      err.category === ErrorCategory.Authentication
+    ) {
+      offerSignIn(err);
+      return undefined;
+    }
+    const msg = err instanceof Error ? err.message : String(err);
+    void vscode.window.showErrorMessage(`Service error: ${msg}`);
+    return undefined;
+  }
+}
+
+export async function searchPackages(): Promise<void> {
+  await withService(async (packages) => {
+    const results = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Searching available packages...',
+        cancellable: false
+      },
+      async () =>
+        searchInstallablePackages(packages, {
+          onMessage: (info) => {
+            logger.info(`searchAvailablePackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
+    );
+
+    if (results.length === 0) {
+      void vscode.window.showInformationMessage('No packages found.');
+      return;
+    }
+
+    // The search names the installation root, so the service reports the
+    // packages installed there. It tells the builds of a version apart,
+    // which the version folder on disk does not.
+    const isInstalled = (pkg: PackageData) =>
+      pkg.installState === InstallState.Installed;
+
+    const items = sortPackages(results).map((pkg: PackageData) => ({
+      label: `${packageLabel(pkg)} ${pkg.version}`,
+      description: [packageVariant(pkg), installStateLabel(pkg.installState)]
+        .filter((part) => part.length > 0)
+        .join(' — '),
+      detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
+      pkg
+    }));
+
+    const selected = await vscode.window.showQuickPick(items, {
+      placeHolder: 'Select a package to view details',
+      matchOnDescription: true,
+      matchOnDetail: true
+    });
+
+    if (selected) {
+      const installed = isInstalled(selected.pkg);
+      const variant = packageVariant(selected.pkg);
+      const info = [
+        `**${packageLabel(selected.pkg)}** v${selected.pkg.version}`,
+        '',
+        selected.pkg.description,
+        '',
+        ...(variant ? [`- **Built for:** ${variant}`] : []),
+        `- **Author:** ${selected.pkg.author}`,
+        `- **License:** ${selected.pkg.license}`,
+        `- **Product:** ${selected.pkg.productName || selected.pkg.product}`,
+        `- **Product ID:** ${selected.pkg.productId}`,
+        `- **Product Version:** ${selected.pkg.productVersion}`,
+        `- **Size:** ${formatSize(selected.pkg.uncompressedSize)}`,
+        `- **Status:** ${installed ? 'Installed' : installStateLabel(selected.pkg.installState)}`
+      ].join('\n');
+
+      logger.info(`Package details:\n${info.replace(/\n/g, '\n> ')}`);
+
+      const action = await vscode.window.showInformationMessage(
+        info,
+        { modal: true },
+        ...(!installed ? ['Install'] : [])
+      );
+
+      if (action === 'Install') {
+        await installPackageById(packages, selected.pkg);
+      }
+    }
+  });
+}
+
+// export async function listInstalledPackages(): Promise<void> {
+//   await withService(async (packages) => {
+//     const results = await vscode.window.withProgress(
+//       {
+//         location: vscode.ProgressLocation.Notification,
+//         title: 'Listing installed packages...',
+//         cancellable: false
+//       },
+//       async () =>
+//         packages.listInstalledPackages({
+//           onMessage: (info) => {
+//             logger.info(`listInstalledPackages: ${info.message}`);
+//           },
+//           onPrompt: handleUserPrompt
+//         })
+//     );
+
+//     if (results.length === 0) {
+//       void vscode.window.showInformationMessage('No installed packages found.');
+//       return;
+//     }
+
+//     const items = results.map((pkg: PackageData) => ({
+//       label: packageLabel(pkg),
+//       description: pkg.version,
+//       detail: pkg.description
+//     }));
+
+//     await vscode.window.showQuickPick(items, {
+//       placeHolder: 'Installed packages',
+//       matchOnDescription: true,
+//       matchOnDetail: true
+//     });
+//   });
+// }
+
+/**
+ * Read the installed versions from the service again, after an install or
+ * a removal, or when the installation root changed.
+ */
+export function syncInstalledPackages() {
+  void refreshInstalledPackages();
+}
+
+async function requireLogin(): Promise<boolean> {
+  const sessions = await authProviderInstance?.getSessions();
+  if (sessions && sessions.length > 0) {
+    return true;
+  }
+  if (!authProviderInstance) {
+    void vscode.window.showErrorMessage('Auth provider not available.');
+    return false;
+  }
+  await login(authProviderInstance);
+  const updated = await authProviderInstance.getSessions();
+  return updated.length > 0;
+}
+
+export interface InstallPackageArgs {
+  regex?: string;
+  version?: string;
+  product?: string;
+}
+
+export async function installPackage(args?: InstallPackageArgs): Promise<void> {
+  await withService(async (packages) => {
+    const results = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Fetching available packages...',
+        cancellable: false
+      },
+      async () =>
+        searchInstallablePackages(packages, {
+          onMessage: (info) => {
+            logger.info(`searchAvailablePackages: ${info.message}`);
+          },
+          onPrompt: handleUserPrompt
+        })
+    );
+
+    // Remember the newest available framework for the walkthrough's
+    // "Get latest" gate, which can't query the service after a reload.
+    findLatestFramework(results);
+
+    // Newest version first. Windows offers a version once per compiler:
+    // MSVC comes first among these builds, then MinGW.
+    let candidates = sortPackages(results);
+
+    if (args?.product) {
+      candidates = candidates.filter(
+        (pkg: PackageData) => pkg.product === args.product
+      );
+    }
+
+    if (args?.regex) {
+      const re = new RegExp(args.regex, 'i');
+      candidates = candidates.filter(
+        (pkg: PackageData) => re.test(pkg.name) || re.test(pkg.id)
+      );
+    }
+
+    if (candidates.length === 0) {
+      void vscode.window.showInformationMessage(
+        'No packages available for installation.'
+      );
+      return;
+    }
+
+    // The search named the installation root, so the service reports the
+    // packages installed there. It tells the builds of a version apart,
+    // which the version folder on disk does not: a version installed for
+    // one compiler can still be installed for another.
+    const uninstalledCandidates = candidates.filter(
+      (pkg: PackageData) => pkg.installState !== InstallState.Installed
+    );
+
+    if (args?.version === 'latest') {
+      // Pick the newest available version, not the newest uninstalled one,
+      // otherwise an older version is installed when the latest is present.
+      // Any build of it counts as installed, so that a user who has it for
+      // MinGW is not given the MSVC build as well. The preferred build,
+      // which is the MSVC one on Windows, comes first.
+      const newest = newestPackages(candidates);
+      const latest = newest[0];
+      if (latest) {
+        const installed = newest.find(
+          (pkg) => pkg.installState === InstallState.Installed
+        );
+        // The disk check covers versions the service does not know about.
+        if (installed || isVersionInstalledOnDisk(latest.version)) {
+          const variant = installed ? packageVariant(installed) : '';
+          void vscode.window.showInformationMessage(
+            `The latest version ${latest.version} is already installed${
+              variant ? ` (${variant})` : ''
+            }.`
+          );
+          refreshWalkthrough();
+          void refreshLatestFrameworkState();
+          return;
+        }
+        await installPackageById(packages, latest);
+        return;
+      }
+    }
+
+    if (args?.version && args.version !== 'latest') {
+      // The first build of the version that is not installed yet.
+      const match = uninstalledCandidates.find(
+        (pkg: PackageData) => pkg.version === args.version
+      );
+      if (match) {
+        await installPackageById(packages, match);
+        return;
+      }
+      void vscode.window.showErrorMessage(
+        `No package found with version "${args.version}".`
+      );
+      return;
+    }
+
+    if (uninstalledCandidates.length === 0) {
+      void vscode.window.showInformationMessage(
+        'No packages available for installation.'
+      );
+      return;
+    }
+
+    // The description names what a package is built for, for example
+    // "MSVC 2022 x86_64": the builds of a version differ in nothing else.
+    const items = uninstalledCandidates.map((pkg: PackageData) => ({
+      label: `${packageLabel(pkg)} ${pkg.version}`,
+      description: packageVariant(pkg),
+      detail: `${pkg.description} (${formatSize(pkg.uncompressedSize)})`,
+      pkg
+    }));
+
+    const selected = await vscode.window.showQuickPick(items, {
+      placeHolder: 'Select a package to install',
+      matchOnDescription: true,
+      matchOnDetail: true
+    });
+
+    if (selected) {
+      await installPackageById(packages, selected.pkg);
+    }
+  });
+}
+
+/**
+ * Tell the user the install finished and offer the next steps: the Qt panel
+ * with the installed packages, or the walkthrough to build a first app.
+ */
+async function showInstalledNotification(pkg: PackageData): Promise<void> {
+  const openPanel = 'Open Qt Panel';
+  const startWalkthrough = 'Start Walkthrough';
+  const installRoot = getInstallRoot();
+  const location = installRoot
+    ? ` Installed in ${productVersionDir(installRoot, QT_FRAMEWORK, pkg.version)}.`
+    : '';
+  // The walkthrough is already in front of the user when it is the active
+  // editor, so the notification does not offer to start it.
+  const offerWalkthrough = !isWalkthroughActive();
+  const action = await vscode.window.showInformationMessage(
+    `${packageTitle(pkg)} installed successfully. ` +
+      "Your Qt development environment is ready. Open the Qt panel to see what's installed" +
+      (offerWalkthrough
+        ? ', or start the walkthrough to build your first app.'
+        : '.') +
+      location,
+    openPanel,
+    ...(offerWalkthrough ? [startWalkthrough] : [])
+  );
+  if (action === openPanel) {
+    await vscode.commands.executeCommand(
+      `workbench.view.extension.${EXTENSION_ID}`
+    );
+  } else if (action === startWalkthrough) {
+    await vscode.commands.executeCommand(`${EXTENSION_ID}.openWalkthrough`);
+  }
+}
+
+/**
+ * Add the qtpaths of the builds of `version` to qt-core's additional Qt
+ * paths, and notify qt-cpp via coreAPI so that it picks up the kits.
+ *
+ * Folder structure: <version folder>/<build>/bin/qtpaths, where the build
+ * names the compiler and the architecture, for example `msvc2022-x86_64` or
+ * `mingw1510-x86_64`. A version can hold several builds, so every folder
+ * with a qtpaths is looked at and the ones not registered yet are added.
+ */
+function registerInstalledQtPaths(version: string): void {
+  const installRoot = getInstallRoot();
+  if (!installRoot || !fs.existsSync(installRoot)) {
+    logger.warn(
+      'Installation path not set or does not exist, skipping Qt registration'
+    );
+    return;
+  }
+
+  const versionDir = productVersionDir(installRoot, QT_FRAMEWORK, version);
+  logger.info(`Looking for Qt installations in ${versionDir}`);
+  const qtpathsExes = listProductVersionSubdirs(
+    installRoot,
+    QT_FRAMEWORK,
+    version
+  )
+    .map((dir) => findQtPathsInInstallationPath(dir))
+    .filter((qtpaths): qtpaths is string => qtpaths !== undefined);
+  if (qtpathsExes.length === 0) {
+    logger.info(`No qtpaths found in ${versionDir}`);
+    return;
+  }
+
+  const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
+  const existing = coreConfig.inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  const registered = new Set(
+    currentPaths.map((p) =>
+      typeof p === 'string' ? p : (p as { path: string }).path
+    )
+  );
+  const added = qtpathsExes.filter((qtpaths) => !registered.has(qtpaths));
+
+  if (added.length === 0) {
+    logger.info(
+      `Qt installation already registered: ${qtpathsExes.join(', ')}`
+    );
+    return;
+  }
+
+  const updated = [...currentPaths, ...added.map((p) => ({ path: p }))];
+  void coreConfig.update(
+    AdditionalQtPathsName,
+    updated,
+    vscode.ConfigurationTarget.Global
+  );
+  logger.info(`Registered Qt installation: ${added.join(', ')}`);
+
+  // Notify qt-cpp (via coreAPI) so it picks up the new kit immediately
+  const allPaths: QtAdditionalPath[] = updated.map((p) =>
+    typeof p === 'string' ? { path: p } : (p as QtAdditionalPath)
+  );
+  const message = new QtWorkspaceConfigMessage(CoreKey.GLOBAL_WORKSPACE);
+  coreAPI?.setValue(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.ADDITIONAL_QT_PATHS,
+    allPaths
+  );
+  message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
+  logger.info(`Notifying coreAPI with message: ${message.toString()}`);
+  coreAPI?.notify(message);
+}
+
+/**
+ * Remove the qtpaths entries under the given version's directory that are
+ * gone from disk from qt-core's additional Qt paths — the inverse of
+ * registerInstalledQtPaths — and notify qt-cpp via coreAPI so the kit
+ * disappears immediately. The entries of the builds of the version that
+ * are still installed stay.
+ */
+function unregisterInstalledQtPaths(version: string): void {
+  const installRoot = getInstallRoot();
+  if (!installRoot) {
+    return;
+  }
+  const versionDir = productVersionDir(installRoot, QT_FRAMEWORK, version);
+
+  const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
+  const existing = coreConfig.inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  const filtered = currentPaths.filter((p) => {
+    const pPath = typeof p === 'string' ? p : (p as { path: string }).path;
+    return !pPath.startsWith(versionDir) || fs.existsSync(pPath);
+  });
+  if (filtered.length === currentPaths.length) {
+    return;
+  }
+  void coreConfig.update(
+    AdditionalQtPathsName,
+    filtered.length > 0 ? filtered : undefined,
+    vscode.ConfigurationTarget.Global
+  );
+  logger.info(`Unregistered Qt installation(s) under ${versionDir}`);
+
+  const allPaths: QtAdditionalPath[] = filtered.map((p) =>
+    typeof p === 'string' ? { path: p } : (p as QtAdditionalPath)
+  );
+  const message = new QtWorkspaceConfigMessage(CoreKey.GLOBAL_WORKSPACE);
+  coreAPI?.setValue(
+    CoreKey.GLOBAL_WORKSPACE,
+    CoreKey.ADDITIONAL_QT_PATHS,
+    allPaths
+  );
+  message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
+  coreAPI?.notify(message);
+}
+
+/**
+ * Remove an installed build of a Qt version, for example Qt 6.12.1 for
+ * MSVC and not the one for MinGW next to it. Invoked from the trash icon in
+ * the Installed Packages view.
+ *
+ * The build is removed through the service: its alias packages are the
+ * ones named, the service takes everything that depends on them and, with
+ * autoRemove, the dependencies nothing needs any more, such as the build
+ * tools. When that reaches beyond the named packages, the service asks the
+ * removal_confirmation question, shown as a dialog that lists them.
+ *
+ * When the removal leaves no package in the installation, the installation
+ * is purged instead: the service removes the folder too, with the files
+ * that belong to no package, such as the settings a tool wrote. The
+ * service forgets an installation without packages, and it refuses to
+ * install into a folder that is not empty and that it does not know.
+ */
+export async function removePackage(
+  item?: InstalledPackageItem
+): Promise<void> {
+  const qt = item?.qt;
+  if (!qt) {
+    return;
+  }
+  const installRoot = await requireInstallRoot();
+  if (!installRoot) {
+    return;
+  }
+  const operationRunning =
+    'A package operation is already in progress. Please wait for it to finish.';
+  if (isPackageOperationRunning()) {
+    void vscode.window.showWarningMessage(operationRunning);
+    return;
+  }
+  const autoRemove = vscode.workspace
+    .getConfiguration(EXTENSION_ID)
+    .get<boolean>(CONF_AUTO_REMOVE_UNNEEDED, true);
+
+  const plan = await planVersionRemoval(installRoot, qt, autoRemove);
+  if (!plan) {
+    return;
+  }
+
+  // The dialog only asks about the build. Whether the packages nothing
+  // else needs go too is the autoRemoveUnneeded setting, and the log says
+  // what the removal took. A purge deletes the folder, so the dialog says so.
+  const confirm = await vscode.window.showWarningMessage(
+    `Remove ${installedQtTitle(qt)}?`,
+    {
+      modal: true,
+      ...(plan.purge
+        ? {
+            detail:
+              `Nothing else is installed in ${installRoot}, so the folder ` +
+              'is deleted with everything in it.'
+          }
+        : {})
+    },
+    'Remove'
+  );
+  if (confirm !== 'Remove') {
+    return;
+  }
+  // Another operation may have started while the dialog was open.
+  if (isPackageOperationRunning()) {
+    void vscode.window.showWarningMessage(operationRunning);
+    return;
+  }
+
+  setPackageOperationRunning(true);
+  try {
+    await removeVersion(installRoot, qt, autoRemove, plan);
+  } finally {
+    setPackageOperationRunning(false);
+  }
+}
+
+/** How a build of a Qt version is removed, decided before the user confirms. */
+interface VersionRemovalPlan {
+  readonly packages: Packages;
+  /** The alias packages of the build, the ones a removal names. */
+  readonly refs: { id: string; version: string }[];
+  /** Remove the whole installation, because nothing would be left in it. */
+  readonly purge: boolean;
+}
+
+/**
+ * Read what is installed and decide how the build `qt` is removed. Shows
+ * the error and returns undefined when it cannot be removed.
+ */
+async function planVersionRemoval(
+  installRoot: string,
+  qt: InstalledQtVersion,
+  autoRemove: boolean
+): Promise<VersionRemovalPlan | undefined> {
+  const { version } = qt;
+  const title = installedQtTitle(qt);
+  let packages: Packages;
+  let installed: PackageData[];
+  try {
+    packages = new Packages(await ensureConnected());
+    ({ packages: installed } = await packages.listInstalledPackages({
+      installRoot
+    }));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Cannot list the packages of ${title}: ${msg}`);
+    void vscode.window.showErrorMessage(`Failed to remove ${title}: ${msg}`);
+    return undefined;
+  }
+
+  // The alias packages are what an install names, so they are what a
+  // removal names. The service takes their dependencies along. Only the
+  // ones of this build: the version may be installed for another compiler
+  // too, which stays.
+  const refs = installed
+    .filter(
+      (pkg) =>
+        pkg.packageType === 'alias' &&
+        isFrameworkPackage(pkg, version) &&
+        packageTarget(pkg) === qt.target
+    )
+    .map((pkg) => ({ id: pkg.id, version: pkg.version }));
+
+  if (refs.length === 0) {
+    // The view lists what the service records, so this means the build
+    // went away between the listing and the click.
+    void vscode.window.showErrorMessage(
+      `${title} is not recorded by the Qt Software Management Service ` +
+        `in ${installRoot}, so it cannot be removed.`
+    );
+    syncInstalledPackages();
+    return undefined;
+  }
+
+  return {
+    packages,
+    refs,
+    purge: autoRemove && removalEmptiesInstallation(installed, refs)
+  };
+}
+
+async function removeVersion(
+  installRoot: string,
+  qt: InstalledQtVersion,
+  autoRemove: boolean,
+  plan: VersionRemovalPlan
+): Promise<void> {
+  const target = { installRoot };
+  const { packages, refs, purge } = plan;
+  const { version } = qt;
+  const title = installedQtTitle(qt);
+
+  if (purge) {
+    logger.info(
+      `Removing ${title}, the last packages in ${installRoot}: ` +
+        'purging the installation'
+    );
+  } else {
+    logger.info(
+      `Removing ${title} from ${installRoot}${autoRemove ? ' with unneeded packages' : ''}: ${refs
+        .map((ref) => `${ref.id}@${ref.version}`)
+        .join(', ')}`
+    );
+  }
+  try {
+    const result = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Removing ${title}`,
+        cancellable: false
+      },
+      async (progress) => {
+        let lastPct = 0;
+        const callbacks: JobCallbacks = {
+          onProgress: (info) => {
+            const pct = Math.round(info.progress);
+            reportInstalledPackagesProgress(`Removing Qt ${version}`, pct);
+            progress.report({
+              message: `${String(pct)}%`,
+              increment: pct - lastPct
+            });
+            lastPct = pct;
+          },
+          onMessage: (info) => {
+            // The service says what a removal that succeeded anyway could
+            // not do, for example files it left behind.
+            logger.warn(`remove: ${info.message}`);
+            void vscode.window.showWarningMessage(info.message);
+          },
+          onPrompt: handleUserPrompt
+        };
+        // The user confirmed the removal in the dialog, so the service is
+        // told not to ask its removal_confirmation question: with
+        // autoRemove it would list every module of the version. A purge
+        // never asks.
+        const removal = purge
+          ? packages.purge(target, callbacks)
+          : packages.remove(
+              target,
+              refs,
+              { autoRemove, confirmRemoval: true },
+              callbacks
+            );
+        showInstalledPackagesOperation(
+          `Removing Qt ${version}`,
+          removal,
+          qtBuildKey(qt)
+        );
+        return removal;
+      }
+    );
+    logger.info(`Remove result: ${result.message}`);
+  } catch (err) {
+    if (
+      err instanceof SmsServiceError &&
+      err.code === ErrorCode.UserCancelled
+    ) {
+      logger.info(`Removal of ${title} cancelled: ${err.message}`);
+      return;
+    }
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`Failed to remove ${title}: ${msg}`);
+    void vscode.window.showErrorMessage(`Failed to remove ${title}: ${msg}`);
+    // A purge that could not delete the folder has removed the packages.
+    syncInstalledPackages();
+    return;
+  }
+
+  void vscode.window.showInformationMessage(
+    purge
+      ? `Removed ${title} and the installation folder ${installRoot}.`
+      : `Removed ${title}.`
+  );
+  afterVersionRemoved(version);
+}
+
+/** What the rest of the extension needs to know after a version is gone. */
+function afterVersionRemoved(version: string): void {
+  unregisterInstalledQtPaths(version);
+  // Re-read the installed versions from the service. The framework step
+  // of the walkthrough follows the answer.
+  syncInstalledPackages();
+  // "Get latest" may be available again.
+  void refreshLatestFrameworkState();
+  // The removal may have taken CMake/Ninja along; re-detect
+  // and inform qt-core/qt-cpp via CoreAPI.
+  publishQtToolsPaths();
+}
+
+// Known license agreement IDs from the backend (alpha testing).
+const KNOWN_LICENSE_AGREEMENT_IDS = [
+  'Qt Enterprise License Agreement@1',
+  'Mingw-w64 License Agreement@1',
+  'Ninja License Agreement@1',
+  'CMake License Agreement@1'
+];
+
+/**
+ * Reset license agreement consents via the backend API so that the user is
+ * prompted again on the next install. Only active when the
+ * `qt-sm.resetLicenseBeforeInstall` setting is enabled.
+ */
+async function resetLicenseConsents(): Promise<void> {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  if (!config.get<boolean>(CONF_RESET_LICENSE_AFTER_INSTALL)) {
+    return;
+  }
+
+  let jwt: string | undefined;
+  try {
+    jwt = await authProviderInstance?.acquireAccessToken();
+  } catch (err) {
+    logger.warn(
+      `Cannot reset license consents: ${err instanceof Error ? err.message : String(err)}`
+    );
+    return;
+  }
+  if (!jwt) {
+    logger.warn('Cannot reset license consents: no active session');
+    return;
+  }
+
+  const backendUrl = process.env.QIC_SERVICE_URL ?? DEFAULT_BACKEND_URL;
+  logger.info(`backendUrl: ${backendUrl}`);
+
+  for (const agreementId of KNOWN_LICENSE_AGREEMENT_IDS) {
+    try {
+      await postConsentReset(backendUrl, jwt, agreementId);
+      logger.info(`Reset license consent for "${agreementId}"`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`Failed to reset consent for "${agreementId}": ${msg}`);
+    }
+  }
+}
+
+async function postConsentReset(
+  backendUrl: string,
+  jwt: string,
+  agreementId: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ agreementId, accepted: false });
+    const url = new URL('/api/v1/license-agreements/consent', backendUrl);
+
+    const req = https.request(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+          Authorization: `Bearer ${jwt}`
+        }
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk: Buffer) => {
+          data += chunk.toString();
+        });
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            reject(
+              new Error(`HTTP ${String(res.statusCode)}: ${data.slice(0, 200)}`)
+            );
+          }
+        });
+      }
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * The installation root every package request names. Offers to set it
+ * when the setting is empty.
+ */
+async function requireInstallRoot(): Promise<string | undefined> {
+  const installRoot = getInstallRoot();
+  if (installRoot) {
+    return installRoot;
+  }
+  const setPath = 'Set Installation Path';
+  const pick = await vscode.window.showErrorMessage(
+    'The Qt installation path is not set.',
+    setPath
+  );
+  if (pick === setPath) {
+    await setInstallationPath();
+  }
+  return undefined;
+}
+
+async function installPackageById(
+  packages: Packages,
+  pkg: PackageData
+): Promise<void> {
+  if (!(await requireLogin())) {
+    return;
+  }
+  const installRoot = await requireInstallRoot();
+  if (!installRoot) {
+    return;
+  }
+
+  // The service runs one package operation at a time.
+  if (isPackageOperationRunning()) {
+    void vscode.window.showWarningMessage(
+      'A package operation is already in progress. Please wait for it to finish.'
+    );
+    return;
+  }
+  setPackageOperationRunning(true);
+  try {
+    await installPackageByIdImpl(packages, pkg, installRoot);
+  } finally {
+    setPackageOperationRunning(false);
+  }
+}
+
+async function installPackageByIdImpl(
+  packages: Packages,
+  pkg: PackageData,
+  installRoot: string
+): Promise<void> {
+  await resetLicenseConsents();
+
+  const pkgRef = { id: pkg.id, version: pkg.version };
+  // Every request names the installation it works on; the service keeps
+  // none of its own.
+  const target = { installRoot };
+
+  // Fetch requirements (license agreements, unsatisfied rules).
+  const preAnswers: LicenseAnswer[] = [];
+  const requirements = await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: 'Checking requirements...',
+      cancellable: false
+    },
+    async () =>
+      packages.fetchRequirements(target, [pkgRef], {
+        onMessage: (info) => {
+          logger.info(`fetchRequirements: ${info.message}`);
+        },
+        onPrompt: handleUserPrompt
+      })
+  );
+
+  // Block only on non-resolvable rules (e.g. visibility restrictions).
+  // Rules with conditionType "la_accepted" are resolved by the LA flow below.
+  const hardBlockers = requirements.unsatisfiedRules.filter(
+    (r) => !r.isResolvableByUser
+  );
+  if (hardBlockers.length > 0) {
+    const messages = hardBlockers.map((r) => r.userMessage);
+    void vscode.window.showErrorMessage(
+      `Cannot install ${packageTitle(pkg)}: ${messages.join('; ')}`
+    );
+    return;
+  }
+
+  for (const agreement of requirements.licenseAgreements) {
+    logger.info(
+      `License agreement to accept: ${agreement.id} (${agreement.title})`
+    );
+  }
+
+  // Present license agreements in a webview panel
+  if (requirements.licenseAgreements.length > 0) {
+    if (!extensionContext) {
+      void vscode.window.showErrorMessage(
+        'Extension context not available for license UI.'
+      );
+      return;
+    }
+    const accepted = await showLicenseAgreementPanel(
+      extensionContext,
+      requirements.licenseAgreements
+    );
+    if (!accepted) {
+      return;
+    }
+    for (const agreement of requirements.licenseAgreements) {
+      preAnswers.push({ id: agreement.id, answer: agreement.acceptText });
+    }
+  }
+
+  const options =
+    preAnswers.length > 0 ? { preAnsweredAgreements: preAnswers } : undefined;
+
+  // The notifications say what the package is built for, for example
+  // "Qt Framework 6.12.1 (MSVC 2022 x86_64)". The item of the install in
+  // the Installed Packages view leaves that out, to keep its progress bar
+  // in sight in a narrow side bar.
+  const pkgLabel = packageTitle(pkg);
+  const viewLabel = `${packageLabel(pkg)} ${pkg.version}`;
+
+  // Two separate progress notifications: cancellable download, then non-cancellable install.
+  // We track which notification is active and swap when the phase changes.
+  type ProgressReporter = vscode.Progress<{
+    message?: string;
+    increment?: number;
+  }>;
+
+  let activeProgress: ProgressReporter | undefined;
+  let lastPct = 0;
+  let currentPhase: ProgressType | undefined;
+  let cancelledByUser = false;
+
+  // Resolvers to end each withProgress notification from outside
+  let endDownloadPhase: (() => void) | undefined;
+  let endInstallPhase: (() => void) | undefined;
+
+  const installDone = packages
+    .install(target, [pkgRef], options, {
+      onProgress: (info) => {
+        const pct = Math.round(info.progress);
+        const phase = info.type;
+        reportInstalledPackagesProgress(
+          `${phase === ProgressType.Install ? 'Installing' : 'Downloading'} ${viewLabel}`,
+          pct
+        );
+
+        // Switch from download to install notification when phase changes
+        if (phase !== currentPhase) {
+          currentPhase = phase;
+          lastPct = 0;
+
+          if (phase === ProgressType.Install) {
+            endDownloadPhase?.();
+            // Like the notification, the install phase cannot be cancelled.
+            setInstalledPackagesOperationCancellable(false);
+            // Start install phase notification (non-cancellable)
+            void vscode.window.withProgress(
+              {
+                location: vscode.ProgressLocation.Notification,
+                title: `Installing ${pkgLabel}`,
+                cancellable: false
+              },
+              async (progress) =>
+                new Promise<void>((resolve) => {
+                  activeProgress = progress;
+                  endInstallPhase = resolve;
+                })
+            );
+          }
+        }
+
+        if (!activeProgress) {
+          return;
+        }
+
+        if (pct < lastPct) {
+          activeProgress.report({
+            message: `${String(pct)}%`,
+            increment: -100
+          });
+          lastPct = 0;
+        }
+        const increment = pct - lastPct;
+        lastPct = pct;
+        activeProgress.report({
+          message: `${String(pct)}%`,
+          increment
+        });
+      },
+      onMessage: (info) => {
+        logger.info(`InstallPackageById: ${info.message}`);
+      },
+      onPrompt: handleUserPrompt
+    })
+    .then((result) => {
+      endDownloadPhase?.();
+      endInstallPhase?.();
+      logger.info(`Install result: ${result.message}`);
+      for (const item of result.launch) {
+        logger.info(`Launch item (${item.type}): ${item.uri}`);
+      }
+      void showInstalledNotification(pkg);
+      // Re-read the installed versions from the service. The framework
+      // step of the walkthrough completes with the answer.
+      syncInstalledPackages();
+      // The just-installed version may be the newest available, which would
+      // disable "Get latest"; re-resolve that asynchronously.
+      void refreshLatestFrameworkState();
+      registerInstalledQtPaths(pkg.version);
+      // The install may have added CMake/Ninja; re-detect and
+      // inform qt-core/qt-cpp via CoreAPI.
+      publishQtToolsPaths();
+    })
+    .catch((err: unknown) => {
+      endDownloadPhase?.();
+      endInstallPhase?.();
+      if (cancelledByUser) {
+        return;
+      }
+      if (
+        err instanceof SmsServiceError &&
+        err.code === ErrorCode.UserCancelled
+      ) {
+        logger.info(`Installation cancelled: ${err.message}`);
+        return;
+      }
+      const msg = err instanceof Error ? err.message : String(err);
+      const errMsg = `Failed to install ${pkgLabel} : ${msg}`;
+      logger.error(errMsg);
+      void vscode.window.showErrorMessage(errMsg);
+    });
+
+  // Cancel the download, from the download notification or from the
+  // cancel button of the item of the install in the Installed Packages
+  // view. Closes the download notification once the service cancelled.
+  // If it does not, the download goes on and shows its progress again.
+  const cancelInstall = (): void => {
+    if (cancelledByUser || currentPhase === ProgressType.Install) {
+      return;
+    }
+    cancelledByUser = true;
+    logger.info('User cancelled installation');
+    markInstalledPackagesOperationCancelling(
+      `Cancelling the download of ${viewLabel}`
+    );
+    packages
+      .cancel({
+        onMessage: (info) => {
+          logger.info(`cancel: ${info.message}`);
+        }
+      })
+      .then(() => {
+        logger.info('Installation cancelled successfully');
+        endDownloadPhase?.();
+      })
+      .catch((cancelErr: unknown) => {
+        cancelledByUser = false;
+        restoreInstalledPackagesOperationAfterFailedCancel();
+        const msg =
+          cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
+        logger.error(`Failed to cancel installation: ${msg}`);
+        void vscode.window.showErrorMessage(
+          `Failed to cancel installation: ${msg}`
+        );
+      });
+  };
+
+  showInstalledPackagesOperation(
+    `Installing ${viewLabel}`,
+    installDone,
+    undefined,
+    cancelInstall
+  );
+
+  // Start with the download phase notification (cancellable)
+  logger.info(
+    `Installing package ${pkgLabel} (${pkg.id}) into ${installRoot} with options: ${JSON.stringify(options)}`
+  );
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `Downloading ${pkgLabel}`,
+      cancellable: true
+    },
+    async (progress, token) =>
+      new Promise<void>((resolve) => {
+        activeProgress = progress;
+        endDownloadPhase = resolve;
+
+        token.onCancellationRequested(cancelInstall);
+      })
+  );
+
+  await installDone;
+}
+
+export async function setInstallationPath(): Promise<void> {
+  const currentRoot = getInstallRoot();
+
+  const dirUris = await vscode.window.showOpenDialog({
+    title: 'Select installation directory',
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
+    ...(currentRoot ? { defaultUri: vscode.Uri.file(currentRoot) } : {})
+  });
+  const dirUri = dirUris?.[0];
+  if (!dirUri) {
+    return;
+  }
+
+  await validateAndSetInstallationPath(dirUri.fsPath);
+}
+
+/**
+ * The installation path setting changed, for example in settings.json.
+ * The service stores no installation root, every request names its own,
+ * so there is nothing to push. The new directory is checked with the
+ * service instead, so that a directory that cannot be installed into is
+ * reported now rather than with the next install. Failures to reach the
+ * service are only logged: they say nothing about the directory.
+ */
+export async function onInstallationPathChanged(): Promise<void> {
+  const installRoot = getInstallRoot();
+  if (!installRoot) {
+    return;
+  }
+  try {
+    const session = await ensureConnected();
+    const resolved = await new Packages(session).validateInstallRoot({
+      installRoot
+    });
+    logger.info(`Installation path: "${resolved}"`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Installation path "${installRoot}" was not accepted: ${msg}`);
+    if (err instanceof SmsServiceError) {
+      void vscode.window.showWarningMessage(
+        `The installation path ${installRoot} cannot be used: ${msg}`
+      );
+    }
+  }
+}
+
+/**
+ * Check the directory with the service (`packages/validate-root`, which
+ * stores nothing) and save it as the installation path when it can be
+ * installed into.
+ */
+async function validateAndSetInstallationPath(insPath: string): Promise<void> {
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  try {
+    const session = await ensureConnected();
+    const installRoot =
+      (await new Packages(session).validateInstallRoot({
+        installRoot: insPath
+      })) || insPath;
+    await config.update(
+      CONF_INSTALLATION_PATH,
+      installRoot,
+      vscode.ConfigurationTarget.Global
+    );
+    void vscode.window.showInformationMessage(
+      `Installation path set to: ${installRoot}`
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    void vscode.window.showErrorMessage(`Invalid installation path: ${msg}`);
+  }
+}
+
+/**
+ * Sign in to the Qt Account in the browser. With `signUp`, the browser opens
+ * on the account creation page and the new account is signed in. Failures
+ * are shown in the walkthrough's sign-in card when it is open, otherwise as
+ * a notification.
+ */
+export async function login(
+  authProvider: QtAccountAuthenticationProvider,
+  options?: { signUp?: boolean }
+): Promise<void> {
+  const sessions = await authProvider.getSessions();
+  if (sessions.length > 0 && sessions[0]) {
+    void vscode.window.showInformationMessage(
+      `Already signed in as ${sessions[0].account.label}`
+    );
+    return;
+  }
+  try {
+    if (options?.signUp) {
+      await authProvider.createAccount();
+    } else {
+      await authProvider.createSession([AUTH_PROVIDER_ID]);
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg === LOGIN_CANCELLED_MESSAGE) {
+      return;
+    }
+    logger.error(`Qt Account login failed: ${msg}`);
+    if (isWalkthroughOpen()) {
+      return; // the sign-in card shows the failure
+    }
+    const troubleshoot = 'Troubleshoot';
+    void vscode.window
+      .showErrorMessage(`Qt Account sign-in failed: ${msg}`, troubleshoot)
+      .then((pick) => {
+        if (pick === troubleshoot) {
+          void vscode.env.openExternal(vscode.Uri.parse(TROUBLESHOOT_URL));
+        }
+      });
+  }
+}
+
+/** Store a personal access token instead of signing in with the browser. */
+export async function loginWithPersonalAccessToken(
+  authProvider: QtAccountAuthenticationProvider
+): Promise<void> {
+  const sessions = await authProvider.getSessions();
+  if (sessions.length > 0 && sessions[0]) {
+    void vscode.window.showInformationMessage(
+      `Already signed in as ${sessions[0].account.label}`
+    );
+    return;
+  }
+  await authProvider.signInWithPersonalAccessToken();
+}
+
+export async function logout(
+  authProvider: QtAccountAuthenticationProvider
+): Promise<void> {
+  const sessions = await authProvider.getSessions();
+  for (const s of sessions) {
+    await authProvider.removeSession(s.id);
+  }
+}
+
+/**
+ * Reset all qt-sm local state. **For testing purposes only.**
+ *
+ * This removes:
+ *   - The Qt installation directory (e.g. ~/QtBeta), purged through the
+ *     service so that its journal forgets the installation too
+ *   - QtCompany.ini (service settings)
+ *   - The Qt Account credentials in Qt.ini (via sign-out; the file itself is
+ *     shared with other Qt tools and kept) and a legacy qtaccount.ini
+ *   - The QtSoftwareManagementService lock file
+ *   - The installation journal of the service (installationJournal.json)
+ *   - The IPC socket / named pipe
+ *   - The persisted walkthrough state, so it restarts from step 1
+ *   - The persisted latest Qt Framework version
+ *   - The answers to the survey prompt
+ *   - The download cache of the service and the folders of earlier
+ *     bootstrap installers
+ *
+ * It also kills any running QtSoftwareManagementService process and
+ * disconnects the current IPC session, and tells qt-core that the Qt
+ * versions and the build tools of the installation are gone.
+ */
+export async function resetTestState(): Promise<void> {
+  const confirm = await vscode.window.showWarningMessage(
+    'This will remove all qt-sm data (installed packages, downloaded ' +
+      'archives, credentials, service state). This action is for testing purposes only and cannot ' +
+      'be undone. Continue?',
+    { modal: true },
+    'Reset'
+  );
+  if (confirm !== 'Reset') {
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(EXTENSION_ID);
+  const rawInstallPath =
+    config.get<string>(CONF_INSTALLATION_PATH) ?? '~/QtBeta';
+  const installPath = resolveConfiguration(rawInstallPath);
+
+  // Purge while the service still runs and the user is still signed in,
+  // so that the journal of the service forgets the installation. Deleting
+  // only the folder would leave it recorded with packages that are gone.
+  await purgeInstallation(installPath);
+
+  // Sign out before tearing down
+  if (authProviderInstance) {
+    await logout(authProviderInstance);
+  }
+
+  disconnect();
+
+  // Kill the service process
+  await killServiceProcess();
+
+  // The folder is still there when the purge failed, for example because
+  // the service does not record it.
+  const pathsToRemove = [
+    installPath,
+    qtCompanyIniPath(),
+    legacyQtAccountIniPath(),
+    getServiceLockFilePath(),
+    // The purge above only drops the entry of installPath, and is skipped
+    // when the folder is gone; earlier bootstrap runs leave other entries.
+    serviceJournalPath(),
+    IPC.defaultSocket,
+    serviceCacheDir(),
+    ...bootstrapInstallerDirs()
+  ];
+
+  const removed: string[] = [];
+  for (const p of pathsToRemove) {
+    if (tryRemove(p)) {
+      removed.push(p);
+    }
+  }
+
+  if (removed.length > 0) {
+    logger.info(`Reset test state. Removed: ${removed.join(', ')}`);
+    void vscode.window.showInformationMessage(
+      `qt-sm test state has been reset. Removed ${String(removed.length)} item(s).`
+    );
+  } else {
+    logger.info('Reset test state: nothing to remove');
+    void vscode.window.showInformationMessage(
+      'qt-sm test state: nothing to remove.'
+    );
+  }
+
+  // Remove registered Qt paths that are inside the install directory
+  const coreConfig = vscode.workspace.getConfiguration(CORE_EXTENSION_ID);
+  const existing = coreConfig.inspect<(string | object)[]>(
+    AdditionalQtPathsName
+  );
+  const currentPaths: (string | object)[] = existing?.globalValue ?? [];
+  // With the separator, so that ~/QtBeta does not match ~/QtBeta2.
+  const installPrefix = path.join(installPath, path.sep);
+  const filtered = currentPaths.filter((p) => {
+    const pPath = typeof p === 'string' ? p : (p as { path: string }).path;
+    return !path.normalize(pPath).startsWith(installPrefix);
+  });
+  if (filtered.length !== currentPaths.length) {
+    await coreConfig.update(
+      AdditionalQtPathsName,
+      filtered.length > 0 ? filtered : undefined,
+      vscode.ConfigurationTarget.Global
+    );
+    logger.info(
+      `Removed ${String(currentPaths.length - filtered.length)} Qt path(s) under ${installPath}`
+    );
+    // Tell qt-cpp through qt-core, so that the kits go away without a reload.
+    coreAPI?.setValue(
+      CoreKey.GLOBAL_WORKSPACE,
+      CoreKey.ADDITIONAL_QT_PATHS,
+      filtered.map((p) =>
+        typeof p === 'string' ? { path: p } : (p as QtAdditionalPath)
+      )
+    );
+    const message = new QtWorkspaceConfigMessage(CoreKey.GLOBAL_WORKSPACE);
+    message.config.add(CoreKey.ADDITIONAL_QT_PATHS);
+    coreAPI?.notify(message);
+  }
+  // CMake and Ninja went with the installation.
+  publishQtToolsPaths();
+
+  resetLatestFrameworkState();
+  resetSurveyState();
+
+  // Clear the persisted walkthrough state last, so the re-render sees the
+  // already-reset sign-in and install state.
+  if (extensionContext) {
+    await resetWalkthroughState(extensionContext);
+  }
+
+  // The Installed Packages view shows what the service records; read it
+  // again now that the installation and the service are gone.
+  syncInstalledPackages();
+}
+
+/**
+ * Remove the installation and its record in the journal of the service
+ * with `packages/purge`. Failures are only logged, resetTestState deletes
+ * the folder itself afterwards.
+ */
+async function purgeInstallation(installRoot: string): Promise<void> {
+  if (!fs.existsSync(installRoot)) {
+    return;
+  }
+  try {
+    const packages = new Packages(await ensureConnected({ silent: true }));
+    const result = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Purging ${installRoot}`,
+        cancellable: false
+      },
+      async () =>
+        packages.purge(
+          { installRoot },
+          {
+            onMessage: (info) => {
+              logger.warn(`purge: ${info.message}`);
+            },
+            onPrompt: handleUserPrompt
+          }
+        )
+    );
+    logger.info(`Purge result: ${result.message}`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Cannot purge ${installRoot}: ${msg}`);
+  }
+}
+
+/**
+ * `QStandardPaths::GenericCacheLocation`, where the service keeps the
+ * archives it downloads:
+ *   Linux:   `$XDG_CACHE_HOME` or `~/.cache`
+ *   macOS:   `~/Library/Caches`
+ *   Windows: `%LOCALAPPDATA%\cache`
+ */
+function genericCacheLocation(): string {
+  if (process.platform === 'win32') {
+    const localAppData =
+      process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
+    return path.join(localAppData, 'cache');
+  }
+  if (process.platform === 'darwin') {
+    return path.join(os.homedir(), 'Library', 'Caches');
+  }
+  return process.env.XDG_CACHE_HOME ?? path.join(os.homedir(), '.cache');
+}
+
+/** `QStandardPaths::GenericConfigLocation`. */
+function genericConfigLocation(): string {
+  if (process.platform === 'win32') {
+    return (
+      process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local')
+    );
+  }
+  if (process.platform === 'darwin') {
+    return path.join(os.homedir(), 'Library', 'Preferences');
+  }
+  return process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config');
+}
+
+/** The download cache of the service. */
+function serviceCacheDir(): string {
+  return path.join(genericCacheLocation(), 'qt-softwaremanagement-service');
+}
+
+/**
+ * The installation journal of the service, in its
+ * `QStandardPaths::AppLocalDataLocation`:
+ *   Linux:   `~/.local/share/QtSoftwareManagementService`
+ *   macOS:   `~/Library/Application Support/QtSoftwareManagementService`
+ *   Windows: `%LOCALAPPDATA%\QtSoftwareManagementService`
+ */
+function serviceJournalPath(): string {
+  const dataDir =
+    process.platform === 'win32'
+      ? genericConfigLocation()
+      : genericDataLocation();
+  return path.join(
+    dataDir,
+    'QtSoftwareManagementService',
+    'installationJournal.json'
+  );
+}
+
+/**
+ * The folders each bootstrap installer leaves behind, named after its
+ * build, for example `QtSoftwareManagementServiceInstaller_2026-06-05`.
+ */
+function bootstrapInstallerDirs(): string[] {
+  const prefix = 'QtSoftwareManagementServiceInstaller_';
+  const parents = new Set([
+    genericDataLocation(),
+    genericConfigLocation(),
+    genericCacheLocation()
+  ]);
+  if (host.isWindows) {
+    // `QStandardPaths::AppDataLocation` is in the roaming folder on Windows.
+    parents.add(
+      process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming')
+    );
+  }
+  return [...parents].flatMap((parent) => {
+    try {
+      return fs
+        .readdirSync(parent)
+        .filter((name) => name.startsWith(prefix))
+        .map((name) => path.join(parent, name));
+    } catch {
+      return [];
+    }
+  });
+}
+
+function getServiceLockFilePath(): string {
+  if (host.isWindows) {
+    return path.join(os.tmpdir(), 'QtSoftwareManagementService.lock');
+  }
+  return path.join(os.tmpdir(), 'QtSoftwareManagementService.lock');
+}
+
+function tryRemove(targetPath: string): boolean {
+  try {
+    if (!fs.existsSync(targetPath)) {
+      return false;
+    }
+    const stat = fs.statSync(targetPath);
+    if (stat.isDirectory()) {
+      fs.rmSync(targetPath, { recursive: true, force: true });
+    } else {
+      fs.unlinkSync(targetPath);
+    }
+    logger.info(`Removed: ${targetPath}`);
+    return true;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Failed to remove ${targetPath}: ${msg}`);
+    return false;
+  }
+}
+
+async function killServiceProcess(): Promise<void> {
+  const processName = 'QtSoftwareManagementService';
+  try {
+    const { exec } = await import('child_process');
+    await new Promise<void>((resolve) => {
+      const cmd = host.isWindows
+        ? `taskkill /F /IM ${processName}.exe`
+        : `pkill -f ${processName}`;
+      exec(cmd, (err) => {
+        if (err) {
+          logger.info(
+            `No running ${processName} process found (or kill failed)`
+          );
+        } else {
+          logger.info(`Killed ${processName} process`);
+        }
+        resolve();
+      });
+    });
+  } catch {
+    logger.warn('Failed to kill service process');
+  }
+}
