@@ -596,7 +596,7 @@
     "run-test": "cd ./out/test/ && node runTest.js",
     "run-test-qml-debug": "cd ./out/test/ && node runTest.qml-debug.js",
     "test:only:qml-debug": "npm run compile-test && npm run run-test-qml-debug --",
-    "test:only:grammar": "vscode-tmgrammar-test -g tests/grammar/fixtures/JavaScript.tmLanguage.json \"tests/grammar/qml/unit/**/*.test.qml\"",
+    "test:only:grammar": "npx vscode-tmgrammar-test -g tests/grammar/fixtures/JavaScript.tmLanguage.json \"tests/grammar/qml/unit/**/*.test.qml\"",
     "test:only": "npm run test:only:grammar && npm run compile-test && npm run run-test && npm run run-test-qml-debug",
     "run-tests": "cd ./out/test/ && cross-env QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.js && cross-env QT_TEST_QT_ROOT=${npm_config_qt_root:-$QT_TEST_QT_ROOT} node runTest.qml-debug.js",
     "test:qml-debug": "npm run prepare-vsix && npm run test:only:qml-debug --",
