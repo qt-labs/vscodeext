@@ -10,6 +10,9 @@
       "include": "#enum-value"
     },
     {
+      "include": "#type-reference"
+    },
+    {
       "include": "#translation-functions"
     },
     {
@@ -78,6 +81,14 @@
         },
         "3": {
           "name": "variable.other.enummember.qml meta.doc.type.$1.qml meta.doc.member.$3.qml"
+        }
+      }
+    },
+    "type-reference": {
+      "match": "(?<![\\w$.])(?!(?:Array|Atomics|BigInt|Date|Error|Intl|JSON|Math|Number|Object|Promise|Reflect|RegExp|String|Symbol)\\b)([A-Z][\\w$]*)(?=\\s*\\.)(?!\\s*\\.\\s*[A-Z][\\w$]*\\s*\\{)",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.qml meta.doc.type.$1.qml"
         }
       }
     },

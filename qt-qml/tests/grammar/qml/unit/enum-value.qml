@@ -70,11 +70,8 @@ Item {
 //               ^^^^^^ - entity.name.type.qml
 //                      ^^^^^^^^^ - variable.other.enummember.qml
     z: Foo.Bar(1) + Foo.Bar.baz + Text.alignment
-//     ^^^ - entity.name.type.qml
 //         ^^^ - variable.other.enummember.qml
-//                  ^^^ - entity.name.type.qml
 //                      ^^^ - variable.other.enummember.qml
-//                                ^^^^ - entity.name.type.qml
 //                                     ^^^^^^^^^ - variable.other.enummember.qml
     text: "Text.AlignLeft" // Text.AlignLeft
 //         ^^^^ - entity.name.type.qml
