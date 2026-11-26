@@ -7,6 +7,9 @@
       "include": "#qt-global-object"
     },
     {
+      "include": "#enum-value"
+    },
+    {
       "include": "#translation-functions"
     },
     {
@@ -63,6 +66,20 @@
           "match": "(?<![\\w$.])Qt\\b"
         }
       ]
+    },
+    "enum-value": {
+      "match": "(?<![\\w$.])(?!(?:Array|Atomics|BigInt|Date|Error|Intl|JSON|Math|Number|Object|Promise|Reflect|RegExp|String|Symbol)\\b)([A-Z][\\w$]*)\\s*(\\.)\\s*([A-Z][\\w$]*)(?![\\w$])(?!\\s*[.({])",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.qml meta.doc.type.$1.qml"
+        },
+        "2": {
+          "name": "punctuation.accessor.qml"
+        },
+        "3": {
+          "name": "variable.other.enummember.qml meta.doc.type.$1.qml meta.doc.member.$3.qml"
+        }
+      }
     },
     "translation-functions": {
       "name": "support.function.translation.qml",
