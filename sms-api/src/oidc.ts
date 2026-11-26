@@ -466,6 +466,13 @@ export interface OidcLoginOptions {
    * page of the Qt account login server.
    */
   screenHint?: string;
+  /**
+   * `prompt` parameter of the authorization request, used instead of the
+   * one of the client configuration when not empty. `'login consent'` makes
+   * the login server ask for the credentials even if the browser still holds
+   * a session, so that another account can sign in.
+   */
+  prompt?: string;
 }
 
 export class OidcAuthenticator {
@@ -748,8 +755,9 @@ export class OidcAuthenticator {
       ['code_challenge', codeChallenge],
       ['code_challenge_method', 'S256']
     ];
-    if (this.config.prompt) {
-      params.push(['prompt', this.config.prompt]);
+    const prompt = options?.prompt ? options.prompt : this.config.prompt;
+    if (prompt) {
+      params.push(['prompt', prompt]);
     }
     if (this.config.resource) {
       params.push(['resource', this.config.resource]);

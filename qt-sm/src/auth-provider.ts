@@ -49,6 +49,15 @@ const AUTH_PROVIDER_LABEL = 'Qt Account';
 export const PAT_SESSION_ID = 'personal-access-token';
 export const PAT_ACCOUNT_LABEL = 'Personal access token';
 export const LOGIN_CANCELLED_MESSAGE = 'Login cancelled';
+/**
+ * Global state key that is set by a sign-out until a browser sign-in
+ * succeeds. The login server keeps its own session in the browser, so the
+ * next sign-in would otherwise go straight to the consent page of the
+ * account that signed out.
+ */
+const FORCE_LOGIN_PROMPT_KEY = 'qtAccount.forceLoginPrompt';
+/** `prompt` that makes the login server ask for the credentials again. */
+const FORCE_LOGIN_PROMPT = 'login consent';
 
 export type SignInPhase =
   'idle' | 'signing' | 'stalled' | 'failed' | 'signedIn';
@@ -99,7 +108,10 @@ export class QtAccountAuthenticationProvider
   private expired = false;
   private reloadTimer: ReturnType<typeof setTimeout> | undefined;
 
-  constructor(extensionMode: vscode.ExtensionMode) {
+  constructor(
+    extensionMode: vscode.ExtensionMode,
+    private readonly globalState: vscode.Memento
+  ) {
     this.storage = new QtCredentialStorage();
     this.storage.onLog = logCallback('QtCredentialStorage');
     const clientId =
@@ -189,6 +201,7 @@ export class QtAccountAuthenticationProvider
       void vscode.window.showErrorMessage(message);
       return Promise.resolve();
     }
+    this.setForceLoginPrompt(true);
     this.setSignInState({ phase: 'idle' });
     this.syncSession();
     logger.info(`Signed out of Qt Account (${removed.account.label})`);
@@ -343,8 +356,14 @@ export class QtAccountAuthenticationProvider
   ): Promise<vscode.AuthenticationSession> {
     this.resetExpiry();
     this.setSignInState({ phase: 'signing' });
+    // After a sign-out, ask for the credentials again so that another
+    // account can sign in. The flag stays set when the login fails or is
+    // cancelled.
+    const loginOptions = this.globalState.get<boolean>(FORCE_LOGIN_PROMPT_KEY)
+      ? { ...options, prompt: FORCE_LOGIN_PROMPT }
+      : options;
     try {
-      await this.authenticator.login(options);
+      await this.authenticator.login(loginOptions);
     } catch (err) {
       this.clearTimers();
       if (err instanceof OidcAuthError && err.code === OidcError.Cancelled) {
@@ -385,11 +404,22 @@ export class QtAccountAuthenticationProvider
       this.setSignInState({ phase: 'failed', errorMessage: message });
       throw new Error(message);
     }
+    this.setForceLoginPrompt(false);
     logger.info(`Signed in to Qt Account as ${session.account.label}`);
     void vscode.window.showInformationMessage(
       `Signed in to Qt Account as ${session.account.label}`
     );
     return session;
+  }
+
+  private setForceLoginPrompt(force: boolean): void {
+    void this.globalState
+      .update(FORCE_LOGIN_PROMPT_KEY, force ? true : undefined)
+      .then(undefined, (err: unknown) => {
+        logger.warn(
+          `Cannot store the Qt Account sign-in state: ${err instanceof Error ? err.message : String(err)}`
+        );
+      });
   }
 
   private openBrowser(url: string): void {
@@ -556,7 +586,10 @@ export class QtAccountAuthenticationProvider
 export function registerAuthenticationProvider(
   context: vscode.ExtensionContext
 ): QtAccountAuthenticationProvider {
-  const provider = new QtAccountAuthenticationProvider(context.extensionMode);
+  const provider = new QtAccountAuthenticationProvider(
+    context.extensionMode,
+    context.globalState
+  );
 
   context.subscriptions.push(
     vscode.authentication.registerAuthenticationProvider(

@@ -6,6 +6,7 @@
 
 - Sign in to the Qt Account in the browser with OpenID Connect (authorization code flow with PKCE)
 - Sign in with a personal access token for windowless use
+- Ask for the Qt Account credentials again in the browser after a sign-out, so that another account can sign in
 - Show the browser sign-in progress in the walkthrough (waiting, stalled, failed, signed in with privacy opt-ins)
 - Pick up logins and logouts made by other Qt tools from the shared Qt.ini
 - Start the elevated helper when the Qt Software Management Service needs administrator rights

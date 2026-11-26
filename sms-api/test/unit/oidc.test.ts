@@ -474,6 +474,20 @@ describe('OidcAuthenticator', () => {
     assert.equal(params.get('prompt'), 'consent');
   });
 
+  it('adds the prompt of the login to the authorization URL', async () => {
+    const auth = authenticator();
+    const urlPromise = new Promise<string>((resolve) => {
+      auth.onAuthorizationUrl = resolve;
+    });
+    const done = auth.login({ prompt: 'login consent' });
+    done.catch(() => undefined);
+    const url = await urlPromise;
+    await browse(url);
+    await done;
+    assert.equal(new URL(url).searchParams.get('prompt'), 'login consent');
+    assert.match(url, /[?&]prompt=login%20consent(&|$)/);
+  });
+
   // ── Refresh ────────────────────────────────────────────────────────────
 
   it('renews an expired access token with the refresh token', async () => {
