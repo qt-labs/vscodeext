@@ -238,6 +238,13 @@
         "path": "./res/lang/qml/qml.qmlproject.tmLanguage.json"
       },
       {
+        "scopeName": "qml-js.injection",
+        "path": "./res/lang/qml/qml-js.injection.tmLanguage.json",
+        "injectTo": [
+          "source.qml"
+        ]
+      },
+      {
         "language": "qmldir",
         "scopeName": "source.qmldir",
         "path": "./res/lang/qmldir/qmldir.tmLanguage.json"
