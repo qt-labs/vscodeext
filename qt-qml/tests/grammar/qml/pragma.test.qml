@@ -1,0 +1,103 @@
+// SYNTAX TEST "source.qml" "pragma statements"
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only
+
+//------------------------------------------------------------------------------
+// without value
+//------------------------------------------------------------------------------
+pragma Singleton
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^ entity.other.attribute-name.pragma.qml
+// <---------------- meta.pragma.qml
+
+//------------------------------------------------------------------------------
+// single value
+//------------------------------------------------------------------------------
+pragma ListPropertyAssignBehavior: ReplaceIfNotDefault // Append, Replace,
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                               ^^ - constant.language.pragma.qml
+//                                 ^^^^^^^^^^^^^^^^^^^ constant.language.pragma.qml
+//                                                     ^^^^^^^^^^^^^^^^^^^ comment.line.qml
+// <-------------------------------------------------------------------------- meta.pragma.qml
+pragma ComponentBehavior: Bound // Unbound
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^^ constant.language.pragma.qml
+//                              ^^^^^^^^^^ comment.line.qml
+// <------------------------------------------ meta.pragma.qml
+
+//------------------------------------------------------------------------------
+// translator context
+//------------------------------------------------------------------------------
+pragma Translator: myContext
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//               ^^ - constant.language.pragma.qml
+//                 ^^^^^^^^^ constant.language.pragma.qml
+// <---------------------------- meta.pragma.qml
+pragma Translator: "myContext"
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//               ^^ - constant.language.pragma.qml
+//                 ^^^^^^^^^^^ string.quoted.double.qml
+// <------------------------------ meta.pragma.qml
+
+//------------------------------------------------------------------------------
+// identifier and escaped string values
+//------------------------------------------------------------------------------
+pragma Translator: my_context2
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                 ^^^^^^^^^^^ constant.language.pragma.qml
+pragma Translator: "my\"context"
+//                 ^^^ string.quoted.double.qml
+//                    ^^ string.quoted.double.qml
+//                    ^^ constant.character.escape.qml
+//                      ^^^^^^^^ string.quoted.double.qml
+//                      ^^^^^^^^ - constant.character.escape.qml
+pragma Translator: 'my\'context'
+//                 ^^^ string.quoted.single.qml
+//                    ^^ string.quoted.single.qml
+//                    ^^ constant.character.escape.qml
+//                      ^^^^^^^^ string.quoted.single.qml
+//                      ^^^^^^^^ - constant.character.escape.qml
+
+//------------------------------------------------------------------------------
+// multiple values
+//------------------------------------------------------------------------------
+pragma ValueTypeBehavior: Copy, Addressable
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^ constant.language.pragma.qml
+//                            ^^ - constant.language.pragma.qml
+//                              ^^^^^^^^^^^ constant.language.pragma.qml
+// <------------------------------------------- meta.pragma.qml
+pragma ValueTypeBehavior: Copy, Addressable, Inaddressable // comment
+// <------ keyword.control.pragma.qml
+//     ^^^^^^^^^^^^^^^^^ entity.other.attribute-name.pragma.qml
+//                      ^^ - constant.language.pragma.qml
+//                        ^^^^ constant.language.pragma.qml
+//                            ^^ - constant.language.pragma.qml
+//                              ^^^^^^^^^^^ constant.language.pragma.qml
+//                                         ^^ - constant.language.pragma.qml
+//                                           ^^^^^^^^^^^^^ constant.language.pragma.qml
+//                                                         ^^^^^^^^^^ comment.line.qml
+// <--------------------------------------------------------------------- meta.pragma.qml
+
+//------------------------------------------------------------------------------
+// trailing semicolon
+//------------------------------------------------------------------------------
+pragma Singleton;
+//              ^ punctuation.terminator.statement.qml
+pragma ComponentBehavior: Bound;
+//                             ^ punctuation.terminator.statement.qml
+
+//------------------------------------------------------------------------------
+// meta scope ends at the end of the statement
+//------------------------------------------------------------------------------
+pragma Singleton
+Item {}
+// <------- - meta.pragma.qml
