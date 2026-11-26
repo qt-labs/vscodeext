@@ -49,7 +49,7 @@ export async function showLicenseAgreementPanel(
     setTimeout(() => {
       const msg: MessageToWebview = {
         type: 'init',
-        payload: { agreements }
+        payload: { agreements: sortByTitle(agreements) }
       };
       void panel.webview.postMessage(msg);
     }, 100);
@@ -84,6 +84,14 @@ export async function showLicenseAgreementPanel(
       }
     });
   });
+}
+
+// List the agreements alphabetically instead of in the order the backend
+// happens to return them.
+function sortByTitle(agreements: LicenseAgreement[]): LicenseAgreement[] {
+  return [...agreements].sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+  );
 }
 
 function getWebviewHtml(
